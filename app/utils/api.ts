@@ -1,9 +1,11 @@
 import axios from "axios";
 import ClientStorage from "./storage"
-
+import { objectToFormData } from "./api_utils"
+import { NastoolMessage } from "./api/message";
 type NastoolApi =
     "user/login" |
     "config/info" |
+    "config/update" |
     "media/search" |
     "media/detail" |
     "media/tv/seasons" |
@@ -77,9 +79,16 @@ export type NastoolServerAppConfig = {
     tmdb_image_url: string
 }
 
+
 export type NastoolServerConfig = {
     app: NastoolServerAppConfig,
     media: any,
+    openai: {
+        api_url?:string,
+        api_key:string,
+        deployment_id:string,
+        provider: "azure" | "openai"
+    },
     security: {
         api_key: string
     }
@@ -425,7 +434,8 @@ export enum TaskStatus {
 
 export interface Subtask {
     status: TaskStatus,
-    type: TaskType
+    type: TaskType,
+    log: string[]
 }
 
 export interface SearchTask extends Subtask {
@@ -492,6 +502,7 @@ export class NASTOOL {
     private token: string | null = null;
     private serverConfig: NastoolServerConfig | null = null;
     private storage: ClientStorage<NastoolLoginResData>;
+    public message: NastoolMessage|null = null;
     public hook: {
         onLoginRequired?: () => (Promise<NastoolLoginConfig>)
     } = {};
@@ -530,6 +541,10 @@ export class NASTOOL {
         return false;
     }
 
+    public async init() {
+        this.message = new NastoolMessage(`ws${this.config.https ? 's' : ''}://${this.config.host}:${this.config.port}/message`);
+
+    }
 
     public async login({ username, password }: NastoolLoginConfig): Promise<boolean> {
         const loginResp: NastoolLoginResData | undefined = await this.post<NastoolLoginResData>("user/login", { data: { username, password } });
@@ -541,7 +556,7 @@ export class NASTOOL {
         try {
             const configInfo: NastoolServerConfig | undefined = await this.getServerConfig();
             this.serverConfig = configInfo;
-            console.log("Login ok ", this.token)
+            console.log("Login ok", this.token)
             return true
         } catch (e) {
             console.log(e);
@@ -555,6 +570,19 @@ export class NASTOOL {
 
     public async getServerConfig() {
         return await this.post<NastoolServerConfig>("config/info", { auth: true });
+    }
+
+    public async updateServerConfig(config: NastoolServerConfig) {
+        const flatten = (obj: any, roots: any = [], sep = '.'): Record<string, any> => Object.keys(obj).reduce((memo, prop) => Object.assign({}, memo, Object.prototype.toString.call(obj[prop]) === '[object Object]' ? flatten(obj[prop], roots.concat([prop]), sep) : { [roots.concat([prop]).join(sep)]: obj[prop] }), {})
+        const flattenConfig = flatten(config);
+        console.log(flattenConfig)
+        const result = await this.post<{ code: number }>("config/update", {
+            auth: true, data: {
+                items: flattenConfig
+            },
+            json: true
+        })
+        return result.code == 0
     }
 
     public async mediaSearch(keyword: string) {
@@ -760,11 +788,12 @@ export class NASTOOL {
     }
 
     private async post<T>(api: NastoolApi, options: { auth?: boolean, json?: boolean, data?: Record<string, string> | any, params?: Record<string, string> } = {}): Promise<T> {
-        const formData = new FormData();
-        Object.entries<string>(options.data || {}).forEach(([k, v]) => formData.append(k, v));
+        // const formData =//new FormData();
+        // Object.entries<string>(options.data || {}).forEach(([k, v]) => formData.append(k, v));
+
         return await this.request<T>(api, "post", {
             params: options.params,
-            data: options.json ? options.data : formData,
+            data: options.json ? options.data :  objectToFormData(options.data || {}),
             auth: options.auth
         })
     }
@@ -839,7 +868,6 @@ export class API {
 
                 if (await nastool_instance.restoreLogin()) {
                     this.nastool_instance = nastool_instance;
-                    return this.nastool_instance;
                 } else {
                     if (this.onNastoolLoginRequired) {
                         const { username, password } = await this.onNastoolLoginRequired();
@@ -850,8 +878,12 @@ export class API {
                         } else {
                             throw new Error("Nastool login failed.");
                         }
+                    } else {
+                        throw new Error("Nastool login failed: cannot get login info.");
                     }
                 }
+                this.nastool_instance.init();
+                return this.nastool_instance
             }
             throw new Error("Unable to get nastool");
         } else {

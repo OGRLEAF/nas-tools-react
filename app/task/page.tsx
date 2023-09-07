@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { API, Task, Subtask } from "../utils/api";
 import { Section } from "../components/Section";
-import { Collapse, Timeline, Space, Typography, Tag, theme } from "antd";
+import { Collapse, Timeline, Space, Typography, Tag, theme, List } from "antd";
 
 const SearchTaskBrief = ({ task }: { task: Subtask }) => {
 
@@ -14,9 +14,7 @@ const TaskCard = ({ task }: { task: Task }) => {
             // label: item.type,
             children: <Space direction="vertical">
                 <span> {item.type} <Tag color="green">{item.status}</Tag></span>
-                <span>
-                    deaf
-                </span>
+                <List dataSource={item.log} renderItem={(item) => (<div>{item}</div>)} />
             </Space>,
             color: "green"
         }
