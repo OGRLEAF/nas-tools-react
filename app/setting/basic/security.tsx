@@ -21,11 +21,11 @@ export default function SettingSecurity() {
                     <TagsSelect sep="," />
                 </Form.Item>
             </Col>
-            <Col span={6}>
+            {/* <Col span={6}>
                 <Form.Item label="API密钥" name={["security", "api_key"]}>
                     <Input />
                 </Form.Item>
-            </Col>
+            </Col> */}
         </Row>
         <Row gutter={24}>
             <Col span={6}>

@@ -1,7 +1,16 @@
 "use client"
 import React from 'react'
 import { Button, Card, Col, Form, Row, Space } from "antd"
-import { NastoolServerConfig } from '@/app/utils/api';
+import { API, NastoolServerConfig } from '@/app/utils/api';
+import type { FormInstance } from 'antd/es/form';
+
+
+const SubmitButton = () => {
+    return (
+        <Form.Item noStyle>
+            <Button htmlType="submit" type='primary'>保存</Button>
+        </Form.Item>)
+}
 
 export default function SettingCard(
     { settingForm, name, config }:
@@ -13,33 +22,26 @@ export default function SettingCard(
     const SettingForm = settingForm;
     const [form] = Form.useForm();
 
-    const ChildrenWrapper = () => {
-        if (config) {
-            return <>
-                <Form form={form}
-                    initialValues={config}
-                    layout='vertical'>
-                    <SettingForm config={config} />
-                </Form>
-            </>
-        } else {
-            return <></>
-        }
-    };
-    const SubmitButton = () => {
-        return (
-            <Button type='primary'>保存</Button>)
+
+    const onFinished = async (value: NastoolServerConfig) => {
+        console.log(value)
+        const nt = await API.getNastoolInstance()
+
+        nt.updateServerConfig(value)
     }
-    return <Card title={name}
-        extra={<Button type='primary'>保存</Button>}>
-        <ChildrenWrapper />
-        {/* <Row>
-            <Col span={21}></Col>
-            <Col span={3}>
-                <Button type='primary'>保存</Button>
-            </Col>
-        </Row> */}
-    </Card>
+    if (config) {
+        return <Form form={form}
+            initialValues={config}
+            layout='vertical'
+            onFinish={onFinished} >
+            <Card title={name}
+                extra={<SubmitButton />}>
+                <SettingForm config={config} />
+            </Card>
+        </Form>
+    } else {
+        return <Card loading={true} />
+    }
 }
 
 

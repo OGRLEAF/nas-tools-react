@@ -1,7 +1,9 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Form, Input, Space, Row, Col, Select, InputNumber, Switch } from 'antd'
 import { API, NastoolServerConfig } from '@/app/utils/api'
 import TagsSelect from "@/app/components/tagsSelect"
+import type { FormInstance } from 'antd/es/form';
+
 const tmdbMatchModeOption = [
     {
         label: "严格模式",
@@ -35,6 +37,15 @@ const donwloadOrderOption = [
         label: "做种数有限",
         value: "seeder"
     },
+]
+const openAiProviderSelection = [
+    {
+        label: "Azure",
+        value: "azure"
+    }, {
+        label: "OpenAI",
+        value: "openai"
+    }
 ]
 const defaultTransferMode = [
     {
@@ -73,7 +84,42 @@ const defaultTransferMode = [
 ]
 
 export default function SettingMedia() {
-
+    const form = Form.useFormInstance();
+    const provider = Form.useWatch(["openai", "provider"], form);
+    const OpenAISetting = ({ provider }: { provider: string }) => {
+        if (provider == "azure") {
+            return <>
+                <Col span={2}>
+                    <Form.Item label="Deployment" name={["openai", "deployment_id"]}>
+                        <Input />
+                    </Form.Item>
+                </Col>
+                <Col span={4}>
+                    <Form.Item label="OpenAI API Key" name={["openai", "api_key"]}>
+                        <Input />
+                    </Form.Item>
+                </Col>
+                <Col span={4}>
+                    <Form.Item label="OpenAI API URL" name={["openai", "api_url"]}>
+                        <Input />
+                    </Form.Item>
+                </Col>
+            </>
+        } else {
+            return <>
+                <Col span={4}>
+                    <Form.Item label="OpenAI API URL" name={["openai", "api_url"]}>
+                        <Input />
+                    </Form.Item>
+                </Col>
+                <Col span={6}>
+                    <Form.Item label="OpenAI API Key" name={["openai", "api_key"]}>
+                        <Input />
+                    </Form.Item>
+                </Col>
+            </>
+        }
+    }
     return <>
         <Row gutter={[24, 0]}>
             <Col span={6}>
@@ -109,7 +155,13 @@ export default function SettingMedia() {
                     <Input />
                 </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col span={2}>
+                <Form.Item label="OpenAI API 服务" name={["openai", "provider"]}>
+                    <Select options={openAiProviderSelection} />
+                </Form.Item>
+            </Col>
+            <OpenAISetting provider={provider} />
+            {/* <Col span={4}>
                 <Form.Item label="OpenAI API URL" name={["openai", "api_url"]}>
                     <Input />
                 </Form.Item>
@@ -118,7 +170,7 @@ export default function SettingMedia() {
                 <Form.Item label="OpenAI API Key" name={["openai", "api_key"]}>
                     <Input />
                 </Form.Item>
-            </Col>
+            </Col> */}
         </Row>
         <Row gutter={[24, 0]}>
             <Col span={6}>
