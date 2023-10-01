@@ -3,6 +3,7 @@ import { MediaImportFile, MediaImportContext, MediaImportDispathPayload, MediaIm
 import { Button } from "antd"
 import { VerticalAlignBottomOutlined } from '@ant-design/icons';
 import { MediaIdentifyContext } from '@/app/utils/api/types';
+import _ from 'lodash';
 
 const globalKeyMap = new Map<string, number>();
 const reducer = (state: MediaImportState, action: MediaImportDispathPayload): MediaImportState => {
@@ -102,7 +103,7 @@ const reducer = (state: MediaImportState, action: MediaImportDispathPayload): Me
                         const identifyOfFile = identify[index];
                         // console.log(fileKey, JSON.stringify(identifyOfFile))
                         penddingFiles[id] = { ...penddingFiles[id] }
-                        if (penddingFiles[id].identifyContext) {
+                        if (penddingFiles[id].identifyContext !== undefined && _.isEqual(penddingFiles[id], {})) {
                             penddingFiles[id].overridenIdentify = identifyOfFile;
                         }
                         else {

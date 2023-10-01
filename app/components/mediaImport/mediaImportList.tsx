@@ -32,7 +32,7 @@ const IdentifyTitleTag = ({ value, children }: { value: string, children: React.
 const columns: ColumnsType<MediaImportFile> = [{
     title: "文件名",
     dataIndex: "name",
-    width: 800,
+    width: 750,
     render: (name: string, item) => <TableFileName name={name} item={item} />,
     defaultSortOrder: "descend",
     shouldCellUpdate: (record, prevRecord) => !_.isEqual(record, prevRecord),
@@ -47,7 +47,6 @@ const columns: ColumnsType<MediaImportFile> = [{
             dataIndex: ["identifyContext", "title"],
             // width: 200,
             render: (value, record) => {
-                if (value == undefined) return <></>
                 return <><OverridenTag valueOrigin={value} valueOverriden={record.overridenIdentify?.title}
                     render={({ changed, children, value: finalValue }) => (
                         <IdentifyTitleTag value={finalValue}><Tag color={changed ? 'pink' : 'cyan'}>{children}</Tag></IdentifyTitleTag>)}
@@ -83,7 +82,6 @@ const columns: ColumnsType<MediaImportFile> = [{
             dataIndex: ["identifyContext", "season"],
             // width: 50,
             render: (value, record) => {
-                if (value == undefined  && record.overridenIdentify?.season === undefined) return <></>
                 return <OverridenTag valueOrigin={value} valueOverriden={record.overridenIdentify?.season}
                     render={({ changed, children }) => (<Tag color={changed ? 'pink' : 'cyan'}>{children}</Tag>)}
                 />
@@ -96,7 +94,6 @@ const columns: ColumnsType<MediaImportFile> = [{
             dataIndex: ["identifyContext", "episode"],
             // width: 50,
             render: (value, record) => {
-                if (value === undefined && record.overridenIdentify?.episode === undefined) return <></>
                 return <OverridenTag valueOrigin={value} valueOverriden={record.overridenIdentify?.episode}
                     render={({ changed, children }) => (<Tag color={changed ? 'pink' : 'cyan'}>{children}</Tag>)}
                 />
@@ -166,6 +163,13 @@ export const ImportList = (options: { onSelect?: (value: MediaImportFile[]) => v
 const OverridenTag = (options: { valueOrigin: any, valueOverriden?: any, render: (options: { changed: boolean, children: React.JSX.Element, value: string }) => React.JSX.Element }) => {
     const WrapperRender = options.render;
     const changed = (options.valueOverriden != undefined) && options.valueOverriden != options.valueOrigin
+    if (options.valueOrigin == undefined && options.valueOverriden == undefined) {
+        return <>
+            <WrapperRender value={options.valueOrigin} changed={false}>
+                <>-</>
+            </WrapperRender>
+        </>
+    }
     return <>
         {
             changed ? <Space size="small">
@@ -324,10 +328,10 @@ const TableFileName = (options: { name: string, item: MediaImportFile }) => {
             .then(async (result) => {
                 // console.log("CALL MediaImportAction.SetIdentity", result)
                 console.log(result)
-                if(result.title) {
+                if (result.title) {
                     setFailed(false);
                     mediaImportDispatch({ type: MediaImportAction.SetIdentity, fileKeys: [file.name], identify: [result] })
-                }else {
+                } else {
                     setFailed(true)
                 }
                 // console.log(result)
@@ -338,7 +342,7 @@ const TableFileName = (options: { name: string, item: MediaImportFile }) => {
         {options.name}
         <Space>
             <Tooltip title={JSON.stringify(options.item)}>
-                <InfoCircleOutlined  style={{ color: failed? token.colorWarningTextActive:token.colorTextDescription }} />
+                <InfoCircleOutlined style={{ color: failed ? token.colorWarningTextActive : token.colorTextDescription }} />
             </Tooltip>
             <Button size="small" type="link" loading={loading} icon={<RedoOutlined />}
                 onClick={() => {

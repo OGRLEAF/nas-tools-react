@@ -102,7 +102,7 @@ const MediaImport = () => {
     const searchContext = useContext(SearchContext);
     const { selected: mediaWork } = searchContext;
     const [selectedFiles, setSelectedFiles] = useState<MediaImportFile[]>([])
-    const [episodeMethod, setEpisodeMethod] = useState<EpisodeMethod>(EpisodeMethod.EpisodeFormat)
+    const [episodeMethod, setEpisodeMethod] = useState<EpisodeMethod>(EpisodeMethod.NumberString)
     const onFinish = async (values: any) => {
         let episodes: number[] = [];
         if (episodeMethod == EpisodeMethod.NumberString) {
@@ -120,7 +120,7 @@ const MediaImport = () => {
         episodes.reverse()
 
         const episode_offset: number = values.episode_offset || 0;
-        console.log(values.episode_format, values.episode_string, episodeMethod)
+        console.log(values.episode_format, values.episode_string, episodeMethod, episodes)
 
         const identify = selectedFiles.map(() => {
             const episode = episodes?.pop();
