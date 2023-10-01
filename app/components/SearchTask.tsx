@@ -1,6 +1,6 @@
 import React, { useState, useEffect, CSSProperties } from "react";
-import { Form, Input, Switch, Radio, Button, Empty, Space, Spin } from "antd"
-import { API, DBMediaType, NastoolMediaDetail, NastoolMediaType, SearchTaskConfig, TaskType } from "../utils/api";
+import { Form, Input, Switch, Radio, Button, Empty, Space, Spin, AutoComplete } from "antd"
+import { API, DBMediaType, NastoolMediaDetail, NastoolMediaType, SearchTaskConfig, TaskType } from "../utils/api/api";
 import { MediaDetailCard } from "./MediaDetailCard"
 export interface SearchProps {
     keyword?: string,
@@ -15,8 +15,17 @@ export default function SearchTask({
     search?: SearchProps,
     style?: CSSProperties
 }) {
-    const [mediaDetail, setMediaDetail] = useState<NastoolMediaDetail>();
+    const [searchTaskConfig, setSearchConfig] = useState<SearchTaskConfig>({
+        keyword: search?.keyword || "",
+        identify: true,
+        media_type: search?.mediaType || NastoolMediaType.UNKNOWN,
+        tmdbid: search?.mediaId || "",
+        filter: {}
+    })
 
+
+    const [mediaDetail, setMediaDetail] = useState<NastoolMediaDetail>();
+    const [titleOptions, setTitleOptions] = useState<{value:string}[]>(search?.keyword?[{value: search.keyword}]:[]);
     useEffect(() => {
         API.getNastoolInstance()
             .then(async nt => {
@@ -27,21 +36,21 @@ export default function SearchTask({
                         [NastoolMediaType.MOVIE]: DBMediaType.MOVIE,
                         [NastoolMediaType.UNKNOWN]: undefined,
                     })[search.mediaType]
-                    console.log(search.mediaId)
+                    
                     const mediaDetail = await nt.getMediaDetail(search.mediaId, searchMediaType)
 
                     setMediaDetail(mediaDetail)
+                    setTitleOptions([
+                        {value: mediaDetail.title},
+                        ...titleOptions
+                    ])
+                    setSearchConfig({
+                        ...searchTaskConfig,
+                        keyword: mediaDetail.title,
+                    })
                 }
             })
     }, [search?.mediaId])
-
-    const [searchTaskConfig, setSearchConfig] = useState<SearchTaskConfig>({
-        keyword: search?.keyword || mediaDetail?.title || "",
-        identify: true,
-        media_type: search?.mediaType || NastoolMediaType.UNKNOWN,
-        tmdbid: search?.mediaId || "",
-        filter: {}
-    })
 
     const onFinish = (value: SearchTaskConfig) => {
         console.log(value)
@@ -62,7 +71,7 @@ export default function SearchTask({
             style={{ margin: 16 }}
         >
             <Form.Item label="搜索关键词" name="keyword">
-                <Input />
+                <AutoComplete options={titleOptions} allowClear/>
             </Form.Item>
             <Form.Item label="启用媒体识别" name="identify" valuePropName="checked">
                 <Switch />

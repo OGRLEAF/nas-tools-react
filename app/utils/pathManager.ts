@@ -1,5 +1,5 @@
 import { get } from "http";
-import { API, NastoolFileListItem } from "@/app/utils/api";
+import { API, NastoolFileListItem } from "@/app/utils/api/api";
 
 export interface FileListTree extends NastoolFileListItem {
     children: FileListTree

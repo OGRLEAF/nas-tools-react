@@ -20,7 +20,7 @@ export default function TagsSelect({
         if (onChange) onChange((tags|| []).join(sep));
     }, [tags])
     useEffect(() => {
-        console.log('value=', value)
+        // console.log('value=', value)
         setTags(value?.split(sep) || [])
     }, [])
     return <>

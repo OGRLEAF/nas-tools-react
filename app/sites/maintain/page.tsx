@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import { Section } from "@/app/components/Section";
 import { useEffect } from 'react';
-import { API, NastoolDownloadConfig, NastoolFilterruleBasic, NastoolSiteProfile } from "@/app/utils/api"
+import { API, NastoolDownloadConfig, NastoolFilterruleBasic, NastoolSiteProfile } from "@/app/utils/api/api"
 import { Button, Card, Checkbox, Descriptions, Switch, Form, Input, InputNumber, Radio, Space, Table, Select, Drawer } from 'antd';
 import { EditOutlined, RedoOutlined, CloseOutlined } from '@ant-design/icons';
 import Column from 'antd/es/table/Column';

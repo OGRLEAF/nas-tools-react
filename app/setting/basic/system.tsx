@@ -1,6 +1,6 @@
 import React from 'react'
 import { Form, Input, Space, Row, Col, Select, InputNumber } from 'antd'
-import { API, NastoolServerConfig } from '@/app/utils/api'
+import { API, NastoolServerConfig } from '@/app/utils/api/api'
 
 export default function SettingSystem(options: { config?: NastoolServerConfig }) {
     const logtypeOptions = [

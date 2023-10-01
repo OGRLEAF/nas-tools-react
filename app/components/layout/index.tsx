@@ -17,12 +17,13 @@ import {
   ToolOutlined,
   BuildOutlined
 } from '@ant-design/icons';
-import { IconCalendarDaysSolid, IconCustomSolid, IconDatabase, IconFilmSolid, IconFolderTreeSolid, IconHistory, IconLink, IconMediaSolid, IconRssSolid, IconTvSolid } from '../icons';
+import { IconBookBookMark, IconCalendarDaysSolid, IconCustomSolid, IconDatabase, IconFilmSolid, IconFolderTreeSolid, IconHistory, IconLink, IconMediaSolid, IconRssSolid, IconTvSolid } from '../icons';
 import type { MenuProps } from 'antd';
 import { Breadcrumb, Divider, Layout, Menu, theme } from 'antd';
 
 import LoginModal from '../login';
 import HeaderSearch from '../headerSearch';
+import { ServerConfig } from '@/app/utils/api/serverConfig';
 
 const { Header, Content, Footer, Sider } = Layout;
 type MenuItem = Required<MenuProps>['items'][number];
@@ -41,6 +42,8 @@ function getItem(
     label,
   } as MenuItem;
 }
+
+const mediaFileMenuItem = getItem("文件管理", '/media/file', <IconFolderTreeSolid />);
 
 const items: MenuItem[] = [
   getItem('首页', '/', <HomeOutlined />),
@@ -64,42 +67,51 @@ const items: MenuItem[] = [
   ]),
   getItem("任务", "/task", <BuildOutlined />),
   getItem("媒体整理", '/media', <IconMediaSolid />, [
-    getItem("文件管理", '/media/file', <IconFolderTreeSolid />),
+    mediaFileMenuItem, //getItem("文件管理", '/media/file', <IconFolderTreeSolid />),
     getItem("手动识别", '/media/manual', <IconLink />),
     getItem("历史记录", '/media/history', <IconHistory />),
     getItem("TMDB缓存", '/media/tmdb-db', <IconDatabase />),
   ]),
   getItem("设置", "/setting", <SettingOutlined />, [
-    getItem("基础设置", "/setting/basic", <ToolOutlined />)
+    getItem("基础设置", "/setting/basic", <ToolOutlined />),
+    getItem("媒体库", "/setting/library", <IconBookBookMark />)
   ]),
 ];
 
-const DefaultLayout = ({
-  children,
-}: {
-  children: React.ReactNode
-}) => {
+const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
+  const [menu, setMenu] = useState<MenuItem[]>(items);
   const [collapsed, setCollapsed] = useState(false);
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
+  const { token: { colorBgContainer }, } = theme.useToken();
 
   const router = useRouter()
   const pathName = usePathname();
+
+  const [menuKeyMap, setMenuKeyMap] = useState<Record<string, string>>({});
   const [selectedPath, setSelectedPath] = useState({
     selectedKey: pathName,
     openKey: "/" + pathName.split("/")[1]
   });
   useEffect(() => {
+    new ServerConfig().get()
+      .then(res => {
+        const default_path = res.media.media_default_path;
+        if (mediaFileMenuItem?.key) {
+          setMenuKeyMap({ [mediaFileMenuItem.key as string]: mediaFileMenuItem.key + default_path })
+        }
+      })
+  }, [])
+  useEffect(() => {
     setSelectedPath({
       selectedKey: pathName.split("/").slice(0, 3).join("/"),
-      openKey: "/" + pathName.split("/")[1]
+      openKey: "/" + pathName.split("/")
     });
   }, [pathName])
 
   const navigate = ({ key }: { key: string }) => {
     if (key.startsWith("/")) {
-      router.push(key)
+      const exactPath = menuKeyMap[key];
+      if (exactPath) router.push(exactPath);
+      else router.push(key);
     } else {
       router.push("/")
     }
@@ -118,11 +130,11 @@ const DefaultLayout = ({
         collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
         <div className="demo-logo-vertical" style={{ height: 40 }} >
           <span style={{ color: "white" }}>
-            {selectedPath.openKey + " " + selectedPath.selectedKey + " " + pathName }
+            {selectedPath.openKey + " " + selectedPath.selectedKey + " " + pathName}
           </span>
           <LoginModal></LoginModal>
         </div>
-        <Menu theme="dark" mode="inline" items={items} onSelect={navigate}
+        <Menu theme="dark" mode="inline" items={menu} onSelect={navigate}
           selectedKeys={[selectedPath.selectedKey]} defaultOpenKeys={[selectedPath.openKey]}
         />
 
@@ -140,7 +152,7 @@ const DefaultLayout = ({
         </Header>
         <Content style={{ margin: '0px 0px', overflow: 'initial' }}>
 
-          <div style={{ padding: "0px 16px 16px 16px", minHeight: "260px", background: colorBgContainer }}>
+          <div style={{ padding: "0px 16px 16px 16px", minHeight: "50vh", background: colorBgContainer }}>
             {children}
           </div>
 

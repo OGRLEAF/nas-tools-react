@@ -1,7 +1,8 @@
 import axios from "axios";
-import ClientStorage from "./storage"
+import ClientStorage from "../storage"
 import { objectToFormData } from "./api_utils"
-import { NastoolMessage } from "./api/message";
+import { NastoolMessage } from "../api/message";
+import { MediaWorkType } from "./types";
 type NastoolApi =
     "user/login" |
     "config/info" |
@@ -12,8 +13,10 @@ type NastoolApi =
     "service/name/test" |
     "page/brief" |
     "page/listdir" |
+    "organization/import/tv" |
     "organization/import/dryrun" |
     "organization/import/group" |
+    "/unknown/renameudf" |
     "site/list" |
     "site/statistics" |
     "site/indexers" |
@@ -82,15 +85,23 @@ export type NastoolServerAppConfig = {
 
 export type NastoolServerConfig = {
     app: NastoolServerAppConfig,
-    media: any,
     openai: {
-        api_url?:string,
-        api_key:string,
-        deployment_id:string,
+        api_url?: string,
+        api_key: string,
+        deployment_id: string,
         provider: "azure" | "openai"
     },
     security: {
         api_key: string
+    },
+    media: {
+        anime_path: string[],
+        movie_path: string[],
+        tv_path: string[],
+        media_default_path: string,
+    },
+    laboratory: {
+        use_douban_titles: boolean
     }
 }
 
@@ -127,18 +138,27 @@ export type NastoolMediaDetail = {
     runtime: string;
     fact: Record<string, string>[];
     crews: Record<string, string>[];
+    seasons?: {
+        air_date: string,
+        episode_counts: number,
+        id: number,
+        name: string,
+        overview: string,
+        poster_path: string,
+        season_number: number
+    }[],
     actors: [];
     link: string;
     douban_link: string;
 }
 
-type NastoolMediaLibraryType = "电视剧" | "电影";
 export enum NastoolMediaType {
     TV = "电视剧",
     MOVIE = "电影",
     ANI = "动漫",
     UNKNOWN = '未知',
 }
+type NastoolMediaLibraryType = NastoolMediaType.TV | NastoolMediaType.MOVIE | NastoolMediaType.ANI;
 
 
 export type NastoolMediaLibrary = {
@@ -449,6 +469,16 @@ export interface Task {
 export interface TaskListResult {
     tasks: Task[]
 }
+export enum ImportMode {
+    LINK = "硬链接",
+    SOFTLINK = "软链接",
+    COPY = "复制",
+    MOVE = "移动",
+    RCLONECOPY = "Rclone复制",
+    RCLONE = "Rclone移动",
+    MINIOCOPY = "Minio复制",
+    MINIO = "Minio移动",
+}
 
 type NastoolResponse = {
     code: number,
@@ -502,7 +532,7 @@ export class NASTOOL {
     private token: string | null = null;
     private serverConfig: NastoolServerConfig | null = null;
     private storage: ClientStorage<NastoolLoginResData>;
-    public message: NastoolMessage|null = null;
+    public message: NastoolMessage | null = null;
     public hook: {
         onLoginRequired?: () => (Promise<NastoolLoginConfig>)
     } = {};
@@ -569,7 +599,9 @@ export class NASTOOL {
 
 
     public async getServerConfig() {
-        return await this.post<NastoolServerConfig>("config/info", { auth: true });
+        const config = await this.post<NastoolServerConfig>("config/info", { auth: true });
+        this.serverConfig = config;
+        return config;
     }
 
     public async updateServerConfig(config: NastoolServerConfig) {
@@ -769,6 +801,21 @@ export class NASTOOL {
         })
     }
 
+    public async mediaFileImport(path: string, files: string[], importMode:ImportMode, season?: number, tmdbid?: string, type?: NastoolMediaType) {
+        return await this.post<any>("organization/import/tv", {
+            data: {
+                tmdbid: tmdbid,
+                type: type,
+                inpath: path,
+                files: files,
+                season: season,
+                syncmod: importMode
+            },
+            auth: true,
+            json: true
+        })
+    }
+
     public _get_image_proxy_url(server_url: string, legacy = false) {
         if (legacy) {
             return `img?url=${server_url}`
@@ -777,7 +824,7 @@ export class NASTOOL {
         }
     }
 
-    private async get<T>(api: NastoolApi, options: { auth?: boolean, params?: Record<string, string> } = {}): Promise<T> {
+    protected async get<T>(api: NastoolApi, options: { auth?: boolean, params?: Record<string, string> } = {}): Promise<T> {
         return await this.request<T>(api, "get", {
             params: {
                 ...options.params,
@@ -787,13 +834,13 @@ export class NASTOOL {
         })
     }
 
-    private async post<T>(api: NastoolApi, options: { auth?: boolean, json?: boolean, data?: Record<string, string> | any, params?: Record<string, string> } = {}): Promise<T> {
+    protected async post<T>(api: NastoolApi, options: { auth?: boolean, json?: boolean, data?: Record<string, string> | any, params?: Record<string, string> } = {}): Promise<T> {
         // const formData =//new FormData();
         // Object.entries<string>(options.data || {}).forEach(([k, v]) => formData.append(k, v));
 
         return await this.request<T>(api, "post", {
             params: options.params,
-            data: options.json ? options.data :  objectToFormData(options.data || {}),
+            data: options.json ? options.data : objectToFormData(options.data || {}),
             auth: options.auth
         })
     }
@@ -851,21 +898,24 @@ export class API {
     private static nastool_instance: NASTOOL | null = null;
     public static onNastoolConfigRequired: (() => Promise<NastoolConfig>) | null = null;
     public static onNastoolLoginRequired: (() => Promise<NastoolLoginConfig>) | null = null;
+    private static queue: Promise<void> = Promise.resolve()
     public static async getNastoolInstance(): Promise<NASTOOL> {
+        await this.queue;
+        const executionPromise = this.queue.then(async () => {
+            return await this._getNastoolInstance()
+        })
+        executionPromise.catch((e) => {
+            throw new Error("Get nastool instance failed.", e);
+        })
+        return executionPromise;
+    }
+    private static async _getNastoolInstance(): Promise<NASTOOL> {
         if (this.nastool_instance == null) {
             if (this.onNastoolConfigRequired) {
                 // console.log("call nastool config required");
                 const nastoolConfig = await this.onNastoolConfigRequired();
                 // console.log("Fetched ok,", nastoolConfig)
                 const nastool_instance = new NASTOOL(nastoolConfig);
-                // nastool_instance.hook.onLoginRequired = async ()=>{
-                //     if(this.onNastoolLoginRequired)
-                //         return await this.onNastoolLoginRequired();
-                //     else {
-                //         throw Error("No login entry");
-                //     }
-                // }
-
                 if (await nastool_instance.restoreLogin()) {
                     this.nastool_instance = nastool_instance;
                 } else {

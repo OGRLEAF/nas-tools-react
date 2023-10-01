@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { Form, Input, Space, Row, Col, Select, InputNumber, Switch } from 'antd'
-import { API, NastoolServerConfig } from '@/app/utils/api'
-import TagsSelect from "@/app/components/tagsSelect"
+import { API, NastoolServerConfig } from '@/app/utils/api/api'
+import TagsSelect from "@/app/components/TagsSelect"
 import type { FormInstance } from 'antd/es/form';
 
 const tmdbMatchModeOption = [
@@ -89,6 +89,11 @@ export default function SettingMedia() {
     const OpenAISetting = ({ provider }: { provider: string }) => {
         if (provider == "azure") {
             return <>
+                <Col span={4}>
+                    <Form.Item label="OpenAI API URL" name={["openai", "api_url"]}>
+                        <Input />
+                    </Form.Item>
+                </Col>
                 <Col span={2}>
                     <Form.Item label="Deployment" name={["openai", "deployment_id"]}>
                         <Input />
@@ -96,11 +101,6 @@ export default function SettingMedia() {
                 </Col>
                 <Col span={4}>
                     <Form.Item label="OpenAI API Key" name={["openai", "api_key"]}>
-                        <Input />
-                    </Form.Item>
-                </Col>
-                <Col span={4}>
-                    <Form.Item label="OpenAI API URL" name={["openai", "api_url"]}>
                         <Input />
                     </Form.Item>
                 </Col>
@@ -156,7 +156,7 @@ export default function SettingMedia() {
                 </Form.Item>
             </Col>
             <Col span={2}>
-                <Form.Item label="OpenAI API 服务" name={["openai", "provider"]}>
+                <Form.Item label="OpenAI服务" name={["openai", "provider"]}>
                     <Select options={openAiProviderSelection} />
                 </Form.Item>
             </Col>

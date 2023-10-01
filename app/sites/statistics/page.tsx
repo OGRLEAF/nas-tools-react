@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useState } from "react";
 import { Row, Col, Statistic, Card, Table, Space } from 'antd'
-import { API, NastoolSiteInfo } from "@/app/utils/api";
+import { API, NastoolSiteInfo } from "@/app/utils/api/api";
 import { bytes_to_human } from "@/app/utils/"
 
 // function bytes_to_human(value: number) {

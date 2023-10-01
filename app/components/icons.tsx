@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { IconDefinition, faFilm, faTv, faRss, faCalendarDays, faPenToSquare, faPhotoFilm, faFolderTree, faLink, faHistory, faDatabase } from '@fortawesome/free-solid-svg-icons'
+import { IconDefinition, faFilm, faTv, faRss, faExternalLink, faCalendarDays, faPenToSquare, faPhotoFilm, faFolderTree, faLink, faHistory, faDatabase, faBookBookmark } from '@fortawesome/free-solid-svg-icons'
 import Icon from '@ant-design/icons'
 
 const FromFontAwesome = (faIcon: IconDefinition) => <Icon
@@ -18,3 +18,5 @@ export const IconFolderTreeSolid = () => FromFontAwesome(faFolderTree)
 export const IconLink = () => FromFontAwesome(faLink)
 export const IconHistory = () => FromFontAwesome(faHistory)
 export const IconDatabase = () => FromFontAwesome(faDatabase)
+export const IconExternalLink = () => FromFontAwesome(faExternalLink)
+export const IconBookBookMark = () => FromFontAwesome(faBookBookmark)

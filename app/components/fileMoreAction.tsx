@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { API, NastoolFileListItem, NastoolNameTestResultData } from "../utils/api";
+import { API, NastoolFileListItem, NastoolNameTestResultData } from "../utils/api/api";
 import { Button, Descriptions, Divider, Drawer, List, Modal, Space, Spin, Table } from "antd";
 import { EditOutlined, SwapOutlined } from '@ant-design/icons';
 import TMDBSearch from "@/app/components/TMDBSearch"
@@ -7,6 +7,8 @@ import MediaImportEntry from "@/app/components/mediaImport/mediaImportEntry"
 import { usePathManager } from "./pathManager";
 import path from "path";
 import { ColumnsType } from "antd/es/table";
+import { MediaIdentifyContext, MediaWorkType } from "../utils/api/types";
+import { MediaIdentify } from "../utils/api/mediaIdentify";
 
 const tmdbSearchModalConfig = {
     title: "搜索",
@@ -69,19 +71,19 @@ const RelFileTable = ({ relFiles }: { relFiles: NastoolFileListItem[] }) => {
 export default function FileMoreAction({ file, relFiles }:
     { file: NastoolFileListItem, relFiles?: NastoolFileListItem[] }) {
     const [loadingState, setLoadingState] = useState(true);
-    const [fileInfo, setFileInfo] = useState<NastoolNameTestResultData>();
+    const [mediaWorkInfo, setMediaWorkInfo] = useState<MediaIdentifyContext>();
     const pathManagerState = usePathManager();
     useEffect(() => {
         setLoadingState(true)
-        const nastool = API.getNastoolInstance();
 
-        nastool.then(async (nastool) => {
-            const testResult = await nastool.nameTest(file.name);
-            console.log(testResult);
+        new MediaIdentify().identify(file.name)
+            .then(async (result) => {
+                setMediaWorkInfo(result)
 
-            setFileInfo(testResult);
-            setLoadingState(false);
-        })
+            })
+            .finally(() => {
+                setLoadingState(false);
+            })
     }, [file])
 
 
@@ -96,18 +98,25 @@ export default function FileMoreAction({ file, relFiles }:
     const relFilesByPrefix = relFiles?.filter((file) => file.name.startsWith(filePrefix)) || [];
     const title = <Space>
         <Space >
-            {fileInfo?.title}
-            <Button size="small" type="link">#{fileInfo?.tmdbid}</Button>
+            {mediaWorkInfo?.title}
+            <Button size="small" type="link" >#{mediaWorkInfo?.tmdbId}</Button>
         </Space>
         <TMDBSearchEntry onApply={onApplyTMDBId} initialSearchValue={file.name} />
     </Space>
 
+    const TvExtraInfo = <>
+        <Descriptions.Item label="季">{mediaWorkInfo?.season}</Descriptions.Item>
+        <Descriptions.Item label="集">{mediaWorkInfo?.episode}</Descriptions.Item>
+    </>
+    const MovieExtraInfo = <></>
+    const ExtraInfo = (mediaWorkInfo?.type || MediaWorkType.UNKNOWN in [MediaWorkType.ANI, MediaWorkType.TV])? TvExtraInfo : MovieExtraInfo;
     return <>
         <Spin spinning={loadingState} >
             <Descriptions title={title}>
-                <Descriptions.Item label="类型">{fileInfo?.type}</Descriptions.Item>
-                <Descriptions.Item label="TMDBID">{fileInfo?.tmdbid}</Descriptions.Item>
-                <Descriptions.Item label="年份">{fileInfo?.year}</Descriptions.Item>
+                <Descriptions.Item label="类型">{mediaWorkInfo?.type}</Descriptions.Item>
+                <Descriptions.Item label="TMDBID">{mediaWorkInfo?.tmdbId}</Descriptions.Item>
+                <Descriptions.Item label="年份">{mediaWorkInfo?.year}</Descriptions.Item>
+                {ExtraInfo}
             </Descriptions>
         </Spin>
         <RelFileTable relFiles={relFilesByPrefix} />
@@ -117,7 +126,8 @@ export default function FileMoreAction({ file, relFiles }:
                 [{
                     name: file.name,
                     path: pathManagerState.deepestPath,
-                    rel: []
+                    identifyContext: mediaWorkInfo,
+                    rel: relFiles?.map(file => file.name) || []
                 }]} />
         </Space>
     </>

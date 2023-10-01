@@ -4,7 +4,7 @@ import { Section } from "@/app/components/Section"
 import {
     API, NastoolLibrarySeries, NastoolLibrarySeriesSeason, NastoolLibrarySeriesEpisode,
     NastoolLibraryMediaSource
-} from "@/app/utils/api";
+} from "@/app/utils/api/api";
 import { Space, Image, Typography, Card, List, Tag, Divider, Button, Collapse, theme } from "antd";
 import Icon, { ToTopOutlined, ExportOutlined } from "@ant-design/icons"
 import Link from "next/link";

@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useState } from 'react'
 import { Section } from "@/app/components/Section"
-import { API, NastoolServerConfig } from '@/app/utils/api'
+import { API, NastoolServerConfig } from '@/app/utils/api/api'
 import SettingSystem from './system'
 import SettingMedia from "./media"
 import SettingService from "./service"

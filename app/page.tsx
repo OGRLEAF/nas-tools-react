@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { App, Button, Card, Space, Image } from 'antd';
 import { EyeOutlined, EllipsisOutlined, LinkOutlined } from '@ant-design/icons';
-import { API, NastoolMediaBrief, NastoolMediaLibrary, NastoolMediaLibraryItem } from './utils/api';
+import { API, NastoolMediaBrief, NastoolMediaLibrary, NastoolMediaLibraryItem } from './utils/api/api';
 import { Section } from './components/Section';
 import { useRouter } from 'next/navigation';
 

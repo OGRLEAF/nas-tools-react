@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { API, NastoolMediaDetail } from "../utils/api";
+import { API, NastoolMediaDetail } from "../utils/api/api";
 import { Empty, Card, Image, Space, theme, Typography } from "antd"
 
 export function MediaDetailCard({

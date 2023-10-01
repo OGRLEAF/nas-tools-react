@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Modal, Form, Input, Checkbox } from 'antd';
-import { NASTOOL, NastoolConfig, API, NastoolLoginConfig } from '../utils/api';
+import { NASTOOL, NastoolConfig, API, NastoolLoginConfig } from '../utils/api/api';
 import { resolve } from 'path';
 type FieldType = {
     username: string,
@@ -104,13 +104,13 @@ const App: React.FC = () => {
                         <Input.Password />
                     </Form.Item>
 
-                    <Form.Item<FieldType>
+                    {/* <Form.Item<FieldType>
                         name="remember"
                         valuePropName="checked"
                         wrapperCol={{ offset: 8, span: 16 }}
                     >
                         <Checkbox>Remember me</Checkbox>
-                    </Form.Item>
+                    </Form.Item> */}
                 </Form>
             </Modal>
         </>

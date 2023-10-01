@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useState } from 'react'
 import { Section } from "@/app/components/Section"
-import { API, NastoolMediaLibraryItem, NastoolMediaServerLibraryItem } from '@/app/utils/api'
+import { API, NastoolMediaLibraryItem, NastoolMediaServerLibraryItem } from '@/app/utils/api/api'
 import { Space, Card, Image } from 'antd';
 import { usePathname, useRouter } from 'next/navigation';
 

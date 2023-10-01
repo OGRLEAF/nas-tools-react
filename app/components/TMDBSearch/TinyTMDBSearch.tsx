@@ -1,0 +1,182 @@
+import React, { ReactNode, useContext, useEffect, useState } from "react";
+import { API, NastoolMediaSearchResult, NastoolMediaSearchResultItem, NastoolMediaType, NastoolServerConfig } from "../../utils/api/api";
+import { AutoComplete, Form, Input, Radio, Space, theme, Image, Typography, Empty, Row, Col, Select } from "antd";
+import { TMDB } from "../../utils/api/tmdb";
+import { MediaIdentifyContext, MediaWork } from "../../utils/api/types";
+import { SearchContext } from "./SearchContext";
+import { ServerConfig } from "@/app/utils/api/serverConfig";
+
+export function MediaDetailCard({
+    mediaDetail,
+    size
+}: { mediaDetail: MediaWork, size?: "normal" | "small" | number }) {
+    const { token } = theme.useToken()
+    const _size = size ? size : "normal";
+    if (mediaDetail) {
+        const metadata = mediaDetail.metadata
+        return <div style={{
+            // backgroundImage: `url(${metadata?.image.background})`,
+            // backgroundColor: "#00152991",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            width: "100%",
+            marginBottom: 0,
+            position: "relative"
+        }}>
+            {/* <div style={{ height: _size == "normal" ? "400px" : "150px", width: "100%", backgroundColor: "#00152991" }} /> */}
+            <div style={{
+                margin: 0,
+                display: "flex",
+                paddingLeft: 0,
+                paddingRight: 10,
+                zIndex: 10,
+                // height: "150px",
+                flexGrow: 1,
+            }}
+            >
+                <img
+                    style={{ width: 150, objectFit: "contain", flexShrink: 1, marginRight: 32 }}
+                    src={metadata?.image.cover} />
+                <Typography style={{ paddingTop: 16, }}>
+                    <Typography.Title level={2} style={{ color: token.colorTextBase, fontSize: "1.6rem" }}>{mediaDetail.title}
+                        <span style={{ fontSize: "1rem" }}> ({metadata?.date.release})</span>
+
+                    </Typography.Title>
+                    <Typography.Text style={{ color: token.colorTextDescription }}>
+                        <a style={{ color: token.colorTextDescription }} href={metadata?.links.tmdb} target="_blank">{metadata?.links.tmdb}</a>
+                    </Typography.Text>
+                    <br />
+                    <Typography.Text style={{
+                        color: token.colorTextDescription,
+
+                    }}>
+                        {
+                            (metadata?.description?.length || 0) > 100 ?
+                                metadata?.description.slice(0, 100) + "..." :
+                                metadata?.description
+                        }
+                    </Typography.Text>
+                </Typography>
+            </div>
+        </div>
+
+    } else {
+        return <Empty />
+    }
+}
+
+export default function TinyTMDBSearch({
+    onSelected,
+    onChange,
+}: {
+    onSelected?: (value: MediaWork) => void,
+    onChange?: (value: string) => void,
+    value?: string
+}) {
+    const { token } = theme.useToken();
+    const [options, setOptions] = useState<{ label: React.JSX.Element, value: string }[]>([])
+    const [searchResults, setSearchResults] = useState<Record<string, MediaWork>>({})
+
+    const searchContext = useContext(SearchContext);
+    const { keyword: contextKeyword, setKeyword: setContextKeyword, setSelected } = searchContext;
+    const [keyword, setKeyword] = useState("");
+    const [loading, setLoading] = useState<boolean>(false);
+    const [openResults, setOpenResults] = useState<boolean>(false)
+    const onSearch = (value: string) => {
+        setContextKeyword(value);
+        setLoading(true)
+        const tmdb = new TMDB()
+        tmdb.search(value)
+            .then((result) => {
+
+                setOptions(result.map(resultItem => ({
+                    value: `${resultItem.title} (${resultItem.key})`,
+
+                    label: <div
+                        key={resultItem.key}
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: "center"
+                        }}
+                    >
+
+                        <span>{resultItem.title} ({resultItem.metadata?.date.release})</span>
+                        <span style={{ display: "block", textAlign: "left", lineHeight: "1em", paddingLeft: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: token.colorTextDescription }}>
+                            {resultItem.metadata?.description.trimStart()}
+                        </span>
+
+                    </div>,
+                })))
+
+                setSearchResults(result.reduce((a, v) => ({ ...a, [`${v.title} (${v.key})`]: v }), {}))
+                setOpenResults(true)
+
+            })
+            .finally(() => setLoading(false))
+    }
+
+    useEffect(() => {
+        setKeyword(contextKeyword)
+    }, [contextKeyword])
+
+    const _onSelect = (value: any) => {
+        setOpenResults(false)
+        const mediaWork = searchResults[value];
+        // setKeyword(mediaWork.title)
+        // setSelected(mediaWork)
+        setKeyword(mediaWork.title)
+        if (onSelected) onSelected(mediaWork);
+        if (onChange) onChange(String(mediaWork.key))
+    }
+
+    const [searchSource, setSearchSource] = useState(false)
+    useEffect(() => {
+        new ServerConfig().get()
+            .then(config => {
+                setSearchSource(config.laboratory.use_douban_titles)
+            })
+    }, [])
+    const updateSearchSource = (value: boolean) => {
+        setSearchSource(value)
+        new ServerConfig().update({
+            laboratory: {
+                use_douban_titles: value
+            }
+        } as NastoolServerConfig)
+    }
+    const searchSourceOption = [
+        {
+            label: "豆瓣",
+            value: true
+        },
+        {
+            label: "TMDB",
+            value: false
+        }
+    ]
+    return <>
+        <Space style={{ width: "100%" }} direction="vertical" size={16}>
+            <Radio.Group defaultValue={NastoolMediaType.TV}>
+                <Radio.Button value={NastoolMediaType.MOVIE}>电影</Radio.Button>
+                <Radio.Button value={NastoolMediaType.TV}>电视剧</Radio.Button>
+                <Radio.Button value={NastoolMediaType.ANI}>动漫</Radio.Button>
+            </Radio.Group>
+            <Space.Compact style={{ width: "100%" }}>
+                <Select onChange={updateSearchSource} value={searchSource} options={searchSourceOption} style={{ width: "100px" }} />
+                <AutoComplete
+                    style={{ width: "100%" }}
+                    options={options}
+                    open={openResults}
+                    value={keyword}
+                    onChange={(value) => setKeyword(value)}
+                    onSelect={_onSelect}
+                    onBlur={() => setOpenResults(false)}
+                >
+                    <Input.Search disabled={loading} loading={loading} onSearch={onSearch} value={keyword} placeholder="搜索" />
+                </AutoComplete>
+            </Space.Compact>
+        </Space>
+
+    </>
+}

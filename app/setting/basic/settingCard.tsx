@@ -1,7 +1,7 @@
 "use client"
 import React from 'react'
 import { Button, Card, Col, Form, Row, Space } from "antd"
-import { API, NastoolServerConfig } from '@/app/utils/api';
+import { API, NastoolServerConfig } from '@/app/utils/api/api';
 import type { FormInstance } from 'antd/es/form';
 
 
