@@ -17,7 +17,7 @@ import {
   ToolOutlined,
   BuildOutlined
 } from '@ant-design/icons';
-import { IconBookBookMark, IconCalendarDaysSolid, IconCustomSolid, IconDatabase, IconFilmSolid, IconFolderTreeSolid, IconHistory, IconLink, IconMediaSolid, IconRssSolid, IconTvSolid } from '../icons';
+import { IconBookBookMark, IconCalendarDaysSolid, IconCustomSolid, IconDatabase, IconFilmSolid, IconFolderTreeSolid, IconHistory, IconLink, IconMediaSolid, IconRefresh, IconRssSolid, IconTvSolid } from '../icons';
 import type { MenuProps } from 'antd';
 import { Breadcrumb, Divider, Layout, Menu, theme } from 'antd';
 
@@ -74,7 +74,8 @@ const items: MenuItem[] = [
   ]),
   getItem("设置", "/setting", <SettingOutlined />, [
     getItem("基础设置", "/setting/basic", <ToolOutlined />),
-    getItem("媒体库", "/setting/library", <IconBookBookMark />)
+    getItem("媒体库", "/setting/library", <IconBookBookMark />),
+    getItem("目录同步", "/setting/directorysync", <IconRefresh />)
   ]),
 ];
 
