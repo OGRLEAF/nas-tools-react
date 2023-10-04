@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    basePath: "/ui"
+    basePath: "/ui",
+    reactStrictMode: false
 }
 
 module.exports = nextConfig
