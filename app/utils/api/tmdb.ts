@@ -6,16 +6,26 @@ import { MediaIdentifyContext, MediaWork, MediaWorkEpisode, MediaWorkSeason, Med
 export class TMDB extends APIBase {
 
     static share: Record<string, MediaWork> = {}
+    protected static instance: TMDB;
     constructor() {
         super();
+        if(TMDB.instance) {
+            return TMDB.instance;
+        }
+        TMDB.instance = this;
     }
 
     private static addShare(mediaWork: MediaWork) {
         const key = `${mediaWork.series.join("-")}-${mediaWork.key}`
         TMDB.share[key] = mediaWork;
     }
-    public static findShare(key:string) {
+    public static findShare(key: string) {
         return TMDB.share[key];
+    }
+
+    public async listCache({ page, length, keyword }: { page: number, length: number, keyword?: string }) {
+        const result = await (await this.API).getTMDBCache({ page, length, keyword });
+        return result;
     }
 
     public async search(keyword: string): Promise<MediaWork[]> {
@@ -42,7 +52,7 @@ export class TMDB extends APIBase {
         mediaWorks.forEach((item) => {
             TMDB.addShare(item)
         })
-        
+
         return mediaWorks
     }
 

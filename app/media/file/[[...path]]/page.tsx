@@ -23,9 +23,19 @@ interface SortOption {
     children: SortDirectionOption[]
 }
 
+const sortDirection: SortDirectionOption[] = [{ value: "dec", label: "递增" }, { value: "inc", label: "递减" }]
+const sortOption: SortOption[] = [{
+    value: "name",
+    label: "名称",
+    children: sortDirection
+}, {
+    value: "mtime",
+    label: "新增",
+    children: sortDirection
+}]
 
-const DirectoryList = ({ dirList, loading, onSelectDir }:
-    { dirList: NastoolFileListItem[], loading: boolean, onSelectDir: (dirName: string) => void }) => {
+const DirectoryList = ({ dirList, loading, }:
+    { dirList: NastoolFileListItem[], loading: boolean }) => {
     const { token: { colorTextTertiary }, } = theme.useToken();
     const FileBrowserFooter = () => {
         return (<>
@@ -33,16 +43,7 @@ const DirectoryList = ({ dirList, loading, onSelectDir }:
         </>)
     }
     const pathParams = useParams()
-    const sortDirection: SortDirectionOption[] = [{ value: "dec", label: "递增" }, { value: "inc", label: "递减" }]
-    const sortOption: SortOption[] = [{
-        value: "name",
-        label: "名称",
-        children: sortDirection
-    }, {
-        value: "mtime",
-        label: "新增",
-        children: sortDirection
-    }]
+
     const [sortConfig, setSortConfig] = useState<{ key: SortKey, dir: SortDirection, include: string }>({ key: "name", dir: "dec", include: "" })
     const sortedDirList = useMemo(() => (
         (sortConfig.include.length ? dirList.filter((item) => item.name.includes(sortConfig.include)) : dirList)
@@ -53,6 +54,7 @@ const DirectoryList = ({ dirList, loading, onSelectDir }:
                     return sortConfig.dir == "dec" ? a.mtime - b.mtime : b.mtime - a.mtime;
                 }
             })), [dirList, sortConfig])
+
     return (
         <Space direction="vertical" style={{ width: "100%" }}>
             <Row>
@@ -143,7 +145,7 @@ const FileFilter = () => {
 const FileList = ({ fileList, loading }: { fileList: NastoolFileListItem[], loading: boolean }) => {
     const { token: { colorTextTertiary }, } = theme.useToken();
     const pathManagerContext = usePathManager();
-    const fileExts = new Set<string>(fileList.map(item => item.name.split(".").pop()).filter((item)=>item!=undefined) as string[]);
+    const fileExts = new Set<string>(fileList.map(item => item.name.split(".").pop()).filter((item) => item != undefined) as string[]);
     const columns: ColumnsType<NastoolFileListItem> = [
         {
             title: <Space><span>文件</span><span style={{ color: colorTextTertiary }}>共 {fileList.length} 个文件</span></Space>,
@@ -170,7 +172,7 @@ const FileList = ({ fileList, loading }: { fileList: NastoolFileListItem[], load
             title: <span>类型</span>,
             render: (text, item) => item.name.split(".").pop(),
             defaultSortOrder: "descend",
-            filters: Array.from(fileExts.keys()).map((item)=>({ text: item, value: item })),
+            filters: Array.from(fileExts.keys()).map((item) => ({ text: item, value: item })),
             onFilter: (value, record) => (record.name.split(".").pop() === value),
             width: 25,
         }
@@ -221,7 +223,7 @@ const MediaFileExplorer = () => {
     const [dirList, setDirList] = useState<NastoolFileListItem[]>([])
     const [fileList, setFileList] = useState<NastoolFileListItem[]>([])
     const pathManagerContext = usePathManager();
-    const pathManagerDispath = usePathManagerDispatch();
+    // const pathManagerDispath = usePathManagerDispatch();
     const router = useRouter()
     const pathname = usePathname();
     useEffect(() => {
@@ -244,7 +246,7 @@ const MediaFileExplorer = () => {
         })
 
         return () => { console.log("clean", nastool) }
-    }, [pathname]);
+    }, []);
 
     useEffect(() => {
         router.push("/media/file"
@@ -253,9 +255,9 @@ const MediaFileExplorer = () => {
 
     }, [pathManagerContext])
 
-    const enterDir = (dirName: string) => {
-        pathManagerDispath({ type: "append_path", path: dirName })
-    }
+    // const enterDir = (dirName: string) => {
+    //     pathManagerDispath({ type: "append_path", path: dirName })
+    // }
 
     return <>
         <Space style={{ width: "100%" }} direction="vertical">
@@ -268,7 +270,7 @@ const MediaFileExplorer = () => {
 
             <Row gutter={16} >
                 <Col span={6}>
-                    <DirectoryList dirList={dirList} loading={loadingState} onSelectDir={enterDir} />
+                    <DirectoryList dirList={dirList} loading={loadingState} />
                 </Col>
                 <Col span={18}>
                     <FileList fileList={fileList} loading={loadingState} />

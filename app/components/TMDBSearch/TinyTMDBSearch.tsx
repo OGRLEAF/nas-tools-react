@@ -24,20 +24,11 @@ export function MediaDetailCard({
             position: "relative"
         }}>
             {/* <div style={{ height: _size == "normal" ? "400px" : "150px", width: "100%", backgroundColor: "#00152991" }} /> */}
-            <div style={{
-                margin: 0,
-                display: "flex",
-                paddingLeft: 0,
-                paddingRight: 10,
-                zIndex: 10,
-                // height: "150px",
-                flexGrow: 1,
-            }}
-            >
-                <img
-                    style={{ width: 150, objectFit: "contain", flexShrink: 1, marginRight: 32 }}
+            <Space align="start" size="large">
+                <Image
+                    style={{ width: 150, objectFit: "contain", flexShrink: 1, marginRight: 0 }}
                     src={metadata?.image.cover} />
-                <Typography style={{ paddingTop: 16, }}>
+                <Typography style={{ paddingTop: 4, }}>
                     <Typography.Title level={2} style={{ color: token.colorTextBase, fontSize: "1.6rem" }}>{mediaDetail.title}
                         <span style={{ fontSize: "1rem" }}> ({metadata?.date.release})</span>
 
@@ -57,7 +48,7 @@ export function MediaDetailCard({
                         }
                     </Typography.Text>
                 </Typography>
-            </div>
+            </Space>
         </div>
 
     } else {

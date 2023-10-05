@@ -10,12 +10,14 @@ type NastoolApi =
     "media/search" |
     "media/detail" |
     "media/tv/seasons" |
+    "media/cache" |
     "service/name/test" |
     "page/brief" |
     "page/listdir" |
     "organization/import/tv" |
     "organization/import/dryrun" |
     "organization/import/group" |
+    "organization/history/list" |
     "/unknown/renameudf" |
     "site/list" |
     "site/statistics" |
@@ -27,7 +29,8 @@ type NastoolApi =
     "library/mediaserver/library/item" |
     "filterrule/list/basic" |
     "task/list" |
-    "task/create"
+    "task/create" |
+    "sync/directory/list"
 
 type NastoolLoginResData = {
     token: string;
@@ -480,6 +483,59 @@ export enum ImportMode {
     MINIO = "Minio移动",
 }
 
+export interface SyncDirectory {
+    id: number,
+    from: string,
+    to: string,
+    unknown: string,
+    syncmod_name: ImportMode,
+    compatibility: boolean,
+    rename: boolean,
+    enabled: boolean
+}
+
+interface NastoolListResult<T> {
+    total: number,
+    result: T[]
+}
+
+export interface OrganizationHistory {
+    ID: number,
+    MODE: ImportMode,
+    CATEGORY: NastoolMediaType,
+    TMDBID: number,
+    TITLE: string,
+    YEAR: string,
+    SEASON_EPISODE: string,
+    SOURCE: string,
+    SOURCE_PATH: string,
+    SOURCE_FILENAME: string,
+    DEST: string,
+    DEST_FILENAME: string,
+    DEST_PATH: string,
+    DATE: string,
+    SYNC_MOD: ImportMode,
+    RMT_MOD: string
+}
+
+type OrganizationHistoryResult = NastoolListResult<OrganizationHistory>
+// interface OrganizationHistoryResult {
+//     total: number,
+//     result: OrganizationHistory[]
+// }
+
+export interface TMDBCacheItem {
+    id: number,
+    title: string,
+    year: string,
+    media_type: NastoolMediaType,
+    poster_path: string,
+    backdrop_path: string
+}
+
+export type TMDBCacheList = [string, TMDBCacheItem, string][];
+type TMDBCacheListResult = NastoolListResult<[string, TMDBCacheItem, string]>
+
 type NastoolResponse = {
     code: number,
     success: boolean,
@@ -496,7 +552,9 @@ type NastoolResponse = {
     NastoolMediaServerLibrary |
     NastoolLibrarySeries |
     NastoolSiteStatisticsResult |
-    NastoolIndexerList
+    NastoolIndexerList |
+    OrganizationHistoryResult |
+    TMDBCacheListResult
 }
 
 function useStorage() {
@@ -801,12 +859,16 @@ export class NASTOOL {
         })
     }
 
-    public async mediaFileImport(path: string, files: string[], importMode:ImportMode, season?: number, tmdbid?: string, type?: NastoolMediaType) {
+    public async mediaFileImport(params: {
+        path: string, target_path?: string, files: string[], importMode: ImportMode, season?: number, tmdbid?: string, type?: NastoolMediaType
+    }) {
+        const { tmdbid, type, path, target_path, files, season, importMode } = params;
         return await this.post<any>("organization/import/tv", {
             data: {
                 tmdbid: tmdbid,
                 type: type,
                 inpath: path,
+                outpath: target_path,
                 files: files,
                 season: season,
                 syncmod: importMode
@@ -814,6 +876,30 @@ export class NASTOOL {
             auth: true,
             json: true
         })
+    }
+
+    public async getOrganizationHistoryList({ page, length, keyword }: { page: number, length: number, keyword?: string }) {
+        const result = await this.post<OrganizationHistoryResult>("organization/history/list", {
+            data: {
+                page: page,
+                pagenum: length,
+                keyword: keyword
+            },
+            auth: true
+        });
+        return result;
+    }
+
+    public async getTMDBCache({ page, length, keyword }: { page: number, length: number, keyword?: string }) {
+        const result = await this.post<TMDBCacheListResult>("media/cache", {
+            data: {
+                page: page,
+                pagenum: length,
+                keyword: keyword
+            },
+            auth: true
+        });
+        return result;
     }
 
     public _get_image_proxy_url(server_url: string, legacy = false) {

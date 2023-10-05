@@ -2,6 +2,7 @@ import React, { useState, useEffect, CSSProperties } from "react";
 import { Form, Input, Switch, Radio, Button, Empty, Space, Spin, AutoComplete } from "antd"
 import { API, DBMediaType, NastoolMediaDetail, NastoolMediaType, SearchTaskConfig, TaskType } from "../utils/api/api";
 import { MediaDetailCard } from "./MediaDetailCard"
+import { useForm } from "antd/es/form/Form";
 export interface SearchProps {
     keyword?: string,
     mediaId?: string,
@@ -23,10 +24,12 @@ export default function SearchTask({
         filter: {}
     })
 
-
+    const [form] = useForm();
+    const [loading, setLoading] = useState(false);
     const [mediaDetail, setMediaDetail] = useState<NastoolMediaDetail>();
-    const [titleOptions, setTitleOptions] = useState<{value:string}[]>(search?.keyword?[{value: search.keyword}]:[]);
+    const [titleOptions, setTitleOptions] = useState<{ value: string }[]>(search?.keyword ? [{ value: search.keyword }] : []);
     useEffect(() => {
+        setLoading(true)
         API.getNastoolInstance()
             .then(async nt => {
                 if (search?.mediaId && search?.mediaType) {
@@ -36,24 +39,37 @@ export default function SearchTask({
                         [NastoolMediaType.MOVIE]: DBMediaType.MOVIE,
                         [NastoolMediaType.UNKNOWN]: undefined,
                     })[search.mediaType]
-                    
+
                     const mediaDetail = await nt.getMediaDetail(search.mediaId, searchMediaType)
 
                     setMediaDetail(mediaDetail)
                     setTitleOptions([
-                        {value: mediaDetail.title},
-                        ...titleOptions
+                        { value: mediaDetail.title },
+                        // ...titleOptions
                     ])
                     setSearchConfig({
                         ...searchTaskConfig,
+                        
+                        tmdbid: search.mediaId,
+                        media_type: search.mediaType,
                         keyword: mediaDetail.title,
                     })
+
                 }
+            })
+            .finally(() => {
+                setLoading(false)
             })
     }, [search?.mediaId])
 
+    useEffect(() => {
+        form.setFieldsValue(searchTaskConfig)
+        // form.setFieldValue("keyword", searchTaskConfig.media_type);
+        // console.log("search task config", searchTaskConfig)
+    }, [searchTaskConfig])
+
     const onFinish = (value: SearchTaskConfig) => {
-        console.log(value)
+        // console.log(value)
         setSearchConfig(value)
         API.getNastoolInstance()
             .then((nt) => nt.createTask(TaskType.SEARCH, JSON.stringify(value)))
@@ -64,32 +80,35 @@ export default function SearchTask({
             <>{search.keyword} {search.mediaId} {search.mediaType}</>
         ) : ""} */}
         {mediaDetail ? <MediaDetailCard mediaDetail={mediaDetail} /> : <Spin />}
-        <Form initialValues={searchTaskConfig}
-            onFinish={onFinish}
-            labelCol={{ span: 4 }}
-            wrapperCol={{ span: 14 }}
-            style={{ margin: 16 }}
-        >
-            <Form.Item label="搜索关键词" name="keyword">
-                <AutoComplete options={titleOptions} allowClear/>
-            </Form.Item>
-            <Form.Item label="启用媒体识别" name="identify" valuePropName="checked">
-                <Switch />
-            </Form.Item>
-            <Form.Item label="TMDB ID" name="tmdbid">
-                <Input />
-            </Form.Item>
-            <Form.Item label="类型" name="media_type">
-                <Radio.Group>
-                    <Radio.Button value={NastoolMediaType.MOVIE}>电影</Radio.Button>
-                    <Radio.Button value={NastoolMediaType.TV}>电视剧</Radio.Button>
-                    <Radio.Button value={NastoolMediaType.ANI}>动漫</Radio.Button>
-                    <Radio.Button value={NastoolMediaType.UNKNOWN}>未知</Radio.Button>
-                </Radio.Group>
-            </Form.Item>
-            <Form.Item wrapperCol={{ offset: 4, span: 16 }}>
-                <Button htmlType="submit" type="primary">提交搜索</Button>
-            </Form.Item>
-        </Form>
+        <Spin spinning={loading}>
+            <Form initialValues={searchTaskConfig}
+                form={form}
+                onFinish={onFinish}
+                labelCol={{ span: 4 }}
+                wrapperCol={{ span: 14 }}
+                style={{ margin: 16 }}
+            >
+                <Form.Item label="搜索关键词" name="keyword">
+                    <AutoComplete options={titleOptions} allowClear />
+                </Form.Item>
+                <Form.Item label="启用媒体识别" name="identify" valuePropName="checked">
+                    <Switch />
+                </Form.Item>
+                <Form.Item label="TMDB ID" name="tmdbid">
+                    <Input />
+                </Form.Item>
+                <Form.Item label="类型" name="media_type">
+                    <Radio.Group>
+                        <Radio.Button value={NastoolMediaType.MOVIE}>电影</Radio.Button>
+                        <Radio.Button value={NastoolMediaType.TV}>电视剧</Radio.Button>
+                        <Radio.Button value={NastoolMediaType.ANI}>动漫</Radio.Button>
+                        <Radio.Button value={NastoolMediaType.UNKNOWN}>未知</Radio.Button>
+                    </Radio.Group>
+                </Form.Item>
+                <Form.Item wrapperCol={{ offset: 4, span: 16 }}>
+                    <Button htmlType="submit" type="primary">提交搜索</Button>
+                </Form.Item>
+            </Form>
+        </Spin>
     </Space>
 }

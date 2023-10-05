@@ -73,6 +73,9 @@ export default function TMDBSearch(
 
     const [selectOptions, setSelectOption] = useState<{ label?: string, value: string }[]>([])
     useEffect(() => {
+        setSearchValue(initialSearchValue);
+    }, [])
+    useEffect(() => {
         const tags: string[] = []
         const quotedPat = /\[(?<tag>.*?)\]/g;
         const p = initialSearchValue;

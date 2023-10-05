@@ -199,22 +199,30 @@ export const ImportSubmit = ({ files }: { files: MediaImportFile[] }) => {
             }
 
         }
-        // console.log(groupedMap);
+        console.log(value)
+        console.log(groupedMap);
         const keys = Array.from(groupedMap.keys())
 
-        const orgn = new Organize();
-        if (mediaSeasonSelected.season) {
-            for (let key of keys) {
-                const target = groupedMap.get(key)
-                console.log(target)
-                if (target) await orgn.importTV(key, target.map(file => file.name), value.type, {
-                    series: [mediaSeasonSelected.tmdbId],
-                    type: MediaWorkType.TV,
-                    key: mediaSeasonSelected.season,
-                    title: mediaSeasonSelected.title
-                })
-            }
-        }
+        // const orgn = new Organize();
+        // if (mediaSeasonSelected.season) {
+        //     for (let key of keys) {
+        //         const target = groupedMap.get(key)
+        //         console.log(target)
+        //         if (target) {
+        //             const files = target.map(file => file.name);
+        //             await orgn.importTV(key,
+        //                 files,
+        //                 value.type,
+        //                 {
+        //                     series: [mediaSeasonSelected.tmdbId],
+        //                     type: MediaWorkType.TV,
+        //                     key: mediaSeasonSelected.season,
+        //                     title: mediaSeasonSelected.title
+        //                 }
+        //             )
+        //         }
+        //     }
+        // }
 
         // (new Import).import()
     }
@@ -235,7 +243,7 @@ export const ImportSubmit = ({ files }: { files: MediaImportFile[] }) => {
                 onFinish={onFinish}
                 disabled={!mergedIdentifyContext}
             >
-                <Form.Item name="outpath">
+                <Form.Item name="target_path">
                     <MediaLibrarySelect />
                 </Form.Item>
                 <Form.Item name="type">
@@ -245,7 +253,7 @@ export const ImportSubmit = ({ files }: { files: MediaImportFile[] }) => {
                         <Radio.Button value={ImportMode.LINK}>硬链接</Radio.Button>
                     </Radio.Group>
                 </Form.Item>
-                <Form.Item name="type">
+                <Form.Item>
                     <Button type="primary" htmlType="submit">导入</Button>
                 </Form.Item>
             </Form>
