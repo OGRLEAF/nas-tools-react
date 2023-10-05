@@ -29,11 +29,10 @@ export function PathSelector({ value: string = "/", onChange, style }: PathSelec
             setTreeData(fileList.directories.map(dir => ({
                 id: basePath + "/" + dir.name,
                 pId: basePath,
-                title: dir.name,
+                title: <Space>{dir.name}<span style={{ color: token.colorTextDescription }}>/</span></Space>,
                 isLeaf: !dir.is_empty,
-                label: dir.name,
-                value: dir.name,
-                key: dir.name
+                value: "/" + dir.name,
+                key: "/" + dir.name
             })))
             setLoadingState(false);
         })
@@ -43,7 +42,7 @@ export function PathSelector({ value: string = "/", onChange, style }: PathSelec
     const onLoadData: TreeSelectProps['loadData'] = async ({ id }) => {
 
         pathManagerContext.setPath(id);
-        console.log(id, pathManagerContext.deepestPath)
+        // console.log(id, pathManagerContext.deepestPath)
         const nastool = API.getNastoolInstance();
         await nastool.then(async (nastool) => {
             const basePath = pathManagerContext.getDeepestRelativePath();
@@ -60,10 +59,10 @@ export function PathSelector({ value: string = "/", onChange, style }: PathSelec
                         title: <Space>{dir.name}<span style={{ color: token.colorTextDescription }}>{parent}</span></Space>,
                         isLeaf: !dir.is_empty,
                         value: key,
-                        label: <>{key}-</>,
                         key: key,
                     }
                 })]
+            // console.log(treeData)
             setTreeData(treedata)
             setLoadingState(false);
         })
