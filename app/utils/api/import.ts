@@ -2,16 +2,13 @@ import { ImportMode, NastoolMediaType } from "./api";
 import { APIBase } from "./api_base";
 import { MediaWorkSeason } from "./types";
 
+type optionalEpisode = undefined|number
+
 export class Organize extends APIBase {
     constructor() {
         super();
     }
-    public async importTV(path: string,
-        files: string[],
-        importMode: ImportMode,
-        season: MediaWorkSeason,
-        target_path?: string,
-        dryrun = true): Promise<void> {
+    public async importTV({ path, files, importMode, season, episodes, target_path, dryrun = true }: { path: string; files: string[]; importMode: ImportMode; season: MediaWorkSeason; episodes?: optionalEpisode[]; target_path?: string; dryrun?: boolean; }): Promise<void> {
         console.log(importMode)
         const request = await (await this.API).mediaFileImport(
             {
@@ -19,7 +16,8 @@ export class Organize extends APIBase {
                 season: season.key,
                 tmdbid: season.series[0],
                 type: NastoolMediaType.TV,
-                target_path: target_path
+                target_path: target_path,
+                episodes: episodes
                 //  season.key, season.series[0], NastoolMediaType.TV
             })
         console.log(request)

@@ -1,4 +1,4 @@
-import { Button, Col, Divider, Drawer, Form, Input, List, Radio, Row, Select, Space, Table, Tag, TagType, Tooltip, theme } from "antd"
+import { Button, Col, Divider, Drawer, Form, Input, List, Popover, Radio, Row, Select, Skeleton, Space, Table, Tag, TagType, Tooltip, theme } from "antd"
 import { RedoOutlined, InfoCircleOutlined, LoadingOutlined } from "@ant-design/icons"
 import React, { Children, useContext, useEffect, useState } from "react"
 import { MediaImportContext, MediaImportFile, MediaImportFileKey, useMediaImport, useMediaImportDispatch } from "./mediaImportContext"
@@ -10,8 +10,17 @@ import { Organize } from "@/app/utils/api/import";
 import { MediaIdentify } from "@/app/utils/api/mediaIdentify";
 import { PathSelector } from "../PathSelector";
 import { SearchContext } from "../TMDBSearch/SearchContext";
-import { MediaIdentifyContext, MediaWorkType } from "@/app/utils/api/types";
-const _ = require('lodash');
+import { MediaIdentifyContext, MediaIdentifyMerged, MediaWork, MediaWorkEpisode, MediaWorkSeason, MediaWorkType } from "@/app/utils/api/types";
+import { asyncEffect } from "@/app/utils";
+import { TMDB } from "@/app/utils/api/tmdb";
+import _, { set } from "lodash";
+import { IconEllipsisLoading } from "../icons";
+import { MediaDetailCard } from "../TMDBSearch/TinyTMDBSearch";
+
+function isOverriden<T>(a: T, b: T): [boolean, T] {
+    const finalValue = (b !== undefined) ? b : a;
+    return [(b !== undefined), finalValue];
+}
 
 const IdentifyTitleTag = ({ value, children }: { value: string, children: React.JSX.Element }) => {
 
@@ -44,61 +53,32 @@ const columns: ColumnsType<MediaImportFile> = [{
     children: [
         {
             title: "名称",
-            dataIndex: ["identifyContext", "title"],
-            // width: 200,
+            dataIndex: ["identifyContext", "tmdbId"],
             render: (value, record) => {
-                return <><OverridenTag valueOrigin={value} valueOverriden={record.overridenIdentify?.title}
-                    render={({ changed, children, value: finalValue }) => (
-                        <IdentifyTitleTag value={finalValue}><Tag color={changed ? 'pink' : 'cyan'}>{children}</Tag></IdentifyTitleTag>)}
-                />
-                    <OverridenTag valueOrigin={record.identifyContext?.tmdbId} valueOverriden={record.overridenIdentify?.tmdbId}
-                        render={({ changed, children }) => (
-                            <Tag color={changed ? 'pink' : 'cyan'}>
-                                {children}
-                            </Tag>)}
-                    />
-                </>
+                ``
+                return <TableIdentifyColumn value={value} file={record} serieskey="tmdbId" /> //<TableTitle file={record} />
             },
             shouldCellUpdate: (record, prevRecord) => !_.isEqual(record, prevRecord) // checkIdentityChange(record, prevRecord, 'title') // record.identifyContext?.title != prevRecord.identifyContext?.title || record.overridenIdentify?.title != prevRecord.overridenIdentify?.title
         },
-        // {
-        //     title: "TMDB",
-        //     dataIndex: ["identifyContext", "tmdbId"],
-        //     // width: 150,
-        //     render: (value, record) => {
-        //         if (value == undefined) return <></>
-        //         return <OverridenTag valueOrigin={value} valueOverriden={record.overridenIdentify?.tmdbId}
-        //             render={({ changed, children }) => (
-        //                 <Tag color={changed ? 'pink' : 'cyan'}>
-        //                     {children}
-        //                 </Tag>)}
-        //         />
-        //     },
-        //     width: 100,
-        //     shouldCellUpdate: (record, prevRecord) => !_.isEqual(record, prevRecord) // checkIdentityChange(record, prevRecord, "tmdbId")
-        // },
         {
             title: "季",
             dataIndex: ["identifyContext", "season"],
             // width: 50,
             render: (value, record) => {
-                return <OverridenTag valueOrigin={value} valueOverriden={record.overridenIdentify?.season}
-                    render={({ changed, children }) => (<Tag color={changed ? 'pink' : 'cyan'}>{children}</Tag>)}
-                />
+                // const [changed, finalValue] = isOverriden(value, record.overridenIdentify?.season);
+                return <TableIdentifyColumn value={value} file={record} serieskey="season" />
             },
-            width: 50,
+            width: 250,
             shouldCellUpdate: (record, prevRecord) => !_.isEqual(record, prevRecord)  //checkIdentityChange(record, prevRecord, "season")
         },
         {
             title: "集",
             dataIndex: ["identifyContext", "episode"],
-            // width: 50,
+            // width: 50
             render: (value, record) => {
-                return <OverridenTag valueOrigin={value} valueOverriden={record.overridenIdentify?.episode}
-                    render={({ changed, children }) => (<Tag color={changed ? 'pink' : 'cyan'}>{children}</Tag>)}
-                />
+                return <TableIdentifyColumn value={value} file={record} serieskey="episode" />
             },
-            width: 50,
+            // width: 250,
             shouldCellUpdate: (record, prevRecord) => !_.isEqual(record, prevRecord) // checkIdentityChange(record, prevRecord, "episode")
         }
     ],
@@ -122,7 +102,6 @@ export const ImportList = (options: { onSelect?: (value: MediaImportFile[]) => v
                 const keyMap = new Map<string, MediaImportFile>();
                 mediaImportContext.penddingFiles.forEach((file) => keyMap.set(file.name, file))
                 setLocalKeyMap(keyMap)
-                // console.log("keymap refreshed", keyMap)
             }
 
         } catch {
@@ -158,33 +137,8 @@ export const ImportList = (options: { onSelect?: (value: MediaImportFile[]) => v
     </Space>
 }
 
-
-
-const OverridenTag = (options: { valueOrigin: any, valueOverriden?: any, render: (options: { changed: boolean, children: React.JSX.Element, value: string }) => React.JSX.Element }) => {
-    const WrapperRender = options.render;
-    const changed = (options.valueOverriden != undefined) && options.valueOverriden != options.valueOrigin
-    if (options.valueOrigin == undefined && options.valueOverriden == undefined) {
-        return <>
-            <WrapperRender value={options.valueOrigin} changed={false}>
-                <>-</>
-            </WrapperRender>
-        </>
-    }
-    return <>
-        {
-            changed ? <Space size="small">
-                {/* <WrapperRender changed={false}><del>{options.valueOrigin}</del></WrapperRender> */}
-                <WrapperRender changed={true} value={options.valueOverriden}>{options.valueOverriden}</WrapperRender>
-            </Space>
-                : <WrapperRender value={options.valueOrigin} changed={false}>
-                    {options.valueOrigin}
-                </WrapperRender>
-        }</>
-}
-
 export const ImportSubmit = ({ files }: { files: MediaImportFile[] }) => {
     const mergedIdentifyContext = mergeEpisodesFromSelected(files);
-    // console.log(files, mergedIdentifyContext)
     const onFinish = async (value: any) => {
         const mediaSeasonSelected = mergedIdentifyContext; //mergeEpisodesFromSelected(files)
 
@@ -203,26 +157,32 @@ export const ImportSubmit = ({ files }: { files: MediaImportFile[] }) => {
         console.log(groupedMap);
         const keys = Array.from(groupedMap.keys())
 
-        // const orgn = new Organize();
-        // if (mediaSeasonSelected.season) {
-        //     for (let key of keys) {
-        //         const target = groupedMap.get(key)
-        //         console.log(target)
-        //         if (target) {
-        //             const files = target.map(file => file.name);
-        //             await orgn.importTV(key,
-        //                 files,
-        //                 value.type,
-        //                 {
-        //                     series: [mediaSeasonSelected.tmdbId],
-        //                     type: MediaWorkType.TV,
-        //                     key: mediaSeasonSelected.season,
-        //                     title: mediaSeasonSelected.title
-        //                 }
-        //             )
-        //         }
-        //     }
-        // }
+        const orgn = new Organize();
+        if (mediaSeasonSelected.season != undefined) {
+            for (let key of keys) {
+                const target = groupedMap.get(key)
+                console.log(target)
+                if (target) {
+                    const episodes = target.map(file => {
+                        const ep = file.overridenIdentify?.episode == undefined ? file.identifyContext?.episode : file.overridenIdentify?.episode
+                        if (ep !== undefined) return Number(ep)
+                    })
+                    const files = target.map(file => file.name);
+                    console.log(episodes, files)
+                    await orgn.importTV(
+                        {
+                            path: key, files, importMode: value.type, season: {
+                                series: [mediaSeasonSelected.tmdbId],
+                                type: MediaWorkType.TV,
+                                key: mediaSeasonSelected.season,
+                                title: mediaSeasonSelected.title
+                            },
+                            episodes: episodes
+                        },
+                    )
+                }
+            }
+        }
 
         // (new Import).import()
     }
@@ -243,8 +203,8 @@ export const ImportSubmit = ({ files }: { files: MediaImportFile[] }) => {
                 onFinish={onFinish}
                 disabled={!mergedIdentifyContext}
             >
-                <Form.Item name="target_path">
-                    <MediaLibrarySelect />
+                <Form.Item name="target_path" >
+                    <MediaLibrarySelect width={400} />
                 </Form.Item>
                 <Form.Item name="type">
                     <Radio.Group>
@@ -262,7 +222,12 @@ export const ImportSubmit = ({ files }: { files: MediaImportFile[] }) => {
     </Space>
 }
 
-const MediaLibrarySelect = (options: { value?: string, onChange?: (value: string | undefined) => void }) => {
+export const MediaLibrarySelect = (options: {
+    value?: string,
+    onChange?: (value: string | undefined) => void,
+    style?: React.CSSProperties,
+    width?: number
+}) => {
     type OutputPathType = "auto" | "library" | "customize"
     const [librariesPath, setLibrariesPath] = useState<NastoolServerConfig['media']>();
     const [pathType, setPathType] = useState<OutputPathType>("auto");
@@ -311,7 +276,7 @@ const MediaLibrarySelect = (options: { value?: string, onChange?: (value: string
         label: '电影',
         options: librariesPath?.movie_path?.map((path) => ({ label: path, value: path })),
     },]
-    return <Space.Compact>
+    return <Space.Compact style={{ width: "100%", ...options.style }}>
         <Select
             defaultValue="auto"
             style={{ width: 150 }}
@@ -319,8 +284,15 @@ const MediaLibrarySelect = (options: { value?: string, onChange?: (value: string
             options={outputPathTypeOptions}
         />
         {
-            pathType == "customize" ? <PathSelector onChange={handlePathChange} style={{ width: "400px" }} /> :
-                pathType == "library" ? <Select onChange={handlePathChange} options={libraryPathOptions} style={{ width: "400px" }} /> :
+            pathType == "customize" ? <PathSelector onChange={handlePathChange}
+                style={{
+                    width: options.width ? options.width - 150 : undefined
+                }} /> :
+                pathType == "library" ? <Select onChange={handlePathChange} options={libraryPathOptions}
+                    style={{
+                        width: options.width ? options.width - 150 : undefined
+                    }}
+                /> :
                     <></>
         }
     </Space.Compact>
@@ -334,15 +306,13 @@ const TableFileName = (options: { name: string, item: MediaImportFile }) => {
         // setLoading(true)
         return new MediaIdentify().identify(file.name)
             .then(async (result) => {
-                // console.log("CALL MediaImportAction.SetIdentity", result)
-                console.log(result)
+                // console.log(result)
                 if (result.title) {
                     setFailed(false);
                     mediaImportDispatch({ type: MediaImportAction.SetIdentity, fileKeys: [file.name], identify: [result] })
                 } else {
                     setFailed(true)
                 }
-                // console.log(result)
             })
     }
     const [loading, setLoading] = useState(false);
@@ -364,12 +334,86 @@ const TableFileName = (options: { name: string, item: MediaImportFile }) => {
 }
 
 
+
+type KeyTypes = 'tmdbId' | 'season' | 'episode';
+function TableIdentifyColumn(options: { value: number | string | undefined, file: MediaImportFile, serieskey: KeyTypes }) {
+
+    const keys: KeyTypes[] = ['tmdbId', 'season', 'episode']
+    const [work, setWork] = useState<MediaWork>();
+    const { value, file, serieskey: key } = options;
+    const [changed, finalValue] = isOverriden(value, file.overridenIdentify?.[key]);
+    const [loading, setLoading] = useState(false);
+    useEffect(asyncEffect(async () => {
+        setLoading(true)
+        const identity = _.merge(options.file.identifyContext, options.file.overridenIdentify);
+        if (identity !== undefined) {
+            const depKeys = keys.slice(0, keys.indexOf(key))
+            const series = depKeys.map(i => identity[i])
+            series.push(identity[key])
+            if (series.filter(v => v === undefined).length == 0) {
+                const target = new TMDB().fromSeries(series.map(String));
+                if (target) {
+                    const work = await target.get();
+                    setWork(work)
+                }
+            }
+        }
+        setLoading(false)
+    }), [file, finalValue])
+
+    const { setKeyword, setSelected, setSeries } = useContext(SearchContext);
+    const onTitleTagClick = (value: string) => {
+        setKeyword(value);
+    }
+
+    const onSelect = () => {
+        if (work) setSeries([...work.series, String(work.key)])
+    }
+    const popCard = <Space direction="vertical">
+        {work ? <MediaDetailCard mediaDetail={work} size="tiny"
+            action={work.series.length == 0 ?
+                <Space>
+                    <Button type="primary" size="small" onClick={() => { if (work?.title) onTitleTagClick(work?.title) }}
+                    >搜索</Button>
+                    <Button size="small" onClick={onSelect}
+                    >选择</Button>
+                </Space>
+                :
+                <></>
+            }
+        />
+            : <></>}
+    </Space>
+    return <Tag color={changed ? 'pink' : 'cyan'}>
+        {work?.key || finalValue}
+        <Divider type="vertical" style={{ borderInlineColor: changed ? 'pink' : 'rgba(5, 5, 5, 0.06)' }} />
+        <Popover content={popCard} placement="topRight">
+            {
+                loading ? <IconEllipsisLoading /> : work ? <>
+                    <span style={{
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                        textOverflow: "ellipsis",
+                        maxWidth: 200,
+                        lineHeight: "1em",
+                        display: "inline-block"
+                    }}>{work.metadata?.title}</span>
+                </> : <></>
+            }
+        </Popover>
+
+    </Tag >
+
+}
+
+
+
 function mergeEpisodesFromSelected(files: MediaImportFile[]): MediaIdentifyContext | undefined {
     if (!files?.length) {
         return
     }
     const mergedIdentifyContext = files
-        .map(v => (v.overridenIdentify ? v.overridenIdentify : v.identifyContext))
+        .map(v => _.merge(v.identifyContext, v.overridenIdentify))
         .reduce((previousValue: MediaIdentifyContext | undefined, currentValue: MediaIdentifyContext | undefined) => {
             if (previousValue && currentValue) {
                 if (previousValue.tmdbId !== currentValue.tmdbId) return undefined;
@@ -379,7 +423,7 @@ function mergeEpisodesFromSelected(files: MediaImportFile[]): MediaIdentifyConte
             }
             return undefined
         })
-    // console.log(mergedIdentifyContext)
+    // console.log(files, mergedIdentifyContext)
     if ((mergedIdentifyContext?.tmdbId != undefined) && (mergedIdentifyContext?.season != undefined)) {
         return {
             tmdbId: mergedIdentifyContext.tmdbId,

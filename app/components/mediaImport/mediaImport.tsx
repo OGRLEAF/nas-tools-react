@@ -1,4 +1,4 @@
-import { Button, Col, Divider, Drawer, Empty, Form, Input, InputNumber, List, Radio, Row, Select, Space, Spin, Tabs } from "antd"
+import { Breadcrumb, Button, Col, Divider, Drawer, Empty, Form, Input, InputNumber, List, Radio, Row, Select, SelectProps, Space, Spin, Tabs, TabsProps } from "antd"
 import { RedoOutlined, InfoCircleOutlined } from "@ant-design/icons"
 import React, { useContext, useEffect, useState } from "react"
 import { MediaImportFile, MediaImportFileKey, useMediaImport, useMediaImportDispatch } from "./mediaImportContext"
@@ -6,14 +6,14 @@ import { NastoolMediaType } from "../../utils/api/api";
 import { useWatch } from "antd/es/form/Form";
 import { MediaImportAction } from "./mediaImportContext";
 import { MediaIdentifyMerged, MediaWork, MediaWorkSeason, MediaWorkType, mergeObjects } from "@/app/utils/api/types";
-import { number_string_to_list } from "@/app/utils"
+import { asyncEffect, number_string_to_list } from "@/app/utils"
 import TinyTMDBSearch, { MediaDetailCard } from "../TMDBSearch/TinyTMDBSearch";
-import { TMDB } from "@/app/utils/api/tmdb";
+import { TMDB, TMDBMediaWork } from "@/app/utils/api/tmdb";
 import { ImportList, ImportSubmit } from "./mediaImportList";
 import { IconExternalLink } from "../icons";
 import { SearchContext, SearchContextProvider } from "../TMDBSearch/SearchContext";
 import useFormInstance from "antd/es/form/hooks/useFormInstance";
-import _, { valuesIn } from "lodash";
+import _ from "lodash";
 export interface MediaImportInitial {
     type: NastoolMediaType,
     tmdbid: string
@@ -102,31 +102,19 @@ const MediaImport = () => {
     const searchContext = useContext(SearchContext);
     const { selected: mediaWork } = searchContext;
     const [selectedFiles, setSelectedFiles] = useState<MediaImportFile[]>([])
-    const [episodeMethod, setEpisodeMethod] = useState<EpisodeMethod>(EpisodeMethod.NumberString)
+    // const [episodeMethod, setEpisodeMethod] = useState<EpisodeMethod>(EpisodeMethod.NumberString)
     const onFinish = async (values: any) => {
-        let episodes: number[] = [];
-        if (episodeMethod == EpisodeMethod.NumberString) {
-            episodes = number_string_to_list(values.episode_string);
-        } else {
-            const formatString = values.episode_format as string;
-            const escapedFormString = _.escapeRegExp(formatString);
-            const regexp = escapedFormString.replace(_.escapeRegExp("{ep}"), "(?<ep>\\d+)")
-            const re = new RegExp(regexp)
-            episodes = selectedFiles.map(({ name }) => {
-                const result = re.exec(name);
-                return Number(result?.groups?.ep)
-            })
-        }
-        episodes.reverse()
+        const series: string[] = values.series;
+        const episodes = [...values.episodes];
 
         const episode_offset: number = values.episode_offset || 0;
-        console.log(values.episode_format, values.episode_string, episodeMethod, episodes)
-
+        // console.log(values.episode_format, values.episode_string, episodeMethod, episodes)
+        const season = Number(series[1]);
         const identify = selectedFiles.map(() => {
-            const episode = episodes?.pop();
+            const episode = episodes?.shift();
             return ({
-                tmdbId: mediaWork?.key ? String(mediaWork?.key) : values.tmdbId,
-                season: values.season,
+                tmdbId: series[0], // mediaWork?.key ? String(mediaWork?.key) : values.tmdbId,
+                season: Number.isNaN(season) ? undefined : season,// values.season,
                 episode: Number.isNaN(episode) ? undefined : episode ? (episode + episode_offset) : undefined,
                 year: values.year,
                 title: mediaWork?.title || values.title,
@@ -140,6 +128,10 @@ const MediaImport = () => {
             identify: identify
         })
     }
+    // const onFinish = async (value: any) => {
+    //     console.log(value)
+    // }
+
     return <Row gutter={32} style={{ height: "100%" }}>
         <Col span={7}>
             <Form form={form}
@@ -147,38 +139,20 @@ const MediaImport = () => {
                 initialValues={{
                     type: NastoolMediaType.MOVIE,
                     // episodes: [],
+                    series: [],
                     episode_string: "",
                     episode_format: "{ep}",
                     tmdbid: undefined,
                     episode_offset: 0
                 }}
                 onFinish={onFinish}>
-                <MediaSearch />
-                <><Tabs
-                    style={{ maxWidth: "100%" }}
-                    defaultActiveKey={EpisodeMethod.NumberString}
-                    onChange={(value) => setEpisodeMethod(value as EpisodeMethod)}
-                    items={[
-                        {
-                            label: "手动指定",
-                            key: EpisodeMethod.NumberString,
-                            children: <Form.Item name="episode_string">
-                                <Input placeholder="1-3,4,5..."></Input>
-                            </Form.Item>
-                        },
-                        {
-                            label: "文件名提取",
-                            key: EpisodeMethod.EpisodeFormat,
-                            children: <Form.Item name="episode_format">
-                                <Input placeholder="{ep}"></Input>
-                            </Form.Item>
-                        },
-                    ]}
-                />
-                </>
-                {/* <Form.Item name="episodes">
+                <Form.Item name="series" noStyle>
+                    <MediaSearch />
+                </Form.Item>
+
+                <Form.Item name="episodes">
                     <EpisodeInput fileNames={selectedFiles.map((file) => file.name)} />
-                </Form.Item> */}
+                </Form.Item>
                 <Space>
                     <Form.Item label="集数偏移" name="episode_offset">
                         <InputNumber placeholder="集数偏移" />
@@ -201,31 +175,94 @@ const MediaImport = () => {
 
 const EpisodeInput = (options: { value?: number[], onChange?: (value: (number)[]) => void, fileNames: MediaImportFileKey[] },) => {
 
-    const [episodes, setEpisodes] = useState<number[]>(options.value || []);
-    useEffect(() => {
-        console.log(episodes)
-        if (options.onChange) options.onChange(episodes);
-    }, [episodes])
+    enum TabKey {
+        TMDB = "tmdb",
+        NUMBERS = "number",
+        FORMAT = "format"
+    }
+    const [currentTab, setCurrentTab] = useState<TabKey>(TabKey.NUMBERS)
+    const [episodes, setEpisodes] = useState<Record<TabKey, number[]>>({
+        [TabKey.TMDB]: [],
+        [TabKey.NUMBERS]: [],
+        [TabKey.FORMAT]: [],
+    });
+    const SetEpisodes = (key: TabKey, eps: number[]) => {
 
+        setEpisodes({
+            ...episodes,
+            [key]: eps
+        })
+    }
+    useEffect(() => {
+        if (options.onChange) {
+            const eps = episodes[currentTab];
+            if (options.onChange) options.onChange(eps);
+        }
+    }, [currentTab, episodes])
+
+
+    const TabOptions: TabsProps['items'] = [
+        {
+            label: "TMDB",
+            key: TabKey.TMDB,
+            children: <><EpisodeInputFromTMDB onChange={(values) => SetEpisodes(TabKey.TMDB, values)} /></>
+        },
+        {
+            label: "手动指定",
+            key: TabKey.NUMBERS,
+            children: <><EpisodeInputFromString onChange={(values) => SetEpisodes(TabKey.NUMBERS, values)} /></>
+        },
+        {
+            label: "文件名提取",
+            key: TabKey.FORMAT,
+            children: <EpisodeInputFromFormat fileNames={options.fileNames} onChange={(values) => SetEpisodes(TabKey.FORMAT, values)} />
+        },
+    ]
     return <><Tabs
         style={{ maxWidth: "100%" }}
-        defaultActiveKey="手动指定"
+        defaultActiveKey={TabKey.NUMBERS}
         tabBarExtraContent={<span>{options.fileNames.length}</span>}
-        onChange={() => setEpisodes([...episodes])}
-        items={[
-            {
-                label: "手动指定",
-                key: "手动指定",
-                children: <><EpisodeInputFromString onChange={(values) => setEpisodes(values)} /></>
-            },
-            {
-                label: "文件名提取",
-                key: "文件名提取",
-                children: <EpisodeInputFromFormat fileNames={options.fileNames} onChange={(values) => setEpisodes(values)} />
-            },
-        ]}
+        onChange={(activeKey) => setCurrentTab(activeKey as TabKey)}
+        items={TabOptions}
     />
     </>
+}
+
+const EpisodeInputFromTMDB = (options: { onChange: (value: number[]) => void }) => {
+    const [episodeOptions, setEpisodeOptions] = useState<SelectProps['options']>([]);
+    const selectContext = useContext(SearchContext);
+    const { series } = selectContext;
+    const [loading, setLoading] = useState(false);
+    const [value, setValue] = useState<number[]>([])
+    useEffect(asyncEffect(async () => {
+        setLoading(true)
+        console.log(series)
+        if (series.length >= 2 ) {
+            const episodes = await new TMDB().work(series[0], MediaWorkType.TV)
+                .season(Number(series[1]))
+                .get_children();
+            // console.log("EpisodeInputFromTMDB", episodes)
+            setEpisodeOptions(episodes.sort((a, b) => a.key - b.key).map((ep) => ({
+                value: ep.key,
+                label: <span>{ep.key}<Divider type="vertical" />{ep.metadata?.title}</span>
+            })))
+            setValue([]);
+        }
+        setLoading(false)
+    }), [series])
+    const onChange = (values: number[]) => {
+        setValue(values)
+        options.onChange(values);
+    }
+    return <Select
+        tokenSeparators={[',']}
+        disabled={loading}
+        loading={loading}
+        mode="multiple"
+        value={value}
+        onChange={onChange}
+        options={episodeOptions}
+        allowClear />
 }
 
 const EpisodeInputFromString = (options: { onChange: (value: number[]) => void, }) => {
@@ -264,44 +301,80 @@ const EpisodeInputFromFormat = (options: { onChange: (value: number[]) => void, 
     </>
 }
 
-const MediaSearch = () => {
+const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value: string[]) => void }) => {
     const searchContext = useContext(SearchContext);
-    const { setSelected, selected } = searchContext;
+    const { setSelected, selected, series, setSeries } = searchContext;
     const [seasons, setSeasons] = useState<MediaWorkSeason[]>([])
     const [loading, setLoading] = useState(false)
 
-    const form = useFormInstance()
-    const selectedSeason = Form.useWatch('season', form);
+    const [selectedSeason, setSelectedSeason] = useState<number>(); //Form.useWatch('season', form);
 
     const onTMDBSelected = async (value: MediaWork) => {
         setSeasons([])
         setLoading(true)
-        new TMDB().detail(String(value.key), value.type)
-            .then(([result, seasons]) => {
-                setSelected(result)
-                if (seasons) setSeasons(seasons)
-                else setSeasons([])
-            })
-            .finally(() => {
-                setLoading(false)
-            })
+        const work = new TMDB().work(String(value.key), value.type)
+        const mediaWork = await work.get();
+        if (mediaWork) setSeries([...mediaWork?.series, String(mediaWork?.key)])
+        setLoading(false)
     }
 
-    const season = TMDB.findShare(`${selected?.key}-${selectedSeason}`) as MediaWorkSeason | undefined
-    const seasonOptions = seasons.map((item) => ({
-        value: item.key,
-        label: `季 ${item.key} - ${item.title}`,
-    }))
+    const [seasonOptions, setSeasonOptions] = useState<SelectProps['options']>([])
+    useEffect(asyncEffect(async () => {
+        console.log("On Series[0] updated")
+        if (series[0] != undefined) {
+            const work = new TMDB().work(series[0], MediaWorkType.TV)
+            const mediaWork = await work.get();
+            if (mediaWork) {
+                setSelected(mediaWork);
+                const seasons = await work.get_children()
+
+                if (seasons?.length) {
+                    const options = seasons.map((item) => ({
+                        value: item.key,
+                        label: `季 ${item.key} - ${item.title}`,
+                    }))
+                    setSeasonOptions(options);
+                } else {
+                    setSeasonOptions([])
+                }
+                setSelectedSeason(undefined)
+            }
+        }
+    }), [series[0]])
+
+
+    useEffect(() => {
+        console.log("season updated")
+        if (series.length == 2) {
+            setSelectedSeason(Number(series[1]));
+        }
+
+    }, [series[1]])
+    useEffect(() => {
+        if (onChange) onChange([...series])
+    }, [series])
 
     return <Space direction="vertical" style={{ width: "100%" }}>
         <TinyTMDBSearch onSelected={onTMDBSelected} />
         <MediaDetailCardFromSearch loading={loading} />
         <Space>
-            <Form.Item label="季" wrapperCol={{ span: 8 }} name="season" style={{ marginBottom: 0 }}>
-                <Select disabled={loading} loading={loading} style={{ width: "250px" }} options={seasonOptions} />
-            </Form.Item>
-            {season?.metadata?.links.tmdb ? <Button size="small" type="link" target="_blank" href={season?.metadata?.links.tmdb} icon={<IconExternalLink />}>TMDB</Button> : <></>}
-        </Space></Space>
+            <Select value={selectedSeason} disabled={loading} loading={loading} style={{ width: "250px" }}
+                options={seasonOptions}
+                onSelect={(value: number) => {
+                    // console.log(value)
+                    if (value !== undefined) setSelectedSeason(value);
+                    if (series.length) {
+                        setSeries([series[0], String(value)])
+                    }
+                }}
+            />
+            {/* {
+                season?.metadata?.links.tmdb ?
+                    <Button size="small" type="link" target="_blank" href={season?.metadata?.links.tmdb} icon={<IconExternalLink />}>TMDB</Button> :
+                    <></>
+            } */}
+        </Space>
+    </Space>
 }
 
 const MediaDetailCardFromSearch = ({ loading }: { loading?: boolean }) => {

@@ -10,6 +10,7 @@ type NastoolApi =
     "media/search" |
     "media/detail" |
     "media/tv/seasons" |
+    "media/tv/episodes" |
     "media/cache" |
     "service/name/test" |
     "page/brief" |
@@ -30,9 +31,17 @@ type NastoolApi =
     "filterrule/list/basic" |
     "task/list" |
     "task/create" |
-    "sync/directory/list"
+    "sync/directory/list" |
+    "subscribe/movie/list"
 
-type NastoolLoginResData = {
+export interface NastoolResponse<T> {
+    code: number,
+    success: boolean,
+    message: string,
+    data?: T
+}
+
+export type NastoolLoginResData = {
     token: string;
     apikey: string;
     userinfo: {
@@ -536,26 +545,26 @@ export interface TMDBCacheItem {
 export type TMDBCacheList = [string, TMDBCacheItem, string][];
 type TMDBCacheListResult = NastoolListResult<[string, TMDBCacheItem, string]>
 
-type NastoolResponse = {
-    code: number,
-    success: boolean,
-    message: string,
-    data?: NastoolLoginResData |
-    NastoolServerConfig |
-    NastoolMediaSearchResult |
-    NastoolMediaDetailResult |
-    NastoolTVSeasonsResult |
-    NastoolFileList |
-    NastoolNameTestResult |
-    NastoolImportGroupResult |
-    NastoolDownloadConfigListResultData |
-    NastoolMediaServerLibrary |
-    NastoolLibrarySeries |
-    NastoolSiteStatisticsResult |
-    NastoolIndexerList |
-    OrganizationHistoryResult |
-    TMDBCacheListResult
-}
+// type NastoolResponse = {
+//     code: number,
+//     success: boolean,
+//     message: string,
+//     data?: NastoolLoginResData |
+//     NastoolServerConfig |
+//     NastoolMediaSearchResult |
+//     NastoolMediaDetailResult |
+//     NastoolTVSeasonsResult |
+//     NastoolFileList |
+//     NastoolNameTestResult |
+//     NastoolImportGroupResult |
+//     NastoolDownloadConfigListResultData |
+//     NastoolMediaServerLibrary |
+//     NastoolLibrarySeries |
+//     NastoolSiteStatisticsResult |
+//     NastoolIndexerList |
+//     OrganizationHistoryResult |
+//     TMDBCacheListResult
+// }
 
 function useStorage() {
     return localStorage
@@ -709,8 +718,27 @@ export class NASTOOL {
         return result.data;
     }
 
-    public async getSiteList(): Promise<NastoolSiteProfile[]> {
-        const result = await this.post<NastoolSiteProfileResult>("site/list", { auth: true })
+    public async getSiteList(
+        {
+            rss,
+            brush,
+            statistic,
+        }: {
+            rss?: boolean,
+            brush?: boolean,
+            statistic?: boolean,
+        } = {}
+    ): Promise<NastoolSiteProfile[]> {
+        const result = await this.post<NastoolSiteProfileResult>("site/list",
+            {
+                data: {
+                    rss: rss == undefined ? undefined : Number(rss),
+                    brush: brush == undefined ? undefined : Number(brush),
+                    statistic: statistic == undefined ? undefined : Number(statistic),
+                },
+                auth: true
+            }
+        )
         return result.sites
     }
 
@@ -719,7 +747,9 @@ export class NASTOOL {
     }
 
     public async getDownloadConfigList(): Promise<NastoolDownloadConfig[]> {
-        const result = await this.post<NastoolDownloadConfigListResultData>("download/config/list", { auth: true })
+        const result = await this.post<NastoolDownloadConfigListResultData>("download/config/list",
+            { auth: true }
+        )
         return result.data
     }
 
@@ -860,9 +890,16 @@ export class NASTOOL {
     }
 
     public async mediaFileImport(params: {
-        path: string, target_path?: string, files: string[], importMode: ImportMode, season?: number, tmdbid?: string, type?: NastoolMediaType
+        path: string,
+        target_path?: string,
+        files: string[],
+        importMode: ImportMode,
+        episodes?: (number|undefined)[],
+        season?: number,
+        tmdbid?: string,
+        type?: NastoolMediaType,
     }) {
-        const { tmdbid, type, path, target_path, files, season, importMode } = params;
+        const { tmdbid, type, path, target_path, files, season, importMode, episodes} = params;
         return await this.post<any>("organization/import/tv", {
             data: {
                 tmdbid: tmdbid,
@@ -871,7 +908,8 @@ export class NASTOOL {
                 outpath: target_path,
                 files: files,
                 season: season,
-                syncmod: importMode
+                syncmod: importMode,
+                episodes: episodes
             },
             auth: true,
             json: true
@@ -920,7 +958,7 @@ export class NASTOOL {
         })
     }
 
-    protected async post<T>(api: NastoolApi, options: { auth?: boolean, json?: boolean, data?: Record<string, string> | any, params?: Record<string, string> } = {}): Promise<T> {
+    public async post<T>(api: NastoolApi, options: { auth?: boolean, json?: boolean, data?: Record<string, string> | any, params?: Record<string, string> } = {}): Promise<T> {
         // const formData =//new FormData();
         // Object.entries<string>(options.data || {}).forEach(([k, v]) => formData.append(k, v));
 
@@ -964,7 +1002,7 @@ export class NASTOOL {
                 params: options.params,
                 headers: headers
             })
-            const data: NastoolResponse = req.data;
+            const data: NastoolResponse<T> = req.data;
             if (data.code == 0 && data.success == true) {
                 return data.data as T;
             }

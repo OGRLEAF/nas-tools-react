@@ -73,9 +73,9 @@ const reducer = (state: MediaImportState, action: MediaImportDispathPayload): Me
                         if (file) {
                             const identifyOfFile = identify[index];
                             penddingFiles[id] = { ...file };
-                            penddingFiles[id].identifyContext = identifyOfFile;
+                            penddingFiles[id].identifyContext = { ...identifyOfFile };
                             penddingFiles[id].overridenIdentify = undefined;
-                            console.log(fileKey, JSON.stringify(penddingFiles[id]))
+                            // console.log(fileKey, JSON.stringify(penddingFiles[id]))
                         }
                     }
 
@@ -95,19 +95,18 @@ const reducer = (state: MediaImportState, action: MediaImportDispathPayload): Me
                 const penddingFiles = state.penddingFiles;
                 const identify = action.identify as MediaIdentifyContext[];
                 // console.log(action.fileKeys, action.identify)
-                console.log(action.fileKeys, action.identify)
                 action.fileKeys.forEach((fileKey, index) => {
                     const id = globalKeyMap.get(fileKey);
-                    console.log(fileKey, id);
+                    // console.log(fileKey, id);
                     if ((id != undefined) && penddingFiles[id]) {
                         const identifyOfFile = identify[index];
                         // console.log(fileKey, JSON.stringify(identifyOfFile))
                         penddingFiles[id] = { ...penddingFiles[id] }
-                        if (penddingFiles[id].identifyContext !== undefined && _.isEqual(penddingFiles[id], {})) {
-                            penddingFiles[id].overridenIdentify = identifyOfFile;
+                        if (penddingFiles[id].identifyContext !== undefined || _.isEqual(penddingFiles[id], {})) {
+                            penddingFiles[id].overridenIdentify = { ...identifyOfFile };
                         }
                         else {
-                            penddingFiles[id].identifyContext = identifyOfFile
+                            penddingFiles[id].identifyContext = { ...identifyOfFile }
                         }
                         // console.log(fileKey, JSON.stringify(penddingFiles[id]))
                     }

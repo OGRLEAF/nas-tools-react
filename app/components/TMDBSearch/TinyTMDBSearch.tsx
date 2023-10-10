@@ -1,55 +1,99 @@
-import React, { ReactNode, useContext, useEffect, useState } from "react";
+import React, { CSSProperties, ReactNode, useContext, useEffect, useState } from "react";
 import { API, NastoolMediaSearchResult, NastoolMediaSearchResultItem, NastoolMediaType, NastoolServerConfig } from "../../utils/api/api";
-import { AutoComplete, Form, Input, Radio, Space, theme, Image, Typography, Empty, Row, Col, Select } from "antd";
+import { AutoComplete, Form, Input, Radio, Space, theme, Image, Typography, Empty, Row, Col, Select, Skeleton } from "antd";
 import { TMDB } from "../../utils/api/tmdb";
 import { MediaIdentifyContext, MediaWork } from "../../utils/api/types";
 import { SearchContext } from "./SearchContext";
 import { ServerConfig } from "@/app/utils/api/serverConfig";
 
+type CardSize = "normal" | "small" | "tiny";
+interface DetaiCardStyle {
+    image?: CSSProperties,
+    title?: CSSProperties,
+    typography?: CSSProperties,
+    textLimit?: number,
+
+}
+
+const cardStyleMap: Record<CardSize, DetaiCardStyle> = {
+    "normal": {
+
+    },
+    "small": {
+        image: {
+            width: 150,
+        },
+        typography: {
+
+        },
+        textLimit: 150
+    },
+    "tiny": {
+        image: {
+            height: 175
+        },
+        title: {
+            fontSize: "1.4rem",
+            marginTop: 4,
+            marginBottom: 8
+        },
+        typography: {
+            width: 350,
+            height: 155,
+            margin: 0
+        },
+        textLimit: 75
+    }
+}
+
+
 export function MediaDetailCard({
     mediaDetail,
-    size
-}: { mediaDetail: MediaWork, size?: "normal" | "small" | number }) {
+    size,
+    action
+}: { mediaDetail?: MediaWork, size?: CardSize, action?: React.JSX.Element }) {
     const { token } = theme.useToken()
     const _size = size ? size : "normal";
+    const style = cardStyleMap[_size];
+    const textLimit = style.textLimit == undefined ? 50 : style.textLimit;
     if (mediaDetail) {
         const metadata = mediaDetail.metadata
-        return <div style={{
-            // backgroundImage: `url(${metadata?.image.background})`,
-            // backgroundColor: "#00152991",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            width: "100%",
-            marginBottom: 0,
-            position: "relative"
-        }}>
+        return <Space
+            size="large"
+            align="start"
+            style={{
+                width: "100%",
+                marginBottom: 0,
+                position: "relative"
+            }}>
+            <Image
+                placeholder={<Skeleton.Image style={{ width: 150, ...style.image }} />}
+                style={{ ...style.image, objectFit: "contain", flexShrink: 1, marginRight: 0, borderRadius: token.borderRadius }}
+                src={metadata?.image.cover} />
             {/* <div style={{ height: _size == "normal" ? "400px" : "150px", width: "100%", backgroundColor: "#00152991" }} /> */}
-            <Space align="start" size="large">
-                <Image
-                    style={{ width: 150, objectFit: "contain", flexShrink: 1, marginRight: 0 }}
-                    src={metadata?.image.cover} />
-                <Typography style={{ paddingTop: 4, }}>
-                    <Typography.Title level={2} style={{ color: token.colorTextBase, fontSize: "1.6rem" }}>{mediaDetail.title}
+            <Space align="end" direction="vertical" >
+
+                <Typography style={{ paddingTop: 4, ...style.typography }}>
+                    <Typography.Title level={2} style={{ color: token.colorTextBase, fontSize: "1.6rem", marginTop: 6, ...style.title }}>{mediaDetail.title}
                         <span style={{ fontSize: "1rem" }}> ({metadata?.date.release})</span>
 
                     </Typography.Title>
-                    <Typography.Text style={{ color: token.colorTextDescription }}>
-                        <a style={{ color: token.colorTextDescription }} href={metadata?.links.tmdb} target="_blank">{metadata?.links.tmdb}</a>
-                    </Typography.Text>
+                    <Typography.Link style={{ color: token.colorTextDescription }} href={metadata?.links.tmdb} target="_blank">
+                        {metadata?.links.tmdb}
+                    </Typography.Link>
                     <br />
-                    <Typography.Text style={{
-                        color: token.colorTextDescription,
-
-                    }}>
+                    <Typography.Text style={{ color: token.colorTextDescription }}>
                         {
-                            (metadata?.description?.length || 0) > 100 ?
-                                metadata?.description.slice(0, 100) + "..." :
+                            (metadata?.description?.length || 0) > textLimit ?
+                                metadata?.description.slice(0, textLimit) + "..." :
                                 metadata?.description
                         }
                     </Typography.Text>
                 </Typography>
+                <div style={{ float: "right" }}>{action}</div>
             </Space>
-        </div>
+
+        </Space>
 
     } else {
         return <Empty />
@@ -59,6 +103,7 @@ export function MediaDetailCard({
 export default function TinyTMDBSearch({
     onSelected,
     onChange,
+    value,
 }: {
     onSelected?: (value: MediaWork) => void,
     onChange?: (value: string) => void,
@@ -73,6 +118,7 @@ export default function TinyTMDBSearch({
     const [keyword, setKeyword] = useState("");
     const [loading, setLoading] = useState<boolean>(false);
     const [openResults, setOpenResults] = useState<boolean>(false)
+
     const onSearch = (value: string) => {
         setContextKeyword(value);
         setLoading(true)
@@ -148,11 +194,11 @@ export default function TinyTMDBSearch({
     ]
     return <>
         <Space style={{ width: "100%" }} direction="vertical" size={16}>
-            <Radio.Group defaultValue={NastoolMediaType.TV}>
+            {/* <Radio.Group defaultValue={NastoolMediaType.TV}>
                 <Radio.Button value={NastoolMediaType.MOVIE}>电影</Radio.Button>
                 <Radio.Button value={NastoolMediaType.TV}>电视剧</Radio.Button>
                 <Radio.Button value={NastoolMediaType.ANI}>动漫</Radio.Button>
-            </Radio.Group>
+            </Radio.Group> */}
             <Space.Compact style={{ width: "100%" }}>
                 <Select onChange={updateSearchSource} value={searchSource} options={searchSourceOption} style={{ width: "100px" }} />
                 <AutoComplete

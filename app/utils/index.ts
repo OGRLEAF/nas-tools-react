@@ -34,3 +34,12 @@ export function copy_to_clipboard(text: string) {
         navigator.clipboard.writeText(text)
     }
 }
+
+export function asyncEffect(func: CallableFunction) {
+    return () => {
+        (async () => {
+            await func();
+        })()
+    }
+}
+
