@@ -10,10 +10,10 @@ import { Organize } from "@/app/utils/api/import";
 import { MediaIdentify } from "@/app/utils/api/mediaIdentify";
 import { PathSelector } from "../PathSelector";
 import { SearchContext } from "../TMDBSearch/SearchContext";
-import { MediaIdentifyContext, MediaIdentifyMerged, MediaWork, MediaWorkEpisode, MediaWorkSeason, MediaWorkType } from "@/app/utils/api/types";
+import { MediaIdentifyContext, MediaIdentifyMerged, MediaWork, MediaWorkEpisode, MediaWorkSeason, MediaWorkType, SeriesKey } from "@/app/utils/api/types";
 import { asyncEffect } from "@/app/utils";
-import { TMDB } from "@/app/utils/api/tmdb";
-import _, { set } from "lodash";
+import { TMDB, TMDBMedia } from "@/app/utils/api/tmdb";
+import _, { set, slice } from "lodash";
 import { IconEllipsisLoading } from "../icons";
 import { MediaDetailCard } from "../TMDBSearch/TinyTMDBSearch";
 
@@ -172,7 +172,7 @@ export const ImportSubmit = ({ files }: { files: MediaImportFile[] }) => {
                     await orgn.importTV(
                         {
                             path: key, files, importMode: value.type, season: {
-                                series: [mediaSeasonSelected.tmdbId],
+                                series: new SeriesKey().tmdbId(mediaSeasonSelected.tmdbId),
                                 type: MediaWorkType.TV,
                                 key: mediaSeasonSelected.season,
                                 title: mediaSeasonSelected.title
@@ -306,7 +306,6 @@ const TableFileName = (options: { name: string, item: MediaImportFile }) => {
         // setLoading(true)
         return new MediaIdentify().identify(file.name)
             .then(async (result) => {
-                // console.log(result)
                 if (result.title) {
                     setFailed(false);
                     mediaImportDispatch({ type: MediaImportAction.SetIdentity, fileKeys: [file.name], identify: [result] })
@@ -335,10 +334,8 @@ const TableFileName = (options: { name: string, item: MediaImportFile }) => {
 
 
 
-type KeyTypes = 'tmdbId' | 'season' | 'episode';
+type KeyTypes = 'type' | 'tmdbId' | 'season' | 'episode';
 function TableIdentifyColumn(options: { value: number | string | undefined, file: MediaImportFile, serieskey: KeyTypes }) {
-
-    const keys: KeyTypes[] = ['tmdbId', 'season', 'episode']
     const [work, setWork] = useState<MediaWork>();
     const { value, file, serieskey: key } = options;
     const [changed, finalValue] = isOverriden(value, file.overridenIdentify?.[key]);
@@ -347,31 +344,27 @@ function TableIdentifyColumn(options: { value: number | string | undefined, file
         setLoading(true)
         const identity = _.merge(options.file.identifyContext, options.file.overridenIdentify);
         if (identity !== undefined) {
-            const depKeys = keys.slice(0, keys.indexOf(key))
-            const series = depKeys.map(i => identity[i])
-            series.push(identity[key])
-            if (series.filter(v => v === undefined).length == 0) {
-                const target = new TMDB().fromSeries(series.map(String));
-                if (target) {
-                    const work = await target.get();
-                    setWork(work)
-                }
-            }
+            const series = new SeriesKey().type(identity.type).tmdbId(identity.tmdbId).season(identity.season).episode(identity.episode);
+            const sliced = series.slice(key)
+            const target = new TMDB().fromSeries(sliced);
+            setWork(await target?.get())
         }
         setLoading(false)
     }), [file, finalValue])
 
-    const { setKeyword, setSelected, setSeries } = useContext(SearchContext);
+    const { setKeyword, setSeries } = useContext(SearchContext);
     const onTitleTagClick = (value: string) => {
         setKeyword(value);
     }
 
     const onSelect = () => {
-        if (work) setSeries([...work.series, String(work.key)])
+        if (work) {
+            setSeries(new SeriesKey().type(work.type).tmdbId(work.key))
+        }
     }
     const popCard = <Space direction="vertical">
         {work ? <MediaDetailCard mediaDetail={work} size="tiny"
-            action={work.series.length == 0 ?
+            action={work.series.end == "tmdbId" ?
                 <Space>
                     <Button type="primary" size="small" onClick={() => { if (work?.title) onTitleTagClick(work?.title) }}
                     >搜索</Button>

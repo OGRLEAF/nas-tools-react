@@ -5,10 +5,10 @@ import { MediaImportFile, MediaImportFileKey, useMediaImport, useMediaImportDisp
 import { NastoolMediaType } from "../../utils/api/api";
 import { useWatch } from "antd/es/form/Form";
 import { MediaImportAction } from "./mediaImportContext";
-import { MediaIdentifyMerged, MediaWork, MediaWorkSeason, MediaWorkType, mergeObjects } from "@/app/utils/api/types";
+import { MediaIdentifyMerged, MediaWork, MediaWorkSeason, MediaWorkType, SeriesKey, mergeObjects } from "@/app/utils/api/types";
 import { asyncEffect, number_string_to_list } from "@/app/utils"
 import TinyTMDBSearch, { MediaDetailCard } from "../TMDBSearch/TinyTMDBSearch";
-import { TMDB, TMDBMediaWork } from "@/app/utils/api/tmdb";
+import { TMDB, TMDBMedia, TMDBMediaWork } from "@/app/utils/api/tmdb";
 import { ImportList, ImportSubmit } from "./mediaImportList";
 import { IconExternalLink } from "../icons";
 import { SearchContext, SearchContextProvider } from "../TMDBSearch/SearchContext";
@@ -104,29 +104,33 @@ const MediaImport = () => {
     const [selectedFiles, setSelectedFiles] = useState<MediaImportFile[]>([])
     // const [episodeMethod, setEpisodeMethod] = useState<EpisodeMethod>(EpisodeMethod.NumberString)
     const onFinish = async (values: any) => {
-        const series: string[] = values.series;
+        const series: SeriesKey = values.series;
         const episodes = [...values.episodes];
 
         const episode_offset: number = values.episode_offset || 0;
         // console.log(values.episode_format, values.episode_string, episodeMethod, episodes)
-        const season = Number(series[1]);
-        const identify = selectedFiles.map(() => {
-            const episode = episodes?.shift();
-            return ({
-                tmdbId: series[0], // mediaWork?.key ? String(mediaWork?.key) : values.tmdbId,
-                season: Number.isNaN(season) ? undefined : season,// values.season,
-                episode: Number.isNaN(episode) ? undefined : episode ? (episode + episode_offset) : undefined,
-                year: values.year,
-                title: mediaWork?.title || values.title,
-                type: mediaWork?.type || values.type
-            })
-        })
+        const tmdbId = series.i;
+        if (tmdbId != undefined) {
 
-        mediaImportDispatch({
-            type: MediaImportAction.OverrideIdentify,
-            fileKeys: selectedFiles.map(({ name }) => name),
-            identify: identify
-        })
+            const season = Number(series.s);
+            const identify = selectedFiles.map(() => {
+                const episode = episodes?.shift();
+                return ({
+                    tmdbId: String(tmdbId), // mediaWork?.key ? String(mediaWork?.key) : values.tmdbId,
+                    season: Number.isNaN(season) ? undefined : season,// values.season,
+                    episode: Number.isNaN(episode) ? undefined : episode ? (episode + episode_offset) : undefined,
+                    year: values.year,
+                    title: mediaWork?.title || values.title,
+                    type: mediaWork?.type || values.type
+                })
+            })
+
+            mediaImportDispatch({
+                type: MediaImportAction.OverrideIdentify,
+                fileKeys: selectedFiles.map(({ name }) => name),
+                identify: identify
+            })
+        }
     }
     // const onFinish = async (value: any) => {
     //     console.log(value)
@@ -237,19 +241,21 @@ const EpisodeInputFromTMDB = (options: { onChange: (value: number[]) => void }) 
     useEffect(asyncEffect(async () => {
         setLoading(true)
         console.log(series)
-        if (series.length >= 2 ) {
-            const episodes = await new TMDB().work(series[0], MediaWorkType.TV)
-                .season(Number(series[1]))
-                .get_children();
-            // console.log("EpisodeInputFromTMDB", episodes)
-            setEpisodeOptions(episodes.sort((a, b) => a.key - b.key).map((ep) => ({
-                value: ep.key,
-                label: <span>{ep.key}<Divider type="vertical" />{ep.metadata?.title}</span>
-            })))
-            setValue([]);
+        if (series.end == "season") {
+            const season = new TMDB().fromSeries(series.slice("season"));
+            if (season) {
+                const episodes = await season.get_children();
+                // console.log("EpisodeInputFromTMDB", episodes)
+                setEpisodeOptions(episodes.sort((a, b) => a.key - b.key).map((ep) => ({
+                    value: ep.key,
+                    label: <span>{ep.key}<Divider type="vertical" />{ep.metadata?.title}</span>
+                })))
+                setValue([]);
+            }
         }
         setLoading(false)
     }), [series])
+
     const onChange = (values: number[]) => {
         setValue(values)
         options.onChange(values);
@@ -301,7 +307,7 @@ const EpisodeInputFromFormat = (options: { onChange: (value: number[]) => void, 
     </>
 }
 
-const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value: string[]) => void }) => {
+const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value: SeriesKey) => void }) => {
     const searchContext = useContext(SearchContext);
     const { setSelected, selected, series, setSeries } = searchContext;
     const [seasons, setSeasons] = useState<MediaWorkSeason[]>([])
@@ -314,19 +320,19 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
         setLoading(true)
         const work = new TMDB().work(String(value.key), value.type)
         const mediaWork = await work.get();
-        if (mediaWork) setSeries([...mediaWork?.series, String(mediaWork?.key)])
+        if (mediaWork) setSeries(new SeriesKey(mediaWork.series).tmdbId(mediaWork.key))
         setLoading(false)
     }
 
     const [seasonOptions, setSeasonOptions] = useState<SelectProps['options']>([])
     useEffect(asyncEffect(async () => {
         console.log("On Series[0] updated")
-        if (series[0] != undefined) {
-            const work = new TMDB().work(series[0], MediaWorkType.TV)
-            const mediaWork = await work.get();
+        if (series.i != undefined) {
+            const media = new TMDBMedia(series.t).tmdbid(String(series.i));
+            const mediaWork = await media.get();
             if (mediaWork) {
                 setSelected(mediaWork);
-                const seasons = await work.get_children()
+                const seasons = await media.get_children()
 
                 if (seasons?.length) {
                     const options = seasons.map((item) => ({
@@ -340,18 +346,18 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
                 setSelectedSeason(undefined)
             }
         }
-    }), [series[0]])
+    }), [series.i])
 
 
     useEffect(() => {
         console.log("season updated")
-        if (series.length == 2) {
-            setSelectedSeason(Number(series[1]));
+        if (series.has("season")) {
+            setSelectedSeason(series.s);
         }
 
-    }, [series[1]])
+    }, [series.s])
     useEffect(() => {
-        if (onChange) onChange([...series])
+        if (onChange) onChange(new SeriesKey(series))
     }, [series])
 
     return <Space direction="vertical" style={{ width: "100%" }}>
@@ -363,8 +369,8 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
                 onSelect={(value: number) => {
                     // console.log(value)
                     if (value !== undefined) setSelectedSeason(value);
-                    if (series.length) {
-                        setSeries([series[0], String(value)])
+                    if (series.has("tmdbId")) {
+                        setSeries(new SeriesKey(series).season(value))
                     }
                 }}
             />

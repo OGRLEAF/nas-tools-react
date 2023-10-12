@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { DBMediaType } from "./api";
 import { APIBase } from "./api_base";
-import { MediaIdentifyContext, MediaWork, MediaWorkEpisode, MediaWorkMetadata, MediaWorkSeason, MediaWorkType } from "./types"
+import { MediaIdentifyContext, MediaWork, MediaWorkEpisode, MediaWorkSeason, MediaWorkType, SeriesKey } from "./types"
 
 /*
       {
@@ -48,7 +48,7 @@ export class TMDB extends APIBase {
     }
 
     private static addShare(mediaWork: MediaWork) {
-        const key = `${mediaWork.series.join("-")}-${mediaWork.key}`
+        const key = `${mediaWork.series.uniqueKey()}-${mediaWork.key}`
         TMDB.share[key] = mediaWork;
     }
     public static findShare(key: string) {
@@ -62,8 +62,10 @@ export class TMDB extends APIBase {
 
     public async search(keyword: string): Promise<MediaWork[]> {
         const searchResult = await (await this.API).searchMedia(keyword);
-        const mediaWorks = searchResult.result.map((item) => ({
-            series: [],
+        const mediaWorks: MediaWork[] = searchResult.result.map((item) => ({
+            series: new SeriesKey()
+                .type(item.media_type as unknown as MediaWorkType)
+                .tmdbId(item.tmdb_id),
             type: item.media_type as unknown as MediaWorkType,
             title: item.title,
             key: item.tmdb_id,
@@ -101,7 +103,11 @@ export class TMDB extends APIBase {
         // console.log(tmdb_episodes)                                                                                                                                                                                                                                                                                                                            
         const episodes: MediaWorkEpisode[] = tmdb_episodes.map((ep) => ({
             key: ep.episode_number,
-            series: [tmdbId, String(season)],
+            series: new SeriesKey()
+                .type(MediaWorkType.TV)
+                .tmdbId(tmdbId)
+                .season(season)
+                .episode(ep.episode_number),
             type: MediaWorkType.TV,
             title: ep.name,
             metadata: {
@@ -130,8 +136,8 @@ export class TMDB extends APIBase {
                 DBMediaType.TV
         const isSeries = mediaType == MediaWorkType.ANI || mediaType == MediaWorkType.TV
         const detail = await (await this.API).getMediaDetail(tmdbId, tmdbType)
-        const mediaWork = {
-            series: [],
+        const mediaWork: MediaWork = {
+            series: new SeriesKey().type(mediaType).tmdbId(detail.tmdbid),
             type: mediaType,
             key: detail.tmdbid,
             title: detail.title,
@@ -153,8 +159,10 @@ export class TMDB extends APIBase {
         TMDB.addShare(mediaWork)
 
         const seasons: MediaWorkSeason[] | undefined = (mediaType != MediaWorkType.MOVIE && mediaType != MediaWorkType.UNKNOWN) ?
-            (detail.seasons || []).map((season) => ({
-                series: [String(detail.tmdbid)],
+            (detail.seasons || []).map((season): MediaWorkSeason => ({
+                series: new SeriesKey().type(mediaType)
+                    .tmdbId(detail.tmdbid)
+                    .season(season.season_number),
                 type: mediaType,
                 key: season.season_number,
                 title: season.name,
@@ -192,21 +200,58 @@ export class TMDB extends APIBase {
         }
     }
 
-    public fromSeries(series: MediaWork['series']) {
+    public fromSeries(key: SeriesKey) {
         let target;
-        if (series[0] != undefined) {
-            target = this.work(String(series[0]), MediaWorkType.TV)
-
-            if (series[1] != undefined) {
-                target = target.season(Number(series[1]))
-                if (series[2] != undefined) {
-                    target = target.episode(Number(series[2]))
+        const series = key.getSeries()
+        if (series.type && series.tmdbId) {
+            target = new TMDBMedia(series.type)
+            target = target.tmdbid(String(series.tmdbId));
+            if (series.season != undefined) {
+                target = target?.season(series.season);
+                if (series.episode != undefined) {
+                    target = target?.episode(series.episode)
                 }
             }
         }
         return target;
     }
 }
+
+export class TMDBMedia {
+    public type: MediaWorkType
+    private static _cache: Record<string, TMDBMediaWork> = {};
+    constructor(mediaType: MediaWorkType) {
+        this.type = mediaType;
+    }
+    public tmdbid(tmdbid: string) {
+        if (TMDBMedia._cache[tmdbid]) {
+            return TMDBMedia._cache[tmdbid]
+        } else {
+            const mediaWork = new TMDBMediaWork(tmdbid, this.type);
+            TMDBMedia._cache[tmdbid] = mediaWork;
+            return mediaWork;
+        }
+    }
+
+    public static fromIdentify(identify: MediaIdentifyContext) {
+        let target;
+        if (identify.type && identify.tmdbId) {
+            target = new TMDBMedia(identify.type)
+            target = target.tmdbid(identify.tmdbId);
+            if (identify.season != undefined) {
+                target = target?.season(identify.season);
+                if (identify.episode != undefined) {
+                    target = target?.episode(identify.episode)
+                }
+            }
+        }
+
+        return target;
+    }
+
+}
+
+
 
 export class TMDBMediaWork {
     public tmdbId: string;
@@ -348,5 +393,9 @@ export class TMDBMediaWorkEpisode {
             return this.parent.episodes[this.episodeKey]
         }
         return undefined
+    }
+
+    public get_children() {
+        return []
     }
 }

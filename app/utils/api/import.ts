@@ -2,7 +2,7 @@ import { ImportMode, NastoolMediaType } from "./api";
 import { APIBase } from "./api_base";
 import { MediaWorkSeason } from "./types";
 
-type optionalEpisode = undefined|number
+type optionalEpisode = undefined | number
 
 export class Organize extends APIBase {
     constructor() {
@@ -12,9 +12,9 @@ export class Organize extends APIBase {
         console.log(importMode)
         const request = await (await this.API).mediaFileImport(
             {
-                path, files, importMode, 
+                path, files, importMode,
                 season: season.key,
-                tmdbid: season.series[0],
+                tmdbid: String(season.series.i),
                 type: NastoolMediaType.TV,
                 target_path: target_path,
                 episodes: episodes
