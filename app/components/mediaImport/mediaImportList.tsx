@@ -47,10 +47,22 @@ const columns: ColumnsType<MediaImportFile> = [{
     shouldCellUpdate: (record, prevRecord) => !_.isEqual(record, prevRecord),
     sorter: (a: MediaImportFile, b: MediaImportFile) => ((a.name > b.name) ? -1 : 1),
 
-}, {
+},
+
+{
     title: "识别",
     shouldCellUpdate: (record, prevRecord) => !_.isEqual(record, prevRecord),
     children: [
+        {
+            title: "类型",
+            dataIndex: ["identifyContext", "type"],
+            render: (value, record) => {
+                ``
+                return <TableIdentifyColumn value={value} file={record} serieskey="type" /> //<TableTitle file={record} />
+            },
+            width: 75,
+            shouldCellUpdate: (record, prevRecord) => !_.isEqual(record, prevRecord) // checkIdentityChange(record, prevRecord, 'title') // record.identifyContext?.title != prevRecord.identifyContext?.title || record.overridenIdentify?.title != prevRecord.overridenIdentify?.title
+        },
         {
             title: "名称",
             dataIndex: ["identifyContext", "tmdbId"],
@@ -340,19 +352,21 @@ function TableIdentifyColumn(options: { value: number | string | undefined, file
     const { value, file, serieskey: key } = options;
     const [changed, finalValue] = isOverriden(value, file.overridenIdentify?.[key]);
     const [loading, setLoading] = useState(false);
+    const [localSeries, setLocalSeries] = useState<SeriesKey>();
     useEffect(asyncEffect(async () => {
         setLoading(true)
         const identity = _.merge(options.file.identifyContext, options.file.overridenIdentify);
         if (identity !== undefined) {
             const series = new SeriesKey().type(identity.type).tmdbId(identity.tmdbId).season(identity.season).episode(identity.episode);
             const sliced = series.slice(key)
+            setLocalSeries(sliced)
             const target = new TMDB().fromSeries(sliced);
             setWork(await target?.get())
         }
         setLoading(false)
     }), [file, finalValue])
 
-    const { setKeyword, setSeries } = useContext(SearchContext);
+    const { setKeyword, setSeries, series } = useContext(SearchContext);
     const onTitleTagClick = (value: string) => {
         setKeyword(value);
     }
@@ -378,8 +392,12 @@ function TableIdentifyColumn(options: { value: number | string | undefined, file
             : <></>}
     </Space>
     return <Tag color={changed ? 'pink' : 'cyan'}>
-        {work?.key || finalValue}
-        <Divider type="vertical" style={{ borderInlineColor: changed ? 'pink' : 'rgba(5, 5, 5, 0.06)' }} />
+        <Tooltip title={JSON.stringify(localSeries)}>
+            {work?.key || finalValue}
+        </Tooltip>
+        {loading || work ?
+            <Divider type="vertical" style={{ borderInlineColor: changed ? 'pink' : 'rgba(5, 5, 5, 0.06)' }} />
+            : <></>}
         <Popover content={popCard} placement="topRight">
             {
                 loading ? <IconEllipsisLoading /> : work ? <>
