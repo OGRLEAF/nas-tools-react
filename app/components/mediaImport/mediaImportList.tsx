@@ -184,7 +184,7 @@ export const ImportSubmit = ({ files }: { files: MediaImportFile[] }) => {
                     await orgn.importTV(
                         {
                             path: key, files, importMode: value.type, season: {
-                                series: new SeriesKey().tmdbId(mediaSeasonSelected.tmdbId),
+                                series: new SeriesKey().type(mediaSeasonSelected.type).tmdbId(mediaSeasonSelected.tmdbId),
                                 type: MediaWorkType.TV,
                                 key: mediaSeasonSelected.season,
                                 title: mediaSeasonSelected.title
