@@ -32,7 +32,10 @@ type NastoolApi =
     "task/list" |
     "task/create" |
     "sync/directory/list" |
-    "subscribe/movie/list"
+    "subscribe/movie/list" |
+    "subscribe/tv/list" |
+    "subscribe/add" |
+    "subscribe/update"
 
 export interface NastoolResponse<T> {
     code: number,
@@ -230,7 +233,8 @@ export type NastoolFileListItem = {
     name: string,
     type: boolean,
     mtime: number,
-    is_empty?: boolean
+    is_empty?: boolean,
+    size: number
 }
 export type NastoolFileList = {
     is_root: boolean,

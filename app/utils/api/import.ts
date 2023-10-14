@@ -8,14 +8,16 @@ export class Organize extends APIBase {
     constructor() {
         super();
     }
-    public async importTV({ path, files, importMode, season, episodes, target_path, dryrun = true }: { path: string; files: string[]; importMode: ImportMode; season: MediaWorkSeason; episodes?: optionalEpisode[]; target_path?: string; dryrun?: boolean; }): Promise<void> {
+
+    public async importTV({ path, files, importMode, season, episodes, target_path, dryrun = true }:
+         { path: string; files: string[]; importMode: ImportMode; season: MediaWorkSeason; episodes?: optionalEpisode[]; target_path?: string; dryrun?: boolean; }): Promise<void> {
         console.log(importMode)
         const request = await (await this.API).mediaFileImport(
             {
                 path, files, importMode,
                 season: season.key,
                 tmdbid: String(season.series.i),
-                type: NastoolMediaType.TV,
+                type: season.type as unknown as NastoolMediaType,
                 target_path: target_path,
                 episodes: episodes
                 //  season.key, season.series[0], NastoolMediaType.TV

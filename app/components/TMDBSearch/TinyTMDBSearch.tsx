@@ -2,7 +2,7 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useState } from
 import { API, NastoolMediaSearchResult, NastoolMediaSearchResultItem, NastoolMediaType, NastoolServerConfig } from "../../utils/api/api";
 import { AutoComplete, Form, Input, Radio, Space, theme, Image, Typography, Empty, Row, Col, Select, Skeleton } from "antd";
 import { TMDB } from "../../utils/api/tmdb";
-import { MediaIdentifyContext, MediaWork } from "../../utils/api/types";
+import { MediaIdentifyContext, MediaWork, MediaWorkType } from "../../utils/api/types";
 import { SearchContext } from "./SearchContext";
 import { ServerConfig } from "@/app/utils/api/serverConfig";
 
@@ -17,7 +17,7 @@ interface DetaiCardStyle {
 
 const cardStyleMap: Record<CardSize, DetaiCardStyle> = {
     "normal": {
-
+        textLimit: 999
     },
     "small": {
         image: {
@@ -101,10 +101,14 @@ export function MediaDetailCard({
 }
 
 export default function TinyTMDBSearch({
+    filter,
     onSelected,
     onChange,
     value,
 }: {
+    filter?: {
+        type: MediaWorkType[],
+    },
     onSelected?: (value: MediaWork) => void,
     onChange?: (value: string) => void,
     value?: string
@@ -125,8 +129,15 @@ export default function TinyTMDBSearch({
         const tmdb = new TMDB()
         tmdb.search(value)
             .then((result) => {
-
-                setOptions(result.map(resultItem => ({
+                
+                setOptions(result
+                    .filter((item)=>{
+                        if(filter) {
+                            return (filter.type.indexOf(item.series.t) > -1)
+                        }
+                        return true
+                    })
+                    .map(resultItem => ({
                     value: `${resultItem.title} (${resultItem.key})`,
 
                     label: <div

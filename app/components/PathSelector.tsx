@@ -14,13 +14,16 @@ export const PathManagerContext = createContext<PathManager>(new PathManager("/"
 export const PathManagerDispatchContext = createContext(({ type }: { type: any, path: string }) => { });
 
 
-export function PathSelector({ value: string = "/", onChange, style }: PathSelectorProps) {
+export function PathSelector({ value , onChange, style }: PathSelectorProps) {
     const [loadingState, setLoadingState] = useState(true)
     const [treeData, setTreeData] = useState<Omit<DefaultOptionType, 'label'>[]>([]);
 
     const pathManagerContext = useContext(PathManagerContext);
 
     useEffect(() => {
+        if(value==undefined) {
+            
+        }
         setLoadingState(true);
         const nastool = API.getNastoolInstance();
         nastool.then(async (nastool) => {

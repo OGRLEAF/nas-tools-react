@@ -6,11 +6,11 @@ import { PlusOutlined } from "@ant-design/icons"
 import { IconDatabase } from "@/app/components/icons";
 import { MovieRssConfig, MovieRssInfo, MovieRssList, RssState, Subscribe } from "@/app/utils/api/subscribe";
 import TinyTMDBSearch, { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
-import { MediaWork, MediaWorkType } from "@/app/utils/api/types";
+import { MediaWork, MediaWorkType, SeriesKey } from "@/app/utils/api/types";
 import { PathSelector } from "@/app/components/PathSelector";
-import { NastoolFilterruleBasic } from "@/app/utils/api/api";
+import { DBMediaType, NastoolFilterruleBasic } from "@/app/utils/api/api";
 import { MediaLibrarySelect } from "@/app/components/mediaImport/mediaImportList";
-import { DownloadSettingSelect, FilterRuleSelect, PixSelect, ResTypeSelect } from "@/app/components/NTSelects";
+import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 import { useForm } from "antd/es/form/Form";
 
 
@@ -26,7 +26,7 @@ const pixOptions = [
 const SubscribeMovieForm = ({ config }: { config: MovieRssInfo }) => {
     const [detail, setDetail] = useState<MediaWork>();
     const detailFromConfig = {
-        series: [],
+        series: new SeriesKey().type(MediaWorkType.MOVIE).tmdbId(config.mediaid),
         type: MediaWorkType.MOVIE,
         key: config.mediaid,
         title: config.name,
@@ -47,19 +47,35 @@ const SubscribeMovieForm = ({ config }: { config: MovieRssInfo }) => {
         setDetail(value)
         form.setFieldsValue({
             name: value.title,
-            year: value.metadata?.date.release
+            year: value.metadata?.date.release,
+        })
+    }
+
+    const Predefined = {
+        type: MediaWorkType.MOVIE,
+    }
+
+    const onFinish = (value: MovieRssInfo) => {
+        console.log(value, config)
+        new Subscribe().updateSubscribe({
+            ...config,
+            ...value,
+            type: DBMediaType.MOVIE,
+            rssid: config.rssid,
+            mediaid: (detail?.key != undefined) ? String(detail?.key) : config.mediaid
         })
     }
 
     return <Space direction="vertical" style={{ width: "100%" }}>
-        <TinyTMDBSearch onSelected={onSelect} />
+        <TinyTMDBSearch filter={{ type: [MediaWorkType.MOVIE] }} onSelected={onSelect} />
         {/* <Spin spinning> */}
-        <MediaDetailCard mediaDetail={detail || detailFromConfig} />
+        <MediaDetailCard size="small" mediaDetail={detail || detailFromConfig} />
         {/* </Spin> */}
         <Form
             form={form}
             layout="vertical"
             initialValues={config}
+            onFinish={onFinish}
         >
             <Row gutter={16}>
                 <Col span={20}>
@@ -102,24 +118,24 @@ const SubscribeMovieForm = ({ config }: { config: MovieRssInfo }) => {
                     </Form.Item>
                 </Col>
                 <Col span={6}>
-                    <Form.Item label="制作组" name="filter_pix">
+                    <Form.Item label="制作组" name="filter_team">
                         <Input />
                     </Form.Item>
                 </Col>
                 <Col span={6}>
-                    <Form.Item label="过滤规则" name="filter_pix">
+                    <Form.Item label="过滤规则" name="filter_rule">
                         <FilterRuleSelect />
                     </Form.Item>
                 </Col>
             </Row>
             <Row gutter={16}>
                 <Col span={12}>
-                    <Form.Item label="包含" name="include">
+                    <Form.Item label="包含" name="filter_include">
                         <Input />
                     </Form.Item>
                 </Col>
                 <Col span={12}>
-                    <Form.Item label="排除" name="exclude">
+                    <Form.Item label="排除" name="filter_exclude">
                         <Input />
                     </Form.Item>
                 </Col>
@@ -133,6 +149,27 @@ const SubscribeMovieForm = ({ config }: { config: MovieRssInfo }) => {
                 <Col span={16}>
                     <Form.Item label="保存路径" name="save_path">
                         <MediaLibrarySelect />
+                    </Form.Item>
+                </Col>
+            </Row>
+            <Row>
+                <Col span={24}>
+                    <Form.Item label="订阅站点" name="rss_sites">
+                        <SiteSelect />
+                    </Form.Item>
+                </Col>
+            </Row>
+            <Row>
+                <Col span={24}>
+                    <Form.Item label="索引站点" name="search_sites">
+                        <IndexerSelect />
+                    </Form.Item>
+                </Col>
+            </Row>
+            <Row gutter={16}>
+                <Col span={24}>
+                    <Form.Item style={{ float: "right" }}>
+                        <Button type="primary" htmlType="submit">保存</Button>
                     </Form.Item>
                 </Col>
             </Row>

@@ -1,8 +1,9 @@
 
 import React, { useEffect, useState } from "react"
 import { createContext } from "vm"
-import { API, NastoolFilterruleBasic } from "../utils/api/api"
+import { API, NastoolFilterruleBasic, NastoolIndexer, NastoolSiteInfo, NastoolSiteProfile } from "../utils/api/api"
 import { Select } from "antd"
+import { Sites } from "../utils/api/sites"
 
 interface FormItemProp<T> {
     value?: T,
@@ -21,11 +22,11 @@ export const DownloadSettingSelect = (options: FormItemProp<string>) => {
     const downloadConfigSelectOption = [
         {
             label: "默认",
-            value: ""
+            value: 0
         },
 
     ]
-    const [selectOptions, setSelectOptions] = useState<{ value: string | number, label: string }[]>(downloadConfigSelectOption);
+    const [selectOptions, setSelectOptions] = useState<{ value: undefined | number, label: string }[]>(downloadConfigSelectOption);
     useEffect(() => {
         (async () => {
             const nastool = await API.getNastoolInstance();
@@ -33,7 +34,7 @@ export const DownloadSettingSelect = (options: FormItemProp<string>) => {
             setSelectOptions(
                 [
                     ...downloadConfigSelectOption,
-                    ...downloadConfig.map((item) => ({ label: item.name, value: item.id }))
+                    ...downloadConfig.map((item) => ({ label: item.name, value: Number(item.id) }))
                 ])
         })()
     }, []);
@@ -85,4 +86,32 @@ const pixOptions = [
 
 export const PixSelect = (options: FormItemProp<string>) => {
     return <Select value={options.value} onChange={options.onChange} options={pixOptions} />
+}
+
+export const SiteSelect = (options: FormItemProp<string[]>) => {
+    const [selectOptions, setSelectOptions] = useState<{ value: NastoolSiteProfile['name'], label: NastoolSiteProfile['name'] }[]>([]);
+    useEffect(() => {
+        (async () => {
+            const sites = await new Sites().sites();
+            setSelectOptions(
+                [
+                    ...sites.map((item) => ({ label: item.name, value: item.name }))
+                ])
+        })()
+    }, []);
+    return <Select mode="multiple" options={selectOptions} value={options.value} onChange={options.onChange} />
+}
+
+export const IndexerSelect = (options: FormItemProp<string[]>) => {
+    const [selectOptions, setSelectOptions] = useState<{ value: NastoolIndexer['name'], label: NastoolIndexer['name'] }[]>([]);
+    useEffect(() => {
+        (async () => {
+            const sites = await new Sites().indexers();
+            setSelectOptions(
+                [
+                    ...sites.map((item) => ({ label: item.name, value: item.name }))
+                ])
+        })()
+    }, []);
+    return <Select mode="multiple" options={selectOptions} value={options.value} onChange={options.onChange} />
 }

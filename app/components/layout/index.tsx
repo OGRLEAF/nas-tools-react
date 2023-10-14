@@ -15,9 +15,10 @@ import {
   HomeOutlined,
   SettingOutlined,
   ToolOutlined,
-  BuildOutlined
+  BuildOutlined,
+  VerticalAlignBottomOutlined
 } from '@ant-design/icons';
-import { IconBookBookMark, IconCalendarDaysSolid, IconCustomSolid, IconDatabase, IconFilmSolid, IconFolderTreeSolid, IconHistory, IconLink, IconMediaSolid, IconRefresh, IconRssSolid, IconTvSolid } from '../icons';
+import { IconBookBookMark, IconCalendarDaysSolid, IconCustomSolid, IconDatabase, IconDownloader, IconFilmSolid, IconFolderTreeSolid, IconHistory, IconLink, IconLoading, IconMediaSolid, IconRefresh, IconRssSolid, IconTvSolid } from '../icons';
 import type { MenuProps } from 'antd';
 import { Breadcrumb, Divider, Layout, Menu, theme } from 'antd';
 
@@ -58,6 +59,11 @@ const items: MenuItem[] = [
     getItem('数据统计', '/sites/statistics', <PieChartOutlined />),
     getItem('刷流任务', '/sites/tasks', <FileDoneOutlined />),
     getItem('站点资源', '/sites/resource', <ClusterOutlined />),
+  ]),
+  getItem('下载管理', '/download', <IconDownloader />, [
+    getItem('正在下载', '/download/ing', <IconLoading />),
+    getItem('下载完成', '/download/ed', <VerticalAlignBottomOutlined />),
+    // getItem('下载器管理', '/download/manage', <IconLoading />),
   ]),
   getItem('订阅管理', '/subscribe', <IconRssSolid />, [
     getItem('电影订阅', '/subscribe/movie', <IconFilmSolid />),
