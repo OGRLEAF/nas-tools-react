@@ -153,6 +153,6 @@ export default function MediaImportEntry({ appendFiles, flush }: { appendFiles?:
         mediaImportDispatch({ type: MediaImportAction.AppendFiles, appendFiles: appendFiles })
     }
     return (<>
-        <Button type="primary" onClick={onStartImport} icon={<VerticalAlignBottomOutlined />}>导入</Button>
+        <Button disabled={appendFiles?.length == 0} type="primary" onClick={onStartImport} icon={<VerticalAlignBottomOutlined />}>导入</Button>
     </>)
 }

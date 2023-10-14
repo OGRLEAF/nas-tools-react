@@ -10,6 +10,7 @@ import MediaImport from "@/app/components/mediaImport/mediaImport";
 import { PathManagerBar, PathManagerProvider, usePathManager, usePathManagerDispatch } from "@/app/components/pathManager"
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { bytes_to_human } from "@/app/utils";
 
 type SortKey = "name" | "mtime"
 type SortDirection = "dec" | "inc"
@@ -145,7 +146,9 @@ const FileFilter = () => {
 const FileList = ({ fileList, loading }: { fileList: NastoolFileListItem[], loading: boolean }) => {
     const { token: { colorTextTertiary }, } = theme.useToken();
     const pathManagerContext = usePathManager();
+    const currentPath = pathManagerContext.deepestPath
     const fileExts = new Set<string>(fileList.map(item => item.name.split(".").pop()).filter((item) => item != undefined) as string[]);
+    const [selectedFiles, setSelectedFiles] = useState<NastoolFileListItem[]>([]);
     const columns: ColumnsType<NastoolFileListItem> = [
         {
             title: <Space><span>文件</span><span style={{ color: colorTextTertiary }}>共 {fileList.length} 个文件</span></Space>,
@@ -169,6 +172,18 @@ const FileList = ({ fileList, loading }: { fileList: NastoolFileListItem[], load
             width: 50
         },
         {
+            title: <span>体积</span>,
+            render: (text, item) => {
+                const [num, unit] = bytes_to_human(item.size);
+                return <>{num.toFixed(2)}{unit}</>
+            },
+            defaultSortOrder: "descend",
+            sorter: (a: NastoolFileListItem, b: NastoolFileListItem) => (a.size - b.size),
+            // filters: Array.from(fileExts.keys()).map((item) => ({ text: item, value: item })),
+            // onFilter: (value, record) => (record.name.split(".").pop() === value),
+            width: 25,
+        },
+        {
             title: <span>类型</span>,
             render: (text, item) => item.name.split(".").pop(),
             defaultSortOrder: "descend",
@@ -186,10 +201,17 @@ const FileList = ({ fileList, loading }: { fileList: NastoolFileListItem[], load
                     <MediaImportEntry
                         flush={true}
                         appendFiles={
-                            fileList.map((item) => ({ name: item.name, path: pathManagerContext.deepestPath, rel: [] }))
+                            selectedFiles.map((item) => ({ name: item.name, path: currentPath, rel: [] }))
                         } />
                 </Space>
                 <Table
+                    rowSelection={{
+                        type: "checkbox",
+                        columnWidth: 10,
+                        onChange: (selectedRowKeys: React.Key[], selectedRows: NastoolFileListItem[]) => {
+                            setSelectedFiles(selectedRows)
+                        },
+                    }}
                     dataSource={fileList}
                     columns={columns}
                     loading={loading}
@@ -197,7 +219,8 @@ const FileList = ({ fileList, loading }: { fileList: NastoolFileListItem[], load
 
                     pagination={
                         {
-                            showSizeChanger: true
+                            showSizeChanger: true,
+                            defaultPageSize: 20,
                         }
                     }
                     style={{ maxHeight: "calc(100vh - 200px)", overflowY: "auto" }}
@@ -208,6 +231,7 @@ const FileList = ({ fileList, loading }: { fileList: NastoolFileListItem[], load
                         expandRowByClick: true,
                         fixed: "right",
                         columnWidth: 16,
+                        showExpandColumn: false,
                         rowExpandable: () => true
                     }}
                     scroll={{ y: 1000 }}

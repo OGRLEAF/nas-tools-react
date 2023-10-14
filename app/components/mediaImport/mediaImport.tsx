@@ -1,6 +1,6 @@
 import { Breadcrumb, Button, Col, Divider, Drawer, Empty, Form, Input, InputNumber, List, Radio, Row, Select, SelectProps, Space, Spin, Tabs, TabsProps } from "antd"
 import { RedoOutlined, InfoCircleOutlined } from "@ant-design/icons"
-import React, { useContext, useEffect, useState } from "react"
+import React, { CSSProperties, useContext, useEffect, useMemo, useState } from "react"
 import { MediaImportFile, MediaImportFileKey, useMediaImport, useMediaImportDispatch } from "./mediaImportContext"
 import { NastoolMediaType } from "../../utils/api/api";
 import { useWatch } from "antd/es/form/Form";
@@ -325,6 +325,9 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
     }
 
     const [seasonOptions, setSeasonOptions] = useState<SelectProps['options']>([])
+    const isTvSeries = useMemo(() => {
+        return (series.t == MediaWorkType.TV || series.t == MediaWorkType.ANI)
+    }, [series])
     useEffect(asyncEffect(async () => {
         console.log("On Series[0] updated")
         if (series.i != undefined) {
@@ -332,18 +335,20 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
             const mediaWork = await media.get();
             if (mediaWork) {
                 setSelected(mediaWork);
-                const seasons = await media.get_children()
+                if (mediaWork.series.t == MediaWorkType.TV || mediaWork.series.t == MediaWorkType.ANI) {
+                    const seasons = await media.get_children()
 
-                if (seasons?.length) {
-                    const options = seasons.map((item) => ({
-                        value: item.key,
-                        label: `季 ${item.key} - ${item.title}`,
-                    }))
-                    setSeasonOptions(options);
-                } else {
-                    setSeasonOptions([])
+                    if (seasons?.length) {
+                        const options = seasons.map((item) => ({
+                            value: item.key,
+                            label: `季 ${item.key} - ${item.title}`,
+                        }))
+                        setSeasonOptions(options);
+                    } else {
+                        setSeasonOptions([])
+                    }
+                    setSelectedSeason(undefined)
                 }
-                setSelectedSeason(undefined)
             }
         }
     }), [series.i])
@@ -363,24 +368,68 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
     return <Space direction="vertical" style={{ width: "100%" }}>
         <TinyTMDBSearch onSelected={onTMDBSelected} />
         <MediaDetailCardFromSearch loading={loading} />
-        <Space>
-            <Select value={selectedSeason} disabled={loading} loading={loading} style={{ width: "250px" }}
-                options={seasonOptions}
-                onSelect={(value: number) => {
-                    // console.log(value)
-                    if (value !== undefined) setSelectedSeason(value);
-                    if (series.has("tmdbId")) {
-                        setSeries(new SeriesKey(series).season(value))
-                    }
-                }}
-            />
-            {/* {
-                season?.metadata?.links.tmdb ?
-                    <Button size="small" type="link" target="_blank" href={season?.metadata?.links.tmdb} icon={<IconExternalLink />}>TMDB</Button> :
-                    <></>
-            } */}
-        </Space>
+        {isTvSeries ?
+            <Space>
+                <MediaSeasonInput style={{ width: 250 }}
+                    series={series}
+                    onChange={(value) => {
+                        if (value !== undefined) setSelectedSeason(value);
+                        if (series.has("tmdbId")) {
+                            setSeries(new SeriesKey(series).season(value))
+                        }
+                    }} />
+                {/* <Select value={selectedSeason} disabled={loading} loading={loading} style={{ width: "250px" }}
+                    options={seasonOptions}
+                    onSelect={(value: number) => {
+                        // console.log(value)
+                        if (value !== undefined) setSelectedSeason(value);
+                        if (series.has("tmdbId")) {
+                            setSeries(new SeriesKey(series).season(value))
+                        }
+                    }}
+                /> */}
+            </Space>
+            : <></>}
     </Space>
+}
+
+export const MediaSeasonInput = ({ series, value, onChange, style }: { series: SeriesKey, value?: number, onChange?: (value: number) => void, style?: CSSProperties }) => {
+    const [seasonOptions, setSeasonOptions] = useState<SelectProps['options']>([])
+    const [loading, setLoading] = useState(false)
+    useEffect(asyncEffect(async () => {
+        setLoading(true)
+        const media = new TMDBMedia(series.t).tmdbid(String(series.i));
+        const mediaWork = await media.get();
+        if (mediaWork) {
+            if (mediaWork.series.t == MediaWorkType.TV || mediaWork.series.t == MediaWorkType.ANI) {
+                const seasons = await media.get_children()
+                if (seasons?.length) {
+                    const options = seasons.map((item) => ({
+                        value: item.key,
+                        label: `季 ${item.key} - ${item.title}`,
+                    }))
+                    setSeasonOptions(options);
+                } else {
+                    setSeasonOptions([])
+                }
+            }
+        }
+        setLoading(false)
+    }), [series.i])
+
+    return <Select value={value} disabled={loading} loading={loading} style={style}
+        options={seasonOptions}
+        onSelect={(value: number) => {
+            if (onChange) onChange(value)
+        }}
+    // onSelect={(value: number) => {
+    //     // console.log(value)
+    //     if (value !== undefined) setSelectedSeason(value);
+    //     if (series.has("tmdbId")) {
+    //         setSeries(new SeriesKey(series).season(value))
+    //     }
+    // }}
+    />
 }
 
 const MediaDetailCardFromSearch = ({ loading }: { loading?: boolean }) => {

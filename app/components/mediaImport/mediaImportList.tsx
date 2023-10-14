@@ -170,7 +170,8 @@ export const ImportSubmit = ({ files }: { files: MediaImportFile[] }) => {
         const keys = Array.from(groupedMap.keys())
 
         const orgn = new Organize();
-        if (mediaSeasonSelected.season != undefined) {
+        if (mediaSeasonSelected.season != undefined &&
+            (mediaSeasonSelected.type == MediaWorkType.TV || mediaSeasonSelected.type == MediaWorkType.ANI)) {
             for (let key of keys) {
                 const target = groupedMap.get(key)
                 console.log(target)
@@ -181,14 +182,17 @@ export const ImportSubmit = ({ files }: { files: MediaImportFile[] }) => {
                     })
                     const files = target.map(file => file.name);
                     console.log(episodes, files)
+                    console.log(value.target_path, mediaSeasonSelected, value.type)
                     await orgn.importTV(
                         {
-                            path: key, files, importMode: value.type, season: {
+                            path: key, files, importMode: value.type,
+                            season: {
                                 series: new SeriesKey().type(mediaSeasonSelected.type).tmdbId(mediaSeasonSelected.tmdbId),
-                                type: MediaWorkType.TV,
+                                type: mediaSeasonSelected.type,
                                 key: mediaSeasonSelected.season,
                                 title: mediaSeasonSelected.title
                             },
+                            target_path: value.target_path,
                             episodes: episodes
                         },
                     )
@@ -243,13 +247,29 @@ export const MediaLibrarySelect = (options: {
     type OutputPathType = "auto" | "library" | "customize"
     const [librariesPath, setLibrariesPath] = useState<NastoolServerConfig['media']>();
     const [pathType, setPathType] = useState<OutputPathType>("auto");
+    const [path, setPath] = useState<string>()
     useEffect(() => {
+
         const orgn = new Organize();
         orgn.getLibrariesPath()
             .then(libraries => {
                 setLibrariesPath(libraries)
+                console.log("MediaLibrarySelect", options.value)
+                if (options.value == undefined) {
+                    setPathType("auto")
+                }else {
+                    const {anime_path, tv_path, movie_path} = libraries
+                    const allPaths = [...anime_path, ...tv_path, ...movie_path]
+                    if(allPaths.indexOf(options.value)>-1) {
+                        setPathType("library")
+                    }else{
+                        setPathType("customize")
+                    }
+                    setPath(options.value)
+                }
             })
-    }, [])
+
+    }, [options.value])
 
     const outputPathTypeOptions = [
         {
@@ -290,22 +310,27 @@ export const MediaLibrarySelect = (options: {
     },]
     return <Space.Compact style={{ width: "100%", ...options.style }}>
         <Select
+            value={pathType}
             defaultValue="auto"
             style={{ width: 150 }}
             onChange={handlePathTypeChange}
             options={outputPathTypeOptions}
         />
         {
-            pathType == "customize" ? <PathSelector onChange={handlePathChange}
+            pathType == "customize" ? <PathSelector value={path}  onChange={handlePathChange}
                 style={{
                     width: options.width ? options.width - 150 : undefined
                 }} /> :
-                pathType == "library" ? <Select onChange={handlePathChange} options={libraryPathOptions}
+                pathType == "library" ? <Select value={path} onChange={handlePathChange} options={libraryPathOptions}
                     style={{
                         width: options.width ? options.width - 150 : undefined
                     }}
                 /> :
-                    <></>
+                    <Select disabled
+                        style={{
+                            width: options.width ? options.width - 150 : undefined
+                        }}
+                    />
         }
     </Space.Compact>
 }
