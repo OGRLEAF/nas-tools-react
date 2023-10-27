@@ -22,7 +22,7 @@ export function PathSelector({ value , onChange, style }: PathSelectorProps) {
 
     useEffect(() => {
         if(value==undefined) {
-            
+
         }
         setLoadingState(true);
         const nastool = API.getNastoolInstance();
@@ -74,6 +74,7 @@ export function PathSelector({ value , onChange, style }: PathSelectorProps) {
 
     return <>
         <TreeSelect
+            defaultValue={(value)}
             loading={loadingState}
             treeDataSimpleMode
             style={style}

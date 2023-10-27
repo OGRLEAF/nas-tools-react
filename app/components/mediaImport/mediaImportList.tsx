@@ -257,12 +257,12 @@ export const MediaLibrarySelect = (options: {
                 console.log("MediaLibrarySelect", options.value)
                 if (options.value == undefined) {
                     setPathType("auto")
-                }else {
-                    const {anime_path, tv_path, movie_path} = libraries
+                } else {
+                    const { anime_path, tv_path, movie_path } = libraries
                     const allPaths = [...anime_path, ...tv_path, ...movie_path]
-                    if(allPaths.indexOf(options.value)>-1) {
+                    if (allPaths.indexOf(options.value) > -1) {
                         setPathType("library")
-                    }else{
+                    } else {
                         setPathType("customize")
                     }
                     setPath(options.value)
@@ -317,7 +317,7 @@ export const MediaLibrarySelect = (options: {
             options={outputPathTypeOptions}
         />
         {
-            pathType == "customize" ? <PathSelector value={path}  onChange={handlePathChange}
+            pathType == "customize" ? <PathSelector value={path} onChange={handlePathChange}
                 style={{
                     width: options.width ? options.width - 150 : undefined
                 }} /> :
@@ -355,7 +355,7 @@ const TableFileName = (options: { name: string, item: MediaImportFile }) => {
     return <div style={{ width: "100%", display: "flex", justifyContent: "space-between" }}>
         {options.name}
         <Space>
-            <Tooltip title={JSON.stringify(options.item)}>
+            <Tooltip title={<pre>{JSON.stringify(options.item, null, 2)}</pre>} overlayInnerStyle={{ overflow: "auto", maxHeight: 500 }}>
                 <InfoCircleOutlined style={{ color: failed ? token.colorWarningTextActive : token.colorTextDescription }} />
             </Tooltip>
             <Button size="small" type="link" loading={loading} icon={<RedoOutlined />}

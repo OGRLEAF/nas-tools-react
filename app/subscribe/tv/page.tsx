@@ -13,34 +13,56 @@ import { MediaLibrarySelect } from "@/app/components/mediaImport/mediaImportList
 import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 import { useForm } from "antd/es/form/Form";
 import { MediaSeasonInput } from "@/app/components/mediaImport/mediaImport";
+import DrawerPanel from "antd/es/drawer/DrawerPanel";
 
 
-const pixOptions = [
-    {
-        value: "",
-        label: "全部"
-    },
-    ...["8k", "4k", "1080p", "720p"]
-        .map((value) => ({ value: value, label: value }))
-]
+const defaultConfig: TVRssInfo = {
+    image: "",
+    poster: "",
+    overview: "",
+    release_date: "",
+    state: RssState.QUEUING,
+    type: DBMediaType.TV,
+    in_form: "",
+    name: "",
+    fuzzy_match: false,
+    over_edition: false,
+    save_path: "",
+    download_setting: 0,
+    rss_sites: [],
+    search_sites: [],
+    filter_restype: "",
+    filter_pix: "",
+    filter_team: "",
+    filter_rule: "",
+    filter_include: "",
+    filter_exclude: "",
+    keyword: "",
+    mediaid: "",
+    year: "",
+    current_ep: 0,
+    total_ep: 0,
+    season: 0
+}
 
-const SubscribeTVForm = ({ config }: { config: TVRssInfo }) => {
+const SubscribeTVForm = ({ config }: { config?: TVRssInfo }) => {
+    const initialConfig = config || defaultConfig;
     const [detail, setDetail] = useState<MediaWork>();
-    const [series, setSeries] = useState( new SeriesKey().type(MediaWorkType.TV).tmdbId(config.mediaid).season(config.season))
+    const [series, setSeries] = useState(new SeriesKey().type(MediaWorkType.TV).tmdbId(initialConfig.mediaid).season(initialConfig.season))
     const detailFromConfig = {
         series: series,
         type: MediaWorkType.TV,
-        key: config.mediaid,
-        title: config.name,
+        key: initialConfig.mediaid,
+        title: initialConfig.name,
         metadata: {
-            title: config.name,
-            description: config.overview,
+            title: initialConfig.name,
+            description: initialConfig.overview,
             date: {
-                release: config.year,
+                release: initialConfig.year,
             },
             links: {},
             image: {
-                cover: config.poster
+                cover: initialConfig.poster
             }
         }
     }
@@ -54,15 +76,21 @@ const SubscribeTVForm = ({ config }: { config: TVRssInfo }) => {
         })
     }
 
+
+    const [loading, setLoading] = useState(false);
     const onFinish = (value: TVRssInfo) => {
-        console.log(value, config)
+        console.log(value, initialConfig)
+        setLoading(true)
         new Subscribe().updateSubscribe({
-            ...config,
+            ...initialConfig,
             ...value,
             type: DBMediaType.TV,
-            rssid: config.rssid,
-            mediaid: (detail?.key != undefined) ? String(detail?.key) : config.mediaid
+            rssid: initialConfig.rssid,
+            mediaid: (detail?.key != undefined) ? String(detail?.key) : initialConfig.mediaid
         })
+            .finally(() => {
+                setLoading(false)
+            })
     }
 
     return <Space direction="vertical" style={{ width: "100%" }}>
@@ -73,7 +101,7 @@ const SubscribeTVForm = ({ config }: { config: TVRssInfo }) => {
         <Form
             form={form}
             layout="vertical"
-            initialValues={config}
+            initialValues={initialConfig}
             onFinish={onFinish}
         >
             <Row gutter={16}>
@@ -185,7 +213,7 @@ const SubscribeTVForm = ({ config }: { config: TVRssInfo }) => {
             <Row gutter={16}>
                 <Col span={24}>
                     <Form.Item style={{ float: "right" }}>
-                        <Button type="primary" htmlType="submit">保存</Button>
+                        <Button loading={loading} type="primary" htmlType="submit">保存</Button>
                     </Form.Item>
                 </Col>
             </Row>
@@ -210,7 +238,11 @@ const SubscribeTVCard = ({ movieRssCard }: { movieRssCard: TvRssList[string] }) 
             cover={<img src={movieRssCard.image} style={{ width: 300 }} />}
             onClick={() => setOpen(true)}
         >
-            <Card.Meta title={movieRssCard.name}
+            <Card.Meta title={
+                <Space>
+                    <span>{movieRssCard.name}</span>
+                    <Tag>季{movieRssCard.season}</Tag>
+                </Space>}
                 description={
                     <>{StatusTag}</>
                 }
@@ -229,16 +261,21 @@ export default function SubscribeTV() {
         updateTvList();
     }, [])
     const cards = Object.entries(movieList).map(([key, config]) => <SubscribeTVCard key={key} movieRssCard={config} />)
+
+    const [openCreate, setOpenCreate] = useState(false)
     return <Section title="电影订阅"
         onRefresh={updateTvList}
         extra={
             <Space>
-                <Button icon={<PlusOutlined />} type="primary">添加订阅</Button>
+                <Button icon={<PlusOutlined />} onClick={() => setOpenCreate(true)} type="primary">添加订阅</Button>
                 <Button icon={<IconDatabase />} >默认设置</Button>
             </Space>
         }>
         <Space wrap>
             {cards}
         </Space>
+        <Drawer size="large" open={openCreate} onClose={() => setOpenCreate(false)}>
+            <SubscribeTVForm />
+        </Drawer>
     </Section>
 }

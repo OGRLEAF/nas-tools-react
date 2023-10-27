@@ -59,7 +59,7 @@ export const FilterRuleSelect = (options: FormItemProp<string>) => {
         },
         ...filterRules.map((item) => ({ label: item.name, value: item.id }))
     ]
-    return <Select options={filterRuleOption} value={options.value} onChange={options.onChange} />
+    return <Select options={filterRuleOption} value={String(options.value)} onChange={options.onChange} />
 }
 
 const resTypeOptions = [

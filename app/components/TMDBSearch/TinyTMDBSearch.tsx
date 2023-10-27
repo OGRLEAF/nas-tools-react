@@ -75,7 +75,7 @@ export function MediaDetailCard({
 
                 <Typography style={{ paddingTop: 4, ...style.typography }}>
                     <Typography.Title level={2} style={{ color: token.colorTextBase, fontSize: "1.6rem", marginTop: 6, ...style.title }}>{mediaDetail.title}
-                        <span style={{ fontSize: "1rem" }}> ({metadata?.date.release})</span>
+                        <span style={{ fontSize: "1rem" }}> {metadata?.date.release}</span>
 
                     </Typography.Title>
                     <Typography.Link style={{ color: token.colorTextDescription }} href={metadata?.links.tmdb} target="_blank">

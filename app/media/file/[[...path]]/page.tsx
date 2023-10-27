@@ -2,7 +2,7 @@
 import { Section } from "@/app/components/Section";
 import { API, NastoolFileListItem } from "@/app/utils/api/api";
 import { Col, Row, List, Typography, Space, Segmented, Button, theme, Table, Cascader, Input, Form, Select } from "antd";
-import { Reducer, useEffect, useMemo, useReducer, useState } from "react";
+import { Reducer, memo, useEffect, useMemo, useReducer, useState } from "react";
 import { ColumnsType } from "antd/es/table";
 import FileMoreAction from "@/app/components/fileMoreAction";
 import MediaImportEntry, { MediaImportProvider } from "@/app/components/mediaImport/mediaImportEntry";
@@ -44,37 +44,39 @@ const DirectoryList = ({ dirList, loading, }:
         </>)
     }
     const pathParams = useParams()
-
-    const [sortConfig, setSortConfig] = useState<{ key: SortKey, dir: SortDirection, include: string }>({ key: "name", dir: "dec", include: "" })
+    const [sortConfig, setSortConfig] = useState<{ key: SortKey, dir: SortDirection }>()
+    const [filterConfig, setFilterConfig] = useState<string>("");
     const sortedDirList = useMemo(() => (
-        (sortConfig.include.length ? dirList.filter((item) => item.name.includes(sortConfig.include)) : dirList)
+        (filterConfig ? dirList.filter((item) => item.name.includes(filterConfig)) : dirList)
             .sort((a, b) => {
-                if (sortConfig.key == "name") {
-                    return sortConfig.dir == "dec" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+                if (sortConfig?.key == "name") {
+                    return sortConfig?.dir == "dec" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
                 } else {
-                    return sortConfig.dir == "dec" ? a.mtime - b.mtime : b.mtime - a.mtime;
+                    return sortConfig?.dir == "dec" ? a.mtime - b.mtime : b.mtime - a.mtime;
                 }
-            })), [dirList, sortConfig])
+            })), [dirList, sortConfig, filterConfig])
 
     return (
         <Space direction="vertical" style={{ width: "100%" }}>
             <Row>
                 <Col span={8}>
                     <Cascader style={{ width: 130 }}
-                        value={[sortConfig.key, sortConfig.dir]}
+                        value={[sortConfig?.key || "name", sortConfig?.dir || "dec"]}
                         onChange={(value) => {
                             setSortConfig({
-                                ...sortConfig,
-                                key: value[0] as SortKey,
-                                dir: value[1] as SortDirection,
+                                // ...sortConfig,
+                                key: value[0] as SortKey || sortConfig?.key || "name",
+                                dir: value[1] as SortDirection || sortConfig?.dir || "dec",
                             })
                         }} options={sortOption} placeholder="排序" />
                 </Col>
                 <Col span={16}>
                     <Input
                         allowClear
-                        value={sortConfig.include}
-                        onChange={(evt) => setSortConfig({ ...sortConfig, include: evt.target.value })}
+                        value={filterConfig}
+                        onChange={(evt) => {
+                            setFilterConfig(evt.target.value);
+                        }}
                         placeholder="搜索" />
                 </Col>
             </Row>
@@ -88,13 +90,8 @@ const DirectoryList = ({ dirList, loading, }:
                 dataSource={sortedDirList}
                 renderItem={(item) => (
                     <List.Item>
-                        {/* <a
-                            style={{ wordBreak: "break-word" }}
-                            onClick={(evt) => { onSelectDir(item.name) }}>
-                            {item.name}
-                        </a> */}
                         <Link
-                            href={"/media/file/" + [...((pathParams.path || []) as string[]), encodeURI(item.name)].join("/")} //{"/media/file" + [...(pathParams.path as string[]), encodeURIComponent(item.name)].join("/")}
+                            href={"/media/file/" + [...((pathParams.path || []) as string[]), encodeURI(item.name)].join("/")}
                         >{item.name}</Link>
                     </List.Item>
                 )}
@@ -105,7 +102,7 @@ const FileFilter = () => {
 
     const [toolsForm] = Form.useForm<{ filter: string }>();
     const { useWatch } = Form;
-    const filterContent = useWatch('filter', toolsForm);
+    // const filterContent = useWatch('filter', toolsForm);
 
     const filteringOptions = [
         {
@@ -154,7 +151,7 @@ const FileList = ({ fileList, loading }: { fileList: NastoolFileListItem[], load
             title: <Space><span>文件</span><span style={{ color: colorTextTertiary }}>共 {fileList.length} 个文件</span></Space>,
             dataIndex: "name",
             key: "name",
-            render: (text, item) => text,
+            render: (text, item) => <Button type="link" size="small">{text}</Button>,
             defaultSortOrder: "descend",
             sorter: (a: NastoolFileListItem, b: NastoolFileListItem) => ((a.name > b.name) ? -1 : 1),
             width: 300,
@@ -247,14 +244,8 @@ const MediaFileExplorer = () => {
     const [dirList, setDirList] = useState<NastoolFileListItem[]>([])
     const [fileList, setFileList] = useState<NastoolFileListItem[]>([])
     const pathManagerContext = usePathManager();
-    // const pathManagerDispath = usePathManagerDispatch();
     const router = useRouter()
-    const pathname = usePathname();
     useEffect(() => {
-        // router.push("/media/file"
-        //     + pathManagerContext.getBasePath
-        //     + pathManagerContext.getDeepestRelativePath(),
-        //     )
         setLoadingState(true);
         const nastool = API.getNastoolInstance();
         nastool.then(async (nastool) => {
@@ -268,8 +259,6 @@ const MediaFileExplorer = () => {
 
             }
         })
-
-        return () => { console.log("clean", nastool) }
     }, []);
 
     useEffect(() => {
@@ -304,14 +293,17 @@ const MediaFileExplorer = () => {
     </>
 }
 
-export default function MediaFile({ params }: { params: { path?: string[] } }) {
+function MediaFile() {
     // pathManager.setPath("mnt/S1/MainStorage/Media/Downloads/animations")
-    const _path = "/" + (params.path || []).map(decodeURIComponent).join("/") || "";
     return (
         <Section title="文件管理">
-            <PathManagerProvider startPath={_path}>
+            <PathManagerProvider>
                 <MediaFileExplorer />
             </PathManagerProvider>
         </Section>
     )
 }
+export default memo(MediaFile, (prev, next) => {
+    console.log('memo', prev, next)
+    return false
+})

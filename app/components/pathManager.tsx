@@ -1,8 +1,9 @@
-import React, { useReducer, useContext, createContext } from "react"
+import React, { useReducer, useContext, createContext, useEffect } from "react"
 import { Button, Segmented, Space } from "antd"
 import PathManager from "../utils/pathManager"
 import CopyToClipboard from "@/app/components/copyToClipboard"
 import { CopyOutlined } from "@ant-design/icons"
+import { useParams, usePathname } from "next/navigation"
 export const PathManagerContext = createContext<PathManager>(new PathManager("/"));
 export const PathManagerDispatchContext = createContext(({ type }: { type: any, path: string }) => { });
 
@@ -65,15 +66,18 @@ export function PathManagerBar() {
     </>
 }
 
-export const PathManagerProvider = ({ children, startPath }:
+export const PathManagerProvider = ({ children }:
     { children: React.ReactNode, startPath?: string }) => {
+    const pathParams = useParams();
+    const path: string[] = pathParams.path as string[];
+    const pathManager = new PathManager('/');
 
-    const pathManager = new PathManager("/");
-    if(startPath) pathManager.setPath(startPath)
-    // pathManager.setPath("mnt/S1/MainStorage/Media/Downloads/animations")
-    // pathManager.appendPath("[Airota&Nekomoe kissaten&VCB-Studio] Yuru Camp Season 2 [Ma10p_1080p]")
+    if (path) {
+        const nextPath = path ? `/${path.map(decodeURIComponent).join("/")}` : "/";
+        pathManager.setPath(nextPath)
+    }
+
     const [pathManagerData, dispath] = useReducer(reducer, pathManager);
-
     return (
         <PathManagerContext.Provider value={pathManagerData}>
             <PathManagerDispatchContext.Provider value={dispath}>

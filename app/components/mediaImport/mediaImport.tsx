@@ -398,23 +398,26 @@ export const MediaSeasonInput = ({ series, value, onChange, style }: { series: S
     const [loading, setLoading] = useState(false)
     useEffect(asyncEffect(async () => {
         setLoading(true)
-        const media = new TMDBMedia(series.t).tmdbid(String(series.i));
-        const mediaWork = await media.get();
-        if (mediaWork) {
-            if (mediaWork.series.t == MediaWorkType.TV || mediaWork.series.t == MediaWorkType.ANI) {
-                const seasons = await media.get_children()
-                if (seasons?.length) {
-                    const options = seasons.map((item) => ({
-                        value: item.key,
-                        label: `季 ${item.key} - ${item.title}`,
-                    }))
-                    setSeasonOptions(options);
-                } else {
-                    setSeasonOptions([])
+        if (series.i) {
+            console.log(series)
+            const media = new TMDBMedia(series.t).tmdbid(String(series.i));
+            const mediaWork = await media.get();
+            if (mediaWork)  {
+                if (mediaWork.series.t == MediaWorkType.TV || mediaWork.series.t == MediaWorkType.ANI) {
+                    const seasons = await media.get_children()
+                    if (seasons?.length) {
+                        const options = seasons.map((item) => ({
+                            value: item.key,
+                            label: `季 ${item.key} - ${item.title}`,
+                        }))
+                        setSeasonOptions(options);
+                    } else {
+                        setSeasonOptions([])
+                    }
                 }
             }
+            setLoading(false)
         }
-        setLoading(false)
     }), [series.i])
 
     return <Select value={value} disabled={loading} loading={loading} style={style}

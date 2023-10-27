@@ -60,25 +60,35 @@ export interface _RssConfig {
     search_sites: string[]
 }
 
-export interface RssConfig {
-    type: DBMediaType,
-    name: string,
-    year: string,
-    fuzzy_match: boolean,
-    over_edition: boolean,
-    rssid: string,
-    keyword: string,
+export interface RssDownloadProps {
+    save_path: string,
+    download_setting: number,
+}
+export interface RssSiteProps {
+    rss_sites: string[],
+    search_sites: string[],
+}
+
+export interface RssFilterProps {
     filter_restype: string,
     filter_pix: string,
     filter_team: string,
     filter_rule: string,
     filter_include: string,
     filter_exclude: string,
-    save_path: string,
-    download_setting: number,
-    rss_sites: string[],
-    search_sites: string[],
+}
+
+export interface RssMediaWorkProps {
+    keyword: string,
     mediaid: string,
+    year: string,
+}
+export interface RssConfig extends RssDownloadProps, RssSiteProps, RssFilterProps, RssMediaWorkProps {
+    rssid?: number,
+    type: DBMediaType,
+    name: string,
+    fuzzy_match: boolean,
+    over_edition: boolean,
 }
 
 export enum RssState {
@@ -88,12 +98,13 @@ export enum RssState {
     FINISH = "F"
 }
 
-export interface MovieRssConfig extends RssConfig {
+export interface RssMediaWorkMovieProps extends RssMediaWorkProps {
+
+}
+
+export interface MovieRssConfig extends RssConfig, RssMediaWorkMovieProps {
     type: DBMediaType.MOVIE,
     name: string,
-    year: string,
-    rssid: string,
-    keyword: string,
     in_form: string,
 }
 
@@ -105,11 +116,14 @@ export interface MovieRssInfo extends MovieRssConfig {
     state: RssState
 }
 
-export interface TVRssConfig extends RssConfig {
-    type: DBMediaType.TV,
+export interface RssMediaWorkTvProps extends RssMediaWorkProps {
     current_ep: number,
     total_ep: number,
     season: number,
+}
+
+export interface TVRssConfig extends RssConfig, RssMediaWorkTvProps {
+    type: DBMediaType.TV,
     in_form: string,
 }
 
@@ -148,7 +162,7 @@ export class Subscribe extends APIBase {
         const list = await (await this.API).post<{ result: TvRssList }>("subscribe/tv/list", {
             auth: true
         })
-        Object.values(list.result).forEach((item:any) => {
+        Object.values(list.result).forEach((item: any) => {
             if (item.filter_rule == null) item.filter_rule = ""
             if (item.filter_exclude == null) item.filter_exclude = ""
             if (item.filter_pix == null) item.filter_pix = ""
@@ -156,8 +170,8 @@ export class Subscribe extends APIBase {
             if (item.filter_team == null) item.filter_team = ""
             if (item.filter_pix == null) item.filter_pix = ""
             item.mediaid = item.tmdbid
-            item.rssid = item.id
-            if(item.save_path == null) item.save_path = undefined
+            item.rssid = item.id == null ? undefined : Number(item.id)
+            if (item.save_path == null) item.save_path = undefined
             if ((item.download_setting as unknown as string) == "") item.download_setting = 0
             if (item.season) item.season = Number((item.season as unknown as String).substring(1))
         })
@@ -166,8 +180,6 @@ export class Subscribe extends APIBase {
     }
 
     public async updateSubscribe(rssConfig: RssConfig) {
-        // const { name, type, year, keyword } = rssConfig;
-        console.log("final", rssConfig)
         const update = await (await this.API).post("subscribe/update", {
             data: {
                 ...rssConfig
@@ -175,7 +187,6 @@ export class Subscribe extends APIBase {
             auth: true,
             json: true
         })
-        console.log(update)
     }
     public async getSiteList() {
         const rssSites = (await this.API).getSiteList({ rss: true });

@@ -4,41 +4,58 @@ import { Section } from "../../components/Section";
 import { Button, Card, Col, Drawer, Form, Input, Row, Select, Space, Spin, Switch, Tag, theme } from "antd";
 import { PlusOutlined } from "@ant-design/icons"
 import { IconDatabase } from "@/app/components/icons";
-import { MovieRssConfig, MovieRssInfo, MovieRssList, RssState, Subscribe } from "@/app/utils/api/subscribe";
+import { MovieRssConfig, MovieRssDefaultConfig, MovieRssInfo, MovieRssList, RssState, Subscribe } from "@/app/utils/api/subscribe";
 import TinyTMDBSearch, { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { MediaWork, MediaWorkType, SeriesKey } from "@/app/utils/api/types";
-import { PathSelector } from "@/app/components/PathSelector";
 import { DBMediaType, NastoolFilterruleBasic } from "@/app/utils/api/api";
 import { MediaLibrarySelect } from "@/app/components/mediaImport/mediaImportList";
 import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 import { useForm } from "antd/es/form/Form";
 
+const defaultConfig: MovieRssInfo = {
+    image: "",
+    poster: "",
+    overview: "",
+    release_date: "",
+    state: RssState.QUEUING,
+    type: DBMediaType.MOVIE,
+    name: "",
+    rssid: undefined,
+    in_form: "",
+    fuzzy_match: false,
+    over_edition: false,
+    save_path: "",
+    download_setting: 0,
+    rss_sites: [],
+    search_sites: [],
+    filter_restype: "",
+    filter_pix: "",
+    filter_team: "",
+    filter_rule: "",
+    filter_include: "",
+    filter_exclude: "",
+    keyword: "",
+    mediaid: "",
+    year: ""
+}
 
-const pixOptions = [
-    {
-        value: "",
-        label: "全部"
-    },
-    ...["8k", "4k", "1080p", "720p"]
-        .map((value) => ({ value: value, label: value }))
-]
-
-const SubscribeMovieForm = ({ config }: { config: MovieRssInfo }) => {
+const SubscribeMovieForm = ({ config }: { config?: MovieRssInfo }) => {
     const [detail, setDetail] = useState<MediaWork>();
+    const initialConfig = config || defaultConfig;
     const detailFromConfig = {
-        series: new SeriesKey().type(MediaWorkType.MOVIE).tmdbId(config.mediaid),
+        series: new SeriesKey().type(MediaWorkType.MOVIE).tmdbId(initialConfig.mediaid),
         type: MediaWorkType.MOVIE,
-        key: config.mediaid,
-        title: config.name,
+        key: initialConfig.mediaid,
+        title: initialConfig.name,
         metadata: {
-            title: config.name,
-            description: config.overview,
+            title: initialConfig.name,
+            description: initialConfig.overview,
             date: {
-                release: config.year,
+                release: initialConfig.year,
             },
             links: {},
             image: {
-                cover: config.poster
+                cover: initialConfig.poster
             }
         }
     }
@@ -56,13 +73,13 @@ const SubscribeMovieForm = ({ config }: { config: MovieRssInfo }) => {
     }
 
     const onFinish = (value: MovieRssInfo) => {
-        console.log(value, config)
+        console.log(value, initialConfig)
         new Subscribe().updateSubscribe({
-            ...config,
+            ...initialConfig,
             ...value,
             type: DBMediaType.MOVIE,
-            rssid: config.rssid,
-            mediaid: (detail?.key != undefined) ? String(detail?.key) : config.mediaid
+            rssid: initialConfig.rssid,
+            mediaid: (detail?.key != undefined) ? String(detail?.key) : initialConfig.mediaid
         })
     }
 
@@ -74,7 +91,7 @@ const SubscribeMovieForm = ({ config }: { config: MovieRssInfo }) => {
         <Form
             form={form}
             layout="vertical"
-            initialValues={config}
+            initialValues={initialConfig}
             onFinish={onFinish}
         >
             <Row gutter={16}>
@@ -213,16 +230,21 @@ export default function SubscribeMovie() {
         updateMovieList();
     }, [])
     const cards = Object.entries(movieList).map(([key, config]) => <SubscribeMovieCard key={key} movieRssCard={config} />)
+
+    const [openCreateDrawer, setOpenCreateDrawer] = useState(false)
     return <Section title="电影订阅"
         onRefresh={updateMovieList}
         extra={
             <Space>
-                <Button icon={<PlusOutlined />} type="primary">添加订阅</Button>
+                <Button icon={<PlusOutlined />} onClick={() => setOpenCreateDrawer(true)} type="primary">添加订阅</Button>
                 <Button icon={<IconDatabase />} >默认设置</Button>
             </Space>
         }>
         <Space wrap>
             {cards}
         </Space>
+        <Drawer open={openCreateDrawer} size="large" onClose={() => setOpenCreateDrawer(false)}>
+            <SubscribeMovieForm config={defaultConfig}></SubscribeMovieForm>
+        </Drawer>
     </Section>
 }

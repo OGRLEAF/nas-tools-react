@@ -68,7 +68,7 @@ export class SeriesKey {
   }
 
   public tmdbId(tmdbId?: MediaWork['key']) {
-    if (this.typeKey != MediaWorkType.UNKNOWN) {
+    if (this.typeKey != MediaWorkType.UNKNOWN && tmdbId != "") {
       this._end = "tmdbId";
       this.tmdbIdKey = tmdbId;
     }

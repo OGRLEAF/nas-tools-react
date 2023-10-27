@@ -35,7 +35,9 @@ type NastoolApi =
     "subscribe/movie/list" |
     "subscribe/tv/list" |
     "subscribe/add" |
-    "subscribe/update"
+    "subscribe/update" |
+    "rss/list" |
+    "rss/update"
 
 export interface NastoolResponse<T> {
     code: number,
@@ -643,7 +645,7 @@ export class NASTOOL {
     }
 
     public async init() {
-        this.message = new NastoolMessage(`ws${this.config.https ? 's' : ''}://${this.config.host}:${this.config.port}/message`);
+        this.message = new NastoolMessage(`ws${this.config.https ? 's' : ''}://${this.config.host}:${this.config.port}/message?apikey=${this.serverConfig?.security.api_key}`);
 
     }
 
@@ -720,6 +722,10 @@ export class NASTOOL {
     public async nameTest(fileName: string): Promise<NastoolNameTestResultData> {
         const result = await this.post<NastoolNameTestResult>("service/name/test", { auth: true, data: { name: fileName } })
         return result.data;
+    }
+
+    public get apiToken() {
+        return this.token;
     }
 
     public async getSiteList(
@@ -898,12 +904,12 @@ export class NASTOOL {
         target_path?: string,
         files: string[],
         importMode: ImportMode,
-        episodes?: (number|undefined)[],
+        episodes?: (number | undefined)[],
         season?: number,
         tmdbid?: string,
         type?: NastoolMediaType,
     }) {
-        const { tmdbid, type, path, target_path, files, season, importMode, episodes} = params;
+        const { tmdbid, type, path, target_path, files, season, importMode, episodes } = params;
         return await this.post<any>("organization/import/tv", {
             data: {
                 tmdbid: tmdbid,
@@ -1026,16 +1032,15 @@ export class API {
     private static nastool_instance: NASTOOL | null = null;
     public static onNastoolConfigRequired: (() => Promise<NastoolConfig>) | null = null;
     public static onNastoolLoginRequired: (() => Promise<NastoolLoginConfig>) | null = null;
-    private static queue: Promise<void> = Promise.resolve()
-    public static async getNastoolInstance(): Promise<NASTOOL> {
-        await this.queue;
-        const executionPromise = this.queue.then(async () => {
-            return await this._getNastoolInstance()
-        })
-        executionPromise.catch((e) => {
-            throw new Error("Get nastool instance failed.", e);
-        })
-        return executionPromise;
+    private static lock?: Promise<NASTOOL>;
+    public static getNastoolInstance(): Promise<NASTOOL> {
+        const nastool_instance = this.lock;
+        if (nastool_instance != undefined) {
+            return nastool_instance;
+        }
+
+        this.lock = this._getNastoolInstance();
+        return this.lock;
     }
     private static async _getNastoolInstance(): Promise<NASTOOL> {
         if (this.nastool_instance == null) {
@@ -1052,7 +1057,6 @@ export class API {
                         const loginOk = await nastool_instance.login({ username: username, password: password })
                         if (loginOk) {
                             this.nastool_instance = nastool_instance;
-                            return this.nastool_instance
                         } else {
                             throw new Error("Nastool login failed.");
                         }
