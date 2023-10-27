@@ -4,7 +4,7 @@ import { Section } from "../../components/Section";
 import { Button, Card, Col, Drawer, Form, Input, InputNumber, Row, Select, Space, Spin, Switch, Tag, theme } from "antd";
 import { PlusOutlined } from "@ant-design/icons"
 import { IconDatabase } from "@/app/components/icons";
-import { TVRssInfo, MovieRssList, RssState, Subscribe, TvRssList } from "@/app/utils/api/subscribe";
+import { TVRssInfo, MovieRssList, RssState, Subscription, TvRssList } from "@/app/utils/api/subscribe";
 import TinyTMDBSearch, { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { MediaWork, MediaWorkType, SeriesKey } from "@/app/utils/api/types";
 import { PathSelector } from "@/app/components/PathSelector";
@@ -81,7 +81,7 @@ const SubscribeTVForm = ({ config }: { config?: TVRssInfo }) => {
     const onFinish = (value: TVRssInfo) => {
         console.log(value, initialConfig)
         setLoading(true)
-        new Subscribe().updateSubscribe({
+        new Subscription().updateSubscribe({
             ...initialConfig,
             ...value,
             type: DBMediaType.TV,
@@ -256,7 +256,7 @@ const SubscribeTVCard = ({ movieRssCard }: { movieRssCard: TvRssList[string] }) 
 
 export default function SubscribeTV() {
     const [movieList, setMovieList] = useState<TvRssList>({});
-    const updateTvList = () => new Subscribe().getTvList().then((result) => { setMovieList(result) })
+    const updateTvList = () => new Subscription().getTvList().then((result) => { setMovieList(result) })
     useEffect(() => {
         updateTvList();
     }, [])

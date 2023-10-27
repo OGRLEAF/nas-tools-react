@@ -645,7 +645,7 @@ export class NASTOOL {
     }
 
     public async init() {
-        this.message = new NastoolMessage(`ws${this.config.https ? 's' : ''}://${this.config.host}:${this.config.port}/message?apikey=${this.serverConfig?.security.api_key}`);
+        // this.message = new NastoolMessage(`ws${this.config.https ? 's' : ''}://${this.config.host}:${this.config.port}/message?apikey=${this.serverConfig?.security.api_key}`);
 
     }
 

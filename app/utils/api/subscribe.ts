@@ -142,7 +142,7 @@ export interface NastoolRespWithData<T> extends NastoolResponse<T> {
     data: T
 }
 
-export class Subscribe extends APIBase {
+export class Subscription extends APIBase {
     private filterRules: NastoolFilterruleBasic[] = [];
     constructor() {
         super();
@@ -187,6 +187,7 @@ export class Subscribe extends APIBase {
             auth: true,
             json: true
         })
+        return update
     }
     public async getSiteList() {
         const rssSites = (await this.API).getSiteList({ rss: true });

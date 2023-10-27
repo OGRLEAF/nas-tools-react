@@ -4,7 +4,7 @@ import { Section } from "../../components/Section";
 import { Button, Card, Col, Drawer, Form, Input, Row, Select, Space, Spin, Switch, Tag, theme } from "antd";
 import { PlusOutlined } from "@ant-design/icons"
 import { IconDatabase } from "@/app/components/icons";
-import { MovieRssConfig, MovieRssDefaultConfig, MovieRssInfo, MovieRssList, RssState, Subscribe } from "@/app/utils/api/subscribe";
+import { MovieRssConfig, MovieRssDefaultConfig, MovieRssInfo, MovieRssList, RssState, Subscription } from "@/app/utils/api/subscribe";
 import TinyTMDBSearch, { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { MediaWork, MediaWorkType, SeriesKey } from "@/app/utils/api/types";
 import { DBMediaType, NastoolFilterruleBasic } from "@/app/utils/api/api";
@@ -74,7 +74,7 @@ const SubscribeMovieForm = ({ config }: { config?: MovieRssInfo }) => {
 
     const onFinish = (value: MovieRssInfo) => {
         console.log(value, initialConfig)
-        new Subscribe().updateSubscribe({
+        new Subscription().updateSubscribe({
             ...initialConfig,
             ...value,
             type: DBMediaType.MOVIE,
@@ -225,7 +225,7 @@ const SubscribeMovieCard = ({ movieRssCard }: { movieRssCard: MovieRssList[strin
 
 export default function SubscribeMovie() {
     const [movieList, setMovieList] = useState<MovieRssList>({});
-    const updateMovieList = () => new Subscribe().getMovieList().then((result) => { setMovieList(result) })
+    const updateMovieList = () => new Subscription().getMovieList().then((result) => { setMovieList(result) })
     useEffect(() => {
         updateMovieList();
     }, [])
