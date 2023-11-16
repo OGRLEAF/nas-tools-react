@@ -7,15 +7,15 @@ export class ServerConfig extends APIBase {
         super();
     }
 
-    public async get() {
-        const config = await (await this.API).getServerConfig();
-        this._serverConfig = config;
-        return config
+    public async get(refresh = false) {
+        if (this._serverConfig == undefined || refresh) this._serverConfig = await (await this.API).getServerConfig();
+        // this._serverConfig = config;
+        return this._serverConfig
     }
 
-    public async update(config:NastoolServerConfig) {
-        if(await (await this.API).updateServerConfig(config)) {
-            return this.get();
+    public async update(config: NastoolServerConfig) {
+        if (await (await this.API).updateServerConfig(config)) {
+            return this.get(true);
         }
     }
 }
