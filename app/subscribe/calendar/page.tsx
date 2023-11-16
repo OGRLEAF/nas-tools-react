@@ -1,7 +1,7 @@
 "use client"
 import { Section } from "@/app/components/Section";
 import { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
-import { Subscription } from "@/app/utils/api/subscribe";
+import { Subscription, TVSubscription } from "@/app/utils/api/subscription/subscribe";
 import { TMDB } from "@/app/utils/api/tmdb";
 import { MediaWork, MediaWorkEpisode, MediaWorkType, SeriesKey } from "@/app/utils/api/types";
 import { Calendar, CalendarProps, Card, Popover, Space } from "antd";
@@ -11,8 +11,8 @@ import React, { useEffect, useMemo, useState } from "react";
 export default function SubscribeCalendar() {
     const [tvEpisodes, setTvEpisodes] = useState<MediaWorkEpisode[]>([]);
     const fetchEpisodes = async () => {
-        const subscribe = new Subscription();
-        const tvSubs = await subscribe.getTvList();
+        const subscribe = new TVSubscription();
+        const tvSubs = await subscribe.list();
         const subsSeries = Object.values(tvSubs).map((sub) => {
             return new SeriesKey().type(MediaWorkType.TV).tmdbId(sub.mediaid).season(sub.season);
         })

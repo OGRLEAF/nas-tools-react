@@ -1,6 +1,5 @@
 'use client'
 import React, { useEffect, useState } from 'react';
-import type { NextPage } from 'next';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   BarChartOutlined,
@@ -36,12 +35,13 @@ function getItem(
   key: React.Key,
   icon?: React.ReactNode,
   children?: MenuItem[],
+  url?: string,
 ): MenuItem {
   return {
     key,
     icon,
     children,
-    label: children == undefined ? <Link href={key as string}>{label}</Link> : label,
+    label: children == undefined ? <Link href={url || (key as string)}>{label}</Link> : label,
   } as MenuItem;
 }
 
@@ -82,7 +82,7 @@ const getMenuItems = async () => {
     ]),
     getItem("任务", "/task", <BuildOutlined />),
     getItem("媒体整理", '/media', <IconMediaSolid />, [
-      getItem("文件管理", mediaPageDefaultUrl, <IconFolderTreeSolid />),
+      getItem("文件管理", '/media/file', <IconFolderTreeSolid />, undefined, mediaPageDefaultUrl),
       getItem("手动识别", '/media/manual', <IconLink />),
       getItem("历史记录", '/media/history', <IconHistory />),
       getItem("TMDB缓存", '/media/tmdb-db', <IconDatabase />),
@@ -97,9 +97,21 @@ const getMenuItems = async () => {
 }
 const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
   const [menu, setMenu] = useState<MenuItem[]>([]);
+  const pathName = usePathname();
+  const updateMenuKey = () => {
+    const pathKeys = pathName.split("/")
+    const subKey = pathKeys.slice(0, 3).join("/");
+    const mainKey = pathKeys.slice(0, 2).join("/")
+    setSelectedPath({
+      selectedKey: [subKey],
+      openKey: [mainKey]
+    });
+  }
+
   useEffect(() => {
     getMenuItems().then((menu) => {
-      setMenu(menu)
+      setMenu(menu);
+      updateMenuKey();
     })
   }, [])
 
@@ -107,41 +119,19 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
   const [collapsed, setCollapsed] = useState(false);
   const { token: { colorBgContainer }, } = theme.useToken();
 
-  const router = useRouter()
-  const pathName = usePathname();
+  const [selectedPath, setSelectedPath] = useState<{ selectedKey: string[], openKey: string[] }>();
 
-  const [menuKeyMap, setMenuKeyMap] = useState<Record<string, string>>({});
-  const [selectedPath, setSelectedPath] = useState({
-    selectedKey: pathName,
-    openKey: "/" + pathName.split("/")[1]
-  });
   useEffect(() => {
-    new ServerConfig().get()
-      .then(res => {
-        const default_path = res.media.media_default_path;
-        if (mediaFileMenuItem?.key) {
-          setMenuKeyMap({ [mediaFileMenuItem.key as string]: mediaFileMenuItem.key + default_path })
-        }
-      })
-  }, [])
-  useEffect(() => {
-    setSelectedPath({
-      selectedKey: pathName.split("/").slice(0, 3).join("/"),
-      openKey: "/" + pathName.split("/")
-    });
+    updateMenuKey();
   }, [pathName])
 
-  const navigate = ({ key }: { key: string }) => {
-    if (key.startsWith("/")) {
-      const exactPath = menuKeyMap[key];
-      if (exactPath) router.push(exactPath);
-      else router.push(key);
-    } else {
-      router.push("/")
-    }
-  }
+  const [pageScale, setPageScale] = useState(1);
+  useEffect(() => {
+    const scale = window.devicePixelRatio;
+  }, [])
+
   return (
-    <Layout hasSider>
+    <Layout hasSider style={{ zoom: pageScale }}>
       <Sider
         style={{
           overflow: 'auto',
@@ -153,16 +143,20 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
         }}
         collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
         <div className="demo-logo-vertical" style={{ height: 40 }} >
-          <span style={{ color: "white" }}>
-            {selectedPath.openKey + " " + selectedPath.selectedKey + " " + pathName}
-          </span>
           <LoginModal></LoginModal>
         </div>
-        <Menu theme="dark" mode="inline" items={menu}
-          // onSelect={navigate}
-          selectedKeys={[selectedPath.selectedKey]} defaultOpenKeys={[selectedPath.openKey]}
-        />
+        {selectedPath ?
+          <Menu theme="dark" mode="inline" items={menu}
+            selectedKeys={selectedPath?.selectedKey} defaultOpenKeys={selectedPath?.openKey}
+          />
+          : <></>
+        }
 
+        <span style={{ color: "white" }}>
+          openKey:{selectedPath?.openKey}<br />
+          selectedKey:{selectedPath?.selectedKey}<br />
+          {pathName}
+        </span>
       </Sider>
       <Layout>
         <Header
@@ -176,11 +170,9 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
           <HeaderSearch />
         </Header>
         <Content style={{ margin: '0px 0px', overflow: 'initial' }}>
-
           <div style={{ padding: "0px 16px 16px 16px", minHeight: "50vh", background: colorBgContainer }}>
             {children}
           </div>
-
         </Content>
         {/* <Footer style={{ textAlign: 'center', background: colorBgContainer, }}>Ant Design ©2023 Created by Ant UED</Footer> */}
       </Layout>

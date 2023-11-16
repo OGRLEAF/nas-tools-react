@@ -5,12 +5,12 @@ import { Button, Card, Checkbox, Space, Descriptions, Tag, theme, Drawer, Form, 
 import { useEffect, useMemo, useState } from "react";
 import { PlusOutlined, PlayCircleOutlined, StopOutlined, MinusCircleOutlined } from "@ant-design/icons"
 import { IconDatabase, IconEdit } from "@/app/components/icons";
-import { Rss, RssDownloadTaskConfig, RssParser, RssTaskConfig, RssUse } from "@/app/utils/api/rss";
+import { Rss, RssDownloadTaskConfig, RssParser, RssTaskConfig, RssUse } from "@/app/utils/api/subscription/rss";
 import { asyncEffect } from "@/app/utils";
 import _ from "lodash";
 import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
-import { MediaLibrarySelect } from "@/app/components/mediaImport/mediaImportList";
 import { useForm } from "antd/es/form/Form";
+import { MediaLibrarySelect } from "@/app/components/LibraryPathSelector";
 
 const CustomRssDownloadForm = () => {
     return <>
@@ -229,13 +229,16 @@ const CustomRssCard = ({ config, parsers }: { config: RssTaskConfig, parsers: Rs
         setOpenEdit(true)
     }
     return <Card
+        hoverable
         headStyle={{ padding: 16 }}
         bodyStyle={{ padding: 16 }}
         title={
-            <Space style={{ paddingLeft: 6 }}>
+            <Space style={{ paddingLeft: 6 }} size="large">
                 <Checkbox value={config.id}></Checkbox>
-                <span>{config.name}</span>
-                <Tag color="pink" bordered={false}>{config.uses_text}</Tag>
+                <Space size="small">
+                    <Tag color="pink" bordered={false}>{config.uses_text}</Tag>
+                    <span>{config.name}</span>
+                </Space>
             </Space>
 
         }

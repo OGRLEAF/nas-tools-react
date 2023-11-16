@@ -32,10 +32,14 @@ type NastoolApi =
     "task/list" |
     "task/create" |
     "sync/directory/list" |
+    "sync/directory/update" |
+    "sync/directory/delete" |
     "subscribe/movie/list" |
     "subscribe/tv/list" |
     "subscribe/add" |
     "subscribe/update" |
+    "subscribe/delete" |
+    "subscribe/search" |
     "rss/list" |
     "rss/update"
 
@@ -498,16 +502,7 @@ export enum ImportMode {
     MINIO = "Minio移动",
 }
 
-export interface SyncDirectory {
-    id: number,
-    from: string,
-    to: string,
-    unknown: string,
-    syncmod_name: ImportMode,
-    compatibility: boolean,
-    rename: boolean,
-    enabled: boolean
-}
+
 
 interface NastoolListResult<T> {
     total: number,

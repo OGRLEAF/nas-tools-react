@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { APIBase } from "./api_base";
+import { APIBase } from "../api_base";
 import { RssDownloadProps } from "./subscribe";
 
 

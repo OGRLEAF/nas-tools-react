@@ -2,6 +2,9 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import DefaultLayout from './components/layout'
+import { useEffect } from 'react'
+import { App, ConfigProvider } from 'antd'
+import zhCN from 'antd/locale/zh_CN';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -15,10 +18,15 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+
   return (
-    <html lang="en">
+    <html lang="zh">
       <body className={inter.className}>
-        <DefaultLayout>{children}</DefaultLayout>
+        <ConfigProvider locale={zhCN}>
+          <App>
+            <DefaultLayout>{children}</DefaultLayout>
+          </App>
+        </ConfigProvider>
       </body>
     </html>
   )

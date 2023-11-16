@@ -8,22 +8,24 @@ import SettingService from "./service"
 import SettingSecurity from "./security"
 import SettingLaboratory from "./laboratory"
 
-import SettingCard from "./settingCard"
+import SettingCard from "./SettingCard"
 
 import { Space } from 'antd'
 
 export default function SettingBasic() {
     const [serverConfig, setServerConfig] = useState<NastoolServerConfig>()
-    useEffect(() => {
+    const onRefresh = () => {
         API.getNastoolInstance()
             .then(async (nt) => {
                 const config = await nt.getServerConfig();
                 setServerConfig(config);
-                console.log(config)
             })
+    }
+    useEffect(() => {
+        onRefresh();
     }, [])
     return <>
-        <Section title="基础设置">
+        <Section title="基础设置" onRefresh={onRefresh}>
             <Space direction="vertical" style={{ width: "100%" }}>
                 <SettingCard name="系统" settingForm={SettingSystem} config={serverConfig} />
                 <SettingCard name="媒体" settingForm={SettingMedia} config={serverConfig} />

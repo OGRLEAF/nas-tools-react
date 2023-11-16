@@ -4,6 +4,7 @@ import { createContext } from "vm"
 import { API, NastoolFilterruleBasic, NastoolIndexer, NastoolSiteInfo, NastoolSiteProfile } from "../utils/api/api"
 import { Select } from "antd"
 import { Sites } from "../utils/api/sites"
+import { syncModeMap } from "../utils/api/sync"
 
 interface FormItemProp<T> {
     value?: T,
@@ -114,4 +115,13 @@ export const IndexerSelect = (options: FormItemProp<string[]>) => {
         })()
     }, []);
     return <Select mode="multiple" options={selectOptions} value={options.value} onChange={options.onChange} />
+}
+
+const syncModeOptions = Object.entries(syncModeMap).map(([k, v]) => ({
+    value: k,
+    label: v
+}))
+export const SyncModeSelect = (options: FormItemProp<string[]>) => {
+    return <Select style={{ width: "100%" }} options={syncModeOptions} value={options.value} onChange={options.onChange} />
+
 }

@@ -1,19 +1,16 @@
 "use client"
-import React, { useEffect, useState } from "react";
-import { Section } from "../../components/Section";
+import React, { useContext, useEffect, useState } from "react";
 import { Button, Card, Col, Drawer, Form, Input, InputNumber, Row, Select, Space, Spin, Switch, Tag, theme } from "antd";
-import { PlusOutlined } from "@ant-design/icons"
-import { IconDatabase } from "@/app/components/icons";
-import { TVRssInfo, MovieRssList, RssState, Subscription, TvRssList } from "@/app/utils/api/subscribe";
+import { TVRssInfo, MovieRssList, RssState, Subscription, TvRssList, TVSubscription } from "@/app/utils/api/subscription/subscribe";
 import TinyTMDBSearch, { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { MediaWork, MediaWorkType, SeriesKey } from "@/app/utils/api/types";
-import { PathSelector } from "@/app/components/PathSelector";
 import { DBMediaType, NastoolFilterruleBasic } from "@/app/utils/api/api";
-import { MediaLibrarySelect } from "@/app/components/mediaImport/mediaImportList";
+import { MediaLibrarySelect } from "@/app/components/LibraryPathSelector";
 import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 import { useForm } from "antd/es/form/Form";
 import { MediaSeasonInput } from "@/app/components/mediaImport/mediaImport";
-import DrawerPanel from "antd/es/drawer/DrawerPanel";
+import { RetweetOutlined } from "@ant-design/icons"
+import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
 
 
 const defaultConfig: TVRssInfo = {
@@ -45,7 +42,42 @@ const defaultConfig: TVRssInfo = {
     season: 0
 }
 
-const SubscribeTVForm = ({ config }: { config?: TVRssInfo }) => {
+
+export default function SubscribeTV() {
+    const { token } = theme.useToken();
+    const StatusTag = ({
+        [RssState.QUEUING]: <Tag color={token.colorInfoActive}>队列中</Tag>,
+        [RssState.RUNNING]: <Tag color={token.colorSuccess}>运行中</Tag>,
+        [RssState.SEARCHING]: <Tag color={token.colorSuccessActive}>搜索中</Tag>,
+        [RssState.FINISH]: <Tag>已完成</Tag>,
+    })
+
+    return <CardnForm title="电影订阅"
+        onFetch={() => new TVSubscription().list()}
+        onDelete={async (record) => {
+            if (record.rssid != undefined) new TVSubscription().delete(record.rssid)
+            return true;
+        }}
+        extraActions={[{
+            icon: <RetweetOutlined />,
+            key: "refresh",
+            async onClick(record) {
+                if (record.rssid != undefined) new TVSubscription().refresh(record.rssid)
+            },
+        }
+        ]}
+        defaultRecord={defaultConfig}
+        cardProps={(record) => ({
+            cover: <img src={record.image}/>,
+            title: record.name,
+            description: StatusTag[record.state]
+        })}
+        formRender={SubscribeTVForm}
+    />
+}
+
+
+const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
     const initialConfig = config || defaultConfig;
     const [detail, setDetail] = useState<MediaWork>();
     const [series, setSeries] = useState(new SeriesKey().type(MediaWorkType.TV).tmdbId(initialConfig.mediaid).season(initialConfig.season))
@@ -76,18 +108,26 @@ const SubscribeTVForm = ({ config }: { config?: TVRssInfo }) => {
         })
     }
 
-
+    const ctx = useContext(CardnFormContext);
     const [loading, setLoading] = useState(false);
     const onFinish = (value: TVRssInfo) => {
-        console.log(value, initialConfig)
         setLoading(true)
-        new Subscription().updateSubscribe({
+        ctx.loading(value.name);
+        new TVSubscription().update({
             ...initialConfig,
             ...value,
             type: DBMediaType.TV,
             rssid: initialConfig.rssid,
             mediaid: (detail?.key != undefined) ? String(detail?.key) : initialConfig.mediaid
         })
+            .then((res) => {
+                ctx.success(JSON.stringify(res))
+                ctx.refresh();
+                ctx.exit();
+            })
+            .catch((e) => {
+                ctx.error(e);
+            })
             .finally(() => {
                 setLoading(false)
             })
@@ -219,63 +259,4 @@ const SubscribeTVForm = ({ config }: { config?: TVRssInfo }) => {
             </Row>
         </Form>
     </Space>
-}
-
-const SubscribeTVCard = ({ movieRssCard }: { movieRssCard: TvRssList[string] }) => {
-    const { token } = theme.useToken();
-    const StatusTag = ({
-        [RssState.QUEUING]: <Tag color={token.colorInfoActive}>队列中</Tag>,
-        [RssState.RUNNING]: <Tag color={token.colorSuccess}>运行中</Tag>,
-        [RssState.SEARCHING]: <Tag color={token.colorSuccessActive}>搜索中</Tag>,
-        [RssState.FINISH]: <Tag>已完成</Tag>,
-    })[movieRssCard.state]
-
-    const [open, setOpen] = useState(false);
-    const onClose = () => { setOpen(false) }
-    return <>
-        <Card
-            hoverable
-            cover={<img src={movieRssCard.image} style={{ width: 300 }} />}
-            onClick={() => setOpen(true)}
-        >
-            <Card.Meta title={
-                <Space>
-                    <span>{movieRssCard.name}</span>
-                    <Tag>季{movieRssCard.season}</Tag>
-                </Space>}
-                description={
-                    <>{StatusTag}</>
-                }
-            ></Card.Meta>
-        </Card>
-        <Drawer open={open} size="large" onClose={onClose} >
-            {open ? <SubscribeTVForm config={movieRssCard} /> : <></>}
-        </Drawer>
-    </>
-}
-
-export default function SubscribeTV() {
-    const [movieList, setMovieList] = useState<TvRssList>({});
-    const updateTvList = () => new Subscription().getTvList().then((result) => { setMovieList(result) })
-    useEffect(() => {
-        updateTvList();
-    }, [])
-    const cards = Object.entries(movieList).map(([key, config]) => <SubscribeTVCard key={key} movieRssCard={config} />)
-
-    const [openCreate, setOpenCreate] = useState(false)
-    return <Section title="电影订阅"
-        onRefresh={updateTvList}
-        extra={
-            <Space>
-                <Button icon={<PlusOutlined />} onClick={() => setOpenCreate(true)} type="primary">添加订阅</Button>
-                <Button icon={<IconDatabase />} >默认设置</Button>
-            </Space>
-        }>
-        <Space wrap>
-            {cards}
-        </Space>
-        <Drawer size="large" open={openCreate} onClose={() => setOpenCreate(false)}>
-            <SubscribeTVForm />
-        </Drawer>
-    </Section>
 }

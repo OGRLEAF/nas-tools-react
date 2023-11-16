@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { App, Button, Card, Space, Image } from 'antd';
+import { App, Button, Card, Space, Image, ConfigProvider } from 'antd';
 import { EyeOutlined, EllipsisOutlined, LinkOutlined } from '@ant-design/icons';
 import { API, NastoolMediaBrief, NastoolMediaLibrary, NastoolMediaLibraryItem } from './utils/api/api';
 import { Section } from './components/Section';
 import { useRouter } from 'next/navigation';
+import zhCN from 'antd/locale/zh_CN';
 
 const { Meta } = Card;
 
@@ -86,15 +87,17 @@ const Home = () => {
   const latestMediaCards = mediaItemCardGroup(libraryBrief.latest, "still")
 
   return (
-    <App>
-      <div className="App">
-        <Space direction='vertical'>
-          <Section title="我的媒体库">{libraryCards}</Section>
-          <Section title="正在观看">{watchingMediaCards}</Section>
-          <Section title="最新添加">{latestMediaCards}</Section>
-        </Space>
-      </div>
-    </App>
+    <ConfigProvider locale={zhCN}>
+      <App>
+        <div className="App">
+          <Space direction='vertical'>
+            <Section title="我的媒体库">{libraryCards}</Section>
+            <Section title="正在观看">{watchingMediaCards}</Section>
+            <Section title="最新添加">{latestMediaCards}</Section>
+          </Space>
+        </div>
+      </App>
+    </ConfigProvider>
   )
 };
 

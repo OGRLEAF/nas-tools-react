@@ -1,3 +1,4 @@
+import { message } from "antd";
 
 export function bytes_to_human(value: number, fixed: number = 2): [number, string] {
     const units = ["B", "KB", "MB", "GB", "TB", "PB"]
@@ -43,3 +44,34 @@ export function asyncEffect(func: CallableFunction) {
     }
 }
 
+export function useSubmitMessage(key: string) {
+    const [messageApi, contextHolder] = message.useMessage();
+
+    const success = (key: string, msg: string) => {
+        messageApi.open({
+            type: 'success',
+            key,
+            content: '更新成功 ' + msg,
+        });
+    }
+    const error = (key: string, msg: string) => {
+        messageApi.open({
+            type: 'error',
+            key,
+            content: '更新失败 ' + msg,
+        });
+    }
+    const loading = (key: string, msg: string) => {
+        messageApi.open({
+            type: "loading",
+            key,
+            content: "提交中 " + msg
+        })
+    }
+    return {
+        contextHolder,
+        success: (msg:string) => success(key, msg),
+        error: (msg:string) => error(key, msg),
+        loading: (msg:string) => loading(key, msg),
+    }
+}

@@ -1,5 +1,5 @@
-import { DBMediaType, NastoolFilterruleBasic, NastoolResponse } from "./api";
-import { APIBase } from "./api_base";
+import { DBMediaType, NastoolFilterruleBasic, NastoolResponse } from "../api";
+import { APIBase } from "../api_base";
 /*
 {
   "type": "MOV",
@@ -147,18 +147,58 @@ export class Subscription extends APIBase {
     constructor() {
         super();
     }
-    public async getMovieList() {
-        const list = await (await this.API).post<{ result: MovieRssList }>("subscribe/movie/list", {
-            auth: true
-        })
-        Object.values(list.result).forEach((item) => {
-            if (item.filter_rule == null) item.filter_rule = ""
-        })
-        // console.log(list)
-        return list.result;
+    public async getSiteList() {
+        const rssSites = (await this.API).getSiteList({ rss: true });
+        return rssSites
+    }
+    public async getFilterRules() {
+        const rules = (await this.API).getFilterRules();
+        return rules
+    }
+    public async getDownloadSetting() {
+        return (await this.API).getDownloadConfigList();
     }
 
-    public async getTvList() {
+    public async update(rssConfig: RssConfig) {
+        const update = await (await this.API).post("subscribe/update", {
+            data: {
+                ...rssConfig
+            },
+            auth: true,
+            json: true
+        })
+        return update
+    }
+
+    public async delete(rssid: number, type: DBMediaType) {
+        const update = await (await this.API).post("subscribe/delete", {
+            data: {
+                rssid,
+                type
+            },
+            auth: true,
+
+        })
+        return update
+    }
+
+    public async refresh(rssid: number, type: DBMediaType) {
+        return await (await this.API).post("subscribe/search", {
+            data: {
+                rssid,
+                type
+            },
+            auth: true
+        })
+    }
+}
+
+export class TVSubscription extends Subscription {
+    constructor() {
+        super();
+    }
+
+    public async list() {
         const list = await (await this.API).post<{ result: TvRssList }>("subscribe/tv/list", {
             auth: true
         })
@@ -176,28 +216,40 @@ export class Subscription extends APIBase {
             if (item.season) item.season = Number((item.season as unknown as String).substring(1))
         })
         // console.log(list)
-        return list.result;
+        return Object.values(list.result);
     }
 
-    public async updateSubscribe(rssConfig: RssConfig) {
-        const update = await (await this.API).post("subscribe/update", {
-            data: {
-                ...rssConfig
-            },
-            auth: true,
-            json: true
+    public async delete(rssid: number) {
+        return await super.delete(rssid, DBMediaType.TV)
+    }
+
+    public async refresh(rssid: number) {
+        return await super.refresh(rssid, DBMediaType.TV)
+    }
+}
+
+
+export class MovieSubscription extends Subscription {
+    constructor() {
+        super();
+    }
+    public async list() {
+        const list = await (await this.API).post<{ result: MovieRssList }>("subscribe/movie/list", {
+            auth: true
         })
-        return update
+        Object.values(list.result).forEach((item) => {
+            if (item.filter_rule == null) item.filter_rule = ""
+        })
+        // console.log(list)
+        return Object.values(list.result);
     }
-    public async getSiteList() {
-        const rssSites = (await this.API).getSiteList({ rss: true });
-        return rssSites
+    
+    public async delete(rssid: number) {
+        return await super.delete(rssid, DBMediaType.MOVIE)
     }
-    public async getFilterRules() {
-        const rules = (await this.API).getFilterRules();
-        return rules
-    }
-    public async getDownloadSetting() {
-        return (await this.API).getDownloadConfigList();
+
+    
+    public async refresh(rssid: number) {
+        return await super.refresh(rssid, DBMediaType.MOVIE)
     }
 }
