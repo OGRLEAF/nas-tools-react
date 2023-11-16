@@ -1,8 +1,9 @@
 "use client"
-import React from 'react'
-import { Button, Card, Col, Form, Row, Space } from "antd"
+import React, { useEffect } from 'react'
+import { Button, Card, Col, Form, Row, Space, Spin } from "antd"
 import { API, NastoolServerConfig } from '@/app/utils/api/api';
 import type { FormInstance } from 'antd/es/form';
+import { useSubmitMessage } from '@/app/utils';
 
 
 const SubmitButton = () => {
@@ -20,28 +21,35 @@ export default function SettingCard(
             config?: NastoolServerConfig
         }) {
     const SettingForm = settingForm;
-    const [form] = Form.useForm();
 
+    const { contextHolder, success, error, loading } = useSubmitMessage(`settingCard-${name}`);
 
     const onFinished = async (value: NastoolServerConfig) => {
-        console.log(value)
+        loading(name);
         const nt = await API.getNastoolInstance()
-
-        nt.updateServerConfig(value)
+        await nt.updateServerConfig(value)
+            .then((res) => {
+                success(String(res));
+            }).catch(res => error(res))
     }
-    if (config) {
-        return <Form form={form}
+
+    const [form] = Form.useForm();
+    useEffect(() => {
+        form.setFieldsValue(config)
+    }, [config])
+
+    return <Spin spinning={config == undefined}>
+        <Form form={form}
             initialValues={config}
             layout='vertical'
             onFinish={onFinished} >
+            {contextHolder}
             <Card title={name}
                 extra={<SubmitButton />}>
                 <SettingForm config={config} />
             </Card>
         </Form>
-    } else {
-        return <Card loading={true} />
-    }
+    </Spin>
 }
 
 
