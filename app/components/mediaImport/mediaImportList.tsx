@@ -1,4 +1,4 @@
-import { Button, Col, Divider, Drawer, Form, Input, List, Popover, Radio, Row, Select, Skeleton, Space, Table, Tag, TagType, Tooltip, theme } from "antd"
+import { Button, Col, Divider, Drawer, Form, Input, List, Popover, Radio, Row, Select, Skeleton, Space, Table, Tag, TagType, Tooltip, message, theme } from "antd"
 import { RedoOutlined, InfoCircleOutlined, LoadingOutlined } from "@ant-design/icons"
 import React, { Children, useContext, useEffect, useState } from "react"
 import { MediaImportContext, MediaImportFile, MediaImportFileKey, useMediaImport, useMediaImportDispatch } from "./mediaImportContext"
@@ -152,6 +152,8 @@ export const ImportList = (options: { onSelect?: (value: MediaImportFile[]) => v
 
 export const ImportSubmit = ({ files }: { files: MediaImportFile[] }) => {
     const mergedIdentifyContext = mergeEpisodesFromSelected(files);
+    const [messageApi, contextHolder] = message.useMessage();
+
     const onFinish = async (value: any) => {
         const mediaSeasonSelected = mergedIdentifyContext; //mergeEpisodesFromSelected(files)
 
@@ -184,6 +186,13 @@ export const ImportSubmit = ({ files }: { files: MediaImportFile[] }) => {
                     const files = target.map(file => file.name);
                     console.log(episodes, files)
                     console.log(value.target_path, mediaSeasonSelected, value.type)
+                    messageApi.open({
+                        type: "loading",
+                        content: '正在导入',
+                        duration: 0,
+                        key: "import"
+                    });
+
                     await orgn.importTV(
                         {
                             path: key, files, importMode: value.type,
@@ -197,6 +206,23 @@ export const ImportSubmit = ({ files }: { files: MediaImportFile[] }) => {
                             episodes: episodes
                         },
                     )
+                        .then(() => {
+                            messageApi.open({
+                                type: "success",
+                                content: '导入成功',
+                                duration: 3,
+                                key: "import"
+                            });
+                        })
+                        .catch((e) => {
+                            messageApi.open({
+                                type: "error",
+                                content: `导入出错 ${e}`,
+                                duration: 3,
+                                key: "import"
+                            });
+                        })
+
                 }
             }
         }
@@ -211,7 +237,7 @@ export const ImportSubmit = ({ files }: { files: MediaImportFile[] }) => {
             <span>季 {mergedIdentifyContext?.season}</span>
 
         </Space>
-
+        {contextHolder}
         <Space>
 
             <Form layout="inline" initialValues={{

@@ -2,7 +2,8 @@
 import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
 import { SyncModeSelect } from "@/app/components/NTSelects";
 import { MediaLibrarySelect } from "@/app/components/LibraryPathSelector";
-import { DirectorySync, SyncDirectoryConfig, SyncDirectoryUpdateConfig, SyncMode } from "@/app/utils/api/sync";
+import { DirectorySync, SyncDirectoryConfig, SyncDirectoryUpdateConfig, } from "@/app/utils/api/sync";
+import { SyncMode } from "@/app/utils/api/types"
 import { Button, Col, Descriptions, Form, Row, Space, Switch, Tag, message, theme } from "antd";
 import React, { useContext } from "react";
 

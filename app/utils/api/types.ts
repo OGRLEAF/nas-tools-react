@@ -1,10 +1,21 @@
+export enum SyncMode {
+  COPY = "copy",
+  LINK = "link",
+  softlink = "softlink",
+  move = "move",
+  rclone = "rclone",
+  rclonecopy = "rclonecopy",
+  minio = "minio",
+  miniocopy = "miniocopy"
+}
+
+
 export enum MediaWorkType {
   TV = "电视剧",
   MOVIE = "电影",
   ANI = "动漫",
   UNKNOWN = '未知',
 }
-
 
 export interface MediaIdentifyContext {
   tmdbId: string,

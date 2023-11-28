@@ -11,6 +11,7 @@ import { useForm } from "antd/es/form/Form";
 import { MediaSeasonInput } from "@/app/components/mediaImport/mediaImport";
 import { RetweetOutlined } from "@ant-design/icons"
 import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
+import { TMDB } from "@/app/utils/api/tmdb";
 
 
 const defaultConfig: TVRssInfo = {
@@ -68,7 +69,7 @@ export default function SubscribeTV() {
         ]}
         defaultRecord={defaultConfig}
         cardProps={(record) => ({
-            cover: <img src={record.image}/>,
+            cover: <img src={record.image} />,
             title: record.name,
             description: StatusTag[record.state]
         })}
@@ -107,6 +108,23 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
             year: value.metadata?.date.release,
         })
     }
+
+    const season = Form.useWatch("season", form);
+    useEffect(() => {
+        if (season != undefined) {
+            console.log(season, initialConfig.season, season != initialConfig.season)
+            if (season != initialConfig.season) {
+                const seasonKey = series.season(season);
+                const media = new TMDB().fromSeries(seasonKey);
+                media?.get_children()
+                    .then((list) => {
+                        console.log("season changed", season, list)
+                    })
+
+            }
+        }
+
+    }, [season])
 
     const ctx = useContext(CardnFormContext);
     const [loading, setLoading] = useState(false);

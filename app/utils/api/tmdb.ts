@@ -395,7 +395,7 @@ export class TMDBMediaWorkEpisode {
         return undefined
     }
 
-    public get_children() {
+    public async get_children() {
         return []
     }
 }

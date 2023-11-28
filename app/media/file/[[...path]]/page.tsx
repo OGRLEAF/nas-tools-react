@@ -1,7 +1,7 @@
 'use client'
 import { Section } from "@/app/components/Section";
 import { API, NastoolFileListItem } from "@/app/utils/api/api";
-import { Col, Row, List, Typography, Space, Segmented, Button, theme, Table, Cascader, Input, Form, Select } from "antd";
+import { Col, Row, List, Typography, Space, Segmented, Button, theme, Table, Cascader, Input, Form, Select, Tooltip } from "antd";
 import { Reducer, memo, useEffect, useMemo, useReducer, useState } from "react";
 import { ColumnsType } from "antd/es/table";
 import FileMoreAction from "@/app/components/fileMoreAction";
@@ -44,6 +44,7 @@ const DirectoryList = ({ dirList, loading, }:
         </>)
     }
     const pathParams = useParams()
+    const pathname = usePathname();
     const [sortConfig, setSortConfig] = useState<{ key: SortKey, dir: SortDirection }>()
     const [filterConfig, setFilterConfig] = useState<string>("");
     const sortedDirList = useMemo(() => (
@@ -88,22 +89,24 @@ const DirectoryList = ({ dirList, loading, }:
                 bordered
                 loading={loading}
                 dataSource={sortedDirList}
-                renderItem={(item) => (
-                    <List.Item>
-                        <Link
-                            href={"/media/file/" + [...((pathParams.path || []) as string[]), encodeURI(item.name)].join("/")}
-                        >{item.name}</Link>
-                    </List.Item>
-                )}
+                renderItem={(item) => {
+                    const paths = (pathParams.path as string[])//.map((value)=>value.replaceAll("%5B", "[").replaceAll("%5D", "]"))
+                    const cleanName = item.name.replaceAll("#", "＃")
+                    const link = `/media/file/${paths ? paths.join("/") : ""}/${encodeURI(cleanName)}`
+                    return (
+                        <List.Item>
+                            <Tooltip title={`${link} ${pathname}`}>
+                                <Link href={link}>{item.name}</Link>
+                            </Tooltip>
+                        </List.Item>
+                    )
+                }}
             /></Space>)
 }
 
 const FileFilter = () => {
 
     const [toolsForm] = Form.useForm<{ filter: string }>();
-    const { useWatch } = Form;
-    // const filterContent = useWatch('filter', toolsForm);
-
     const filteringOptions = [
         {
             value: "format",
@@ -245,20 +248,31 @@ const MediaFileExplorer = () => {
     const [fileList, setFileList] = useState<NastoolFileListItem[]>([])
     const pathManagerContext = usePathManager();
     const router = useRouter()
-    useEffect(() => {
+
+    const onRefresh = () => {
         setLoadingState(true);
         const nastool = API.getNastoolInstance();
         nastool.then(async (nastool) => {
             try {
-                const fileList = await nastool.getFileList(pathManagerContext.getBasePath, pathManagerContext.getDeepestRelativePath());
+                const fileList = await nastool.getFileList(pathManagerContext.getBasePath,
+                    pathManagerContext.getDeepestRelativePath().replaceAll("＃", "#"));
+                if (fileList.fallback_to != undefined) {
+                    router.replace("/media/file" + fileList.fallback_to)
+                } else {
+                    setDirList(fileList.directories)
+                    setFileList(fileList.files)
+                    setLoadingState(false);
+                }
                 // console.log("refresh: ", fileList, pathManagerContext.deepestPath)
-                setDirList(fileList.directories)
-                setFileList(fileList.files)
-                setLoadingState(false);
+
             } catch (e) {
 
             }
         })
+    }
+
+    useEffect(() => {
+        onRefresh();
     }, []);
 
     useEffect(() => {
@@ -272,7 +286,8 @@ const MediaFileExplorer = () => {
     //     pathManagerDispath({ type: "append_path", path: dirName })
     // }
 
-    return <>
+    return <Section title="文件管理" onRefresh={onRefresh}>
+
         <Space style={{ width: "100%" }} direction="vertical">
             <Row>
                 <Col span={24}>
@@ -290,19 +305,17 @@ const MediaFileExplorer = () => {
                 </Col>
             </Row>
         </Space>
-    </>
+
+    </Section>
 }
 
 function MediaFile() {
     // pathManager.setPath("mnt/S1/MainStorage/Media/Downloads/animations")
-    return (
-        <Section title="文件管理">
-            <PathManagerProvider>
-                <MediaFileExplorer />
-            </PathManagerProvider>
-        </Section>
-    )
+    return <PathManagerProvider>
+        <MediaFileExplorer />
+    </PathManagerProvider>
 }
+
 export default memo(MediaFile, (prev, next) => {
     console.log('memo', prev, next)
     return false

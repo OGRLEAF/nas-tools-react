@@ -26,6 +26,10 @@ type NastoolApi =
     "site/resources" |
     "site/update" |
     "download/config/list" |
+    "download/list" |
+    "download/client/list" |
+    "download/start" |
+    "download/stop" |
     "library/mediaserver/library" |
     "library/mediaserver/library/item" |
     "filterrule/list/basic" |
@@ -41,8 +45,11 @@ type NastoolApi =
     "subscribe/delete" |
     "subscribe/search" |
     "rss/list" |
-    "rss/update"
-
+    "rss/update" |
+    "message/client/list" |
+    "message/client/update" |
+    "message/client/test" |
+    "message/client/delete"
 export interface NastoolResponse<T> {
     code: number,
     success: boolean,
@@ -246,6 +253,7 @@ export type NastoolFileList = {
     is_root: boolean,
     files: NastoolFileListItem[],
     directories: NastoolFileListItem[],
+    fallback_to?: string
 }
 
 

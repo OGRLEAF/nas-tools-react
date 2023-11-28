@@ -3,7 +3,7 @@ import { Button, Segmented, Space } from "antd"
 import PathManager from "../utils/pathManager"
 import CopyToClipboard from "@/app/components/copyToClipboard"
 import { CopyOutlined } from "@ant-design/icons"
-import { useParams, usePathname } from "next/navigation"
+import { useParams, useSearchParams } from "next/navigation"
 export const PathManagerContext = createContext<PathManager>(new PathManager("/"));
 export const PathManagerDispatchContext = createContext(({ type }: { type: any, path: string }) => { });
 
@@ -66,9 +66,9 @@ export function PathManagerBar() {
     </>
 }
 
-export const PathManagerProvider = ({ children }:
-    { children: React.ReactNode, startPath?: string }) => {
+export const PathManagerProvider = ({ children }:{ children: React.ReactNode, startPath?: string }) => {
     const pathParams = useParams();
+    const query = useSearchParams();
     const path: string[] = pathParams.path as string[];
     const pathManager = new PathManager('/');
 

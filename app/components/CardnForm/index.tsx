@@ -128,8 +128,8 @@ function ListItemCard<T>({ record, cardProps: _cardProps, formRender }: { record
             }
         })
     }
-    const actions = [
-        ...(ctx.options.extraActions || []).map((action) => <Button key={action.key}
+    const actions = ctx.options.extraActions?.map((action) => (
+        <Button key={action.key}
             icon={action.icon}
             onClick={evt => {
                 ctx.loading(action.key);
@@ -142,9 +142,12 @@ function ListItemCard<T>({ record, cardProps: _cardProps, formRender }: { record
                         ctx.error(e);
                     })
             }}
-            type="text" />),
-        ctx.options.onDelete ? <Button key="delete_button" danger icon={<CloseOutlined />} onClick={onDelete} type="text"></Button> : <></>,
-    ]
+            type="text" />
+    )) || [];
+
+    if (ctx.options.onDelete) {
+        actions.push(<Button key="delete_button" danger icon={<CloseOutlined />} onClick={onDelete} type="text"></Button>)
+    }
 
     return <>
         <Card
