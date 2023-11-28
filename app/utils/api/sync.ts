@@ -1,16 +1,7 @@
 import { APIBase } from "./api_base";
 import { ImportMode as RmtMode } from "./api"
+import { SyncMode } from "./types";
 
-export enum SyncMode {
-    COPY = "copy",
-    LINK = "link",
-    softlink = "softlink",
-    move = "move",
-    rclone = "rclone",
-    rclonecopy = "rclonecopy",
-    minio = "minio",
-    miniocopy = "miniocopy"
-}
 
 export const syncModeMap: Record<SyncMode, RmtMode> = {
     "copy": RmtMode.COPY,
