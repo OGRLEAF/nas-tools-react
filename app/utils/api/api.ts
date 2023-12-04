@@ -30,9 +30,11 @@ type NastoolApi =
     "download/client/list" |
     "download/start" |
     "download/stop" |
+    "download/remove" |
     "library/mediaserver/library" |
     "library/mediaserver/library/item" |
     "filterrule/list/basic" |
+    "filterrule/list" |
     "task/list" |
     "task/create" |
     "sync/directory/list" |

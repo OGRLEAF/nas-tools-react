@@ -1,13 +1,13 @@
 "use client"
 import { Section } from "@/app/components/Section";
-import { Button, Progress, Space, Table, Tag, Tooltip } from "antd";
+import { Button, Input, Popconfirm, Progress, Space, Table, Tag, Tooltip, message } from "antd";
 import { PlusOutlined } from "@ant-design/icons"
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Download, DownloadClient, TorrentInfo, TorrentState } from "@/app/utils/api/download";
 import { ColumnsType } from "antd/es/table";
 import Link from "next/link";
-import { FolderOpenOutlined } from "@ant-design/icons"
+import { FolderOpenOutlined, CloseOutlined } from "@ant-design/icons"
 import { IconPause, IconPlay } from "@/app/components/icons";
 import { bytes_to_human } from "@/app/utils";
 import { StateMap, StateTag } from "@/app/components/StateTag";
@@ -52,7 +52,7 @@ const torrentPrivateTag: StateMap<number> = {
     1: {
         key: 1,
         color: "cyan",
-        value: "Private"
+        value: "P"
     }
 }
 
@@ -66,6 +66,7 @@ export default function DownloadedPage() {
 
     const [torrents, setTorrents] = useState<TorrentInfo[]>([]);
     const [totalTorrents, setTotalTorrents] = useState(20);
+    const [categories, setCategories] = useState<string[]>([]);
     const [loading, setLoading] = useState(false)
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
@@ -88,6 +89,10 @@ export default function DownloadedPage() {
             const torrents = await new Download().list();
             setTorrents(torrents.list)
             setTotalTorrents(torrents.list.length)
+            const categories = new Set<string>();
+            torrents.list.forEach(t => categories.add(t.category || ""))
+            categories.delete("")
+            setCategories(Array.from(categories))
         }
 
         setLoading(false)
@@ -114,11 +119,17 @@ export default function DownloadedPage() {
         getDownloadClinets();
     }, [])
 
-
-
+    const [namePattern, setNamePattern] = useState<string>("");
+    const filterdList = useMemo(() => {
+        return namePattern.length ? torrents.filter((value) => value.name.indexOf(namePattern) > 0) : torrents;
+    }, [torrents, namePattern])
+    const [messageApi, contextHolder] = message.useMessage();
     const columns: ColumnsType<TorrentInfo> = [
         {
-            title: "名称",
+            title: <Space size="large">
+                <span>名称</span>
+                <Input size="small" placeholder="搜索" onChange={(evt) => { setNamePattern(evt.currentTarget.value) }} allowClear />
+            </Space>,
             dataIndex: "name",
             key: "name",
             render: (value: string, record) => {
@@ -128,10 +139,22 @@ export default function DownloadedPage() {
 
                 return <Space align="center">
                     {value}
-                    <StateTag stateMap={torrentPrivateTag} value={Number(record.is_private)} />
                     <FileButton path={fileLink} />
                 </Space>
-            }
+            },
+        },
+        {
+            title: "分类",
+            dataIndex: "category",
+            render(value: string, record) {
+                if (value.length)
+                    return <Tag color="cyan" bordered={false}>{value}</Tag>
+                else
+                    return <></>
+            },
+            width: 100,
+            filters: categories.map((v) => ({ text: v, value: v })),
+            onFilter: (value, record) => (record.category === value),
         },
         {
             title: "进度",
@@ -141,7 +164,7 @@ export default function DownloadedPage() {
                 return <div style={{ paddingRight: 10 }}><Progress percent={Math.round(value * 1000) / 10} /></div>
             },
             width: 250,
-            defaultSortOrder: "ascend",
+            // defaultSortOrder: "ascend",
             sorter: (a, b) => a.progress - b.progress
         },
         {
@@ -153,7 +176,8 @@ export default function DownloadedPage() {
                 return <>{num.toFixed(2)} {unit}</>
             },
             align: "right",
-            defaultSortOrder: "ascend",
+            // defaultSortOrder: "ascend",
+            width: 100,
             sorter: (a, b) => a.total_size - b.total_size
         },
         {
@@ -167,7 +191,7 @@ export default function DownloadedPage() {
             align: "right",
             width: 150,
             defaultSortOrder: "descend",
-            sorter: (a, b) =>a.added_date - b.added_date
+            sorter: (a, b) => a.added_date - b.added_date
         },
         {
             title: "状态",
@@ -175,36 +199,29 @@ export default function DownloadedPage() {
             key: "state",
             render: (value: TorrentState) => <StateTag stateMap={torrentStateMap} value={value} />,
             align: "center",
-            filters: Object.entries(torrentStateMap).map(([k, v]) => ({ text: k, value: k })),
+            filters: Object.entries(torrentStateMap).map(([k, v]) => ({ text: v.value, value: k })),
             onFilter: (value, record) => (record.state === value),
+            width: 100,
         },
         {
             title: "操作",
             render: (_, record) => {
                 return <Space>
                     {
-                        record.state == TorrentState.PAUSED ? <Button
-                            type="link"
-                            icon={<IconPlay />}
-                            onClick={() => {
-                                new Download().resume(record.hash)
-                            }} />
+                        record.state == TorrentState.PAUSED ?
+                            <ActionButton actionOptions={{ title: "开始", apiAction: "resume", icon: <IconPlay />, confirm: false }} record={record} />
                             :
-                            <Button
-                                type="link"
-                                icon={<IconPause />}
-                                onClick={() => {
-                                    new Download().pause(record.hash)
-                                }} />
+                            <ActionButton actionOptions={{ title: "暂停", apiAction: "pause", icon: <IconPause />, confirm: false }} record={record} />
                     }
-
+                    <ActionButton actionOptions={{ title: "删除", apiAction: "remove", icon: <CloseOutlined />, danger: true }} record={record} />
                 </Space>
-            }
+            },
+            width: 100,
         }
     ]
 
     return <Section title="下载任务"
-        onRefresh={() => { getDownloadClinets(); getTorrents(true) }}
+        onRefresh={() => { getDownloadClinets(); getTorrents(false) }}
         extra={
             <Space>
                 <Button icon={<PlusOutlined />}
@@ -212,21 +229,22 @@ export default function DownloadedPage() {
                     type="primary">添加下载任务</Button>
             </Space>
         }>
-        <Table dataSource={torrents}
+        {contextHolder}
+        <Table dataSource={filterdList}
             size="small"
             rowKey="hash"
             columns={columns}
             loading={loading}
             pagination={
                 {
-                    position: ["topRight", "bottomRight"],
-                    pageSize: pageSize,
+                    position: ["bottomRight"],
                     showSizeChanger: true,
-                    total: totalTorrents,
+                    // total: totalTorrents
+                    pageSize: pageSize,
                     onChange: (page, pageSize) => {
                         setPage(page);
                         setPageSize(pageSize)
-                    }
+                    },
                 }
             }
         >
@@ -244,4 +262,49 @@ function FileButton({ path }: { path?: string }) {
             }}
             disabled={path == undefined} />
     </Tooltip>
+}
+
+interface ActionOptions {
+    title: string,
+    apiAction: "resume" | "pause" | "remove",
+    icon: React.ReactNode,
+    confirm?: boolean,
+    danger?: boolean
+}
+
+
+function ActionButton({ record, actionOptions }: { actionOptions: ActionOptions, record: TorrentInfo }) {
+    const { title, apiAction, icon, danger, confirm } = actionOptions;
+    const [messageApi, contextHolder] = message.useMessage();
+    const doAction = () => {
+        messageApi.open({ type: "loading", content: `${title} ${record.name}`, duration: 0, key: `${record.hash}-action` });
+        new Download().action(apiAction, record.hash)
+            .then(() => {
+                messageApi.open({ type: "success", content: '完成', duration: 3, key: `${record.hash}-action` });
+            })
+    }
+    const onConfirm = () => {
+        setOpen(false);
+        doAction()
+    };
+
+    const [open, setOpen] = useState(false);
+    const handleOpenChange = (newOpen: boolean) => {
+        if (!newOpen) {
+            setOpen(newOpen);
+            return;
+        }
+
+        if (confirm != undefined && confirm === false) {
+            onConfirm();
+        } else {
+            setOpen(newOpen);
+        }
+    };
+    return <>
+        <Popconfirm open={open} onOpenChange={handleOpenChange} onConfirm={onConfirm} title={`${title} ${record.name} ?`}>
+            <Button type="link" danger={danger || false} icon={icon} />
+        </Popconfirm >
+        {contextHolder}
+    </>
 }

@@ -18,7 +18,7 @@ import {
   VerticalAlignBottomOutlined,
   BellOutlined
 } from '@ant-design/icons';
-import { IconBookBookMark, IconCalendarDaysSolid, IconCustomSolid, IconDatabase, IconDownloader, IconFilmSolid, IconFolderTreeSolid, IconHistory, IconLink, IconLoading, IconMediaSolid, IconRefresh, IconRssSolid, IconTvSolid } from '../icons';
+import { IconBookBookMark, IconCalendarDaysSolid, IconCustomSolid, IconDatabase, IconDownloader, IconFilmSolid, IconFilter, IconFolderTreeSolid, IconHistory, IconLink, IconLoading, IconMediaSolid, IconRefresh, IconRssSolid, IconTvSolid } from '../icons';
 import type { MenuProps } from 'antd';
 import { Breadcrumb, Divider, Layout, Menu, theme } from 'antd';
 
@@ -92,7 +92,8 @@ const getMenuItems = async () => {
       getItem("基础设置", "/setting/basic", <ToolOutlined />),
       getItem("媒体库", "/setting/library", <IconBookBookMark />),
       getItem("目录同步", "/setting/directorysync", <IconRefresh />),
-      getItem("消息通知", "/setting/notification", <BellOutlined />)
+      getItem("消息通知", "/setting/notification", <BellOutlined />),
+      getItem("过滤规则", "/setting/filterrule", <IconFilter />)
     ]),
   ];
   return items;

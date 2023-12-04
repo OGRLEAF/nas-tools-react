@@ -46,7 +46,7 @@ export interface TorrentInfo {
     uploaded: number,
     ratio: number,
     progress: number,
-    is_private: boolean
+    category: string
 }
 
 export class Download extends APIBase {
@@ -83,6 +83,20 @@ export class Download extends APIBase {
             auth: true
         });
         return result.result
+    }
+
+    public async remove(hash: string) {
+        const result = await (await this.API).post<{ result: TorrentInfo[] }>("download/remove", {
+            data: {
+                id: hash
+            },
+            auth: true
+        });
+        return result.result
+    }
+
+    public async action(api: "resume" | "pause" | "remove", hash: string) {
+        return await this[api](hash);
     }
 }
 
@@ -135,9 +149,11 @@ export type DownloadDirConfig = {
     label: string
 }
 
+export type DownloadClientType = "qbittorrent";
+
 export type DownloadClientConfig = {
     name: string,
-    type: "qbittorrent",
+    type: DownloadClientType,
     enabled: boolean,
     transfer: boolean,
     only_nastool: boolean,
