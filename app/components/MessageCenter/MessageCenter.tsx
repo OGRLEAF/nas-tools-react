@@ -5,7 +5,7 @@ import { UserOutlined } from "@ant-design/icons"
 import React, { useEffect, useRef, useState } from "react";
 import Markdown from "marked-react";
 import { useForm } from "antd/es/form/Form";
-import { MessageCenter,Message } from "@/app/utils/socketioMessage";
+import { MessageCenter,Message } from "@/app/utils/api/message/socketioMessage";
 import { ServerConfig } from "@/app/utils/api/serverConfig";
 
 export default function MessagePanel() {
@@ -48,7 +48,11 @@ export default function MessagePanel() {
                 clearInterval(timer);
             }
         }
-    }, [autoRefresh])
+    }, [autoRefresh, msgApi])
+
+    useEffect(()=>{
+        setAutoRefresh(false)
+    }, [])
 
 
     const onRefresh = () => {
@@ -97,8 +101,9 @@ export default function MessagePanel() {
             }
         }}>
             <Space style={{ height: "100%", overflowY: "auto" }} direction="vertical" size={0} >
+                {msgs.length}
                 {
-                    msgs.map((msg, index) => (<div key={`${index}-${msg.time}`}>
+                    msgs.map((msg, index) => (<div key={`${index}-${msg.timestamp}`}>
                         {index > 0 ? <Divider style={{ margin: 0 }} /> : <></>}
                         <MessageCard msg={msg} isLasted={index == msgs.length - 1} />
 
@@ -106,14 +111,6 @@ export default function MessagePanel() {
                 }
             </Space>
         </ConfigProvider>
-        {/* <List
-            style={{ height: "100%", overflowY: "auto" }}
-            dataSource={msgs}
-            renderItem={(msg) => {
-                return
-            }}
-        >
-        </List> */}
         <Form form={form} layout="inline" initialValues={{ text: "" }} onFinish={onSendText}>
             <Space.Compact style={{ width: "100%" }} >
                 <Form.Item noStyle name="text">
@@ -125,5 +122,4 @@ export default function MessagePanel() {
             </Space.Compact>
         </Form>
     </Flex>
-    {/* </div > */ }
 }

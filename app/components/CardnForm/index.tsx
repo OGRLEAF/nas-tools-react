@@ -1,11 +1,12 @@
 "use client"
-import React, { useEffect, useState, createContext, ReactNode, useContext, MouseEventHandler } from "react";
+import React, { useEffect, useState, createContext, ReactNode, useContext, MouseEventHandler, useMemo } from "react";
 import { PlusOutlined, CloseOutlined } from "@ant-design/icons"
 import { IconDatabase } from "@/app/components/icons";
 import { Section } from "../Section";
-import { Button, Card, Col, Collapse, Drawer, Form, Modal, Row, Space, message } from "antd";
+import { Button, Card, Col, Collapse, Drawer, Form, Modal, Row, Space, Tabs, TabsProps, message } from "antd";
 import { useSubmitMessage } from "@/app/utils";
 import { CollapseProps } from "antd/lib";
+import _ from "lodash";
 
 export interface CardProps {
     cover?: React.ReactNode,
@@ -28,8 +29,9 @@ export interface CardnFormProps<T> {
     defaultRecord?: T,
     cardProps: (record: T) => CardProps,
     formRender: ({ record }: { record?: T, }) => React.JSX.Element,
-    cardsLayout?: "cards" | "list" | "collapse"
+    cardsLayout?: "cards" | "list" | "collapse" | "tabs"
 }
+
 
 interface CardnFormContextType<T> {
     success: (msg: string) => void,
@@ -37,6 +39,9 @@ interface CardnFormContextType<T> {
     loading: (msg: string) => void,
     refresh: () => void,
     exit: () => void,
+    edit: (record: T,) => void,
+    create: () => void,
+    performDelete: (record: T, cardProps: CardProps) => Promise<boolean>;
     options: CardnFormProps<T>
 }
 
@@ -46,6 +51,9 @@ export const CardnFormContext = createContext<CardnFormContextType<any>>({
     loading: (msg: string) => { },
     refresh: () => { },
     exit: () => { },
+    edit: () => { },
+    create: () => { },
+    performDelete: async (action) => false,
     options: {} as any,
 })
 
@@ -63,31 +71,57 @@ export default function CardnForm<T>(options: CardnFormProps<T>) {
     const wrapCards = cardsLayout == "cards"
 
     const cards = cardsLayout == "collapse" ? <CollapsableList records={list} cardProps={options.cardProps} formRender={options.formRender} /> :
-        Object.entries(list).map(([key, config]) => <ListItemCard key={key} record={config} cardProps={options.cardProps} formRender={options.formRender} />)
+        cardsLayout == "tabs" ? <TabCards records={list} cardProps={options.cardProps} formRender={options.formRender} /> :
+            Object.entries(list).map(([key, config]) => <ListItemCard key={key} record={config} cardProps={options.cardProps} formRender={options.formRender} />)
 
-
+    const { confirm } = Modal;
 
     const { contextHolder, success, error, loading } = useSubmitMessage("cardnform");
-
     const ctx: CardnFormContextType<T> = {
         success,
         error,
         loading,
         refresh: () => updateList(),
         exit: () => setOpenCreateDrawer(false),
+        edit: () => { },
+        create: () => { setOpenCreateDrawer(true) },
+        performDelete: async (record, cardProps) => {
+            confirm({
+                title: "确认删除?",
+                content: <>{cardProps.title}</>,
+                onOk: () => {
+                    if (ctx.options.onDelete) {
+                        ctx.loading("删除");
+                        ctx.options.onDelete(record)
+                            .then((res) => {
+                                if (res) {
+                                    ctx.success("删除成功")
+                                }
+                                ctx.refresh();
+                            })
+                            .catch((e) => {
+                                ctx.error(e);
+                            })
+                    }
+                }
+
+            })
+            return false
+        },
         options: options,
     }
 
-    return <Section title={options.title} onRefresh={updateList}
+    return <Section title={options.title
+    } onRefresh={updateList}
         extra={
-            <Space>
+            < Space >
                 <Button icon={<PlusOutlined />} onClick={() => setOpenCreateDrawer(true)} type="primary">添加订阅</Button>
                 <Button icon={<IconDatabase />} >默认设置</Button>
-            </Space>
+            </Space >
         }
     >
         {contextHolder}
-        <CardnFormContext.Provider value={ctx}>
+        < CardnFormContext.Provider value={ctx} >
             <Space
                 direction={cardsLayout == "cards" ? "horizontal" : "vertical"}
                 style={{ width: "100%" }}
@@ -98,8 +132,8 @@ export default function CardnForm<T>(options: CardnFormProps<T>) {
             <Drawer open={openCreateDrawer} size="large" onClose={() => setOpenCreateDrawer(false)}>
                 <RecordForm record={options.defaultRecord}></RecordForm>
             </Drawer>
-        </CardnFormContext.Provider>
-    </Section>
+        </CardnFormContext.Provider >
+    </Section >
 }
 
 
@@ -113,25 +147,7 @@ function ListItemCard<T>({ record, cardProps: _cardProps, formRender }: { record
     const { confirm } = Modal;
     const onDelete: MouseEventHandler<HTMLElement> = (evt) => {
         evt.stopPropagation();
-        confirm({
-            title: "确认删除?",
-            content: <>{cardProps.title}</>,
-            onOk: () => {
-                if (ctx.options.onDelete) {
-                    ctx.loading("删除");
-                    ctx.options.onDelete(record)
-                        .then((res) => {
-                            if (res) {
-                                ctx.success("删除成功")
-                            }
-                            ctx.refresh();
-                        })
-                        .catch((e) => {
-                            ctx.error(e);
-                        })
-                }
-            }
-        })
+        ctx.performDelete(record, cardProps);
     }
     const actions = ctx.options.extraActions?.map((action) => (
         <Button key={action.key}
@@ -196,25 +212,7 @@ function CollapsableList<T>({ records, cardProps: _cardProps, formRender }: { re
         const coverCard = cardProps.cover != undefined;
         const onDelete: MouseEventHandler<HTMLElement> = (evt) => {
             evt.stopPropagation();
-            confirm({
-                title: "确认删除?",
-                content: <>{cardProps.title}</>,
-                onOk: () => {
-                    if (ctx.options.onDelete) {
-                        ctx.loading("删除");
-                        ctx.options.onDelete(record)
-                            .then((res) => {
-                                if (res) {
-                                    ctx.success("删除成功")
-                                }
-                                ctx.refresh();
-                            })
-                            .catch((e) => {
-                                ctx.error(e);
-                            })
-                    }
-                }
-            })
+            ctx.performDelete(record, cardProps)
         }
         const actions = ctx.options.extraActions?.map((action) => (
             <Button key={action.key}
@@ -249,39 +247,51 @@ function CollapsableList<T>({ records, cardProps: _cardProps, formRender }: { re
     })
 
     return <>
-        {/* <Card
-            hoverable
-            cover={cardProps.cover}
-            onClick={() => setOpen(true)}
-            title={coverCard ? undefined : cardProps.title}
-            extra={
-                coverCard ? undefined : actions
-            }
-            actions={
-                !coverCard ? undefined : actions
-            }
-            style={{
-                width: coverCard ? "320px" : undefined
-            }}
-        >
-            <Card.Meta
-                title={cardProps.cover ? cardProps.title : undefined}
-                description={cardProps.description}
-            ></Card.Meta>
-        </Card> */}
         <Collapse
             items={items}
         >
         </Collapse>
-        {/* <CardnFormContext.Provider value={{ ...ctx, exit: () => setOpen(false) }}>
-            <Drawer open={open} size="large" onClose={onClose} >
-                {open ? <RecordForm record={record} /> : <></>}
-            </Drawer>
-        </CardnFormContext.Provider> */}
     </>
 }
 
+function TabCards<T>({ records, cardProps: _cardProps, formRender }: { records: T[], cardProps: CardnFormProps<T>["cardProps"], formRender: CardnFormProps<T>["formRender"] }) {
+    const ctx = useContext<CardnFormContextType<T>>(CardnFormContext);
+    const [open, setOpen] = useState(false);
+    const onClose = () => { setOpen(false) }
+    const RecordForm = formRender;
 
+    const items = useMemo(() => records.map((record: T, index) => {
+        const cardProps = _cardProps(record);
+        return {
+            label: cardProps.title,
+            children: cardProps.description,
+            key: String(index),
+            cardProps,
+            record
+        }
+    }), [records])
+
+    const onEdit: TabsProps['onEdit'] = (e, action) => {
+        const itemKey = Number(e);
+
+        const item = items[itemKey]
+        if (action == "add") {
+            ctx.create()
+        } else if (action == "remove" && !_.isNaN(itemKey)) {
+            ctx.performDelete(item.record, item.cardProps)
+            console.log(item)
+        }
+
+    }
+
+    return <>
+        <Tabs
+            type="editable-card"
+            items={items}
+            onEdit={onEdit}
+        ></Tabs>
+    </>
+}
 // function RecordForm<T>({ children, onFinish }: { children: React.ReactNode, onFinish: (data: T) => Promise<boolean> }) {
 //     const [form] = Form.useForm();
 //     const [loading, setLoading] = useState(false);

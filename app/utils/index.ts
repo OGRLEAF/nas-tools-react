@@ -1,9 +1,11 @@
 import { message } from "antd";
+import { floor } from "lodash";
 
 export function bytes_to_human(value: number, fixed: number = 2): [number, string] {
     const units = ["B", "KB", "MB", "GB", "TB", "PB"]
     const level = Math.min(Math.floor(Math.log2(value + 1e-6) / 10), 5);
-    return [value / ((2 ** 10) ** (level)), units[level] || units[0]]
+    const finalValue = value / ((2 ** 10) ** (level))
+    return [floor(finalValue * 10 ** fixed) / (10 ** fixed), units[level] || units[0]]
 }
 
 export function number_string_to_list(str: string) {
@@ -70,8 +72,8 @@ export function useSubmitMessage(key: string) {
     }
     return {
         contextHolder,
-        success: (msg:string) => success(key, msg),
-        error: (msg:string) => error(key, msg),
-        loading: (msg:string) => loading(key, msg),
+        success: (msg: string) => success(key, msg),
+        error: (msg: string) => error(key, msg),
+        loading: (msg: string) => loading(key, msg),
     }
 }

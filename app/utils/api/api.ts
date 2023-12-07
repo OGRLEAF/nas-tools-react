@@ -3,6 +3,7 @@ import ClientStorage from "../storage"
 import { objectToFormData } from "./api_utils"
 import { NastoolMessage } from "../api/message";
 import { MediaWorkType } from "./types";
+import { ServerEvent } from "./message/ServerEvent";
 type NastoolApi =
     "user/login" |
     "config/info" |
@@ -610,7 +611,7 @@ export class NASTOOL {
     private token: string | null = null;
     private serverConfig: NastoolServerConfig | null = null;
     private storage: ClientStorage<NastoolLoginResData>;
-    public message: NastoolMessage | null = null;
+    public message: ServerEvent | null = null;
     public hook: {
         onLoginRequired?: () => (Promise<NastoolLoginConfig>)
     } = {};
@@ -652,6 +653,14 @@ export class NASTOOL {
     public async init() {
         // this.message = new NastoolMessage(`ws${this.config.https ? 's' : ''}://${this.config.host}:${this.config.port}/message?apikey=${this.serverConfig?.security.api_key}`);
 
+    }
+
+    public async getServerEvent() {
+        if (this.message != undefined) {
+            if (this.token)
+                this.message = new ServerEvent(this.token)
+        }
+        return this.message
     }
 
     public async login({ username, password }: NastoolLoginConfig): Promise<boolean> {

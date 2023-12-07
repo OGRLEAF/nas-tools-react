@@ -9,7 +9,9 @@ export interface Message {
     level: string,
     title: string,
     content: string,
-    time: number,
+    // time: number,
+    index: number,
+    timestamp: number,
     type: MessageType
 }
 
@@ -40,27 +42,30 @@ export class MessageCenter {
         this.sock.on("message", (data) => {
             this.handle_message(data)
         })
+
+        this.sock.on("log", (data) => {
+            console.log(data)
+        })
     }
 
     private handle_message(messageRaw: MessageGroup<Message>) {
+        console.log(messageRaw)
         const lastMsg = this.msgs[this.msgs.length - 1];
-        const lastTime = lastMsg ? lastMsg.time : 0;
+        const lastTime = lastMsg ? lastMsg.index : 0;
         if (messageRaw.messages.length) {
             const newItems = messageRaw.messages
                 .filter((msg) => {
-                    const msgTime = new Date(msg.time).getTime()
-                    if (msgTime > lastTime) {
-                        return true;
-                    }
-                    return false;
+                    const msgTime = msg.index
+                    console.log(msgTime, lastTime)
+                    return (msgTime > lastTime)
                 })
 
             if (newItems.length) {
                 newItems.forEach((msg) => {
-                    const msgTime = new Date(msg.time).getTime()
+                    const msgTime = msg.index
                     this.msgs.push({
                         ...msg,
-                        time: msgTime,
+                        timestamp: msgTime,
                         type: MessageType.RECV
                     })
 
@@ -80,13 +85,13 @@ export class MessageCenter {
         this.sock.emit("message", {
             text: text
         })
-        this.msgs.push({
-            level: "",
-            content: text,
-            title: "用户",
-            type: MessageType.SEND,
-            time: new Date().getTime()
-        })
-        if (this.onMessage) this.onMessage([...this.msgs])
+        // this.msgs.push({
+        //     level: "",
+        //     content: text,
+        //     title: "用户",
+        //     type: MessageType.SEND,
+        //     timestamp: new Date().getTime()
+        // })
+        // if (this.onMessage) this.onMessage([...this.msgs])
     }
 }

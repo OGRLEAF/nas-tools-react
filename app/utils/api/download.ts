@@ -26,13 +26,23 @@ class TorrentInfoBase(TypedDict):
  */
 
 export enum TorrentState {
-    ALL = "all",
     DOWNLOADING = "downloading",
     SEEDING = "seeding",
     CHECKING = "checking",
     PAUSED = "paused",
-    UNKNOWN = "unknown"
+    UNKNOWN = "unknown",
+    STALLED = "stalled"
 }
+
+export enum TorrentVagueState {
+    ALL = "all",
+    ACTIVE = "active",
+    INACTIVE = "inactive"
+}
+
+export type TorrentFilterState = TorrentState | TorrentVagueState;
+
+
 export interface TorrentInfo {
     hash: string,
     added_date: number,
@@ -46,7 +56,11 @@ export interface TorrentInfo {
     uploaded: number,
     ratio: number,
     progress: number,
-    category: string
+    category: string,
+    speed: {
+        download: number,
+        upload: number
+    }
 }
 
 export class Download extends APIBase {
@@ -54,13 +68,17 @@ export class Download extends APIBase {
         super();
     }
 
-    public async list(page?: number, size?: number) {
+    public async list(options: { page?: number, size?: number, hashs?: string[], state?: TorrentFilterState } = {}) {
+        const { page, size, hashs, state } = options;
         const result = await (await this.API).post<{ list: TorrentInfo[], total: number }>("download/list", {
             data: {
+                hashs: hashs,
                 page: page,
-                size: size
+                size: size,
+                state: state
             },
-            auth: true
+            auth: true,
+            json: true
         });
         return result
     }
