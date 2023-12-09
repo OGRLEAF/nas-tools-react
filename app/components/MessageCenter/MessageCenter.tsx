@@ -15,13 +15,11 @@ export default function MessagePanel() {
 
     const onMessage = (msgs: Message[]) => {
         setMsgs(msgs);
-        console.log("onMessage", msgApi)
     }
     const connectMessage = async () => {
         const nt = await API.getNastoolInstance()
         const serverEvent = await nt.getServerEvent()
         if (serverEvent) {
-            console.log(serverEvent)
             const socket = new ServerMessage(serverEvent);
             setMsgApi(socket)
         }
@@ -46,7 +44,6 @@ export default function MessagePanel() {
                 }
             }, 5000)
             return () => {
-                console.log("Timer cleared")
                 clearInterval(timer);
             }
         }

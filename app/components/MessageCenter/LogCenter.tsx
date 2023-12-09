@@ -36,13 +36,11 @@ export default function LogPanel() {
 
     const onMessage = (msgs: Log[]) => {
         setMsgs(msgs);
-        console.log("onMessage", msgApi)
     }
     const connectMessage = async () => {
         const nt = await API.getNastoolInstance()
         const serverEvent = await nt.getServerEvent()
         if (serverEvent) {
-            console.log(serverEvent)
             const socket = new ServerLog(serverEvent);
             setMsgApi(socket)
         }
