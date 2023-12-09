@@ -87,7 +87,7 @@ const Home = () => {
   const latestMediaCards = mediaItemCardGroup(libraryBrief.latest, "still")
 
   return (
-    <ConfigProvider locale={zhCN}>
+    <ConfigProvider locale={zhCN} theme={{ cssVar: true }}>
       <App>
         <div className="App">
           <Space direction='vertical'>

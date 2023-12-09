@@ -26,6 +26,41 @@ body {
     rgb(var(--background-start-rgb));
 } */
 
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+
 body {
   margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::-webkit-scrollbar {
+    -webkit-transition: none;
+    transition: none;
+  }
+
+}
+
+::-webkit-scrollbar {
+  width: 0.5rem;
+  height: 0.5rem;
+  -webkit-transition: background-start-rgb .3s;
+  transition: background-start-rgb .3s;
+}
+
+::-webkit-scrollbar-corner {
+  background: 0 0;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  background: rgba(29, 39, 59, .16);
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(var(--background-start-rgb), .06);
 }

@@ -655,10 +655,13 @@ export class NASTOOL {
 
     }
 
-    public async getServerEvent() {
-        if (this.message != undefined) {
-            if (this.token)
+    public getServerEvent() {
+        if (this.message == undefined) {
+            if (this.token) {
                 this.message = new ServerEvent(this.token)
+                
+            }
+
         }
         return this.message
     }

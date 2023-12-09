@@ -1,4 +1,6 @@
 import { io, Socket } from "socket.io-client"
+import { ServerEvent } from "./ServerEvent"
+import { API } from "../api"
 
 enum MessageType {
     SEND = 0,
@@ -9,7 +11,7 @@ export interface Message {
     level: string,
     title: string,
     content: string,
-    // time: number,
+    time: string,
     index: number,
     timestamp: number,
     type: MessageType
@@ -20,43 +22,29 @@ export interface MessageGroup<MsgType> {
     messages: MsgType[]
 }
 
-export class MessageCenter {
-    private sock: Socket
+export class ServerMessage {
+    private serverEvent: ServerEvent
     private msgs: Message[] = []
     public onMessage: (msgs: Message[]) => void = () => { };
-    constructor(token: string) {
-        this.sock = io("wss://nastool-dev.service.home/test", {
-            extraHeaders: {
-                Authorization: token
-            }
-        })
+    constructor(serverEvent: ServerEvent) {
+        this.serverEvent = serverEvent;
         this.connect();
     }
 
     public connect() {
         // client-side
-        this.sock.on("connect", () => {
-            console.log("connected", this.sock.id); // x8WIv7-mJelg7on_ALbx
-        });
-
-        this.sock.on("message", (data) => {
+        this.serverEvent.listen<MessageGroup<Message>>("message", (data) => {
             this.handle_message(data)
-        })
-
-        this.sock.on("log", (data) => {
-            console.log(data)
         })
     }
 
     private handle_message(messageRaw: MessageGroup<Message>) {
-        console.log(messageRaw)
         const lastMsg = this.msgs[this.msgs.length - 1];
-        const lastTime = lastMsg ? lastMsg.index : 0;
+        const lastTime = lastMsg ? lastMsg.index : -1;
         if (messageRaw.messages.length) {
             const newItems = messageRaw.messages
                 .filter((msg) => {
                     const msgTime = msg.index
-                    console.log(msgTime, lastTime)
                     return (msgTime > lastTime)
                 })
 
@@ -78,20 +66,13 @@ export class MessageCenter {
     }
 
     public async refresh() {
-        this.sock.emit("refresh")
+        this.serverEvent.emit("refresh")
     }
 
     public sendText(text: string) {
-        this.sock.emit("message", {
+        this.serverEvent.emit("message", {
             text: text
         })
-        // this.msgs.push({
-        //     level: "",
-        //     content: text,
-        //     title: "用户",
-        //     type: MessageType.SEND,
-        //     timestamp: new Date().getTime()
-        // })
-        // if (this.onMessage) this.onMessage([...this.msgs])
+
     }
 }

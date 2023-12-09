@@ -28,13 +28,18 @@ export class ServerEvent {
                 Authorization: token
             }
         })
+        this.sock.on("connect", () => {
+            console.log("connected", this.sock.id); // x8WIv7-mJelg7on_ALbx
+        });
     }
 
     public listen<T>(event: string, callback: (data: T) => void) {
-        this.sock.on(event, () => {
-            console.log("connected " + event, this.sock.id); // x8WIv7-mJelg7on_ALbx
-        });
         this.sock.on(event, callback);
+    }
+
+    public emit(event: string, data?: any) {
+        if(data == undefined) this.sock.emit(event)
+        else this.sock.emit(event, data)
     }
 }
 

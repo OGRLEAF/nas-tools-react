@@ -1,19 +1,40 @@
 import { API } from "@/app/utils/api/api";
 // import { Message, NastoolMessage } from "@/app/utils/api/message";
-import { Avatar, Button, Card, ConfigProvider, Divider, Flex, Form, Input, List, Space, Switch } from "antd";
+import { Avatar, Button, Card, ConfigProvider, Divider, Flex, FloatButton, Form, Input, List, Space, Switch, Tag } from "antd";
 import { UserOutlined } from "@ant-design/icons"
 import React, { useEffect, useRef, useState } from "react";
 import Markdown from "marked-react";
 import { useForm } from "antd/es/form/Form";
-import { ServerMessage, Message } from "@/app/utils/api/message/ServerMessage";
+import { ServerLog, Log } from "@/app/utils/api/message/ServerLog";
 import { ServerConfig } from "@/app/utils/api/serverConfig";
+import { StateMap, StateTag } from "../StateTag";
 
-export default function MessagePanel() {
-    const [msgs, setMsgs] = useState<Message[]>([]);
-    const [msgApi, setMsgApi] = useState<ServerMessage>();
+const LogLevelStateTag: StateMap<Log['level']> = {
+    INFO: {
+        key: "INFO",
+        color: "blue",
+    },
+    DEBUG: {
+        key: "DEBUG",
+        color: "geekblue"
+    },
+    WARN: {
+        key: "WARN",
+        color: "warning"
+    },
+    ERROR: {
+        key: "ERROR",
+        color: "error"
+    },
+}
+
+
+export default function LogPanel() {
+    const [msgs, setMsgs] = useState<Log[]>([]);
+    const [msgApi, setMsgApi] = useState<ServerLog>();
     const [autoRefresh, setAutoRefresh] = useState(false);
 
-    const onMessage = (msgs: Message[]) => {
+    const onMessage = (msgs: Log[]) => {
         setMsgs(msgs);
         console.log("onMessage", msgApi)
     }
@@ -22,7 +43,7 @@ export default function MessagePanel() {
         const serverEvent = await nt.getServerEvent()
         if (serverEvent) {
             console.log(serverEvent)
-            const socket = new ServerMessage(serverEvent);
+            const socket = new ServerLog(serverEvent);
             setMsgApi(socket)
         }
 
@@ -58,14 +79,8 @@ export default function MessagePanel() {
 
 
     const [form] = useForm();
-    const onSendText = (value: { text: string }) => {
-        if (msgApi) {
-            msgApi.sendText(value.text)
-            form.resetFields(["text"])
-        }
-    }
 
-    const MessageCard = ({ msg, isLasted }: { msg: Message, isLasted: boolean, }) => {
+    const MessageCard = ({ msg, isLasted }: { msg: Log, isLasted: boolean, }) => {
         const messagesEndRef = useRef<HTMLDivElement>(null);
         if (isLasted)
             useEffect(() => {
@@ -74,31 +89,25 @@ export default function MessagePanel() {
                 }
             })
         return <Card
+            size="small"
             ref={messagesEndRef}
-            bordered={false} bodyStyle={{ paddingBottom: 0, padding: "24px 16px 8px 16px", borderRadius: "none" }}
-        >
-            <Card.Meta
-                style={{ width: "100%", overflowX: "auto" }}
-                avatar={<Avatar icon={<UserOutlined />} />}
-                title={<>{msg.title || "系统"}</>}
-                description={<Markdown value={msg.content.replaceAll("<br>", "\n")} ></Markdown>}
-            />
-
+            bordered={false} bodyStyle={{ paddingBottom: 0, padding: 12, borderRadius: "none" }} >
+            <span style={{ wordBreak: "break-word" }}>
+                <Tag color="cyan">{msg.time}</Tag>
+                <StateTag stateMap={LogLevelStateTag} value={msg.level} >{msg.source}</StateTag>
+                <span>{(msg.text)}</span>
+            </span>
         </Card>
     }
-    // return <div style={{ height: "100%", display: "flex", flexFlow: "column" }}>
+    const LogContent = useRef<HTMLDivElement>(null);
     return <Flex vertical gap={24} style={{ height: "100%" }}>
-        {/* <Space>
-            <Switch onChange={(value) => setAutoRefresh(value)} checked={autoRefresh} />
-            <Button onClick={onRefresh}>刷新</Button>
-        </Space> */}
         <ConfigProvider theme={{
             token: {
                 borderRadiusLG: 0,
                 boxShadowTertiary: "none"
             }
         }}>
-            <Space style={{ height: "100%", overflowY: "auto" }} direction="vertical" size={0} >
+            <Space ref={LogContent} style={{ height: "100%", overflowY: "auto" }} direction="vertical" size={0} >
                 {
                     msgs.map((msg, index) => (<div key={`${index}-${msg.timestamp}`}>
                         {index > 0 ? <Divider style={{ margin: 0 }} /> : <></>}
@@ -106,17 +115,8 @@ export default function MessagePanel() {
 
                     </div>))
                 }
+                {/* <FloatButton /> */}
             </Space>
         </ConfigProvider>
-        <Form form={form} layout="inline" initialValues={{ text: "" }} onFinish={onSendText}>
-            <Space.Compact style={{ width: "100%" }} >
-                <Form.Item noStyle name="text">
-                    <Input></Input>
-                </Form.Item>
-                <Form.Item noStyle>
-                    <Button htmlType="submit" type="primary">发送</Button>
-                </Form.Item>
-            </Space.Compact>
-        </Form>
     </Flex>
 }
