@@ -5,11 +5,11 @@ import { MediaImportFile, MediaImportFileKey, useMediaImport, useMediaImportDisp
 import { NastoolMediaType } from "../../utils/api/api";
 import { useWatch } from "antd/es/form/Form";
 import { MediaImportAction } from "./mediaImportContext";
-import { MediaIdentifyMerged, MediaWork, MediaWorkSeason, MediaWorkType, SeriesKey, mergeObjects } from "@/app/utils/api/types";
+import { MediaIdentifyMerged, MediaWork, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType, mergeObjects } from "@/app/utils/api/types";
 import { asyncEffect, number_string_to_list } from "@/app/utils"
 import TinyTMDBSearch, { MediaDetailCard } from "../TMDBSearch/TinyTMDBSearch";
 import { TMDB, TMDBMedia, TMDBMediaWork } from "@/app/utils/api/tmdb";
-import { ImportList, ImportSubmit } from "./mediaImportList";
+import { ImportList } from "./mediaImportList";
 import { IconExternalLink } from "../icons";
 import { SearchContext, SearchContextProvider } from "../TMDBSearch/SearchContext";
 import useFormInstance from "antd/es/form/hooks/useFormInstance";
@@ -115,20 +115,24 @@ const MediaImport = () => {
             const season = Number(series.s);
             const identify = selectedFiles.map(() => {
                 const episode = episodes?.shift();
-                return ({
-                    tmdbId: String(tmdbId), // mediaWork?.key ? String(mediaWork?.key) : values.tmdbId,
-                    season: Number.isNaN(season) ? undefined : season,// values.season,
-                    episode: Number.isNaN(episode) ? undefined : episode ? (episode + episode_offset) : undefined,
-                    year: values.year,
-                    title: mediaWork?.title || values.title,
-                    type: mediaWork?.type || values.type
-                })
+                // return ({
+                //     tmdbId: String(tmdbId), // mediaWork?.key ? String(mediaWork?.key) : values.tmdbId,
+                //     season: Number.isNaN(season) ? undefined : season,// values.season,
+                //     episode: Number.isNaN(episode) ? undefined : episode ? (episode + episode_offset) : undefined,
+                //     year: values.year,
+                //     title: mediaWork?.title || values.title,
+                //     type: mediaWork?.type || values.type
+                // })
+                debugger;
+                return new SeriesKey(series).type(mediaWork?.type || values.type)
+                    .tmdbId(tmdbId)
+                    .season(Number.isNaN(season) ? undefined : season)
+                    .episode(Number.isNaN(episode) ? undefined : episode ? (episode + episode_offset) : undefined)
             })
-
             mediaImportDispatch({
-                type: MediaImportAction.OverrideIdentify,
+                type: MediaImportAction.SetSeries,
                 fileKeys: selectedFiles.map(({ name }) => name),
-                identify: identify
+                series: identify
             })
         }
     }
@@ -137,7 +141,7 @@ const MediaImport = () => {
     // }
 
     return <Row gutter={32} style={{ height: "100%" }}>
-        <Col span={7}>
+        <Col span={6}>
             <Form form={form}
                 // layout="vertical"
                 initialValues={{
@@ -168,10 +172,10 @@ const MediaImport = () => {
                 </Form.Item>
             </Form>
         </Col>
-        <Col span={17} style={{ height: "100%", overflowY: "auto" }}>
+        <Col span={18} style={{ height: "100%", overflowY: "auto" }}>
             <Space direction="vertical" size="large">
                 <ImportList onSelect={(files) => { setSelectedFiles(files) }} />
-                <ImportSubmit files={selectedFiles} />
+                {/* <ImportSubmit files={selectedFiles} /> */}
             </Space>
         </Col>
     </Row>
@@ -241,8 +245,8 @@ const EpisodeInputFromTMDB = (options: { onChange: (value: number[]) => void }) 
     useEffect(asyncEffect(async () => {
         setLoading(true)
         console.log(series)
-        if (series.end == "season") {
-            const season = new TMDB().fromSeries(series.slice("season"));
+        if (series.end == SeriesKeyType.SEASON) {
+            const season = new TMDB().fromSeries(series.slice(SeriesKeyType.SEASON));
             if (season) {
                 const episodes = await season.get_children();
                 // console.log("EpisodeInputFromTMDB", episodes)
@@ -331,9 +335,9 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
     useEffect(asyncEffect(async () => {
         console.log("On Series[0] updated")
         if (series.i != undefined) {
-            const media = new TMDBMedia(series.t).tmdbid(String(series.i));
-            const mediaWork = await media.get();
-            if (mediaWork) {
+            const media = new TMDB().fromSeries(series.slice(SeriesKeyType.TMDBID));
+            const mediaWork = await media?.get();
+            if (mediaWork && media) {
                 setSelected(mediaWork);
                 if (mediaWork.series.t == MediaWorkType.TV || mediaWork.series.t == MediaWorkType.ANI) {
                     const seasons = await media.get_children()
@@ -355,7 +359,6 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
 
 
     useEffect(() => {
-        console.log("season updated")
         if (series.has("season")) {
             setSelectedSeason(series.s);
         }
@@ -399,10 +402,9 @@ export const MediaSeasonInput = ({ series, value, onChange, style }: { series: S
     useEffect(asyncEffect(async () => {
         setLoading(true)
         if (series.i) {
-            console.log(series)
-            const media = new TMDBMedia(series.t).tmdbid(String(series.i));
-            const mediaWork = await media.get();
-            if (mediaWork)  {
+            const media = new TMDB().fromSeries(series.slice(SeriesKeyType.TMDBID));
+            const mediaWork = await media?.get();
+            if (mediaWork && media) {
                 if (mediaWork.series.t == MediaWorkType.TV || mediaWork.series.t == MediaWorkType.ANI) {
                     const seasons = await media.get_children()
                     if (seasons?.length) {

@@ -1,14 +1,41 @@
-import { MediaIdentifyContext, MediaWorkSeason, MediaWorkType, mergeObjects } from "@/app/utils/api/types";
+import { MediaIdentifyContext, MediaWorkSeason, MediaWorkType, SeriesKey, mergeObjects } from "@/app/utils/api/types";
 import { createContext, useContext } from "react"
 
+export class IdentifyHistory {
+    private history: SeriesKey[]
+    constructor(initial?: IdentifyHistory) {
+        debugger;
+        this.history = initial?.history ?? [];
+    }
+    public push(series?: SeriesKey) {
+        debugger;
+        if (series == undefined) return this
+        if (!this.last()?.equal(series)) {
+            if (this.last()) {
 
+                this.history.push(this.last().merge(series))
+            } else {
+                this.history.push(series)
+            }
+        }
+        return this
+    }
+    public last() {
+        return this.history[this.history.length - 1]
+    }
+
+    public lastDiffs(): [SeriesKey | undefined, SeriesKey | undefined] {
+        return [this.history[this.history.length - 1], this.history[this.history.length - 2]]
+    }
+}
 
 export interface MediaImportFile {
     path: string,
     name: string,
-    identifyContext?: MediaIdentifyContext,
+    // identifyContext?: MediaIdentifyContext,
     rel: string[],
-    overridenIdentify?: MediaIdentifyContext
+    // overridenIdentify?: MediaIdentifyContext
+    indentifyHistory: IdentifyHistory,
 }
 
 export type MediaImportFileKey = MediaImportFile['name'];
@@ -20,8 +47,11 @@ export enum MediaImportAction {
     Flush = "flush_files",
     UpdateFilter = "update_filter",
     setOnImportFileKeys = "set_on_import_file_keys",
-    SetIdentity = "set_identity",
-    OverrideIdentify = "override_identify"
+    // SetIdentity = "set_identity",
+    SetSeries = "set_series",
+    CleanSeries = "clean_series"
+    // OverrideSeries = "override_series",
+    // OverrideIdentify = "override_identify"
 }
 
 
@@ -39,57 +69,14 @@ export class MediaImportState {
 
 }
 
-// export class MediaImportManager {
-//     private state: MediaImportState;
-//     constructor(state: MediaImportState) {
-//         this.state = state;
-//     }
-//     public getSelectedFiles(): MediaImportFile[] {
-//         const files = this.state.onImportFileKeys.map(key => this.state.penddingFiles[key])
-//         return files
-//     }
-//     public mergeEpisodesFromSelected(): MediaIdentifyContext | undefined {
-//         const files = this.getSelectedFiles();
-//         if (files.length == 0) {
-//             return
-//         }
-//         const mergedIdentifyContext = files
-//             .map(v => ({ ...v.identifyContext, ...v.overridenIdentify }))
-//             .reduce((a: any, b: any) => {
-//                 for (const key in a) {
-//                     // console.log(key, a[key], b[key])
-//                     if (a[key] !== undefined && a[key] == b[key]) {
-//                         return a;
-//                     }
-//                 }
-//             })
-
-//         if ((mergedIdentifyContext?.tmdbId != undefined) && (mergedIdentifyContext?.season != undefined)) {
-//             return {
-//                 tmdbId: mergedIdentifyContext.tmdbId,
-//                 season: mergedIdentifyContext.season,
-//                 type: mergedIdentifyContext.type || MediaWorkType.UNKNOWN,
-//                 title: mergedIdentifyContext.title as string
-//             }
-//         }
-//         // if (mergedIdentifyContext?.tmdbId && mergedIdentifyContext?.season) {
-//         //     return {
-//         //         series: [String(mergedIdentifyContext.tmdbId)],
-//         //         key: mergedIdentifyContext.season,
-//         //         type: mergedIdentifyContext.type || MediaWorkType.UNKNOWN
-//         //     }
-//         // }
-//     }
-
-// }
-
 export interface MediaImportDispathPayload {
     type: any,
     // fileKey?: MediaImportFile['name'],
     fileKeys?: MediaImportFile['name'][],
     appendFiles?: MediaImportFile[],
     identify?: MediaIdentifyContext | MediaIdentifyContext[],
-    filter?: string
+    filter?: string,
+    series?: SeriesKey[]
 }
 export const MediaImportContext = createContext<MediaImportState>(new MediaImportState);
 export const MediaImportMergedContext = createContext<{

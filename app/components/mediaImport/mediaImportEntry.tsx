@@ -1,8 +1,8 @@
 import React, { useContext, useReducer, useState } from 'react'
-import { MediaImportFile, MediaImportContext, MediaImportDispathPayload, MediaImportAction, MediaImportState, MediaImportDispatchContext, useMediaImportDispatch, MediaImportMergedContext } from './mediaImportContext'
+import { MediaImportFile, MediaImportContext, MediaImportDispathPayload, MediaImportAction, MediaImportState, MediaImportDispatchContext, useMediaImportDispatch, MediaImportMergedContext, IdentifyHistory } from './mediaImportContext'
 import { Button } from "antd"
 import { VerticalAlignBottomOutlined } from '@ant-design/icons';
-import { MediaIdentifyContext } from '@/app/utils/api/types';
+import { MediaIdentifyContext, SeriesKey } from '@/app/utils/api/types';
 import _ from 'lodash';
 
 const globalKeyMap = new Map<string, number>();
@@ -61,66 +61,35 @@ const reducer = (state: MediaImportState, action: MediaImportDispathPayload): Me
                 onImportFileKeys: action.fileKeys || []
             }
         }
-        case MediaImportAction.SetIdentity: {
-            if (action.fileKeys && action.identify) {
-                const penddingFiles = state.penddingFiles;
-                const identify = action.identify as MediaIdentifyContext[];
-                action.fileKeys.forEach((fileKey, index) => {
+        case MediaImportAction.SetSeries: {
+            const { fileKeys, series } = action;
+            if (fileKeys != undefined && series != undefined) {
+                fileKeys.forEach((fileKey, index) => {
                     const id = globalKeyMap.get(fileKey);
-                    if (id !== undefined) {
-                        const file = penddingFiles[id];
-
-                        if (file) {
-                            const identifyOfFile = identify[index];
-                            penddingFiles[id] = { ...file };
-                            penddingFiles[id].identifyContext = { ...identifyOfFile };
-                            penddingFiles[id].overridenIdentify = undefined;
-                            // console.log(fileKey, JSON.stringify(penddingFiles[id]))
-                        }
+                    if ((id != undefined) && state.penddingFiles[id]) {
+                        const seriesOfFile = series[index];
+                        state.penddingFiles[id].indentifyHistory = new IdentifyHistory(state.penddingFiles[id].indentifyHistory)
+                        state.penddingFiles[id].indentifyHistory.push(seriesOfFile)
                     }
-
                 })
-                // console.log(JSON.stringify(penddingFiles))
-                return {
-                    onImportFileKeys: state.onImportFileKeys,
-                    regexFilter: state.regexFilter,
-                    isImportWorkspaceOpen: state.isImportWorkspaceOpen,
-                    penddingFiles: penddingFiles
-                }
+                return { ...state }
             }
+
             return state
         }
-        case MediaImportAction.OverrideIdentify: {
-            if (action.fileKeys && action.identify) {
-                const penddingFiles = state.penddingFiles;
-                const identify = action.identify as MediaIdentifyContext[];
-                // console.log(action.fileKeys, action.identify)
-                action.fileKeys.forEach((fileKey, index) => {
+        case MediaImportAction.CleanSeries: {
+            const { fileKeys, series } = action;
+            if (fileKeys != undefined) {
+                fileKeys.forEach((fileKey, index) => {
                     const id = globalKeyMap.get(fileKey);
-                    // console.log(fileKey, id);
-                    if ((id != undefined) && penddingFiles[id]) {
-                        const identifyOfFile = identify[index];
-                        // console.log(fileKey, JSON.stringify(identifyOfFile))
-                        penddingFiles[id] = { ...penddingFiles[id] }
-                        if (penddingFiles[id].identifyContext !== undefined || _.isEqual(penddingFiles[id], {})) {
-                            penddingFiles[id].overridenIdentify = { ...identifyOfFile };
-                        }
-                        else {
-                            penddingFiles[id].identifyContext = { ...identifyOfFile }
-                        }
-                        // console.log(fileKey, JSON.stringify(penddingFiles[id]))
+                    if ((id != undefined) && state.penddingFiles[id]) {
+                        state.penddingFiles[id].indentifyHistory = new IdentifyHistory();
                     }
                 })
-                // console.log(JSON.stringify(penddingFiles))
-                return {
-                    onImportFileKeys: state.onImportFileKeys,
-                    regexFilter: state.regexFilter,
-                    isImportWorkspaceOpen: state.isImportWorkspaceOpen,
-                    penddingFiles: penddingFiles
-                }
+                return { ...state }
             }
-            return state
 
+            return state
         }
     }
     throw Error("Unknown action,");

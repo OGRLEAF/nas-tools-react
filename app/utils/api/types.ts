@@ -17,6 +17,8 @@ export enum MediaWorkType {
   UNKNOWN = '未知',
 }
 
+export type MediaWorkTypeType = MediaWorkType.TV | MediaWorkType.MOVIE | MediaWorkType.ANI | MediaWorkType.UNKNOWN;
+
 export interface MediaIdentifyContext {
   tmdbId: string,
   type: MediaWorkType,
@@ -56,12 +58,20 @@ export interface MediaWorkMetadata {
   }
 }
 
+export enum SeriesKeyType {
+  NULL = -1,
+  TYPE = 0,
+  TMDBID = 1,
+  SEASON = 2,
+  EPISODE = 3,
+}
+
 export class SeriesKey {
   private typeKey: MediaWorkType = MediaWorkType.UNKNOWN;
   private tmdbIdKey?: MediaWork['key']
   private seasonKey?: MediaWorkSeason['key'];
   private episodeKey?: MediaWorkEpisode['key'];
-  private _end: "type" | "tmdbId" | "episode" | "season" = "type"
+  private _end: SeriesKeyType = SeriesKeyType.NULL;
   constructor(keys?: SeriesKey) {
     if (keys) {
       this.episodeKey = keys.episodeKey;
@@ -72,23 +82,26 @@ export class SeriesKey {
     }
   }
 
-  public type(type: MediaWorkType) {
-    this.typeKey = type;
-    this._end = "type";
+  public type(type?: MediaWorkType) {
+    if (type != undefined) {
+      this.typeKey = type;
+      this._end = SeriesKeyType.TYPE;
+    }
+
     return this
   }
 
   public tmdbId(tmdbId?: MediaWork['key']) {
     if (this.typeKey != MediaWorkType.UNKNOWN && tmdbId != "") {
-      this._end = "tmdbId";
+      this._end = SeriesKeyType.TMDBID;
       this.tmdbIdKey = tmdbId;
     }
     return this
   }
 
   public season(season?: MediaWorkSeason['key']) {
-    if (this.tmdbIdKey != undefined) {
-      this._end = "season"
+    if (this.tmdbIdKey != undefined && season != undefined) {
+      this._end = SeriesKeyType.SEASON
       this.seasonKey = season;
     }
     return this
@@ -96,8 +109,8 @@ export class SeriesKey {
 
 
   public episode(episode?: MediaWorkEpisode['key']) {
-    if (this.seasonKey != undefined) {
-      this._end = "episode"
+    if (this.seasonKey != undefined && episode != undefined) {
+      this._end = SeriesKeyType.EPISODE
       this.episodeKey = episode;
     }
     return this
@@ -124,38 +137,68 @@ export class SeriesKey {
     }
   }
 
+  public compare(s?: SeriesKey): SeriesKey['_end'] {
+    if (s == undefined) return SeriesKeyType.NULL
+    let final = SeriesKeyType.EPISODE;
+    final = (s.e == this.e) ? final : SeriesKeyType.SEASON;
+    final = (s.s == this.s) ? final : SeriesKeyType.TMDBID;
+    final = (s.i == this.i) ? final : SeriesKeyType.TYPE;
+    final = (s.t == this.t) ? final : SeriesKeyType.NULL;
+    return final
+  }
+
+  public equal(s: SeriesKey) {
+    return this.compare(s) == SeriesKeyType.EPISODE
+  }
+
+  public merge(s: SeriesKey) {
+    return new SeriesKey(this).type(s.t ?? this.t).tmdbId(s.i ?? this.i).season(s.s ?? this.s).episode(s.e ?? this.e)
+  }
+
+  public diffs(s: SeriesKey) {
+
+  }
+
   public get s() {
-    return this.seasonKey
+    if (this.end >= SeriesKeyType.SEASON) return this.seasonKey
   }
   public get e() {
-    return this.episodeKey
+    if (this.end >= SeriesKeyType.EPISODE) return this.episodeKey
   }
   public get i() {
-    return this.tmdbIdKey
+    if (this.end >= SeriesKeyType.TMDBID) return this.tmdbIdKey
   }
   public get t() {
-    return this.typeKey
+    if (this.end >= SeriesKeyType.TYPE) return this.typeKey
   }
 
   public get end() {
     return this._end
   }
 
-  public slice(key: "type" | "tmdbId" | "episode" | "season") {
-    const s = new SeriesKey(this);
+  public get(key: SeriesKeyType) {
     switch (key) {
-      case "type": s.tmdbIdKey = undefined;
-      case "tmdbId": s.seasonKey = undefined;
-      case "season": s.episodeKey = undefined;
-      case "episode": break;
+      case SeriesKeyType.TYPE: return this.t;
+      case SeriesKeyType.TMDBID: return this.i;
+      case SeriesKeyType.SEASON: return this.s;
+      case SeriesKeyType.EPISODE: return this.e;
     }
+  }
+
+
+  public slice(key: SeriesKeyType) {
+    const s = new SeriesKey(this);
+    if (s._end > key) {
+      s._end = key;
+    }
+
     return s
   }
 }
 
 export interface MediaWork {
   series: SeriesKey,
-  type: MediaWorkType, // "season" | "episode" | "series" | "movie"
+  type: MediaWorkType,
   key: number | string,
   title: string
   metadata?: MediaWorkMetadata,
@@ -163,14 +206,12 @@ export interface MediaWork {
 }
 
 export interface MediaWorkSeason extends MediaWork {
-  // series: [MediaWorkType, MediaWork['key'], MediaWorkSeason['key']?],
   type: MediaWorkType.TV | MediaWorkType.ANI,
   key: number,
   children?: MediaWorkEpisode[]
 }
 
 export interface MediaWorkEpisode extends MediaWork {
-  // series: [MediaWorkType, MediaWork['key'], MediaWorkSeason['key']],
   type: MediaWorkType.TV | MediaWorkType.ANI,
   key: number,
 }

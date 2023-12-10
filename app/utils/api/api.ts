@@ -189,7 +189,7 @@ export enum NastoolMediaType {
     ANI = "动漫",
     UNKNOWN = '未知',
 }
-type NastoolMediaLibraryType = NastoolMediaType.TV | NastoolMediaType.MOVIE | NastoolMediaType.ANI;
+type NastoolMediaLibraryType =  NastoolMediaType.TV | NastoolMediaType.MOVIE | NastoolMediaType.ANI;
 
 
 export type NastoolMediaLibrary = {

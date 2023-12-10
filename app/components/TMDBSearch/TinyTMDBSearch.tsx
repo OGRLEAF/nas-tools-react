@@ -50,8 +50,9 @@ const cardStyleMap: Record<CardSize, DetaiCardStyle> = {
 export function MediaDetailCard({
     mediaDetail,
     size,
-    action
-}: { mediaDetail?: MediaWork, size?: CardSize, action?: React.JSX.Element }) {
+    action,
+    postImageStyle
+}: { mediaDetail?: MediaWork, size?: CardSize, action?: React.JSX.Element, postImageStyle?: CSSProperties }) {
     const { token } = theme.useToken()
     const _size = size ? size : "normal";
     const style = cardStyleMap[_size];
@@ -67,8 +68,8 @@ export function MediaDetailCard({
                 position: "relative"
             }}>
             <Image
-                placeholder={<Skeleton.Image style={{ width: 150, ...style.image }} />}
-                style={{ ...style.image, objectFit: "contain", flexShrink: 1, marginRight: 0, borderRadius: token.borderRadius }}
+                placeholder={<Skeleton.Image style={{ width: 150, ...style.image, ...postImageStyle }} />}
+                style={{ ...style.image, ...postImageStyle, objectFit: "contain", flexShrink: 1, marginRight: 0, borderRadius: token.borderRadius, overflow: "hidden" }}
                 src={metadata?.image.cover} />
             {/* <div style={{ height: _size == "normal" ? "400px" : "150px", width: "100%", backgroundColor: "#00152991" }} /> */}
             <Space align="end" direction="vertical" >
@@ -129,33 +130,33 @@ export default function TinyTMDBSearch({
         const tmdb = new TMDB()
         tmdb.search(value)
             .then((result) => {
-                
+
                 setOptions(result
-                    .filter((item)=>{
-                        if(filter) {
-                            return (filter.type.indexOf(item.series.t) > -1)
+                    .filter((item) => {
+                        if (filter && item.series?.t != undefined) {
+                            return (filter.type.indexOf(item.series?.t) > -1)
                         }
                         return true
                     })
                     .map(resultItem => ({
-                    value: `${resultItem.title} (${resultItem.key})`,
+                        value: `${resultItem.title} (${resultItem.key})`,
 
-                    label: <div
-                        key={resultItem.key}
-                        style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: "center"
-                        }}
-                    >
+                        label: <div
+                            key={resultItem.key}
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: "center"
+                            }}
+                        >
 
-                        <span>{resultItem.title} ({resultItem.metadata?.date.release})</span>
-                        <span style={{ display: "block", textAlign: "left", lineHeight: "1em", paddingLeft: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: token.colorTextDescription }}>
-                            {resultItem.metadata?.description.trimStart()}
-                        </span>
+                            <span>{resultItem.title} ({resultItem.metadata?.date.release})</span>
+                            <span style={{ display: "block", textAlign: "left", lineHeight: "1em", paddingLeft: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: token.colorTextDescription }}>
+                                {resultItem.metadata?.description.trimStart()}
+                            </span>
 
-                    </div>,
-                })))
+                        </div>,
+                    })))
 
                 setSearchResults(result.reduce((a, v) => ({ ...a, [`${v.title} (${v.key})`]: v }), {}))
                 setOpenResults(true)

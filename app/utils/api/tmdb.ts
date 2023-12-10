@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { DBMediaType } from "./api";
 import { APIBase } from "./api_base";
-import { MediaIdentifyContext, MediaWork, MediaWorkEpisode, MediaWorkSeason, MediaWorkType, SeriesKey } from "./types"
+import { MediaIdentifyContext, MediaWork, MediaWorkEpisode, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "./types"
 
 /*
       {
@@ -202,14 +202,14 @@ export class TMDB extends APIBase {
 
     public fromSeries(key: SeriesKey) {
         let target;
-        const series = key.getSeries()
-        if (series.type && series.tmdbId) {
-            target = new TMDBMedia(series.type)
-            target = target.tmdbid(String(series.tmdbId));
-            if (series.season != undefined) {
-                target = target?.season(series.season);
-                if (series.episode != undefined) {
-                    target = target?.episode(series.episode)
+
+        if (key.end >= SeriesKeyType.TMDBID && key.t != undefined && key.i != undefined) {
+            target = new TMDBMedia(key.t)
+            target = target.tmdbid(String(key.i))
+            if (key.end >= SeriesKeyType.SEASON && key.s != undefined) {
+                target = target?.season(key.s);
+                if (key.end >= SeriesKeyType.EPISODE && key.e != undefined) {
+                    target = target?.episode(key.e)
                 }
             }
         }

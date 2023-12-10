@@ -11,6 +11,7 @@ import { PathManagerBar, PathManagerProvider, usePathManager, usePathManagerDisp
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { bytes_to_human } from "@/app/utils";
+import { IdentifyHistory } from "@/app/components/mediaImport/mediaImportContext";
 
 type SortKey = "name" | "mtime"
 type SortDirection = "dec" | "inc"
@@ -201,7 +202,7 @@ const FileList = ({ fileList, loading }: { fileList: NastoolFileListItem[], load
                     <MediaImportEntry
                         flush={true}
                         appendFiles={
-                            selectedFiles.map((item) => ({ name: item.name, path: currentPath, rel: [] }))
+                            selectedFiles.map((item) => ({ name: item.name, path: currentPath, rel: [], indentifyHistory: new IdentifyHistory() }))
                         } />
                 </Space>
                 <Table

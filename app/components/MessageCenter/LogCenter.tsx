@@ -8,6 +8,7 @@ import { useForm } from "antd/es/form/Form";
 import { ServerLog, Log } from "@/app/utils/api/message/ServerLog";
 import { ServerConfig } from "@/app/utils/api/serverConfig";
 import { StateMap, StateTag } from "../StateTag";
+import _ from "lodash";
 
 const LogLevelStateTag: StateMap<Log['level']> = {
     INFO: {
@@ -90,11 +91,11 @@ export default function LogPanel() {
             size="small"
             ref={messagesEndRef}
             bordered={false} bodyStyle={{ paddingBottom: 0, padding: 12, borderRadius: "none" }} >
-            <span style={{ wordBreak: "break-word" }}>
+            <div style={{ wordBreak: "break-word" }}>
                 <Tag color="cyan">{msg.time}</Tag>
                 <StateTag stateMap={LogLevelStateTag} value={msg.level} >{msg.source}</StateTag>
-                <span>{(msg.text)}</span>
-            </span>
+                <p style={{ margin: 0, padding: "8px 0 0 0"}}>{_.unescape(msg.text)}</p>
+            </div>
         </Card>
     }
     const LogContent = useRef<HTMLDivElement>(null);
