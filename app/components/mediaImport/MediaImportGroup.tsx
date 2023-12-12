@@ -73,15 +73,21 @@ export function TvMediaImportGroup(props: MediaImportGroupProps) {
         setWork(await target?.get())
     }), [])
     const [localSelectedFile, setLocalSelectedFile] = useState<Set<MediaImportFileKey>>(new Set());
+
+    const { setSeries, setKeyword } = useContext(SearchContext);
+    const selectButton = <Button type="primary" size="small" onClick={() => { if (work?.title) setKeyword(work?.title) }}>搜索</Button>
+    const searchButton = <Button size="small" onClick={() => { if (work) setSeries(work.series) }}>选择</Button>
     return <Table
         title={() => {
             return <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
                 {work ? <MediaDetailCard
                     postImageStyle={{ width: 100 }}
                     mediaDetail={work} size="small"
-                    action={<>
-                        {/* <ImportSubmit files={props.files} /> */}
-                    </>}
+                    onTitleClick={(mediaWork) => { setSeries(mediaWork.series) }}
+                    action={<Space>
+                        {selectButton}
+                        {searchButton}
+                    </Space>}
                 /> : <>{props.seriesKey.t}</>}
             </div>
         }}
@@ -90,12 +96,10 @@ export function TvMediaImportGroup(props: MediaImportGroupProps) {
             type: "checkbox",
             selectedRowKeys: selectedFileKeys.selectedFileKeys,
             onChange: (selectedRowKeys: React.Key[], selectedRows: MediaImportFile[]) => {
-                console.log("Interlanl Change")
                 selectedFileKeys.setSelectedFileKeys(selectedRowKeys as MediaImportFileKey[])
                 setLocalSelectedFile(new Set(...selectedRowKeys as MediaImportFileKey[]));
             },
         }}
-        // scroll={{ y: 580, }}
         pagination={false}
         size="small"
         rowKey="name"
@@ -107,22 +111,10 @@ export function TvMediaImportGroup(props: MediaImportGroupProps) {
         />
         }
     />
-    // virtual={true} 
 }
 
 function ImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: MediaImportFile[], }) {
-    const { EPISODE, SEASON, TMDBID, TYPE, NULL } = SeriesKeyType;
-    const mergedSeriesKey = files.length > 0 ? files.map(file => file.indentifyHistory.last())?.reduce((prev, curr) => {
-        // console.log(prev.s, curr.s, prev?.compare(curr))
-        switch (prev?.compare(curr)) {
-            case EPISODE: return prev.episode(curr.e);
-            case SEASON: return prev.season(curr.s);
-            case TMDBID: return prev.tmdbId(curr.i);
-            case TYPE: return prev.type(curr.t);
-            case NULL: return new SeriesKey();
-        }
-    }) : new SeriesKey();
-
+    const mergedSeriesKey = files.length > 0 ? files.map(file => file.indentifyHistory.last())?.reduce((prev, curr) => prev.merge(curr)) : new SeriesKey();
     const [mediaWork, setMediaWork] = useState<MediaWork>();
     useEffect(() => {
         new TMDB().fromSeries(mergedSeriesKey.slice(SeriesKeyType.TMDBID))?.get()
@@ -130,7 +122,7 @@ function ImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Media
     }, [mergedSeriesKey])
     const metadata = mediaWork?.metadata;
 
-    const unimportable = mergedSeriesKey.end < SeriesKeyType.SEASON;
+    const disableImport = mergedSeriesKey.end < SeriesKeyType.SEASON;
     return <Flex style={{ width: "100%" }} justify="flex-end" align="center" gap="middle">
         <Space size={16}>
             <span>{metadata?.title} #{mergedSeriesKey.i}</span>
@@ -139,7 +131,7 @@ function ImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Media
         <Form layout="inline" initialValues={{
             type: ImportMode.LINK
         }}
-            disabled={unimportable}
+            disabled={disableImport}
         >
             <Form.Item name="target_path" >
                 <MediaLibrarySelect width={400} />

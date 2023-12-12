@@ -75,7 +75,6 @@ export default function MediaImportWrapper({ initialValue }: { initialValue?: Me
 
     return (<div>
         <Drawer placement="top"
-            size="large"
             open={mediaImportContext.isImportWorkspaceOpen}
             onClose={() => { mediaImportDispatch({ type: "close_workspace" }) }}
             height={850}
@@ -123,7 +122,6 @@ const MediaImport = () => {
                 //     title: mediaWork?.title || values.title,
                 //     type: mediaWork?.type || values.type
                 // })
-                debugger;
                 return new SeriesKey(series).type(mediaWork?.type || values.type)
                     .tmdbId(tmdbId)
                     .season(Number.isNaN(season) ? undefined : season)

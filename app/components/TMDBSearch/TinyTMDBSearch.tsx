@@ -1,6 +1,6 @@
 import React, { CSSProperties, ReactNode, useContext, useEffect, useState } from "react";
 import { API, NastoolMediaSearchResult, NastoolMediaSearchResultItem, NastoolMediaType, NastoolServerConfig } from "../../utils/api/api";
-import { AutoComplete, Form, Input, Radio, Space, theme, Image, Typography, Empty, Row, Col, Select, Skeleton } from "antd";
+import { AutoComplete, Form, Input, Radio, Space, theme, Image, Typography, Empty, Row, Col, Select, Skeleton, Button, Flex } from "antd";
 import { TMDB } from "../../utils/api/tmdb";
 import { MediaIdentifyContext, MediaWork, MediaWorkType } from "../../utils/api/types";
 import { SearchContext } from "./SearchContext";
@@ -51,17 +51,18 @@ export function MediaDetailCard({
     mediaDetail,
     size,
     action,
+    onTitleClick,
     postImageStyle
-}: { mediaDetail?: MediaWork, size?: CardSize, action?: React.JSX.Element, postImageStyle?: CSSProperties }) {
+}: { mediaDetail?: MediaWork, size?: CardSize, action?: React.JSX.Element, onTitleClick?: (mediaDetail: MediaWork) => void, postImageStyle?: CSSProperties }) {
     const { token } = theme.useToken()
     const _size = size ? size : "normal";
     const style = cardStyleMap[_size];
     const textLimit = style.textLimit == undefined ? 50 : style.textLimit;
     if (mediaDetail) {
         const metadata = mediaDetail.metadata
-        return <Space
-            size="large"
+        return <Flex
             align="start"
+            gap={12}
             style={{
                 width: "100%",
                 marginBottom: 0,
@@ -72,11 +73,11 @@ export function MediaDetailCard({
                 style={{ ...style.image, ...postImageStyle, objectFit: "contain", flexShrink: 1, marginRight: 0, borderRadius: token.borderRadius, overflow: "hidden" }}
                 src={metadata?.image.cover} />
             {/* <div style={{ height: _size == "normal" ? "400px" : "150px", width: "100%", backgroundColor: "#00152991" }} /> */}
-            <Space align="end" direction="vertical" >
-
-                <Typography style={{ paddingTop: 4, ...style.typography }}>
-                    <Typography.Title level={2} style={{ color: token.colorTextBase, fontSize: "1.6rem", marginTop: 6, ...style.title }}>{mediaDetail.title}
-                        <span style={{ fontSize: "1rem" }}> {metadata?.date.release}</span>
+            <Flex align="end" vertical style={{ width: "100%" }}>
+                <Typography style={{ paddingTop: 4, ...style.typography, width: "100%" }}>
+                    <Typography.Title level={2} style={{ color: token.colorTextBase, fontSize: "1.6rem", marginTop: 6, ...style.title }}>
+                        {mediaDetail.title}
+                        < span style={{ fontSize: "1rem" }}> {metadata?.date.release}</span>
 
                     </Typography.Title>
                     <Typography.Link style={{ color: token.colorTextDescription }} href={metadata?.links.tmdb} target="_blank">
@@ -92,9 +93,9 @@ export function MediaDetailCard({
                     </Typography.Text>
                 </Typography>
                 <div style={{ float: "right" }}>{action}</div>
-            </Space>
+            </Flex>
 
-        </Space>
+        </Flex >
 
     } else {
         return <Empty />

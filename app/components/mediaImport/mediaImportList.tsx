@@ -103,7 +103,6 @@ export const ImportList = (options: { onSelect?: (value: MediaImportFile[]) => v
         const groupMap: Record<MediaWork['key'], MediaImportFile[]> = {};
         files?.forEach(file => {
             const seriesKey = file.indentifyHistory.last();
-            debugger;
             if (seriesKey) {
                 if (seriesKey.end >= SeriesKeyType.TMDBID) {
                     if ((seriesKey.t == MediaWorkType.TV || seriesKey.t == MediaWorkType.ANI) && seriesKey.i != undefined) {
