@@ -52,7 +52,10 @@ type NastoolApi =
     "message/client/list" |
     "message/client/update" |
     "message/client/test" |
-    "message/client/delete"
+    "message/client/delete" |
+    "scraper/config"
+
+
 export interface NastoolResponse<T> {
     code: number,
     success: boolean,
@@ -975,7 +978,7 @@ export class NASTOOL {
         }
     }
 
-    protected async get<T>(api: NastoolApi, options: { auth?: boolean, params?: Record<string, string> } = {}): Promise<T> {
+    public async get<T>(api: NastoolApi, options: { auth?: boolean, params?: Record<string, string> } = {}): Promise<T> {
         return await this.request<T>(api, "get", {
             params: {
                 ...options.params,

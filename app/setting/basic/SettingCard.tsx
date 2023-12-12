@@ -4,6 +4,7 @@ import { Button, Card, Col, Form, Row, Space, Spin } from "antd"
 import { API, NastoolServerConfig } from '@/app/utils/api/api';
 import type { FormInstance } from 'antd/es/form';
 import { useSubmitMessage } from '@/app/utils';
+import { ServerConfig } from '@/app/utils/api/serverConfig';
 
 
 const SubmitButton = () => {
@@ -26,8 +27,7 @@ export default function SettingCard(
 
     const onFinished = async (value: NastoolServerConfig) => {
         loading(name);
-        const nt = await API.getNastoolInstance()
-        await nt.updateServerConfig(value)
+        await (new ServerConfig()).update(value)
             .then((res) => {
                 success(String(res));
             }).catch(res => error(res))
@@ -51,16 +51,3 @@ export default function SettingCard(
         </Form>
     </Spin>
 }
-
-
-// export default function SettingCard(
-//     { children, name }:
-//         {
-//             children: React.ReactNode,
-//             name: string
-//         }) {
-//     // const ChildrenWrapper = ()=> <>{children}</>;
-//     return <Card title={name}>
-//         {children}
-//     </Card>
-// }

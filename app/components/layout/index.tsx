@@ -27,6 +27,7 @@ import HeaderSearch from '../headerSearch';
 import { ServerConfig } from '@/app/utils/api/serverConfig';
 import Link from 'next/link';
 
+
 const { Header, Content, Footer, Sider } = Layout;
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -90,6 +91,7 @@ const getMenuItems = async () => {
     ]),
     getItem("设置", "/setting", <SettingOutlined />, [
       getItem("基础设置", "/setting/basic", <ToolOutlined />),
+      getItem("刮削设置", "/setting/scraper", <SearchOutlined />),
       getItem("媒体库", "/setting/library", <IconBookBookMark />),
       getItem("目录同步", "/setting/directorysync", <IconRefresh />),
       getItem("消息通知", "/setting/notification", <BellOutlined />),

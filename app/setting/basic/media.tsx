@@ -1,8 +1,11 @@
 import React, { useEffect } from 'react'
-import { Form, Input, Space, Row, Col, Select, InputNumber, Switch } from 'antd'
+import { Form, Input, Space, Row, Col, Select, InputNumber, Switch, Button, Collapse } from 'antd'
 import { API, NastoolServerConfig } from '@/app/utils/api/api'
 import TagsSelect from "@/app/components/TagsSelect"
 import type { FormInstance } from 'antd/es/form';
+import { PathSelector } from '@/app/components/PathSelector';
+import { MediaLibrarySelect } from '@/app/components/LibraryPathSelector';
+import { CollapseProps } from 'antd/lib';
 
 const tmdbMatchModeOption = [
     {
@@ -190,19 +193,24 @@ export default function SettingMedia() {
             </Col>
             <Col span={6}>
                 <Form.Item label="文件管理默认路径" name={["media", "media_default_path"]}>
-                    <Input />
+                    <MediaLibrarySelect />
                 </Form.Item>
             </Col>
         </Row>
         <Row gutter={[24, 0]}>
-            <Col span={12}>
+            <Col span={6}>
                 <Form.Item label="文件路径转移忽略词" name={["media", "ignored_paths"]}>
                     <TagsSelect sep=";" />
                 </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={6}>
                 <Form.Item label="文件名转移忽略词" name={["media", "ignored_files"]}>
                     <TagsSelect sep=";" />
+                </Form.Item>
+            </Col>
+            <Col span={12}>
+                <Form.Item label="高质量文件覆盖" name={["media", "filesize_cover"]} valuePropName="checked">
+                    <Switch />
                 </Form.Item>
             </Col>
         </Row>
@@ -219,11 +227,6 @@ export default function SettingMedia() {
             </Col>
         </Row>
         <Row gutter={[24, 0]}>
-            <Col span={12}>
-                <Form.Item label="高质量文件覆盖" name={["media", "filesize_cover"]} valuePropName="checked">
-                    <Switch />
-                </Form.Item>
-            </Col>
             <Col span={12}>
                 <Form.Item label="刮削元数据及图片" name={["media", "nfo_poster"]} valuePropName="checked">
                     <Switch />
