@@ -49,31 +49,44 @@ export function asyncEffect(func: CallableFunction) {
 export function useSubmitMessage(key: string) {
     const [messageApi, contextHolder] = message.useMessage();
 
-    const success = (key: string, msg: string) => {
+    const success = (msg?: string) => {
         messageApi.open({
             type: 'success',
             key,
-            content: '更新成功 ' + msg,
+            content: '更新成功 ' + (msg ?? ""),
         });
     }
-    const error = (key: string, msg: string) => {
+    const error = (msg?: string) => {
         messageApi.open({
             type: 'error',
             key,
-            content: '更新失败 ' + msg,
+            content: '更新失败 ' + (msg ?? ""),
         });
     }
-    const loading = (key: string, msg: string) => {
+    const loading = (msg?: string) => {
         messageApi.open({
             type: "loading",
             key,
-            content: "提交中 " + msg
+            content: "提交中 " + (msg ?? "")
         })
     }
+
+    const handle = async (p: Promise<any | void>, name?: string) => {
+        loading();
+        return p.then((res) => {
+            success(name);
+            return res;
+        })
+            .catch((e) => {
+                error(`${name}${e}`)
+            })
+    }
+
     return {
         contextHolder,
-        success: (msg: string) => success(key, msg),
-        error: (msg: string) => error(key, msg),
-        loading: (msg: string) => loading(key, msg),
+        success,
+        error,
+        loading,
+        handle
     }
 }
