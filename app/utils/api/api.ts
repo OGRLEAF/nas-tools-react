@@ -133,6 +133,7 @@ export type NastoolServerConfig = {
         movie_path: string[],
         tv_path: string[],
         media_default_path: string,
+        nfo_poster: boolean
     },
     laboratory: {
         use_douban_titles: boolean

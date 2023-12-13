@@ -226,12 +226,5 @@ export default function SettingMedia() {
                 </Form.Item>
             </Col>
         </Row>
-        <Row gutter={[24, 0]}>
-            <Col span={12}>
-                <Form.Item label="刮削元数据及图片" name={["media", "nfo_poster"]} valuePropName="checked">
-                    <Switch />
-                </Form.Item>
-            </Col>
-        </Row>
     </>
 }
