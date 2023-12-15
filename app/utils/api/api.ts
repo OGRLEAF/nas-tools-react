@@ -36,6 +36,10 @@ type NastoolApi =
     "library/mediaserver/library/item" |
     "filterrule/list/basic" |
     "filterrule/list" |
+    "filterrule/group/add" |
+    "filterrule/group/delete" |
+    "filterrule/rule/update" |
+    "filterrule/rule/delete" |
     "task/list" |
     "task/create" |
     "sync/directory/list" |

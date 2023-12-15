@@ -5,6 +5,7 @@ import { Button, Checkbox, CheckboxOptionType, Col, Form, Input, Radio, Row, Spa
 import { RetweetOutlined, WechatOutlined, SlackOutlined } from "@ant-design/icons"
 import React, { useContext, useMemo } from "react";
 import { TagCheckboxGroup } from "@/app/components/TagCheckbox";
+import { ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
 
 export interface NotifiClientProps {
     cover: React.ReactNode,
@@ -35,10 +36,24 @@ const notifyClientConfigs: Record<NotifiClientConfig['type'], NotifiClientProps>
 
 export default function NotificationPage() {
     const { token } = theme.useToken();
-    return <CardnForm
+    return <CardnForm<NotifiClientConfig>
         title="消息通知"
         onFetch={() => new Notification().list()}
-        cardProps={(record) => {
+        onDelete={async (record) => {
+            const result = new Notification().delete(record.id);
+            console.log(result)
+            return true;
+        }}
+        extraActions={[{
+            icon: <RetweetOutlined />,
+            key: "test",
+            async onClick(record) {
+                await new Notification().test(record.type, record.config);
+            }
+        }]}
+        formRender={NotifiClientConfigForm}
+    >
+        <ListItemCardList cardProps={(record: NotifiClientConfig) => {
             const config = notifyClientConfigs[record.type];
             return ({
                 title: record.name,
@@ -53,22 +68,8 @@ export default function NotificationPage() {
                             <Tag color={token.colorInfo}>消息</Tag>
                     } </>,
             })
-        }}
-        onDelete={async (record) => {
-            const result = new Notification().delete(record.id);
-            console.log(result)
-            return true;
-        }}
-        cardsLayout="cards"
-        extraActions={[{
-            icon: <RetweetOutlined />,
-            key: "test",
-            async onClick(record) {
-                await new Notification().test(record.type, record.config);
-            }
-        }]}
-        formRender={NotifiClientConfigForm}
-    />
+        }} />
+    </CardnForm>
 }
 
 

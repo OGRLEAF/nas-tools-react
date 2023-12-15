@@ -11,6 +11,7 @@ import { MediaWork, SeriesKey, MediaWorkType } from "@/app/utils/api/types";
 import { Button, Col, Form, Input, Row, Space, Switch, Tag, theme } from "antd";
 import { RetweetOutlined } from "@ant-design/icons"
 import { useForm } from "antd/es/form/Form";
+import { ListItemCard, ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
 
 const defaultConfig: MovieRssInfo = {
     image: "",
@@ -50,28 +51,31 @@ export default function SubscribeMovie() {
         [RssState.FINISH]: <Tag>已完成</Tag>,
     })
 
-    return <CardnForm title="电影订阅"
+    return <CardnForm<MovieRssInfo> title="电影订阅"
         onFetch={() => new MovieSubscription().list()}
         onDelete={async (record) => {
-            if (record.rssid != undefined) new MovieSubscription().delete(record.rssid)
+            if (record.rssid != undefined) new MovieSubscription().delete(record.rssid);
             return true;
         }}
         extraActions={[{
             icon: <RetweetOutlined />,
             key: "refresh",
             async onClick(record) {
-                if (record.rssid != undefined) new MovieSubscription().refresh(record.rssid)
+                if (record.rssid != undefined) new MovieSubscription().refresh(record.rssid);
             },
         }
         ]}
         defaultRecord={defaultConfig}
-        cardProps={(record) => ({
-            cover: <img src={record.image}/>,
+        formRender={SubscribeMovieForm}
+        layout="horizontal"
+    >
+        <ListItemCardList cardProps={(record: MovieRssInfo) => ({
+            cover: <img src={record.image} />,
             title: record.name,
             description: StatusTag[record.state]
         })}
-        formRender={SubscribeMovieForm}
-    />
+        />
+    </CardnForm>
 }
 
 

@@ -125,3 +125,7 @@ export const SyncModeSelect = (options: FormItemProp<string[]>) => {
     return <Select style={{ width: "100%" }} options={syncModeOptions} value={options.value} onChange={options.onChange} />
 
 }
+
+export const PromotionSelect = (options: FormItemProp<string[]>) => {
+    
+}

@@ -12,6 +12,7 @@ import { MediaSeasonInput } from "@/app/components/mediaImport/mediaImport";
 import { RetweetOutlined } from "@ant-design/icons"
 import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
 import { TMDB } from "@/app/utils/api/tmdb";
+import { ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
 
 
 const defaultConfig: TVRssInfo = {
@@ -56,25 +57,28 @@ export default function SubscribeTV() {
     return <CardnForm title="电影订阅"
         onFetch={() => new TVSubscription().list()}
         onDelete={async (record) => {
-            if (record.rssid != undefined) new TVSubscription().delete(record.rssid)
+            if (record.rssid != undefined) new TVSubscription().delete(record.rssid);
             return true;
         }}
         extraActions={[{
             icon: <RetweetOutlined />,
             key: "refresh",
             async onClick(record) {
-                if (record.rssid != undefined) new TVSubscription().refresh(record.rssid)
+                if (record.rssid != undefined) new TVSubscription().refresh(record.rssid);
             },
         }
         ]}
         defaultRecord={defaultConfig}
-        cardProps={(record) => ({
-            cover: <img src={record.image} />,
-            title: record.name,
-            description: StatusTag[record.state]
-        })}
-        formRender={SubscribeTVForm}
-    />
+
+        formRender={SubscribeTVForm} layout={"horizontal"}    >
+        <ListItemCardList
+            cardProps={(record: TVRssInfo) => ({
+                cover: <img src={record.image} />,
+                title: record.name,
+                description: StatusTag[record.state]
+            })}
+        />
+    </CardnForm>
 }
 
 

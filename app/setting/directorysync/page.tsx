@@ -1,11 +1,12 @@
 "use client"
-import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
+import CardnForm, { CardProps, CardnFormContext } from "@/app/components/CardnForm";
 import { SyncModeSelect } from "@/app/components/NTSelects";
 import { MediaLibrarySelect } from "@/app/components/LibraryPathSelector";
 import { DirectorySync, SyncDirectoryConfig, SyncDirectoryUpdateConfig, } from "@/app/utils/api/sync";
 import { SyncMode } from "@/app/utils/api/types"
 import { Button, Col, Descriptions, Form, Row, Space, Switch, Tag, message, theme } from "antd";
 import React, { useContext } from "react";
+import { CollapsableList } from "@/app/components/CardnForm/CollapsableList";
 
 export default function DirectorySyncPage() {
     const { token } = theme.useToken();
@@ -13,10 +14,12 @@ export default function DirectorySyncPage() {
         onFetch={() => new DirectorySync().list()}
         onDelete={async (record) => {
             const result = await new DirectorySync().delete(record.id)
-            console.log(result)
             return true;
         }}
-        cardProps={(record) => ({
+        layout="vertical"
+        formRender={SyncDirectoryForm}
+    >
+        <CollapsableList cardProps={(record: SyncDirectoryConfig) => ({
             title: <Space>
                 <span>
                     {record.enabled ? <Tag color={token.colorSuccess}>启用</Tag> :
@@ -33,10 +36,11 @@ export default function DirectorySyncPage() {
                 <Descriptions.Item label="识别重命名">{record.rename ? "开" : "关"}</Descriptions.Item>
                 {/* <Descriptions.Item label="">{record ? "开" : "关"}</Descriptions.Item> */}
             </Descriptions>
-        })}
-        cardsLayout="list"
-        formRender={SyncDirectoryForm}
-    ></CardnForm>
+        })}>
+
+        </CollapsableList>
+
+    </CardnForm>
 }
 
 
