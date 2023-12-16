@@ -1,13 +1,15 @@
 "use client"
 import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
-import { IconDelete, IconEdit } from "@/app/components/icons";
-import { bytes_to_human } from "@/app/utils";
+import { IconAdd, IconDelete, IconEdit } from "@/app/components/icons";
+import { asyncEffect, bytes_to_human } from "@/app/utils";
 import { FilterRule, FilterRuleGroupConfig, FilterRuleConfig } from "@/app/utils/api/filterrule";
-import { Button, Card, Checkbox, Col, Drawer, Form, Input, InputNumber, List, Modal, Radio, Row, Select, Slider, Space, Tag } from "antd";
+import { Button, Card, Checkbox, Col, ConfigProvider, Drawer, Form, Input, InputNumber, List, Modal, Radio, Row, Select, Slider, Space, Tag } from "antd";
 import { PlusOutlined, MinusCircleOutlined, CloseCircleOutlined } from "@ant-design/icons"
 import { useForm } from "antd/es/form/Form";
 import React, { useContext, useEffect, useState } from "react";
 import { TabCards } from "@/app/components/CardnForm/TabCards";
+import CheckableTag from "antd/es/tag/CheckableTag";
+import { idText } from "typescript";
 
 
 const IconText = ({ icon, text }: { icon: React.FC; text: string }) => (
@@ -80,16 +82,63 @@ export default function FilterRulePage() {
     </CardnForm>
 }
 
-function FilterRuleList({ filterRuleGroup }: { filterRuleGroup: FilterRuleGroupConfig }) {
-    return <List style={{ width: "100%" }}
-        itemLayout="vertical"
-        dataSource={filterRuleGroup.rules}
-        renderItem={(item, index) => {
-            return <FilterRuleCard config={item} />
-        }}
-    >
+const defaultRuleConfig: FilterRuleConfig = {
+    group: 0,
+    name: "",
+    pri: "",
+    include: [],
+    exclude: [],
+    size: "",
+    free: ""
+}
 
-    </List>
+function FilterRuleList({ filterRuleGroup }: { filterRuleGroup: FilterRuleGroupConfig }) {
+    const [isDefault, setDefault] = useState(filterRuleGroup.default)
+    const ctx = useContext(CardnFormContext);
+    const execDefault = async () => {
+        ctx.loading("默认")
+        const msg = await new FilterRule().setDfault(filterRuleGroup.id)
+        ctx.success(JSON.stringify(msg));
+        ctx.refresh();
+    }
+    useEffect(() => {
+        if (!filterRuleGroup.default) {
+            setDefault(false)
+        }
+    }, [filterRuleGroup.default])
+    const [openDrawer, setOpenDrawer] = useState(false)
+    return <>
+        <CheckableTag checked={isDefault}
+            onChange={(value) => {
+                if (value) {
+                    setDefault(true);
+                    execDefault();
+                }
+            }}>默认</CheckableTag>
+        <Button size="small" onClick={() => setOpenDrawer(true)} icon={<IconAdd />} type="primary">新增规则</Button>
+        <Drawer size="large" open={openDrawer} onClose={() => setOpenDrawer(false)}>
+            <FilterRuleEditForm initialValue={{ ...defaultRuleConfig, group: filterRuleGroup.id }} />
+        </Drawer>
+        <ConfigProvider
+            theme={{
+                components: {
+                    List: {
+                        titleMarginBottom: 0
+                    }
+                }
+            }}
+        >
+            <List style={{ width: "100%" }}
+                itemLayout="vertical"
+                dataSource={filterRuleGroup.rules}
+                renderItem={(item, index) => {
+                    return <FilterRuleCard config={item} />
+                }}
+            >
+
+            </List>
+        </ConfigProvider>
+    </>
 }
 interface FilterRuleGroupFormData {
     name: string,
@@ -174,10 +223,11 @@ function FilterRuleEditForm(options: { initialValue: FilterRuleConfig }) {
             </Row>
         </>}
     </Form.List>
-
+    const ctx = useContext(CardnFormContext)
     return <Form form={form} initialValues={formData} layout="vertical"
-        onFinish={(values: FilterRuleFormData) => {
-            new FilterRule().rule.update({
+        onFinish={async (values: FilterRuleFormData) => {
+            ctx.loading("更新")
+            const result = await new FilterRule().rule.update({
                 id: initialValue.id,
                 group: initialValue.group,
                 name: values.name,
@@ -200,6 +250,8 @@ function FilterRuleEditForm(options: { initialValue: FilterRuleConfig }) {
                         return ""
                 })()
             })
+            ctx.success(JSON.stringify(result))
+            ctx.refresh();
         }}>
         <Form.Item label="名称" name="name">
             <Input />
@@ -214,7 +266,7 @@ function FilterRuleEditForm(options: { initialValue: FilterRuleConfig }) {
             {ruleFormList("exclude")}
         </Form.Item>
         <Form.Item label="体积限制（GB）" name="size">
-            <InfiniteSlider min={0} initialMax={100000} />
+            <InfiniteSlider />
         </Form.Item>
         <Form.Item label="促销">
             <Space>
@@ -232,7 +284,7 @@ function FilterRuleEditForm(options: { initialValue: FilterRuleConfig }) {
     </Form>
 }
 
-function InfiniteSlider({ value, onChange, }: { min: number, initialMax: number, value?: [number, number], onChange?: (value: [number, number]) => void }) {
+function InfiniteSlider({ value, onChange, }: { value?: [number, number], onChange?: (value: [number, number]) => void }) {
     const [topValue, setTopValue] = useState(value?.[1] ?? 0)
     const [botValue, setBotValue] = useState(value?.[0] ?? 0)
     useEffect(() => {

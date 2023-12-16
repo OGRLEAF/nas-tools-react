@@ -40,6 +40,7 @@ type NastoolApi =
     "filterrule/group/delete" |
     "filterrule/rule/update" |
     "filterrule/rule/delete" |
+    "filterrule/group/default" |
     "task/list" |
     "task/create" |
     "sync/directory/list" |

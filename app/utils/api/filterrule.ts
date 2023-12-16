@@ -1,7 +1,7 @@
 import { APIBase } from "./api_base";
 
 export interface FilterRuleConfig {
-    id: number,
+    id?: number,
     group: number,
     name: string,
     pri: string,
@@ -39,6 +39,12 @@ export class FilterRule extends APIBase {
             json: true
         })
     }
+
+    public async setDfault(id: FilterRuleGroupConfig['id']) {
+        return await (await this.API).post("filterrule/group/default", { data: { id }, auth: true, })
+    }
+
+
 
     public async delete(id: FilterRuleGroupConfig['id']) {
         return await (await this.API).post("filterrule/group/delete", {
