@@ -42,7 +42,7 @@ const FilterRuleCard = ({ config }: { config: FilterRuleConfig }) => {
         style={{ width: "100%" }}
         actions={[
             <Button icon={<IconEdit />} type="link" size="small" onClick={() => setOpenDrawer(true)} style={{ padding: 0 }}>编辑</Button>,
-            <Button icon={<IconDelete />} type="link" danger size="small" onClick={() => deleteRule()} style={{ padding: 0 }}>编辑</Button >,
+            <Button icon={<IconDelete />} type="link" danger size="small" onClick={() => deleteRule()} style={{ padding: 0 }}>删除</Button >,
         ]}
     >
         <List.Item.Meta title={config.name} />
@@ -108,17 +108,19 @@ function FilterRuleList({ filterRuleGroup }: { filterRuleGroup: FilterRuleGroupC
     }, [filterRuleGroup.default])
     const [openDrawer, setOpenDrawer] = useState(false)
     return <>
-        <CheckableTag checked={isDefault}
-            onChange={(value) => {
-                if (value) {
-                    setDefault(true);
-                    execDefault();
-                }
-            }}>默认</CheckableTag>
-        <Button size="small" onClick={() => setOpenDrawer(true)} icon={<IconAdd />} type="primary">新增规则</Button>
-        <Drawer size="large" open={openDrawer} onClose={() => setOpenDrawer(false)}>
-            <FilterRuleEditForm initialValue={{ ...defaultRuleConfig, group: filterRuleGroup.id }} />
-        </Drawer>
+        <Space direction="vertical">
+            <Checkbox checked={isDefault}
+                onChange={(value) => {
+                    if (value) {
+                        setDefault(true);
+                        execDefault();
+                    }
+                }}>默认</Checkbox>
+            <Button size="small" onClick={() => setOpenDrawer(true)} icon={<IconAdd />} type="primary">新增规则</Button>
+            <Drawer size="large" open={openDrawer} onClose={() => setOpenDrawer(false)}>
+                <FilterRuleEditForm initialValue={{ ...defaultRuleConfig, group: filterRuleGroup.id }} />
+            </Drawer>
+        </Space>
         <ConfigProvider
             theme={{
                 components: {

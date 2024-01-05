@@ -22,6 +22,9 @@ export function TagCheckboxGroup(props: TagCheckboxGroupProps) {
             : selectedTags.filter((t) => t !== tag);
         setSelectedTags(nextSelectedTags);
     };
+    useEffect(() => {
+        if (props.value != undefined) setSelectedTags(props.value)
+    }, [props.value])
 
     useEffect(() => {
         onChange?.(selectedTags)
