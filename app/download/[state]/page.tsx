@@ -12,6 +12,7 @@ import { FolderOpenOutlined, CloseOutlined, CaretUpOutlined, CaretDownOutlined }
 import { IconPause, IconPlay } from "@/app/components/icons";
 import { bytes_to_human } from "@/app/utils";
 import { StateMap, StateTag } from "@/app/components/StateTag";
+import { useResource } from "@/app/utils/api/api_base";
 
 const torrentStateMap: StateMap<TorrentState> = {
     [TorrentState.DOWNLOADING]: {
@@ -44,6 +45,38 @@ const torrentStateMap: StateMap<TorrentState> = {
         value: "等待"
     }
 }
+
+const torrentStateFilterGroups = [
+    {
+        text: "活跃",
+        value: "active",
+        children: [{
+            value: TorrentState.DOWNLOADING,
+            text: "下载中"
+        },
+        {
+            value: TorrentState.SEEDING,
+            text: "做种中"
+        },]
+    },
+    {
+        value: TorrentState.CHECKING,
+        text: "校验中"
+    },
+    {
+        value: TorrentState.STALLED,
+        text: "等待"
+    },
+    {
+        value: TorrentState.PAUSED,
+        text: "暂停"
+    },
+    {
+        value: TorrentState.UNKNOWN,
+        text: "未知"
+    },
+
+]
 
 const torrentPrivateTag: StateMap<number> = {
     0: {
@@ -79,15 +112,16 @@ export default function DownloadedPage() {
     }
     const getTorrents = async (pagination = false) => {
         setLoading(true);
+        const downloadApi = new Download();
         if (pagination) {
-            const partialTorrents = await new Download().list({ page: page - 1, size: pageSize });
-            updateTorrents(partialTorrents.list)
+            const partialTorrents = await downloadApi.list({ page: page - 1, size: pageSize });
+            updateTorrents(partialTorrents)
         } else {
             const torrents = await new Download().list();
-            updateTorrents(torrents.list)
-            setTotalTorrents(torrents.list.length)
+            updateTorrents(torrents)
+            setTotalTorrents(torrents.length)
             const categories = new Set<string>();
-            torrents.list.forEach(t => categories.add(t.category || ""))
+            torrents.forEach(t => categories.add(t.category || ""))
             categories.delete("")
             setCategories(Array.from(categories))
         }
@@ -99,21 +133,16 @@ export default function DownloadedPage() {
         getTorrents();
     }, [])
 
-    const [downloaderPathMap, setDownloaderPathMap] = useState<Record<string, string>>({});
-    const getDownloadClinets = async () => {
-        const clientConfigs = await new DownloadClient().list();
+    const { list: clients, refresh: refreshClients } = useResource(new DownloadClient())
+    const downloaderPathMap = useMemo(() => {
         const pathMap: Record<string, string> = {};
-        clientConfigs.forEach((value) => {
+        clients.forEach((value) => {
             value.download_dir.forEach(v => {
                 pathMap[v.save_path] = v.container_path
             })
         })
-        setDownloaderPathMap(pathMap);
-    }
-
-    useEffect(() => {
-        getDownloadClinets();
-    }, [])
+        return pathMap;
+    }, [clients])
 
     const [namePattern, setNamePattern] = useState<string>("");
     const filterdList = useMemo(() => {
@@ -125,7 +154,7 @@ export default function DownloadedPage() {
     const [refreshInterval, setRefreshInterval] = useState(3);
     const intervalRefresh = async () => {
         const result = await new Download().list({ state: TorrentVagueState.ACTIVE })
-        updateTorrents(result.list);
+        updateTorrents(result);
     }
 
     useEffect(() => {
@@ -225,7 +254,8 @@ export default function DownloadedPage() {
             key: "state",
             render: (value: TorrentState) => <StateTag stateMap={torrentStateMap} value={value} />,
             align: "center",
-            filters: Object.entries(torrentStateMap).map(([k, v]) => ({ text: v.value, value: k })),
+            filters: torrentStateFilterGroups, //Object.entries(torrentStateMap).map(([k, v]) => ({ text: v.value, value: k })),
+            filterMode: "tree",
             onFilter: (value, record) => (record.state === value),
             width: 100,
         },
@@ -247,7 +277,7 @@ export default function DownloadedPage() {
     ]
 
     return <Section title="下载任务"
-        onRefresh={() => { getDownloadClinets(); getTorrents(false) }}
+        onRefresh={() => { refreshClients(); getTorrents(false) }}
         extra={
             <Space>
                 <Button icon={<PlusOutlined />}
