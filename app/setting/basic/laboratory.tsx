@@ -38,6 +38,11 @@ export default function SettingSLaboratory() {
                     <Switch />
                 </Form.Item>
             </Col>
+            <Col span={6}>
+                <Form.Item label="公开站点支持" name={["laboratory", "show_more_sites"]} valuePropName="checked">
+                    <Switch />
+                </Form.Item>
+            </Col>
         </Row>
     </>
 }
