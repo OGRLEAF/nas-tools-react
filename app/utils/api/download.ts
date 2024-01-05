@@ -1,4 +1,4 @@
-import { APIBase } from "./api_base";
+import { APIBase, APIResourceBase } from "./api_base";
 import { MediaWorkType, SyncMode } from "./types";
 import { ImportMode as RmtMode } from "./api"
 /**
@@ -63,12 +63,14 @@ export interface TorrentInfo {
     }
 }
 
-export class Download extends APIBase {
+type ListOptions = { page?: number, size?: number, hashs?: string[], state?: TorrentFilterState }
+export class Download extends APIResourceBase<TorrentInfo, ListOptions> {
     constructor() {
         super();
     }
 
-    public async list(options: { page?: number, size?: number, hashs?: string[], state?: TorrentFilterState } = {}) {
+    public async list(options: ListOptions = {})
+        : Promise<TorrentInfo[]> {
         const { page, size, hashs, state } = options;
         const result = await (await this.API).post<{ list: TorrentInfo[], total: number }>("download/list", {
             data: {
@@ -80,7 +82,11 @@ export class Download extends APIBase {
             auth: true,
             json: true
         });
-        return result
+        return result.list
+    }
+
+    public listHook(options?: ListOptions): Promise<TorrentInfo[]> {
+        return this.list(options);
     }
 
     public async resume(hash: string) {
@@ -194,11 +200,15 @@ type DownloadClientConfigListResult = {
     detail: DownloadClientConfig[]
 }
 
-export class DownloadClient extends APIBase {
+export class DownloadClient extends APIResourceBase<DownloadClientConfig> {
     public async list() {
         const result = await (await this.API).post<DownloadClientConfigListResult>("download/client/list",
             { auth: true }
         )
         return Object.values(result.detail)
+    }
+
+    protected async listHook() {
+        return this.list();
     }
 }

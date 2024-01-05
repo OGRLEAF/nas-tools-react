@@ -39,7 +39,7 @@ export class DirectorySync extends APIBase {
 
     public async list() {
         const result = await (await this.API).post<{ result: Record<string, SyncDirectoryConfig> }>("sync/directory/list", { auth: true });
-        const dirList = Object.values(result.result).map((conf) => {
+        const dirList = Object.values(result.result).map((conf:any) => {
             if (conf.unknown == "") conf.unknown = undefined;
             return conf;
         })
