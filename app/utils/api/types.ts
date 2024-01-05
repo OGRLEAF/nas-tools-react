@@ -220,6 +220,21 @@ export interface Media {
 
 }
 
+export interface MediaFile {
+  key                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               : string,
+  path: string,
+  metadata: {
+    codec?: any,
+    releaseGroup?: string,
+  }
+  rels: MediaExternalFile[]
+}
+
+export interface MediaExternalFile extends MediaFile {
+
+}
+
+
 export function mergeObjects(...objects: any[]): any {
   const result: any = {};
   objects.forEach((obj) => {
