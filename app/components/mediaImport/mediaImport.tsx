@@ -1,18 +1,15 @@
-import { Breadcrumb, Button, Col, Divider, Drawer, Empty, Form, Input, InputNumber, List, Radio, Row, Select, SelectProps, Space, Spin, Tabs, TabsProps } from "antd"
-import { RedoOutlined, InfoCircleOutlined } from "@ant-design/icons"
+import { Button, Col, Divider, Drawer, Empty, Form, Input, InputNumber, Row, Select, SelectProps, Space, Spin, Tabs, TabsProps } from "antd"
 import React, { CSSProperties, useContext, useEffect, useMemo, useState } from "react"
 import { MediaImportFile, MediaImportFileKey, useMediaImport, useMediaImportDispatch } from "./mediaImportContext"
 import { NastoolMediaType } from "../../utils/api/api";
 import { useWatch } from "antd/es/form/Form";
 import { MediaImportAction } from "./mediaImportContext";
-import { MediaIdentifyMerged, MediaWork, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType, mergeObjects } from "@/app/utils/api/types";
+import { MediaWork, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
 import { asyncEffect, number_string_to_list } from "@/app/utils"
 import TinyTMDBSearch, { MediaDetailCard } from "../TMDBSearch/TinyTMDBSearch";
-import { TMDB, TMDBMedia, TMDBMediaWork } from "@/app/utils/api/tmdb";
+import { TMDB } from "@/app/utils/api/tmdb";
 import { ImportList } from "./mediaImportList";
-import { IconExternalLink } from "../icons";
 import { SearchContext, SearchContextProvider } from "../TMDBSearch/SearchContext";
-import useFormInstance from "antd/es/form/hooks/useFormInstance";
 import _ from "lodash";
 export interface MediaImportInitial {
     type: NastoolMediaType,
@@ -101,27 +98,17 @@ const MediaImport = () => {
     const searchContext = useContext(SearchContext);
     const { selected: mediaWork } = searchContext;
     const [selectedFiles, setSelectedFiles] = useState<MediaImportFile[]>([])
-    // const [episodeMethod, setEpisodeMethod] = useState<EpisodeMethod>(EpisodeMethod.NumberString)
     const onFinish = async (values: any) => {
         const series: SeriesKey = values.series;
         const episodes = [...values.episodes];
 
         const episode_offset: number = values.episode_offset || 0;
-        // console.log(values.episode_format, values.episode_string, episodeMethod, episodes)
         const tmdbId = series.i;
         if (tmdbId != undefined) {
 
             const season = Number(series.s);
             const identify = selectedFiles.map(() => {
                 const episode = episodes?.shift();
-                // return ({
-                //     tmdbId: String(tmdbId), // mediaWork?.key ? String(mediaWork?.key) : values.tmdbId,
-                //     season: Number.isNaN(season) ? undefined : season,// values.season,
-                //     episode: Number.isNaN(episode) ? undefined : episode ? (episode + episode_offset) : undefined,
-                //     year: values.year,
-                //     title: mediaWork?.title || values.title,
-                //     type: mediaWork?.type || values.type
-                // })
                 return new SeriesKey(series).type(mediaWork?.type || values.type)
                     .tmdbId(tmdbId)
                     .season(Number.isNaN(season) ? undefined : season)
@@ -134,9 +121,6 @@ const MediaImport = () => {
             })
         }
     }
-    // const onFinish = async (value: any) => {
-    //     console.log(value)
-    // }
 
     return <Row gutter={32} style={{ height: "100%" }}>
         <Col span={6}>
@@ -153,8 +137,7 @@ const MediaImport = () => {
                 }}
                 onFinish={onFinish}>
                 <Form.Item name="series" noStyle>
-                    <MediaSearch />
-                </Form.Item>
+                    <MediaSearch />                </Form.Item>
 
                 <Form.Item name="episodes">
                     <EpisodeInput fileNames={selectedFiles.map((file) => file.name)} />
@@ -162,8 +145,8 @@ const MediaImport = () => {
                 <Space>
                     <Form.Item label="集数偏移" name="episode_offset">
                         <InputNumber placeholder="集数偏移" />
-                    </Form.Item>
-                </Space>
+              </Form.Item>
+               </Space>
 
                 <Form.Item>
                     <Button type="primary" htmlType="submit">应用</Button>
@@ -171,10 +154,7 @@ const MediaImport = () => {
             </Form>
         </Col>
         <Col span={18} style={{ height: "100%", overflowY: "auto" }}>
-            <Space direction="vertical" size="large">
-                <ImportList onSelect={(files) => { setSelectedFiles(files) }} />
-                {/* <ImportSubmit files={selectedFiles} /> */}
-            </Space>
+            <ImportList onSelect={(files) => { setSelectedFiles(files) }} />
         </Col>
     </Row>
 }
@@ -379,16 +359,8 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
                             setSeries(new SeriesKey(series).season(value))
                         }
                     }} />
-                {/* <Select value={selectedSeason} disabled={loading} loading={loading} style={{ width: "250px" }}
-                    options={seasonOptions}
-                    onSelect={(value: number) => {
-                        // console.log(value)
-                        if (value !== undefined) setSelectedSeason(value);
-                        if (series.has("tmdbId")) {
-                            setSeries(new SeriesKey(series).season(value))
-                        }
-                    }}
-                /> */}
+
+                    
             </Space>
             : <></>}
     </Space>

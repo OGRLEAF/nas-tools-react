@@ -1,23 +1,15 @@
-import { Button, Col, Divider, Drawer, Form, Input, List, Popover, Radio, Row, Select, Skeleton, Space, Table, Tag, TagType, Tooltip, message, theme } from "antd"
-import { RedoOutlined, InfoCircleOutlined, LoadingOutlined } from "@ant-design/icons"
-import React, { Children, createContext, useContext, useEffect, useMemo, useState } from "react"
-import { MediaImportContext, MediaImportFile, MediaImportFileKey, useMediaImport, useMediaImportDispatch } from "./mediaImportContext"
-import { API, ImportMode, NastoolServerConfig } from "../../utils/api/api";
+import { Button, Flex, Space, Table, Tooltip, theme } from "antd"
+import { RedoOutlined, InfoCircleOutlined } from "@ant-design/icons"
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react"
+import { MediaImportFile, MediaImportFileKey, useMediaImport, useMediaImportDispatch } from "./mediaImportContext"
 import { MediaImportAction } from "./mediaImportContext";
 import { ColumnsType } from "antd/es/table";
-import { Organize } from "@/app/utils/api/import";
 
 import { MediaIdentify } from "@/app/utils/api/mediaIdentify";
-import { PathSelector } from "../PathSelector";
 import { SearchContext } from "../TMDBSearch/SearchContext";
-import { MediaIdentifyContext, MediaIdentifyMerged, MediaWork, MediaWorkEpisode, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
-import { asyncEffect } from "@/app/utils";
-import { TMDB, TMDBMedia } from "@/app/utils/api/tmdb";
-import _, { set, slice } from "lodash";
-import { IconEllipsisLoading } from "../icons";
-import { MediaDetailCard } from "../TMDBSearch/TinyTMDBSearch";
-import { MediaLibrarySelect } from "../LibraryPathSelector";
-import { TvMediaImportGroup } from "./MediaImportGroup";
+import { MediaWork, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
+import _, {  } from "lodash";
+import { MovieMediaImportGroup, TvMediaImportGroup } from "./MediaImportGroup";
 
 function isOverriden<T>(a: T, b: T): [boolean, T] {
     const finalValue = (b !== undefined) ? b : a;
@@ -81,14 +73,14 @@ export const ImportList = (options: { onSelect?: (value: MediaImportFile[]) => v
     const [selectedFileKeys, setSelectedFileKeys] = useState<MediaImportFileKey[]>([])
     const [fileMap, setFileMap] = useState<Map<string, MediaImportFile>>(new Map())
 
-    useEffect(() => {
+    useEffect(() => {   
 
 
-            if (mediaImportContext.penddingFiles) {
-                const keyMap = new Map<string, MediaImportFile>();
-                mediaImportContext.penddingFiles.forEach((file) => keyMap.set(file.name, file))
-                setFileMap(keyMap)
-            }
+        if (mediaImportContext.penddingFiles) {
+            const keyMap = new Map<string, MediaImportFile>();
+            mediaImportContext.penddingFiles.forEach((file) => keyMap.set(file.name, file))
+            setFileMap(keyMap)
+        }
 
 
     }, [mediaImportContext])
@@ -99,57 +91,67 @@ export const ImportList = (options: { onSelect?: (value: MediaImportFile[]) => v
         }
     }, [selectedFileKeys, fileMap])
     const files: MediaImportFile[] | undefined = Object.values(mediaImportContext.penddingFiles)
-    const identifiedGroup = useMemo(() => {
-        const groupMap: Record<MediaWork['key'], MediaImportFile[]> = {};
+    const [identifiedTvGroup, identifiedMovieGroup] = useMemo((): Record<MediaWork['key'], MediaImportFile[]>[] => {
+        const tvGroupMap: Record<MediaWork['key'], MediaImportFile[]> = {};
+        const movieGroupMap: Record<MediaWork['key'], MediaImportFile[]> = {};
         files?.forEach(file => {
             const seriesKey = file.indentifyHistory.last();
             if (seriesKey) {
                 if (seriesKey.end >= SeriesKeyType.TMDBID) {
                     if ((seriesKey.t == MediaWorkType.TV || seriesKey.t == MediaWorkType.ANI) && seriesKey.i != undefined) {
-                        groupMap[seriesKey.i] = groupMap[seriesKey.i] ?? [];
-                        groupMap[seriesKey.i].push(file)
+                        tvGroupMap[seriesKey.i] = tvGroupMap[seriesKey.i] ?? [];
+                        tvGroupMap[seriesKey.i].push(file)
+                    } else if (seriesKey.t == MediaWorkType.MOVIE && seriesKey.i != undefined) {
+                        movieGroupMap[seriesKey.i] = tvGroupMap[seriesKey.i] ?? [];
+                        movieGroupMap[seriesKey.i].push(file)
                     }
                 }
 
             }
         })
-        return groupMap;
+        return [tvGroupMap, movieGroupMap];
     }, [files])
     return <ImportListContext.Provider value={{
         selectedFileKeys: { selectedFileKeys, setSelectedFileKeys },
         fileMap: { fileMap, setFileMap }
     }}>
-        <Space direction="vertical" style={{ width: "100%" }} size={10}>
-        {
-            Object.entries(identifiedGroup)
-                .map(([key, files]) => {
-                    return <TvMediaImportGroup
-                        key={key}
-                        seriesKey={new SeriesKey().type(MediaWorkType.TV).tmdbId(key)}
-                        files={files}
-                    />
-                })
-        }
+        <Flex vertical style={{ width: "100%" }} gap={24}>
+            {
+                Object.entries(identifiedMovieGroup)
+                    .map(([key, files]) => {
+                        return <MovieMediaImportGroup key={key} seriesKey={new SeriesKey().type(MediaWorkType.MOVIE).tmdbId(key)} files={files} />
+                    })
+            }
+            {
+                Object.entries(identifiedTvGroup)
+                    .map(([key, files]) => {
+                        return <TvMediaImportGroup
+                            key={key}
+                            seriesKey={new SeriesKey().type(MediaWorkType.TV).tmdbId(key)}
+                            files={files}
+                        />
+                    })
+            }
 
-        <Table
-            rowSelection={{
-                type: "checkbox",
-                selectedRowKeys: selectedFileKeys,
-                onChange: (selectedRowKeys: React.Key[], selectedRows: MediaImportFile[]) => {
-                    setSelectedFileKeys(selectedRowKeys as MediaImportFileKey[])
-                },
-            }}
-            scroll={{ y: 580, }}
-            pagination={false}
-            size="small"
-            rowKey="name"
-            dataSource={files}
-            columns={columns}
-        // virtual={true}
-        />
+            <Table
+                rowSelection={{
+                    type: "checkbox",
+                    selectedRowKeys: selectedFileKeys,
+                    onChange: (selectedRowKeys: React.Key[], selectedRows: MediaImportFile[]) => {
+                        setSelectedFileKeys(selectedRowKeys as MediaImportFileKey[])
+                    },
+                }}
+                scroll={{ y: 580, }}
+                pagination={false}
+                size="small"
+                rowKey="name"
+                dataSource={files}
+                columns={columns}
+            // virtual={true}
+            />
 
-    </Space>
-            </ImportListContext.Provider >
+        </Flex>
+    </ImportListContext.Provider >
 }
 
 const TableFileName = (options: { name: string, item: MediaImportFile }) => {

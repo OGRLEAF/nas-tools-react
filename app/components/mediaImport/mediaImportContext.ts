@@ -4,11 +4,9 @@ import { createContext, useContext } from "react"
 export class IdentifyHistory {
     private history: SeriesKey[]
     constructor(initial?: IdentifyHistory) {
-        debugger;
         this.history = initial?.history ?? [];
     }
     public push(series?: SeriesKey) {
-        debugger;
         if (series == undefined) return this
         if (!this.last()?.equal(series)) {
             if (this.last()) {

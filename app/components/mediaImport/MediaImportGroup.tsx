@@ -1,10 +1,10 @@
 import { asyncEffect } from "@/app/utils";
 import { TMDB } from "@/app/utils/api/tmdb";
-import { MediaWork, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
+import { MediaWork, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
 import React, { useContext, useEffect, useState } from "react";
 import { CloseOutlined } from "@ant-design/icons"
 import { MediaDetailCard } from "../TMDBSearch/TinyTMDBSearch";
-import { Button, Card, Divider, Flex, Form, Popover, Radio, Space, Tag, Tooltip, theme } from "antd";
+import { Button, Card, Checkbox, Divider, Flex, Form, Popover, Radio, Space, Tag, Tooltip, theme } from "antd";
 import { MediaImportAction, MediaImportFile, MediaImportFileKey, useMediaImportDispatch } from "./mediaImportContext";
 import Table, { ColumnsType } from "antd/es/table";
 import { SearchContext } from "../TMDBSearch/SearchContext";
@@ -13,13 +13,16 @@ import _ from "lodash";
 import { ImportMode } from "@/app/utils/api/api";
 import { MediaLibrarySelect } from "../LibraryPathSelector";
 import { useImportListContext } from "./mediaImportList";
+import { StateMap, StateTag } from "../StateTag";
 
 export interface MediaImportGroupProps {
     seriesKey: SeriesKey,
     files: MediaImportFile[],
 }
 
-const columns: ColumnsType<MediaImportFile> = [{
+
+
+const tvImportColumns: ColumnsType<MediaImportFile> = [{
     title: "文件名",
     dataIndex: "name",
     width: 750,
@@ -59,8 +62,6 @@ const columns: ColumnsType<MediaImportFile> = [{
     width: 50,
     align: "center"
 }
-    // ],
-    // },
 ]
 
 export function TvMediaImportGroup(props: MediaImportGroupProps) {
@@ -104,7 +105,7 @@ export function TvMediaImportGroup(props: MediaImportGroupProps) {
         size="small"
         rowKey="name"
         dataSource={props.files}
-        columns={columns}
+        columns={tvImportColumns}
         footer={() => <ImportSubmit
             seriesKey={props.seriesKey}
             files={props.files.map((file) => fileMap.fileMap.get(file.name)).filter((file) => file != undefined) as MediaImportFile[]}
@@ -112,6 +113,77 @@ export function TvMediaImportGroup(props: MediaImportGroupProps) {
         }
     />
 }
+
+const movieImportColumns: ColumnsType<MediaImportFile> = [
+    {
+        title: "文件名",
+        dataIndex: "name",
+        render: (name: string, item) => name, //<TableFileName name={name} item={item} />,
+        defaultSortOrder: "descend",
+        shouldCellUpdate: (record, prevRecord) => !_.isEqual(record, prevRecord),
+        sorter: (a: MediaImportFile, b: MediaImportFile) => ((a.name > b.name) ? -1 : 1),
+
+    },
+    {
+        title: "操作",
+        dataIndex: "name",
+        render(value, record) {
+            return <ImportListItemAction fileKey={value} />
+        },
+        width: 50,
+        align: "center"
+    }
+]
+
+
+export function MovieMediaImportGroup(props: MediaImportGroupProps) {
+    const [work, setWork] = useState<MediaWork>();
+    const importListContext = useImportListContext();
+    const { selectedFileKeys, fileMap } = importListContext;
+    useEffect(asyncEffect(async () => {
+        const series = new SeriesKey(props.seriesKey).slice(SeriesKeyType.TMDBID)
+        const target = new TMDB().fromSeries(series);
+        setWork(await target?.get())
+    }), [])
+    const { setSeries, setKeyword } = useContext(SearchContext);
+    const selectButton = <Button type="primary" size="small" onClick={() => { if (work?.title) setKeyword(work?.title) }}>搜索</Button>
+    const searchButton = <Button size="small" onClick={() => { if (work) setSeries(work.series) }}>选择</Button>
+    const cardTitle = <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
+        {work ? <MediaDetailCard
+            postImageStyle={{ width: 100 }}
+            mediaDetail={work} size="small"
+            onTitleClick={(mediaWork) => { setSeries(mediaWork.series) }}
+            action={<Space>
+                {selectButton}
+                {searchButton}
+            </Space>}
+        /> : <>{props.seriesKey.t}</>}
+    </div>
+
+    return <Table
+        title={() => cardTitle}
+        bordered
+        rowSelection={{
+            type: "checkbox",
+            selectedRowKeys: selectedFileKeys.selectedFileKeys,
+            onChange: (selectedRowKeys: React.Key[], selectedRows: MediaImportFile[]) => {
+                selectedFileKeys.setSelectedFileKeys(selectedRowKeys as MediaImportFileKey[])
+            },
+            columnWidth: 20
+        }}
+        pagination={false}
+        size="small"
+        rowKey="name"
+        dataSource={props.files}
+        columns={movieImportColumns}
+        footer={() => <ImportSubmit
+            seriesKey={props.seriesKey}
+            files={props.files.map((file) => fileMap.fileMap.get(file.name)).filter((file) => file != undefined) as MediaImportFile[]}
+        />
+        }
+    />
+}
+
 
 function ImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: MediaImportFile[], }) {
     const mergedSeriesKey = files.length > 0 ? files.map(file => file.indentifyHistory.last())?.reduce((prev, curr) => prev.merge(curr)) : new SeriesKey();
@@ -128,11 +200,7 @@ function ImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Media
             <span>{metadata?.title} #{mergedSeriesKey.i}</span>
             <span>季 {mergedSeriesKey.s}</span>
         </Space>
-        <Form layout="inline" initialValues={{
-            type: ImportMode.LINK
-        }}
-            disabled={disableImport}
-        >
+        <Form layout="inline" initialValues={{ type: ImportMode.LINK }} disabled={disableImport}>
             <Form.Item name="target_path" >
                 <MediaLibrarySelect width={400} />
             </Form.Item>

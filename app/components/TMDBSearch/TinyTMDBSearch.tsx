@@ -2,9 +2,10 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useState } from
 import { API, NastoolMediaSearchResult, NastoolMediaSearchResultItem, NastoolMediaType, NastoolServerConfig } from "../../utils/api/api";
 import { AutoComplete, Form, Input, Radio, Space, theme, Image, Typography, Empty, Row, Col, Select, Skeleton, Button, Flex } from "antd";
 import { TMDB } from "../../utils/api/tmdb";
-import { MediaIdentifyContext, MediaWork, MediaWorkType } from "../../utils/api/types";
+import { MediaIdentifyContext, MediaWork, MediaWorkType, SeriesKey } from "../../utils/api/types";
 import { SearchContext } from "./SearchContext";
 import { ServerConfig } from "@/app/utils/api/serverConfig";
+import { StateMap, StateTag } from "../StateTag";
 
 type CardSize = "normal" | "small" | "tiny";
 interface DetaiCardStyle {
@@ -45,7 +46,28 @@ const cardStyleMap: Record<CardSize, DetaiCardStyle> = {
         textLimit: 75
     }
 }
-
+const stateTagMap: StateMap<MediaWorkType> = {
+    [MediaWorkType.TV]: {
+        key: MediaWorkType.TV,
+        color: "volcano",
+        value: MediaWorkType.TV
+    },
+    [MediaWorkType.MOVIE]: {
+        key: MediaWorkType.MOVIE,
+        color: "volcano",
+        value: MediaWorkType.MOVIE
+    },
+    [MediaWorkType.ANI]: {
+        key: MediaWorkType.ANI,
+        color: "volcano",
+        value: MediaWorkType.ANI
+    },
+    [MediaWorkType.UNKNOWN]: {
+        key: MediaWorkType.UNKNOWN,
+        color: "volcano",
+        value: MediaWorkType.UNKNOWN
+    },
+}
 
 export function MediaDetailCard({
     mediaDetail,
@@ -76,20 +98,23 @@ export function MediaDetailCard({
             <Flex align="end" vertical style={{ width: "100%" }}>
                 <Typography style={{ paddingTop: 4, ...style.typography, width: "100%" }}>
                     <Typography.Title level={2} style={{ color: token.colorTextBase, fontSize: "1.6rem", marginTop: 6, ...style.title }}>
-                        {mediaDetail.title}
-                        < span style={{ fontSize: "1rem" }}> {metadata?.date.release}</span>
-
+                        <Space>
+                            <span>{mediaDetail.title}</span>
+                            <span style={{ fontSize: "1rem" }}> {metadata?.date.release}</span>
+                            <StateTag stateMap={stateTagMap} value={mediaDetail.series.t ?? MediaWorkType.UNKNOWN} />
+                        </Space>
                     </Typography.Title>
                     <Typography.Link style={{ color: token.colorTextDescription }} href={metadata?.links.tmdb} target="_blank">
                         {metadata?.links.tmdb}
                     </Typography.Link>
                     <br />
-                    <Typography.Text style={{ color: token.colorTextDescription }}>
-                        {
+                    <Typography.Text >
+                        <span style={{ color: token.colorTextDescription, display: "block", wordWrap: "break-word", whiteSpace: "pre-wrap" }}>{
                             (metadata?.description?.length || 0) > textLimit ?
                                 metadata?.description.slice(0, textLimit) + "..." :
                                 metadata?.description
                         }
+                        </span>
                     </Typography.Text>
                 </Typography>
                 <div style={{ float: "right" }}>{action}</div>
