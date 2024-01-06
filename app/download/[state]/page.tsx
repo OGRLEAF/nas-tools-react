@@ -133,10 +133,10 @@ export default function DownloadedPage() {
         getTorrents();
     }, [])
 
-    const { list: clients, refresh: refreshClients } = useResource(new DownloadClient())
+    const { list: clients, refresh: refreshClients } = new DownloadClient().useResource();
     const downloaderPathMap = useMemo(() => {
         const pathMap: Record<string, string> = {};
-        clients.forEach((value) => {
+        clients?.forEach((value) => {
             value.download_dir.forEach(v => {
                 pathMap[v.save_path] = v.container_path
             })

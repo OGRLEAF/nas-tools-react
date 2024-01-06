@@ -1,4 +1,4 @@
-import { APIBase, APIResourceBase } from "./api_base";
+import { APIBase, APIArrayResourceBase } from "./api_base";
 import { MediaWorkType, SyncMode } from "./types";
 import { ImportMode as RmtMode } from "./api"
 /**
@@ -64,7 +64,7 @@ export interface TorrentInfo {
 }
 
 type ListOptions = { page?: number, size?: number, hashs?: string[], state?: TorrentFilterState }
-export class Download extends APIResourceBase<TorrentInfo, ListOptions> {
+export class Download extends APIArrayResourceBase<TorrentInfo, ListOptions> {
     constructor() {
         super();
     }
@@ -200,7 +200,7 @@ type DownloadClientConfigListResult = {
     detail: DownloadClientConfig[]
 }
 
-export class DownloadClient extends APIResourceBase<DownloadClientConfig> {
+export class DownloadClient extends APIArrayResourceBase<DownloadClientConfig> {
     public async list() {
         const result = await (await this.API).post<DownloadClientConfigListResult>("download/client/list",
             { auth: true }
@@ -211,4 +211,5 @@ export class DownloadClient extends APIResourceBase<DownloadClientConfig> {
     protected async listHook() {
         return this.list();
     }
+
 }

@@ -1,7 +1,7 @@
 import { NastoolServerConfig } from "./api";
-import { APIBase } from "./api_base";
+import { APIBase, APIArrayResourceBase } from "./api_base";
 
-export class ServerConfig extends APIBase {
+export class ServerConfig extends APIArrayResourceBase<NastoolServerConfig> {
     private _serverConfig: NastoolServerConfig | undefined = undefined
     constructor() {
         super();

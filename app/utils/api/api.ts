@@ -142,6 +142,9 @@ export type NastoolServerConfig = {
     },
     laboratory: {
         use_douban_titles: boolean
+    },
+    pt: {
+        indexer_sites: string[]
     }
 }
 

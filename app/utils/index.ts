@@ -1,5 +1,6 @@
 import { message } from "antd";
 import { floor } from "lodash";
+import { useMemo, useState } from "react";
 
 export function bytes_to_human(value: number, fixed: number = 2): [number, string] {
     const units = ["B", "KB", "MB", "GB", "TB", "PB"]
@@ -71,6 +72,32 @@ export function useSubmitMessage(key: string) {
         })
     }
 
+    const bundle = (action: string) => ({
+        loading: (msg?: string) => {
+            messageApi.open({
+                type: "loading",
+                key,
+                content: `${action}中 ` + (msg ?? "")
+            })
+        },
+        success: (msg?: string) => {
+            messageApi.open({
+                type: 'success',
+                key,
+                content: `${action}成功 ` + (msg ?? ""),
+            });
+        },
+        error: (msg?: string) => {
+            messageApi.open({
+                type: 'error',
+                key,
+                content: `${action}失败 ` + (msg ?? ""),
+            });
+        }
+    }
+    )
+    const update = bundle('更新')
+    const fetch = bundle('加载')
     const handle = async (p: Promise<any | void>, name?: string) => {
         loading();
         return p.then((res) => {
@@ -87,6 +114,8 @@ export function useSubmitMessage(key: string) {
         success,
         error,
         loading,
-        handle
+        handle,
+        update,
+        fetch
     }
 }
