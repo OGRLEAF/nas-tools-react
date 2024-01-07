@@ -7,7 +7,7 @@ import { ColumnType, ColumnsType, TableProps } from "antd/es/table";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { useForm } from "antd/es/form/Form";
-import { TMDB } from "@/app/utils/api/tmdb";
+import { TMDB } from "@/app/utils/api/media/tmdb";
 
 
 const TMDBInfo = ({ record }: { record: TMDBCacheItem }) => {

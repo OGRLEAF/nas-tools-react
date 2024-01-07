@@ -2,8 +2,8 @@
 import { Section } from "@/app/components/Section";
 import { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { Subscription, TVSubscription } from "@/app/utils/api/subscription/subscribe";
-import { TMDB } from "@/app/utils/api/tmdb";
-import { MediaWork, MediaWorkEpisode, MediaWorkType, SeriesKey } from "@/app/utils/api/types";
+import { TMDB } from "@/app/utils/api/media/tmdb";
+import { MediaWork, MediaWorkEpisode, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
 import { Calendar, CalendarProps, Card, Popover, Space } from "antd";
 import { Dayjs } from "dayjs";
 import React, { useEffect, useMemo, useState } from "react";
@@ -19,7 +19,7 @@ export default function SubscribeCalendar() {
         const tmdb = new TMDB();
         const tvEpisodes: MediaWorkEpisode[] = [];
         subsSeries.forEach(async (key) => {
-            if (key.end == "season") {
+            if (key.end == SeriesKeyType.SEASON) {
                 const mediaWork = tmdb.fromSeries(key)
                 if (mediaWork) {
                     const episodes = await mediaWork.get_children();

@@ -1,5 +1,5 @@
 import { asyncEffect } from "@/app/utils";
-import { TMDB } from "@/app/utils/api/tmdb";
+import { TMDB } from "@/app/utils/api/media/tmdb";
 import { MediaWork, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
 import React, { useContext, useEffect, useState } from "react";
 import { CloseOutlined } from "@ant-design/icons"

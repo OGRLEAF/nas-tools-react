@@ -96,7 +96,8 @@ const getMenuItems = async () => {
       getItem("目录同步", "/setting/directorysync", <IconRefresh />),
       getItem("消息通知", "/setting/notification", <BellOutlined />),
       getItem("过滤规则", "/setting/filterrule", <IconFilter />),
-      getItem("索引器", "/setting/indexers", <IconIndexer />)
+      getItem("索引器", "/setting/indexers", <IconIndexer />),
+      getItem("下载器", "/setting/downloader", <IconDownloader />)
     ]),
   ];
   return items;

@@ -5,7 +5,7 @@ import { MediaImportFile, MediaImportFileKey, useMediaImport, useMediaImportDisp
 import { MediaImportAction } from "./mediaImportContext";
 import { ColumnsType } from "antd/es/table";
 
-import { MediaIdentify } from "@/app/utils/api/mediaIdentify";
+import { MediaIdentify } from "@/app/utils/api/media/mediaIdentify";
 import { SearchContext } from "../TMDBSearch/SearchContext";
 import { MediaWork, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
 import _, {  } from "lodash";

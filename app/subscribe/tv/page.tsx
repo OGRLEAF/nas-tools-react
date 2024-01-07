@@ -11,7 +11,7 @@ import { useForm } from "antd/es/form/Form";
 import { MediaSeasonInput } from "@/app/components/mediaImport/mediaImport";
 import { RetweetOutlined } from "@ant-design/icons"
 import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
-import { TMDB } from "@/app/utils/api/tmdb";
+import { TMDB } from "@/app/utils/api/media/tmdb";
 import { ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
 
 

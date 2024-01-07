@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { API, NASTOOL } from "./api";
 import { useSubmitMessage } from "..";
+import { get } from "lodash";
 
 export class APIBase {
     protected API: Promise<NASTOOL>
@@ -11,6 +12,16 @@ export class APIBase {
     }
 
 }
+
+export interface APIResourceOption {
+    useMessage?: boolean
+}
+
+export interface APIArrayResourceOption extends APIResourceOption {
+
+}
+
+
 
 export class APIArrayResourceBase<T, Options = never> extends APIBase {
 
@@ -28,30 +39,55 @@ export class APIArrayResourceBase<T, Options = never> extends APIBase {
 
     }
 
-    public useResource() {
-        const [list, setList] = useState<T[]>()
+
+    public useResource(option?: APIArrayResourceOption) {
+
         const [options, setOptions] = useState<Options>()
 
-        const refresh = (async () => {
-            setList(await this.listHook(options))
-        })
-        // useEffect(() => {
-        //     refresh();
-        // }, [])
-        useEffect(() => {
-            refresh();
-        }, [options])
+        const message = useSubmitMessage(String(this));
+        const useMessage = option?.useMessage ?? false;
+
+        const self = this
+        const update = async (value: T) => {
+            if (useMessage) message.update.loading()
+            try {
+                if (value != undefined) await self.updateHook(value)
+                if (useMessage) message.update.success()
+            } catch (e: any) {
+                if (useMessage) message.update.error(e)
+            }
+        }
         return {
-            list, setList, refresh, setOptions,
+            useList: function () {
+                const [list, setList] = useState<T[]>()
+                const refresh = (async () => {
+                    if (useMessage) message.fetch.loading()
+                    try {
+                        setList(await self.listHook(options))
+                        if (useMessage) message.fetch.success()
+                    } catch (e: any) {
+                        if (useMessage) message.fetch.error(e)
+                    }
+
+                })
+                useEffect(() => {
+                    refresh();
+                }, [options])
+                return {
+                    list, setList, refresh
+                }
+            }
+            , setOptions,
             updateMany: this.updateManyHook,
-            update: this.updateHook
+            messageContext: message.contextHolder,
+            update: update,
+
         }
     }
 
 }
 
-export type APIDataResourceOption = {
-    useMessage?: boolean
+export interface APIDataResourceOption extends APIResourceOption {
 }
 export class APIDataResourceBase<T, Options = never> extends APIBase {
 
@@ -73,19 +109,28 @@ export class APIDataResourceBase<T, Options = never> extends APIBase {
 
         const refresh = (async () => {
             if (useMessage) message.fetch.loading()
-            setData(await this.dataHook(options))
-            if (useMessage) message.fetch.success();
+            try {
+                setData(await this.dataHook(options))
+                if (useMessage) message.fetch.success()
+            } catch (e: any) {
+                if (useMessage) message.fetch.error(e)
+            }
         })
         useEffect(() => {
             refresh();
         }, [options])
-
+        const self = this
         const update = async (value?: T) => {
             if (useMessage) message.update.loading()
-            if (value != undefined) await this.updateHook(value)
-            else if (data != undefined) await this.updateHook(data)
-            if (useMessage) message.update.success();
+            try {
+                if (value != undefined) await self.updateHook(value)
+                else if (data != undefined) await self.updateHook(data)
+                if (useMessage) message.update.success()
+            } catch (e: any) {
+                if (useMessage) message.update.error(e)
+            }
         }
+
         return {
             data, setData, refresh, setOptions,
             messageContext: message.contextHolder,
@@ -94,6 +139,6 @@ export class APIDataResourceBase<T, Options = never> extends APIBase {
     }
 }
 
-export function useResource<T, OptionType>(cls: APIArrayResourceBase<T, OptionType> | APIDataResourceBase<T, OptionType>,) {
+export function useResource<T, OptionType>(cls: APIArrayResourceBase<T, OptionType>,) {
     return cls.useResource()
 }

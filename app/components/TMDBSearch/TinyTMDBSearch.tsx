@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode, useContext, useEffect, useState } from "react";
 import { API, NastoolMediaSearchResult, NastoolMediaSearchResultItem, NastoolMediaType, NastoolServerConfig } from "../../utils/api/api";
 import { AutoComplete, Form, Input, Radio, Space, theme, Image, Typography, Empty, Row, Col, Select, Skeleton, Button, Flex } from "antd";
-import { TMDB } from "../../utils/api/tmdb";
+import { TMDB } from "../../utils/api/media/tmdb";
 import { MediaIdentifyContext, MediaWork, MediaWorkType, SeriesKey } from "../../utils/api/types";
 import { SearchContext } from "./SearchContext";
 import { ServerConfig } from "@/app/utils/api/serverConfig";

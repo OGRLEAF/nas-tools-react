@@ -1,6 +1,6 @@
 import _ from "lodash";
-import { APIBase } from "./api_base";
-import { MediaIdentifyContext, MediaWorkType, SeriesKey } from "./types"
+import { APIBase } from "../api_base";
+import { MediaIdentifyContext, MediaWorkType, SeriesKey } from "../types"
 
 export type NameTestResultData = {
     type: MediaWorkType,

@@ -18,7 +18,7 @@ export function PathSelector({ value , onChange, style }: PathSelectorProps) {
     const [loadingState, setLoadingState] = useState(true)
     const [treeData, setTreeData] = useState<Omit<DefaultOptionType, 'label'>[]>([]);
 
-    const pathManagerContext = useContext(PathManagerContext);
+    const pathManagerContext = new PathManager("/") // useContext(PathManagerContext);
 
     useEffect(() => {
         if(value==undefined) {

@@ -176,6 +176,7 @@ export type DownloadDirConfig = {
 export type DownloadClientType = "qbittorrent";
 
 export type DownloadClientConfig = {
+    id?: number,
     name: string,
     type: DownloadClientType,
     enabled: boolean,
@@ -183,15 +184,12 @@ export type DownloadClientConfig = {
     only_nastool: boolean,
     match_path: boolean,
     rmt_mode: SyncMode,
-    rmt_mode_name: RmtMode,
     config: {
-        name: string
         host: string,
         port: number,
         username: string,
         password: string,
-        torrent_management: string,
-        download_dir: DownloadDirConfig[]
+        torrent_management: "default" | "manual" | "auto",
     },
     download_dir: DownloadDirConfig[]
 }
@@ -212,4 +210,20 @@ export class DownloadClient extends APIArrayResourceBase<DownloadClientConfig> {
         return this.list();
     }
 
+    protected async updateHook(value: DownloadClientConfig): Promise<void> {
+        await this.update(value)
+    }
+
+    public async update(config: DownloadClientConfig) {
+        const result = await (await this.API).post<DownloadClientConfigListResult>("download/client/add",
+            {
+                auth: true,
+                json: true,
+                data: {
+                    ...config
+                }
+            }
+        )
+        return result
+    }
 }

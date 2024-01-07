@@ -1,7 +1,7 @@
 import _ from "lodash";
-import { DBMediaType } from "./api";
-import { APIBase } from "./api_base";
-import { MediaIdentifyContext, MediaWork, MediaWorkEpisode, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "./types"
+import { DBMediaType } from "../api";
+import { APIBase } from "../api_base";
+import { MediaIdentifyContext, MediaWork, MediaWorkEpisode, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "../types"
 
 /*
       {

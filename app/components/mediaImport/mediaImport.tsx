@@ -7,7 +7,7 @@ import { MediaImportAction } from "./mediaImportContext";
 import { MediaWork, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
 import { asyncEffect, number_string_to_list } from "@/app/utils"
 import TinyTMDBSearch, { MediaDetailCard } from "../TMDBSearch/TinyTMDBSearch";
-import { TMDB } from "@/app/utils/api/tmdb";
+import { TMDB } from "@/app/utils/api/media/tmdb";
 import { ImportList } from "./mediaImportList";
 import { SearchContext, SearchContextProvider } from "../TMDBSearch/SearchContext";
 import _ from "lodash";

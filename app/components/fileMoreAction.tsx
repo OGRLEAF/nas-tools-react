@@ -8,9 +8,9 @@ import { usePathManager } from "./pathManager";
 import path from "path";
 import { ColumnsType } from "antd/es/table";
 import { MediaIdentifyContext, MediaWork, MediaWorkType, SeriesKey } from "../utils/api/types";
-import { MediaIdentify } from "../utils/api/mediaIdentify";
+import { MediaIdentify } from "../utils/api/media/mediaIdentify";
 import { asyncEffect } from "../utils";
-import { TMDB } from "../utils/api/tmdb";
+import { TMDB } from "../utils/api/media/tmdb";
 import { set } from "lodash";
 import { IdentifyHistory } from "./mediaImport/mediaImportContext";
 

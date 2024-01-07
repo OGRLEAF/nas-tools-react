@@ -13,6 +13,7 @@ type NastoolApi =
     "media/tv/seasons" |
     "media/tv/episodes" |
     "media/cache" |
+    "media/category/list" |
     "service/name/test" |
     "page/brief" |
     "page/listdir" |
@@ -32,6 +33,7 @@ type NastoolApi =
     "download/start" |
     "download/stop" |
     "download/remove" |
+    "download/client/add" |
     "library/mediaserver/library" |
     "library/mediaserver/library/item" |
     "filterrule/list/basic" |

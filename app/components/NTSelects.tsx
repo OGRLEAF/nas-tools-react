@@ -2,9 +2,11 @@
 import React, { useEffect, useState } from "react"
 import { createContext } from "vm"
 import { API, NastoolFilterruleBasic, NastoolIndexer, NastoolSiteInfo, NastoolSiteProfile } from "../utils/api/api"
-import { Select } from "antd"
+import { Select, Space } from "antd"
 import { Sites } from "../utils/api/sites"
 import { syncModeMap } from "../utils/api/sync"
+import { MediaWorkType } from "../utils/api/types"
+import { MediaWorkCategory, MediaWorkCategoryType } from "../utils/api/media/category"
 
 interface FormItemProp<T> {
     value?: T,
@@ -127,5 +129,52 @@ export const SyncModeSelect = (options: FormItemProp<string[]>) => {
 }
 
 export const PromotionSelect = (options: FormItemProp<string[]>) => {
-    
+
+}
+
+const mediaWorkTypeOption = [
+    {
+        value: "",
+        label: "全部"
+    },
+    {
+        value: MediaWorkType.ANI,
+        label: "动漫"
+    },
+    {
+        value: MediaWorkType.TV,
+        label: "电视剧"
+    },
+    {
+        value: MediaWorkType.MOVIE,
+        label: "电影"
+    }
+]
+export const MediaWorkTypeSelect = (options: FormItemProp<MediaWorkType | "">) => {
+    return <Select options={mediaWorkTypeOption} value={options.value} onChange={options.onChange} ></Select>
+}
+
+interface MediaWorkCategorySelectProp extends FormItemProp<MediaWorkCategoryType> {
+    type: MediaWorkType
+}
+export const MediaWorkCategorySelect = (options: MediaWorkCategorySelectProp) => {
+    const { data, refresh } = new MediaWorkCategory(options.type).useResource();
+    useEffect(() => {
+        refresh();
+    }, [options.type])
+    const categoryOptions = [{ value: "", label: "全部" }, ...(data?.map((v) => ({ value: v, label: v })) ?? [])];
+    return <Select options={categoryOptions} value={options.value} onChange={options.onChange} ></Select>
+}
+
+export const MediaWorkCategoryUnionSelect = (options: FormItemProp<[MediaWorkType | "", MediaWorkCategoryType]>) => {
+    const [type, category] = options.value ?? ["", ""];
+    const [selectedType, setSelectedType] = useState<MediaWorkType | "">(type)
+    const [selectedCat, setSelectedCat] = useState<MediaWorkCategoryType>(category)
+    useEffect(() => {
+        options.onChange?.([selectedType, selectedCat])
+    }, [selectedCat, selectedType])
+    return <Space.Compact style={{ width: "100%" }}>
+        {type != undefined ? <MediaWorkTypeSelect value={selectedType} onChange={(value) => setSelectedType(value)} /> : <></>}
+        {(selectedType != "") && (category != undefined) ? <MediaWorkCategorySelect type={selectedType} value={selectedCat} onChange={(value) => { setSelectedCat(value) }} /> : <></>}
+    </Space.Compact>
 }

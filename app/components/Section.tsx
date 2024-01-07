@@ -1,3 +1,4 @@
+"use client"
 import { Button, Dropdown, Flex, InputNumber, Space, Typography, } from 'antd'
 import React, { useEffect, useState, createContext, useContext } from 'react'
 import { RedoOutlined } from "@ant-design/icons"
