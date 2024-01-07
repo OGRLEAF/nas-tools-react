@@ -1,6 +1,5 @@
 
 import React, { useEffect, useState } from "react"
-import { createContext } from "vm"
 import { API, NastoolFilterruleBasic, NastoolIndexer, NastoolSiteInfo, NastoolSiteProfile } from "../utils/api/api"
 import { Select, Space } from "antd"
 import { Sites } from "../utils/api/sites"
