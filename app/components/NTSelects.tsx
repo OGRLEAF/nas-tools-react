@@ -172,6 +172,9 @@ export const MediaWorkCategoryUnionSelect = (options: FormItemProp<[MediaWorkTyp
     useEffect(() => {
         options.onChange?.([selectedType, selectedCat])
     }, [selectedCat, selectedType])
+    useEffect(()=>{
+        setSelectedCat("")
+    }, [selectedType])
     return <Space.Compact style={{ width: "100%" }}>
         {type != undefined ? <MediaWorkTypeSelect value={selectedType} onChange={(value) => setSelectedType(value)} /> : <></>}
         {(selectedType != "") && (category != undefined) ? <MediaWorkCategorySelect type={selectedType} value={selectedCat} onChange={(value) => { setSelectedCat(value) }} /> : <></>}

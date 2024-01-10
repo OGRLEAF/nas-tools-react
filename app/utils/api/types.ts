@@ -224,7 +224,10 @@ export interface MediaFile {
   key                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               : string,
   path: string,
   metadata: {
-    codec?: any,
+    vcodec?: any,
+    acodec?: any,
+    resolution?: [number, number],
+    bitDepth: string,
     releaseGroup?: string,
   }
   rels: MediaExternalFile[]

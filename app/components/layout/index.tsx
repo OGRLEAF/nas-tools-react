@@ -18,7 +18,7 @@ import {
   VerticalAlignBottomOutlined,
   BellOutlined
 } from '@ant-design/icons';
-import { IconBookBookMark, IconCalendarDaysSolid, IconCustomSolid, IconDatabase, IconDownloader, IconFilmSolid, IconFilter, IconFolderTreeSolid, IconHistory, IconIndexer, IconLink, IconLoading, IconMediaSolid, IconRefresh, IconRssSolid, IconTvSolid } from '../icons';
+import { IconBookBookMark, IconCalendarDaysSolid, IconCustomSolid, IconDatabase, IconDownloader, IconFilmSolid, IconFilter, IconFolderTreeSolid, IconHistory, IconIndexer, IconLink, IconLoading, IconMediaServer, IconMediaSolid, IconRefresh, IconRssSolid, IconTvSolid } from '../icons';
 import type { MenuProps } from 'antd';
 import { Breadcrumb, Divider, Layout, Menu, theme } from 'antd';
 
@@ -97,7 +97,8 @@ const getMenuItems = async () => {
       getItem("消息通知", "/setting/notification", <BellOutlined />),
       getItem("过滤规则", "/setting/filterrule", <IconFilter />),
       getItem("索引器", "/setting/indexers", <IconIndexer />),
-      getItem("下载器", "/setting/downloader", <IconDownloader />)
+      getItem("下载器", "/setting/downloader", <IconDownloader />),
+      getItem("媒体服务器", "/setting/mediaserver", <IconMediaServer />)
     ]),
   ];
   return items;

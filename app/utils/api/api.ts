@@ -142,6 +142,27 @@ export type NastoolServerConfig = {
         media_default_path: string,
         nfo_poster: boolean
     },
+    jellyfin:{
+        host: string,
+        api_key: string,
+        path_map: string[],
+        play_host: string,
+    },
+    emby: {
+        host: string,
+        api_key:string,
+        path_map: string[],
+        play_host: string,
+    },
+    plex: {
+        host: string,
+        servername: string,
+        username: string,
+        password: string,
+        token: string,
+        path_map: string[],
+        play_host: string,
+    },
     laboratory: {
         use_douban_titles: boolean
     },

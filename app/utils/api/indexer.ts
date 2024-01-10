@@ -36,7 +36,6 @@ export class IndexerEnabledSites extends APIDataResourceBase<IndexerSite['id'][]
     constructor() {
         super();
         this.setting = new ServerConfig()
-        console.log(this.setting)
     }
     async list() {
         const setting = this.setting.get();
@@ -48,7 +47,6 @@ export class IndexerEnabledSites extends APIDataResourceBase<IndexerSite['id'][]
     }
 
     protected async updateHook(value: string[]): Promise<boolean> {
-        console.log(this)
         this.setting.update({
             pt: {
                 indexer_sites: value

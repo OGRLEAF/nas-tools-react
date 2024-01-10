@@ -153,10 +153,7 @@ export function MovieMediaImportGroup(props: MediaImportGroupProps) {
             postImageStyle={{ width: 100 }}
             mediaDetail={work} size="small"
             onTitleClick={(mediaWork) => { setSeries(mediaWork.series) }}
-            action={<Space>
-                {selectButton}
-                {searchButton}
-            </Space>}
+            action={<Space>{selectButton}{searchButton}</Space>}
         /> : <>{props.seriesKey.t}</>}
     </div>
 

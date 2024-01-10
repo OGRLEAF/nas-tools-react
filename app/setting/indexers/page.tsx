@@ -1,11 +1,10 @@
 "use client"
 import { Section } from "@/app/components/Section";
 import { TagCheckboxGroup, TagCheckboxGroupProps } from "@/app/components/TagCheckbox";
-import { useResource } from "@/app/utils/api/api_base";
 import { IndexerEnabledSites, IndexerSite, Indexers } from "@/app/utils/api/indexer";
 import { Button, Space } from "antd";
-import _, { update } from "lodash";
-import React, { useEffect, useMemo, useState } from "react";
+import _ from "lodash";
+import React, { useState } from "react";
 
 export default function IndexersSetting() {
     return <Section title="索引器">

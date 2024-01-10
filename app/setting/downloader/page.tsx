@@ -218,22 +218,23 @@ function DownloadClientConfigForm({ record }: { record?: DownloadClientConfig })
         </Form.Item>
         <ConfigForm />
         <Row gutter={16}>
-            <Col span={6}>
+            <Col span={8}>
                 <Form.Item name="rmt_mode" label="转移方式" >
                     <SyncModeSelect />
                 </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col span={4}></Col>
+            <Col span={4}>
                 <Form.Item name="transfer" label="监控" valuePropName="checked">
                     <Switch />
                 </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col span={4}>
                 <Form.Item name="match_path" label="目录隔离" valuePropName="checked">
                     <Switch />
                 </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col span={4}>
                 <Form.Item name="only_nastool" label="标签隔离" valuePropName="checked">
                     <Switch />
                 </Form.Item>

@@ -1,6 +1,6 @@
 import { MouseEventHandler, useContext, useState } from "react";
 import { CardProps, CardnFormContext, CardnFormContextType, CardnFormProps } from ".";
-import { Button, Card, Drawer, Modal } from "antd";
+import { Button, Card, Drawer, Modal, Space } from "antd";
 import { CloseOutlined } from "@ant-design/icons"
 
 export function ListItemCard<T>({ record, cardProps}: { record: T, cardProps: (record: T) => CardProps }) {
@@ -67,9 +67,9 @@ export function ListItemCard<T>({ record, cardProps}: { record: T, cardProps: (r
 
 export function ListItemCardList<T>({ cardProps }: { cardProps: (record: T) => CardProps }) {
     const ctx = useContext<CardnFormContextType<T>>(CardnFormContext);
-    return <>
+    return <Space>
         {
             Object.entries(ctx.data).map(([key, config]) => <ListItemCard key={key} record={config} cardProps={cardProps} />)
         }
-    </>
+    </Space>
 }

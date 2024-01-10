@@ -36,10 +36,7 @@ export default function DirectorySyncPage() {
                 <Descriptions.Item label="识别重命名">{record.rename ? "开" : "关"}</Descriptions.Item>
                 {/* <Descriptions.Item label="">{record ? "开" : "关"}</Descriptions.Item> */}
             </Descriptions>
-        })}>
-
-        </CollapsableList>
-
+        })} />
     </CardnForm>
 }
 
