@@ -30,8 +30,12 @@ export function MediaDetailCard({
                     <Image
                         style={{ width: 200, objectFit: "contain", }}
                         src={mediaDetail.image} />
-                    <Typography style={{ paddingTop: 15 }}>
-                        <Typography.Text style={{ color: token.colorTextLightSolid }}>{mediaDetail.overview}</Typography.Text>
+                    <Typography style={{ paddingTop: 15, }}>
+                        <div style={{ maxHeight: 150, overflowY: "auto" }}>
+                            <Typography.Text style={{ color: token.colorTextLightSolid, }}>
+                                {mediaDetail.overview}
+                            </Typography.Text>
+                        </div>
                         <Typography.Title level={2} style={{ color: token.colorTextLightSolid }}>{mediaDetail.title}
                             <span style={{ fontSize: "0.7em" }}> ({mediaDetail.year})</span>
                         </Typography.Title>
