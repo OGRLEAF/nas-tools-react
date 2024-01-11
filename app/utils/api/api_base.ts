@@ -14,16 +14,21 @@ export class APIBase {
 }
 
 export interface APIResourceOption {
-    useMessage?: boolean
+    useMessage?: boolean,
+    refreshInterval?: number,
 }
 
 export interface APIArrayResourceOption extends APIResourceOption {
 
 }
 
+export interface APIArrayResource<T, Options = never> {
+}
 
+export abstract class APIArrayResource<T, Options = never> extends APIBase {
+}
 
-export class APIArrayResourceBase<T, Options = never> extends APIBase {
+export class APIArrayResourceBase<T, Options = never> extends APIArrayResource<T, Options> {
 
     // public abstract list(): Promise<T[]>;
 
@@ -35,14 +40,16 @@ export class APIArrayResourceBase<T, Options = never> extends APIBase {
 
     }
 
+    protected addHook?(value: T): Promise<boolean>;
+
+    protected deleteHook?(value: T): Promise<boolean>;
+
     protected async updateManyHook(value: T[]) {
 
     }
 
 
     public useResource(option?: APIArrayResourceOption) {
-
-        const [options, setOptions] = useState<Options>()
 
         const message = useSubmitMessage(String(this));
         const useMessage = option?.useMessage ?? false;
@@ -57,27 +64,53 @@ export class APIArrayResourceBase<T, Options = never> extends APIBase {
                 if (useMessage) message.update.error(e)
             }
         }
-        return {
-            useList: function () {
-                const [list, setList] = useState<T[]>()
-                const refresh = (async () => {
-                    if (useMessage) message.fetch.loading()
-                    try {
-                        setList(await self.listHook(options))
-                        if (useMessage) message.fetch.success()
-                    } catch (e: any) {
-                        if (useMessage) message.fetch.error(e)
-                    }
 
-                })
-                useEffect(() => {
-                    refresh();
-                }, [options])
-                return {
-                    list, setList, refresh
-                }
+        const add = self.addHook == undefined ? undefined : async (value: T) => {
+            if (useMessage) message.update.loading()
+            try {
+                if (value != undefined) await self.addHook?.(value)
+                if (useMessage) message.update.success()
+            } catch (e: any) {
+                if (useMessage) message.update.error(e)
             }
-            , setOptions,
+        }
+
+        const del = self.deleteHook == undefined ? undefined : async (value: T) => {
+            if (useMessage) message.update.loading()
+            try {
+                if (value != undefined) await self.deleteHook?.(value)
+                if (useMessage) message.update.success()
+            } catch (e: any) {
+                if (useMessage) message.update.error(e)
+            }
+        }
+
+        function useList() {
+            const [options, setOptions] = useState<Options>()
+            const [list, setList] = useState<T[]>()
+            const refresh = (async () => {
+                if (useMessage) message.fetch.loading()
+                try {
+                    setList(await self.listHook(options))
+                    if (useMessage) message.fetch.success()
+                } catch (e: any) {
+                    if (useMessage) message.fetch.error(e)
+                }
+            })
+            useEffect(() => {
+                refresh();
+            }, [options])
+            return {
+                list, setList, refresh
+            }
+        }
+        let useListCache: ReturnType<typeof useList>;
+        return {
+            useList: () => {
+                useListCache = useListCache ?? useList();
+                return useListCache;
+            },
+            add, del,
             updateMany: this.updateManyHook,
             messageContext: message.contextHolder,
             update: update,

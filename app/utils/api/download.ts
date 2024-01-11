@@ -214,6 +214,10 @@ export class DownloadClient extends APIArrayResourceBase<DownloadClientConfig> {
         await this.update(value)
     }
 
+    protected async addHook(value: DownloadClientConfig): Promise<boolean> {
+        await this.update(value);
+        return true;
+    }
     public async update(config: DownloadClientConfig) {
         const result = await (await this.API).post<DownloadClientConfigListResult>("download/client/add",
             {

@@ -1,18 +1,14 @@
 "use client"
-import CardnForm, { CardnFormContext } from "@/app/components/CardnForm"
-import { ListItemCardList } from "@/app/components/CardnForm/ListItemCard"
-import { MediaLibrarySelect } from "@/app/components/LibraryPathSelector"
-import { MediaWorkCategorySelect, MediaWorkCategoryUnionSelect, MediaWorkTypeSelect, SyncModeSelect } from "@/app/components/NTSelects"
+import { Cards, CardsForm } from "@/app/components/CardsForm"
+import { MediaWorkCategoryUnionSelect, SyncModeSelect } from "@/app/components/NTSelects"
 import { PathSelector } from "@/app/components/PathSelector"
-import { Section } from "@/app/components/Section"
-import { DownloadClient, DownloadClientConfig, DownloadClientType, DownloadDirConfig } from "@/app/utils/api/download"
+import { DownloadClient, DownloadClientConfig, DownloadClientType } from "@/app/utils/api/download"
 import { MediaWorkCategoryType } from "@/app/utils/api/media/category"
 import { MediaWorkType, SyncMode } from "@/app/utils/api/types"
-import { PlusOutlined, DeleteOutlined, SettingOutlined } from "@ant-design/icons"
-import { Button, CheckboxOptionType, Col, Divider, Flex, Form, Input, Radio, Row, Select, Space, Switch } from "antd"
+import { PlusOutlined, DeleteOutlined } from "@ant-design/icons"
+import { Button, CheckboxOptionType, Col, Divider, Flex, Form, Input, InputNumber, Radio, Row, Select, Space, Switch, Tag } from "antd"
 import { useForm } from "antd/es/form/Form"
-import Link from "next/link"
-import React, { useContext, useMemo } from "react"
+import React, { useMemo } from "react"
 
 export interface DownloadClientProps {
     cover: React.ReactNode,
@@ -33,28 +29,21 @@ const downloadClientConfigs: Record<DownloadClientConfig['type'], DownloadClient
 }
 
 export default function DownloaderSetting() {
-    const downloadClient = new DownloadClient();
-    return <CardnForm<DownloadClientConfig>
-        title="下载器"
-        onFetch={() => downloadClient.list()}
-        formRender={DownloadClientConfigForm}
-        sectionExtra={<>
-            <Link href="downloader/download">
-                <Button icon={<SettingOutlined />}>下载设置</Button>
-            </Link>
-        </>}
+    return <CardsForm<DownloadClientConfig, DownloadClient>
+        resource={DownloadClient}
+        title={"媒体服务器"}
+        formComponent={DownloadClientConfigForm}
     >
-        <ListItemCardList
+        <Cards
             cardProps={(record: DownloadClientConfig) => {
                 const config = downloadClientConfigs[record.type];
-                return {
-                    title: record.name,
+                return ({
+                    title: <Space>{record.enabled ? <Tag color="green">启用</Tag> : <></>}<span>{record.name}</span></Space>,
                     cover: config.cover,
-                    description: record.type
-                }
-            }}
-        />
-    </CardnForm>
+                    description: <></>
+                })
+            }} />
+    </CardsForm>
 }
 
 const DownloadClientOptions: CheckboxOptionType[] = Object.entries(downloadClientConfigs).map(([type, config]) => ({
@@ -88,8 +77,8 @@ export type DownloadClientFormData = {
 }
 
 
-function DownloadClientConfigForm({ record }: { record?: DownloadClientConfig }) {
-    const { update, messageContext } = new DownloadClient().useResource({ useMessage: true });
+function DownloadClientConfigForm({ record, onChange }: { record?: DownloadClientConfig, onChange?: (value: DownloadClientConfig) => void }) {
+
     const [form] = useForm();
     const clientType = Form.useWatch<DownloadClientConfig['type']>('type', form);
     const ConfigForm = useMemo(() => {
@@ -119,12 +108,10 @@ function DownloadClientConfigForm({ record }: { record?: DownloadClientConfig })
             })) ?? []
         },
     }
-    const ctx = useContext(CardnFormContext);
     const onFinish = (value: DownloadClientFormData) => {
-
         const { name, type, enabled, transfer, only_nastool, match_path, rmt_mode, config } = { ...clientFormData, ...value };
         const { username, password, host, port, torrent_management } = config
-        update({
+        onChange?.({
             id: record?.id,
             name,
             type,
@@ -147,42 +134,39 @@ function DownloadClientConfigForm({ record }: { record?: DownloadClientConfig })
             <Divider orientation="left" orientationMargin="0">下载目录设置</Divider>
             {
                 fields.map((field) => {
-                    return (
-                        <div key={field.key}>
+                    return (<div key={field.key}>
+                        <Row gutter={16}>
+                            <Col span={16}>
+                                <Form.Item style={{ marginBottom: 5 }} name={[field.name, "category"]} label="媒体类型"     >
+                                    <MediaWorkCategoryUnionSelect />
+                                </Form.Item>
+                            </Col>
+                            <Col span={8}>
+                                <Form.Item name={[field.name, "label"]} label="分类名">
+                                    <Input />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Row gutter={16} >
 
-                            <Row gutter={16}>
-                                <Col span={16}>
-                                    <Form.Item style={{ marginBottom: 5 }} name={[field.name, "category"]} label="媒体类型"     >
-                                        <MediaWorkCategoryUnionSelect />
-                                    </Form.Item>
-                                </Col>
-                                <Col span={8}>
-                                    <Form.Item name={[field.name, "label"]} label="分类名">
-                                        <Input />
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-                            <Row gutter={16} >
-
-                                <Col span={8}>
-                                    <Form.Item name={[field.name, "save_path"]} label="下载器内路径" >
-                                        <Input />
-                                    </Form.Item>
-                                </Col>
-                                <Col span={16}>
-                                    <Form.Item name={[field.name, "container_path"]} label="本地路径" >
-                                        <PathSelector />
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col span={2}>
-                                    <Button size="small" danger icon={<DeleteOutlined />} onClick={() => remove(field.name)}>删除</Button>
-                                </Col>
-                            </Row>
-                            <Divider />
-                        </div>
-                    )
+                            <Col span={8}>
+                                <Form.Item name={[field.name, "save_path"]} label="下载器内路径" >
+                                    <Input />
+                                </Form.Item>
+                            </Col>
+                            <Col span={16}>
+                                <Form.Item name={[field.name, "container_path"]} label="本地路径" >
+                                    <PathSelector />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col span={2}>
+                                <Button size="small" danger icon={<DeleteOutlined />} onClick={() => remove(field.name)}>删除</Button>
+                            </Col>
+                        </Row>
+                        <Divider />
+                    </div>)
                 }
                 )
             }
@@ -199,7 +183,6 @@ function DownloadClientConfigForm({ record }: { record?: DownloadClientConfig })
     return <Form form={form} layout="vertical"
         onFinish={(value: any) => { onFinish(value); }}
         initialValues={clientFormData}>
-        {messageContext}
         <Row gutter={16}>
             <Col span={20}>
                 <Form.Item label="名称" name="name">
@@ -259,7 +242,7 @@ function QbittorentForm() {
             </Col>
             <Col span={12}>
                 <Form.Item label="端口" name={["config", "port"]}>
-                    <Input />
+                    <InputNumber min={0} max={65535} />
                 </Form.Item>
             </Col>
         </Row>

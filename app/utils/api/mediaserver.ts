@@ -19,7 +19,7 @@ export interface PlexOptions {
     password: string,
     token: string,
 }
-// export interface 
+
 
 export interface MediaServerConfig {
     host: string,
@@ -63,9 +63,12 @@ export class MediaServer extends APIArrayResourceBase<MediaServerConfig> {
             }
         }]
     }
+    protected listHook(options?: undefined): Promise<MediaServerConfig[]> {
+        return this.list();
+    }
     public async update(config: MediaServerConfig) {
         if (config.options.type == "jellyfin") {
-            new ServerConfig().update({
+            await new ServerConfig().update({
                 jellyfin: {
                     host: config.host,
                     api_key: config.options.api_key,
@@ -75,7 +78,7 @@ export class MediaServer extends APIArrayResourceBase<MediaServerConfig> {
             } as NastoolServerConfig)
         }
         else if (config.options.type == "emby") {
-            new ServerConfig().update({
+            await new ServerConfig().update({
                 emby: {
                     host: config.host,
                     api_key: config.options.api_key,
@@ -86,7 +89,7 @@ export class MediaServer extends APIArrayResourceBase<MediaServerConfig> {
         } else if (config.options.type == "plex") {
             const { host, options, pathMap, playhost } = config;
             const { servername, username, password, token } = options;
-            new ServerConfig().update({
+            await new ServerConfig().update({
                 plex: {
                     host: host,
                     servername: servername,

@@ -1,7 +1,9 @@
 "use client"
 import CardnForm from "@/app/components/CardnForm";
 import { ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
+import { CardsForm, CardProps, Cards } from "@/app/components/CardsForm";
 import { NastoolServerConfig } from "@/app/utils/api/api";
+import { APIArrayResourceBase } from "@/app/utils/api/api_base";
 import { MediaServer, MediaServerConfig } from "@/app/utils/api/mediaserver";
 import { Button, Divider, Form, Input, Space, Tag } from "antd";
 import React, { useMemo } from "react";
@@ -41,27 +43,24 @@ const mediaserverConfigs: Record<MediaServerConfig['options']['type'], MediaServ
 }
 
 export default function MediaServerPage() {
-
-    return <CardnForm<MediaServerConfig>
-        title="媒体服务器"
-        onFetch={async (): Promise<MediaServerConfig[]> => {
-            return new MediaServer().list();
-        }}
-        formRender={MediaServerForm}
+    return <CardsForm<MediaServerConfig, MediaServer>
+        resource={MediaServer}
+        title={"媒体服务器"}
+        formComponent={MediaServerForm}
     >
-        <ListItemCardList cardProps={(record: MediaServerConfig) => {
-            const config = mediaserverConfigs[record.options.type];
-            return ({
-                title: config.title,
-                cover: config.cover,
-                description: <></>
-            })
-        }} />
-    </CardnForm>
+        <Cards
+            cardProps={(record: MediaServerConfig) => {
+                const config = mediaserverConfigs[record.options.type];
+                return ({
+                    title: config.title,
+                    cover: config.cover,
+                    description: <></>
+                })
+            }} />
+    </CardsForm>
 }
 
-function MediaServerForm({ record }: { record?: MediaServerConfig }) {
-    const { update, messageContext } = new MediaServer().useResource({ useMessage: true });
+function MediaServerForm({ record, onChange }: { record?: MediaServerConfig, onChange?: (value: MediaServerConfig) => void }) {
     const [form] = Form.useForm();
     const clientType = record?.options.type;
     const ConfigForm = useMemo(() => {
@@ -72,12 +71,11 @@ function MediaServerForm({ record }: { record?: MediaServerConfig }) {
 
     }, [clientType])
     return <>
-        {messageContext}
         <Form form={form}
             initialValues={record}
             layout="vertical"
             onFinish={(value: MediaServerConfig) => {
-                update({ ...record, ...value, options: { ...record?.options, ...value.options } })
+                onChange?.({ ...record, ...value, options: { ...record?.options, ...value.options } })
             }}
         >
             <Form.Item name="host" label="服务器地址">
