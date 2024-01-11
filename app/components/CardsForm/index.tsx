@@ -2,8 +2,8 @@
 import { APIArrayResourceBase, useResource } from "@/app/utils/api/api_base";
 import React, { useEffect, useState, createContext, useContext, MouseEventHandler } from "react";
 import { Section } from "../Section";
-import { Button, Card, Drawer, Modal, Space } from "antd";
-import { PlusOutlined, CloseOutlined } from "@ant-design/icons"
+import { Button, ButtonProps, Card, Drawer, Modal, Space } from "antd";
+import { PlusOutlined, CloseOutlined, CheckOutlined, RetweetOutlined, ExclamationOutlined } from "@ant-design/icons"
 
 export interface CardsFormProps<T, API extends APIArrayResourceBase<T>> {
     resource: new () => API,
@@ -17,7 +17,7 @@ export interface CardProps<T, API extends APIArrayResourceBase<T>> {
     cover?: React.ReactNode,
     title: React.ReactNode,
     description: React.ReactNode,
-    extra?: (resource: API) => void
+    extra?: (resource: ReturnType<API['useResource']>) => React.ReactNode
 }
 
 export interface CardsFormContextType<T, API extends APIArrayResourceBase<T>> {
@@ -61,14 +61,40 @@ export function CardsForm<T, API extends APIArrayResourceBase<T>>(options: Cards
             <Drawer open={openCreateDrawer} size="large" onClose={() => setOpenCreateDrawer(false)}>
                 <FormComponent onChange={(value) => {
                     add?.(value)
-                    .then(()=>{
-                        setOpenCreateDrawer(false);
-                        refresh();
-                    })
+                        .then(() => {
+                            setOpenCreateDrawer(false);
+                        })
                 }}></FormComponent>
             </Drawer>
         </CardsFormContext.Provider>
     </Section>
+}
+
+export function TestButton<T, API extends APIArrayResourceBase<T>>(props: {
+    record: () => T,
+    resource?: ReturnType<API['useResource']>,
+} & ButtonProps) {
+
+    const ctx = useCardsFormContext<T, API>();
+    const val = props.resource?.val ?? ctx.resource.val;
+    const [result, setResult] = useState<boolean | undefined>(undefined);
+    const [loading, setLoading] = useState(false);
+    if (val) {
+        return <Button type={props.type} size={props.size} loading={loading}
+            icon={result == undefined ? <RetweetOutlined /> :
+                result ? <CheckOutlined /> : <ExclamationOutlined />}
+            onClick={(evt) => {
+                setLoading(true);
+                evt.stopPropagation();
+                val(props.record()).then((value) => {
+                    console.log(value)
+                    setResult(value)
+                    setLoading(false);
+                });
+            }} >测试</Button>
+    } else {
+        return undefined
+    }
 }
 
 export function Cards<T, API extends APIArrayResourceBase<T>>({ cardProps }: { cardProps: (record: T) => CardProps<T, API> }) {
@@ -86,7 +112,6 @@ export function Cards<T, API extends APIArrayResourceBase<T>>({ cardProps }: { c
 
 function ListItemCard<T, API extends APIArrayResourceBase<T>>({ record, cardProps }: { record: T, cardProps: CardProps<T, API> }) {
     const ctx = useCardsFormContext<T, API>();
-    const { refresh } = ctx.resource.useList();
     const FormComponent = ctx.options.formComponent;
     const props = cardProps;
     const coverCard = props.cover != undefined;
@@ -108,18 +133,17 @@ function ListItemCard<T, API extends APIArrayResourceBase<T>>({ record, cardProp
         actions.push(<Button key="delete_button" danger icon={<CloseOutlined />} onClick={onDelete} type="text"></Button>)
     }
 
+    if (cardProps.extra) {
+        actions.push(cardProps.extra(ctx.resource))
+    }
     return <>
         <Card
             hoverable
             cover={props.cover}
             onClick={() => setOpen(true)}
             title={coverCard ? undefined : props.title}
-            extra={
-                coverCard ? undefined : actions
-            }
-            actions={
-                !coverCard ? undefined : actions
-            }
+            extra={coverCard ? undefined : actions}
+            actions={!coverCard ? undefined : actions}
             style={{
                 width: coverCard ? "320px" : undefined
             }}
@@ -133,7 +157,6 @@ function ListItemCard<T, API extends APIArrayResourceBase<T>>({ record, cardProp
             <FormComponent onChange={(value) => {
                 ctx.resource.update(value).then(() => {
                     setOpen(false);
-                    refresh();
                 })
             }} record={record} />
         </Drawer>

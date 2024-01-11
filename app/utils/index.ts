@@ -115,6 +115,7 @@ export function useSubmitMessage(key: string) {
         error,
         loading,
         handle,
+        bundle,
         update,
         fetch
     }

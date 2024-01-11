@@ -1,12 +1,12 @@
 "use client"
-import { Cards, CardsForm } from "@/app/components/CardsForm"
+import { Cards, CardsForm, TestButton } from "@/app/components/CardsForm"
 import { MediaWorkCategoryUnionSelect, SyncModeSelect } from "@/app/components/NTSelects"
 import { PathSelector } from "@/app/components/PathSelector"
 import { DownloadClient, DownloadClientConfig, DownloadClientType } from "@/app/utils/api/download"
 import { MediaWorkCategoryType } from "@/app/utils/api/media/category"
 import { MediaWorkType, SyncMode } from "@/app/utils/api/types"
-import { PlusOutlined, DeleteOutlined } from "@ant-design/icons"
-import { Button, CheckboxOptionType, Col, Divider, Flex, Form, Input, InputNumber, Radio, Row, Select, Space, Switch, Tag } from "antd"
+import { PlusOutlined, DeleteOutlined, RetweetOutlined } from "@ant-design/icons"
+import { Button, CheckboxOptionType, Col, Divider, Flex, Form, Input, InputNumber, Radio, Row, Select, Space, Switch, Tag, theme } from "antd"
 import { useForm } from "antd/es/form/Form"
 import React, { useMemo } from "react"
 
@@ -29,18 +29,27 @@ const downloadClientConfigs: Record<DownloadClientConfig['type'], DownloadClient
 }
 
 export default function DownloaderSetting() {
+    const { token } = theme.useToken();
     return <CardsForm<DownloadClientConfig, DownloadClient>
         resource={DownloadClient}
         title={"媒体服务器"}
         formComponent={DownloadClientConfigForm}
     >
-        <Cards
+        <Cards<DownloadClientConfig, DownloadClient>
             cardProps={(record: DownloadClientConfig) => {
                 const config = downloadClientConfigs[record.type];
                 return ({
-                    title: <Space>{record.enabled ? <Tag color="green">启用</Tag> : <></>}<span>{record.name}</span></Space>,
+                    title: <span>{record.name}</span>,
                     cover: config.cover,
-                    description: <></>
+                    description: <>{record.enabled ? <Tag color={token.colorSuccess} bordered={false}>启用</Tag> : <Tag color={token.colorInfo}>停用</Tag>}</>,
+                    extra: (resource) => {
+                        return <Button icon={<RetweetOutlined />} type="text"
+                            onClick={(evt) => {
+                                evt.stopPropagation();
+                                resource.val?.(record);
+                            }}
+                        />
+                    }
                 })
             }} />
     </CardsForm>
@@ -108,10 +117,10 @@ function DownloadClientConfigForm({ record, onChange }: { record?: DownloadClien
             })) ?? []
         },
     }
-    const onFinish = (value: DownloadClientFormData) => {
+    const convertToRecord = (value: DownloadClientFormData): DownloadClientConfig => {
         const { name, type, enabled, transfer, only_nastool, match_path, rmt_mode, config } = { ...clientFormData, ...value };
         const { username, password, host, port, torrent_management } = config
-        onChange?.({
+        return {
             id: record?.id,
             name,
             type,
@@ -126,7 +135,10 @@ function DownloadClientConfigForm({ record, onChange }: { record?: DownloadClien
                 type: category[0],
                 category: category[1]
             })) ?? []
-        })
+        }
+    }
+    const onFinish = (value: DownloadClientFormData) => {
+        onChange?.(convertToRecord(value));
     }
 
     const downloadDirList = (name: string) => <Form.List name={["config", name]}>
@@ -171,10 +183,8 @@ function DownloadClientConfigForm({ record, onChange }: { record?: DownloadClien
                 )
             }
             <Row>
-                <Button type="dashed" onClick={() => add({
-                    category: ["", ""],
-                    container_path: "/"
-                })} block icon={<PlusOutlined />}>
+                <Button type="dashed" block icon={<PlusOutlined />}
+                    onClick={() => add({ category: ["", ""], container_path: "/" })}>
                     增加
                 </Button>
             </Row>
@@ -226,9 +236,12 @@ function DownloadClientConfigForm({ record, onChange }: { record?: DownloadClien
 
         {downloadDirList("download_dir")}
         <br />
-        <Form.Item>
-            <Button htmlType="submit" type='primary'>保存</Button>
-        </Form.Item>
+        <Space>
+            <Form.Item noStyle>
+                <Button htmlType="submit" type='primary'>保存</Button>
+            </Form.Item>
+            <TestButton record={() => convertToRecord(form.getFieldsValue())} />
+        </Space>
     </Form>
 }
 

@@ -44,47 +44,14 @@ export class APIArrayResourceBase<T, Options = never> extends APIArrayResource<T
 
     protected deleteHook?(value: T): Promise<boolean>;
 
+    protected validateHook?(value: T): Promise<boolean>;
+
     protected async updateManyHook(value: T[]) {
 
     }
 
 
     public useResource(option?: APIArrayResourceOption) {
-
-        const message = useSubmitMessage(String(this));
-        const useMessage = option?.useMessage ?? false;
-
-        const self = this
-        const update = async (value: T) => {
-            if (useMessage) message.update.loading()
-            try {
-                if (value != undefined) await self.updateHook(value)
-                if (useMessage) message.update.success()
-            } catch (e: any) {
-                if (useMessage) message.update.error(e)
-            }
-        }
-
-        const add = self.addHook == undefined ? undefined : async (value: T) => {
-            if (useMessage) message.update.loading()
-            try {
-                if (value != undefined) await self.addHook?.(value)
-                if (useMessage) message.update.success()
-            } catch (e: any) {
-                if (useMessage) message.update.error(e)
-            }
-        }
-
-        const del = self.deleteHook == undefined ? undefined : async (value: T) => {
-            if (useMessage) message.update.loading()
-            try {
-                if (value != undefined) await self.deleteHook?.(value)
-                if (useMessage) message.update.success()
-            } catch (e: any) {
-                if (useMessage) message.update.error(e)
-            }
-        }
-
         function useList() {
             const [options, setOptions] = useState<Options>()
             const [list, setList] = useState<T[]>()
@@ -105,15 +72,72 @@ export class APIArrayResourceBase<T, Options = never> extends APIArrayResource<T
             }
         }
         let useListCache: ReturnType<typeof useList>;
+
+        const message = useSubmitMessage(String(this));
+        const deleteMessage = message.bundle("删除");
+        const validateMessage = message.bundle("测试");
+        const useMessage = option?.useMessage ?? false;
+
+        const self = this
+        const update = async (value: T) => {
+            if (useMessage) message.update.loading()
+            try {
+                if (value != undefined) await self.updateHook(value)
+                if (useMessage) message.update.success()
+                useListCache?.refresh?.();
+
+            } catch (e: any) {
+                if (useMessage) message.update.error(e)
+            }
+        }
+
+        const add = self.addHook == undefined ? undefined : async (value: T) => {
+            if (useMessage) message.update.loading()
+            try {
+                if (value != undefined) await self.addHook?.(value)
+                if (useMessage) message.update.success()
+                useListCache?.refresh?.();
+            } catch (e: any) {
+                if (useMessage) message.update.error(e)
+            }
+        }
+
+        const del = self.deleteHook == undefined ? undefined : async (value: T) => {
+            if (useMessage) deleteMessage.loading()
+            try {
+                if (value != undefined) await self.deleteHook?.(value)
+                if (useMessage) deleteMessage.success()
+                useListCache?.refresh?.();
+            } catch (e: any) {
+                if (useMessage) deleteMessage.error(e)
+            }
+        }
+
+        const val = self.validateHook == undefined ? undefined : async (value: T) => {
+            let result = undefined;
+            if (useMessage) validateMessage.loading()
+            try {
+                if (value != undefined) {
+                    result = await self.validateHook?.(value)
+                }
+                if (useMessage) validateMessage.success()
+            } catch (e: any) {
+                if (useMessage) validateMessage.error(e)
+            }
+            return result;
+        }
+
         return {
             useList: () => {
                 useListCache = useListCache ?? useList();
                 return useListCache;
             },
-            add, del,
+            add, del, val,
             updateMany: this.updateManyHook,
             messageContext: message.contextHolder,
+            message,
             update: update,
+            api: self
 
         }
     }

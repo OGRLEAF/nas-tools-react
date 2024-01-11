@@ -1,4 +1,4 @@
-import { APIBase, APIArrayResourceBase } from "./api_base";
+import { APIBase, APIArrayResourceBase, APIArrayResourceOption } from "./api_base";
 import { MediaWorkType, SyncMode } from "./types";
 import { ImportMode as RmtMode } from "./api"
 /**
@@ -205,6 +205,39 @@ export class DownloadClient extends APIArrayResourceBase<DownloadClientConfig> {
         )
         return Object.values(result.detail)
     }
+    public async update(config: DownloadClientConfig) {
+        const result = await (await this.API).post<DownloadClientConfigListResult>("download/client/add",
+            {
+                auth: true,
+                json: true,
+                data: {
+                    ...config
+                }
+            }
+        )
+        return result
+    }
+    public async delete(config: DownloadClientConfig) {
+        if (config.id == undefined) return false;
+        const result = await (await this.API).post("download/client/delete", {
+            auth: true,
+            data: {
+                did: config.id
+            }
+        })
+        return true;
+    }
+
+    public async test(config: DownloadClientConfig) {
+        const result = await (await this.API).post("download/client/test", {
+            auth: true,
+            data: {
+                test: 123,
+                type: config.type,
+                config: JSON.stringify(config.config)
+            }
+        })
+    }
 
     protected async listHook() {
         return this.list();
@@ -218,16 +251,29 @@ export class DownloadClient extends APIArrayResourceBase<DownloadClientConfig> {
         await this.update(value);
         return true;
     }
-    public async update(config: DownloadClientConfig) {
-        const result = await (await this.API).post<DownloadClientConfigListResult>("download/client/add",
-            {
-                auth: true,
-                json: true,
-                data: {
-                    ...config
-                }
-            }
-        )
-        return result
+    protected deleteHook(value: DownloadClientConfig): Promise<boolean> {
+        return this.delete(value);
     }
+
+    protected async validateHook(value: DownloadClientConfig): Promise<boolean> {
+        try {
+            await this.test(value);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    // public useResource(option?: APIArrayResourceOption) {
+    //     const superResource = super.useResource(option)
+    //     const { handle } = superResource.message;
+    //     const self = this;
+    //     async function test(value: DownloadClientConfig) {
+    //         handle(self.test(value), "测试")
+    //     }
+    //     return {
+    //         ...superResource,
+    //         test
+    //     }
+    // }
 }

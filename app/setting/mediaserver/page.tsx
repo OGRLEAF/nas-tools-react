@@ -1,7 +1,7 @@
 "use client"
 import CardnForm from "@/app/components/CardnForm";
 import { ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
-import { CardsForm, CardProps, Cards } from "@/app/components/CardsForm";
+import { CardsForm, CardProps, Cards, TestButton } from "@/app/components/CardsForm";
 import { NastoolServerConfig } from "@/app/utils/api/api";
 import { APIArrayResourceBase } from "@/app/utils/api/api_base";
 import { MediaServer, MediaServerConfig } from "@/app/utils/api/mediaserver";
@@ -85,9 +85,12 @@ function MediaServerForm({ record, onChange }: { record?: MediaServerConfig, onC
                 <Input />
             </Form.Item>
             <ConfigForm />
-            <Form.Item>
-                <Button type="primary" htmlType="submit">保存</Button>
-            </Form.Item>
+            <Space>
+                <Form.Item noStyle>
+                    <Button htmlType="submit" type='primary'>保存</Button>
+                </Form.Item>
+                <TestButton record={() => form.getFieldsValue()} />
+            </Space>
         </Form >
     </>
 }

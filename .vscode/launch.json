@@ -18,7 +18,7 @@
             "runtimeArgs": [
                 "--remote-debugging-port=9222"
             ],
-            "url": "c:\\Users\\Frank\\.vscode\\extensions\\ms-edgedevtools.vscode-edge-devtools-2.1.3\\out\\startpage\\index.html",
+            "url": "https://nastool-dev.service.home/ui",
             "presentation": {
                 "hidden": true
             }
@@ -40,7 +40,7 @@
             "type": "vscode-edge-devtools.debug",
             "name": "Open Edge DevTools",
             "request": "attach",
-            "url": "c:\\Users\\Frank\\.vscode\\extensions\\ms-edgedevtools.vscode-edge-devtools-2.1.3\\out\\startpage\\index.html",
+            "url": "https://nastool-dev.service.home/ui",
             "presentation": {
                 "hidden": true
             }

@@ -30,6 +30,8 @@ type NastoolApi =
     "download/config/list" |
     "download/list" |
     "download/client/list" |
+    "download/client/delete" |
+    "download/client/test" |
     "download/start" |
     "download/stop" |
     "download/remove" |
