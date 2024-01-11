@@ -263,17 +263,64 @@ export class DownloadClient extends APIArrayResourceBase<DownloadClientConfig> {
             return false;
         }
     }
+}
 
-    // public useResource(option?: APIArrayResourceOption) {
-    //     const superResource = super.useResource(option)
-    //     const { handle } = superResource.message;
-    //     const self = this;
-    //     async function test(value: DownloadClientConfig) {
-    //         handle(self.test(value), "测试")
-    //     }
-    //     return {
-    //         ...superResource,
-    //         test
-    //     }
-    // }
+export interface DownloadConfig {
+    id: number,
+    name: string,
+    category: string,
+    tags: string,
+    is_paused: 0 | 1,
+    seeding_time_limit: number,
+    upload_limit: number,
+    download_limit: number,
+    ratio_limit: number,
+    downloader: number,
+    downloader_name: string,
+    downloader_type: DownloadClientConfig['type']
+}
+
+export class DownloadConfigs extends APIArrayResourceBase<DownloadConfig> {
+    public async list() {
+        const result = await (await this.API).post<{ data: DownloadConfig[] }>("download/config/list", { auth: true })
+        result.data.forEach(item => { item.downloader = Number(item.downloader) })
+        return result.data;
+    }
+    protected listHook(options?: undefined): Promise<DownloadConfig[]> {
+        return this.list();
+    }
+
+    public async update(config: DownloadConfig) {
+        const result = await (await this.API).post("download/config/update", {
+            auth: true,
+            data: {
+                ...config,
+                sid: config.id,
+                downloader: String(config.downloader)
+            }
+        })
+        return true;
+    }
+
+    protected async updateHook(value: DownloadConfig): Promise<void> {
+        await this.update(value);
+    }
+
+    protected addHook(value: DownloadConfig): Promise<boolean> {
+        return this.update(value);
+    }
+
+    public async delete(id: DownloadConfig['id']) {
+        await (await this.API).post("download/config/delete", {
+            auth: true,
+            data: {
+                sid: id
+            }
+        })
+        return true;
+    }
+
+    protected deleteHook(value: DownloadConfig): Promise<boolean> {
+        return this.delete(value.id);
+    }
 }

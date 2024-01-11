@@ -28,6 +28,8 @@ type NastoolApi =
     "site/resources" |
     "site/update" |
     "download/config/list" |
+    "download/config/update" |
+    "download/config/delete" |
     "download/list" |
     "download/client/list" |
     "download/client/delete" |
@@ -144,7 +146,7 @@ export type NastoolServerConfig = {
         media_default_path: string,
         nfo_poster: boolean
     },
-    jellyfin:{
+    jellyfin: {
         host: string,
         api_key: string,
         path_map: string[],
@@ -152,7 +154,7 @@ export type NastoolServerConfig = {
     },
     emby: {
         host: string,
-        api_key:string,
+        api_key: string,
         path_map: string[],
         play_host: string,
     },
@@ -226,7 +228,7 @@ export enum NastoolMediaType {
     ANI = "动漫",
     UNKNOWN = '未知',
 }
-type NastoolMediaLibraryType =  NastoolMediaType.TV | NastoolMediaType.MOVIE | NastoolMediaType.ANI;
+type NastoolMediaLibraryType = NastoolMediaType.TV | NastoolMediaType.MOVIE | NastoolMediaType.ANI;
 
 
 export type NastoolMediaLibrary = {
@@ -696,7 +698,7 @@ export class NASTOOL {
         if (this.message == undefined) {
             if (this.token) {
                 this.message = new ServerEvent(this.token)
-                
+
             }
 
         }

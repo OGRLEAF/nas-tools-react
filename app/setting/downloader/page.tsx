@@ -1,12 +1,12 @@
 "use client"
-import { Cards, CardsForm, TestButton } from "@/app/components/CardsForm"
-import { MediaWorkCategoryUnionSelect, SyncModeSelect } from "@/app/components/NTSelects"
+import { Cards, CardsForm, TestButton, CollapsableList } from "@/app/components/CardsForm"
+import { DownloadClientSelect, MediaWorkCategoryUnionSelect, SyncModeSelect } from "@/app/components/NTSelects"
 import { PathSelector } from "@/app/components/PathSelector"
-import { DownloadClient, DownloadClientConfig, DownloadClientType } from "@/app/utils/api/download"
+import { DownloadClient, DownloadClientConfig, DownloadClientType, DownloadConfig, DownloadConfigs } from "@/app/utils/api/download"
 import { MediaWorkCategoryType } from "@/app/utils/api/media/category"
 import { MediaWorkType, SyncMode } from "@/app/utils/api/types"
 import { PlusOutlined, DeleteOutlined, RetweetOutlined } from "@ant-design/icons"
-import { Button, CheckboxOptionType, Col, Divider, Flex, Form, Input, InputNumber, Radio, Row, Select, Space, Switch, Tag, theme } from "antd"
+import { Button, CheckboxOptionType, Col, Descriptions, Divider, Flex, Form, Input, InputNumber, Radio, Row, Select, Space, Switch, Tag, theme } from "antd"
 import { useForm } from "antd/es/form/Form"
 import React, { useMemo } from "react"
 
@@ -30,29 +30,50 @@ const downloadClientConfigs: Record<DownloadClientConfig['type'], DownloadClient
 
 export default function DownloaderSetting() {
     const { token } = theme.useToken();
-    return <CardsForm<DownloadClientConfig, DownloadClient>
-        resource={DownloadClient}
-        title={"媒体服务器"}
-        formComponent={DownloadClientConfigForm}
-    >
-        <Cards<DownloadClientConfig, DownloadClient>
-            cardProps={(record: DownloadClientConfig) => {
-                const config = downloadClientConfigs[record.type];
-                return ({
-                    title: <span>{record.name}</span>,
-                    cover: config.cover,
-                    description: <>{record.enabled ? <Tag color={token.colorSuccess} bordered={false}>启用</Tag> : <Tag color={token.colorInfo}>停用</Tag>}</>,
-                    extra: (resource) => {
-                        return <Button icon={<RetweetOutlined />} type="text"
-                            onClick={(evt) => {
-                                evt.stopPropagation();
-                                resource.val?.(record);
-                            }}
+    return <>
+        <CardsForm<DownloadClientConfig, DownloadClient>
+            resource={DownloadClient}
+            title={"下载器"}
+            formComponent={DownloadClientConfigForm}
+        >
+            <Cards<DownloadClientConfig, DownloadClient>
+                cardProps={(record: DownloadClientConfig) => {
+                    const config = downloadClientConfigs[record.type];
+                    return ({
+                        title: <span>{record.name}</span>,
+                        cover: config.cover,
+                        description: <>{record.enabled ? <Tag color={token.colorSuccess} bordered={false}>启用</Tag> : <Tag color={token.colorInfo}>停用</Tag>}</>,
+                        extra: (resource) => <Button icon={<RetweetOutlined />} type="text"
+                            onClick={(evt) => { evt.stopPropagation(); resource.val?.(record); }}
                         />
-                    }
-                })
-            }} />
-    </CardsForm>
+                    })
+                }} />
+        </CardsForm>
+        <CardsForm<DownloadConfig, DownloadConfigs>
+            resource={DownloadConfigs}
+            title={"下载设置"}
+            formComponent={DownloadConfigForm}
+        >
+            <CollapsableList<DownloadConfig, DownloadConfigs>
+                cardProps={(record: DownloadConfig) => {
+                    return ({
+                        title: record.name,
+                        readonly: record.id < 0,
+                        description: <Descriptions size="small" column={5}>
+                            <Descriptions.Item label="分类">{record.category}</Descriptions.Item>
+                            <Descriptions.Item label="下载器">{record.downloader_name}</Descriptions.Item>
+                            <Descriptions.Item label="标签">{record.tags}</Descriptions.Item>
+                            <Descriptions.Item label="动作">{record.is_paused ? "添加后暂停" : "添加后开始"}</Descriptions.Item>
+                            <Descriptions.Item label="做种时间限制">{record.seeding_time_limit}分钟</Descriptions.Item>
+                            <Descriptions.Item label="上传速度限制">{record.upload_limit} KB/s</Descriptions.Item>
+                            <Descriptions.Item label="下载速度限制">{record.download_limit} KB/s</Descriptions.Item>
+                            <Descriptions.Item label="分享率限制">{record.ratio_limit}</Descriptions.Item>
+                        </Descriptions>,
+
+                    })
+                }} />
+        </CardsForm>
+    </>
 }
 
 const DownloadClientOptions: CheckboxOptionType[] = Object.entries(downloadClientConfigs).map(([type, config]) => ({
@@ -293,4 +314,48 @@ function QbittorentForm() {
         </Row>
 
     </>
+}
+
+function DownloadConfigForm({ record, onChange }: { record?: DownloadConfig, onChange?: (value: DownloadConfig) => void }) {
+    const [form] = useForm();
+
+    return <Form form={form} initialValues={record} layout="vertical" onFinish={((value) => {
+        onChange?.({ ...record, ...value })
+    })}>
+        <Form.Item label="名称" name="name">
+            <Input />
+        </Form.Item>
+        <Form.Item label="下载器" name="downloader">
+            <DownloadClientSelect />
+        </Form.Item>
+        <Form.Item label="动作" name="is_paused">
+            <Select options={[
+                { label: "添加后开始", value: 0 },
+                { label: "添加后暂停", value: 1 }
+            ]} />
+        </Form.Item>
+        <Form.Item label="分类" name="category">
+            <Input />
+        </Form.Item>
+        <Form.Item label="标签" name="tags">
+            <Input />
+        </Form.Item>
+        <Space wrap size={16}>
+            <Form.Item label="做种时间限制" name="seeding_time_limit">
+                <InputNumber />
+            </Form.Item>
+            <Form.Item label="下载速度限制" name="download_limit">
+                <InputNumber />
+            </Form.Item>
+            <Form.Item label="上传速度限制" name="upload_limit">
+                <InputNumber />
+            </Form.Item>
+            <Form.Item label="分享率限制" name="ratio_limit">
+                <InputNumber />
+            </Form.Item>
+        </Space>
+        <Form.Item>
+            <Button htmlType="submit" type="primary">保存</Button>
+        </Form.Item>
+    </Form>
 }

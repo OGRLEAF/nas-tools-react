@@ -19,20 +19,22 @@ export default function SearchResultPage({ params }: { params: { keyword: string
     }
     const onCloseDrawer = () => setOpenTaskDrawer(false)
 
-    return <>Search {decodeURI(params.keyword)}
+    return <>搜索 {decodeURI(params.keyword)}
         <Drawer
             open={openTaskDrawer}
             onClose={onCloseDrawer}
-            bodyStyle={{
-                padding: 0,
-                position: "absolute",
-                width: "100%"
+            styles={{
+                body: {
+                    padding: 0,
+                    position: "absolute",
+                    width: "100%"
+                }
             }}
             size="large"
         >
             {selectedMediaId ? <SearchTask
                 style={{}}
-                search={{ mediaId: selectedMediaId, mediaType: mediaInfo?.media_type }} /> 
+                search={{ mediaId: selectedMediaId, mediaType: mediaInfo?.media_type }} />
                 : <Spin />}
         </Drawer>
 

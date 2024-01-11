@@ -1,9 +1,9 @@
 "use client"
 import { APIArrayResourceBase, useResource } from "@/app/utils/api/api_base";
-import React, { useEffect, useState, createContext, useContext, MouseEventHandler } from "react";
+import React, { useEffect, useState, createContext, useContext, MouseEventHandler, useMemo } from "react";
 import { Section } from "../Section";
-import { Button, ButtonProps, Card, Drawer, Modal, Space } from "antd";
-import { PlusOutlined, CloseOutlined, CheckOutlined, RetweetOutlined, ExclamationOutlined } from "@ant-design/icons"
+import { Button, ButtonProps, Card, Collapse, CollapseProps, Drawer, Modal, Space } from "antd";
+import { PlusOutlined, CloseOutlined, CheckOutlined, RetweetOutlined, ExclamationOutlined, EditOutlined } from "@ant-design/icons"
 
 export interface CardsFormProps<T, API extends APIArrayResourceBase<T>> {
     resource: new () => API,
@@ -17,18 +17,21 @@ export interface CardProps<T, API extends APIArrayResourceBase<T>> {
     cover?: React.ReactNode,
     title: React.ReactNode,
     description: React.ReactNode,
+    readonly?: boolean,
     extra?: (resource: ReturnType<API['useResource']>) => React.ReactNode
 }
 
 export interface CardsFormContextType<T, API extends APIArrayResourceBase<T>> {
     resource: ReturnType<API['useResource']>,
     options: CardsFormProps<T, API>,
+    openEditor: (value: T) => void;
 }
 
 type GenernalType = CardsFormContextType<any, APIArrayResourceBase<any>>
 export const CardsFormContext = createContext<GenernalType>({
     resource: {} as any,
-    options: {} as any
+    options: {} as any,
+    openEditor: () => { }
 })
 
 export function useCardsFormContext<T, API extends APIArrayResourceBase<T>>() {
@@ -39,35 +42,44 @@ export function useCardsFormContext<T, API extends APIArrayResourceBase<T>>() {
 
 export function CardsForm<T, API extends APIArrayResourceBase<T>>(options: CardsFormProps<T, API>) {
     const resource = new options.resource().useResource({ useMessage: true });
-    const { useList, add, messageContext } = resource;
+    const { useList, add, update, messageContext } = resource;
     const { refresh } = useList();
     const FormComponent = options.formComponent;
-    const [openCreateDrawer, setOpenCreateDrawer] = useState(false)
+    const [openEditing, setOpenEditing] = useState(false)
+    const [editingRecord, setEditingRecord] = useState<T>();
+    const [id, setId] = useState(0);
+    const openEditor = (value?: T) => {
+        setId(id + 1);
+        setEditingRecord(value)
+        setOpenEditing(true);
+    }
+
+    const form = useMemo(() => {
+        if (openEditing) return <FormComponent record={editingRecord} onChange={(value) => {
+            if (editingRecord == undefined) {
+                add?.(value).then(() => { setOpenEditing(false); setEditingRecord(undefined) })
+            } else {
+                update(value).then(() => { setOpenEditing(false); setEditingRecord(undefined) })
+            }
+
+        }}></FormComponent >
+        else return undefined
+    }, [editingRecord, openEditing])
     return <Section title={options.title}
         onRefresh={() => refresh()}
         extra={
-            add ? <Button icon={<PlusOutlined />} onClick={() => setOpenCreateDrawer(true)} type="primary">添加</Button> : <></>
+            add ? <Button icon={<PlusOutlined />}
+                onClick={() => { openEditor() }} type="primary">添加</Button> : <></>
         }
     >
         {messageContext}
-        <CardsFormContext.Provider value={{ resource, options }}>
-            <Space
-                direction={options.layout ?? "horizontal"}
-                style={{ width: "100%" }}
-                wrap={(options.layout ?? "horizontal") == "horizontal"}
-            >
-                {options.children}
-            </Space>
-            <Drawer open={openCreateDrawer} size="large" onClose={() => setOpenCreateDrawer(false)}>
-                <FormComponent onChange={(value) => {
-                    add?.(value)
-                        .then(() => {
-                            setOpenCreateDrawer(false);
-                        })
-                }}></FormComponent>
+        <CardsFormContext.Provider value={{ resource, options, openEditor }}>
+            {options.children}
+            <Drawer open={openEditing} size="large" onClose={() => { setOpenEditing(false); setEditingRecord(undefined) }}>
+                {form}
             </Drawer>
         </CardsFormContext.Provider>
-    </Section>
+    </Section >
 }
 
 export function TestButton<T, API extends APIArrayResourceBase<T>>(props: {
@@ -85,6 +97,7 @@ export function TestButton<T, API extends APIArrayResourceBase<T>>(props: {
                 result ? <CheckOutlined /> : <ExclamationOutlined />}
             onClick={(evt) => {
                 setLoading(true);
+
                 evt.stopPropagation();
                 val(props.record()).then((value) => {
                     console.log(value)
@@ -112,20 +125,16 @@ export function Cards<T, API extends APIArrayResourceBase<T>>({ cardProps }: { c
 
 function ListItemCard<T, API extends APIArrayResourceBase<T>>({ record, cardProps }: { record: T, cardProps: CardProps<T, API> }) {
     const ctx = useCardsFormContext<T, API>();
-    const FormComponent = ctx.options.formComponent;
     const props = cardProps;
     const coverCard = props.cover != undefined;
     const { confirm } = Modal;
-    const [open, setOpen] = useState(false)
-
-
     const actions = []
 
     if (ctx.resource.del) {
         const onDelete: MouseEventHandler<HTMLElement> = (evt) => {
             evt.stopPropagation();
             confirm({
-                title: "确认删除?",
+                title: `确认删除${ctx.options.title}?`,
                 content: <>{props.title}</>,
                 onOk: () => { ctx.resource.del?.(record) }
             })
@@ -140,7 +149,7 @@ function ListItemCard<T, API extends APIArrayResourceBase<T>>({ record, cardProp
         <Card
             hoverable
             cover={props.cover}
-            onClick={() => setOpen(true)}
+            onClick={() => ctx.openEditor(record)}
             title={coverCard ? undefined : props.title}
             extra={coverCard ? undefined : actions}
             actions={!coverCard ? undefined : actions}
@@ -153,12 +162,56 @@ function ListItemCard<T, API extends APIArrayResourceBase<T>>({ record, cardProp
                 description={props.description}
             ></Card.Meta>
         </Card>
-        <Drawer open={open} size="large" onClose={() => setOpen(false)}>
-            <FormComponent onChange={(value) => {
-                ctx.resource.update(value).then(() => {
-                    setOpen(false);
-                })
-            }} record={record} />
-        </Drawer>
     </>
+}
+
+export function CollapsableList<T, API extends APIArrayResourceBase<T>>({ cardProps }: { cardProps: (record: T) => CardProps<T, API> }) {
+    const ctx = useCardsFormContext<T, API>();
+    const { useList } = ctx.resource;
+    const { list } = useList();
+    const { confirm } = Modal;
+    const items: CollapseProps['items'] = list?.map((record: T, index) => {
+        const props = cardProps(record);
+        const actions = []
+        if (!props.readonly) {
+            actions.push(<Button key="edit_button" size="small" style={{ padding: 0 }} icon={<EditOutlined />}
+                onClick={(evt) => {
+                    evt.stopPropagation();
+                    ctx.openEditor(record)
+                }} type="text" />)
+            if (ctx.resource.del) {
+                const onDelete: MouseEventHandler<HTMLElement> = (evt) => {
+                    evt.stopPropagation();
+                    confirm({
+                        title: `确认删除${ctx.options.title}?`,
+                        content: <>{props.title}</>,
+                        onOk: () => { ctx.resource.del?.(record) }
+                    })
+                }
+                actions.push(<Button key="delete_button"
+                    size="small" style={{ padding: 0 }}
+                    danger icon={<CloseOutlined />} onClick={onDelete} type="text"></Button>)
+            }
+        }
+
+        if (props.extra) {
+            actions.push(props.extra(ctx.resource))
+        }
+
+        return {
+            label: props.title,
+            children: props.description,
+            key: String(index),
+            extra: <Space>{actions}</Space>
+        }
+    })
+
+    return <>
+        <Collapse
+            style={{ width: "100%" }}
+            items={items}
+        >
+        </Collapse>
+    </>
+
 }

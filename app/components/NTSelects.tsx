@@ -6,6 +6,7 @@ import { Sites } from "../utils/api/sites"
 import { syncModeMap } from "../utils/api/sync"
 import { MediaWorkType } from "../utils/api/types"
 import { MediaWorkCategory, MediaWorkCategoryType } from "../utils/api/media/category"
+import { DownloadClient, DownloadClientConfig } from "../utils/api/download"
 
 interface FormItemProp<T> {
     value?: T,
@@ -41,6 +42,16 @@ export const DownloadSettingSelect = (options: FormItemProp<string>) => {
         })()
     }, []);
     return <Select options={selectOptions} value={options.value} onChange={options.onChange} />
+}
+
+export const DownloadClientSelect = (options: { list?: DownloadClientConfig[] } & FormItemProp<string>) => {
+    const { useList } = new DownloadClient().useResource();
+    const list = options.list ?? useList().list;
+    const downloadClientOptions = list?.map((client) => ({
+        label: client.name,
+        value: client.id
+    }))
+    return <Select options={downloadClientOptions} value={options.value} onChange={options.onChange} />
 }
 
 export const FilterRuleSelect = (options: FormItemProp<string>) => {
@@ -172,7 +183,7 @@ export const MediaWorkCategoryUnionSelect = (options: FormItemProp<[MediaWorkTyp
     useEffect(() => {
         options.onChange?.([selectedType, selectedCat])
     }, [selectedCat, selectedType])
-    useEffect(()=>{
+    useEffect(() => {
         setSelectedCat("")
     }, [selectedType])
     return <Space.Compact style={{ width: "100%" }}>
