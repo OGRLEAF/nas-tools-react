@@ -75,7 +75,7 @@ export function CardsForm<T, API extends APIArrayResourceBase<T>>(options: Cards
         {messageContext}
         <CardsFormContext.Provider value={{ resource, options, openEditor }}>
             {options.children}
-            <Drawer open={openEditing} size="large" onClose={() => { setOpenEditing(false); setEditingRecord(undefined) }}>
+            <Drawer title={options.title} open={openEditing} size="large" onClose={() => { setOpenEditing(false); setEditingRecord(undefined) }}>
                 {form}
             </Drawer>
         </CardsFormContext.Provider>
