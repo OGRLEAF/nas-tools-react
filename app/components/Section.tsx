@@ -1,5 +1,5 @@
 "use client"
-import { Button, Dropdown, Flex, InputNumber, Space, Typography, } from 'antd'
+import { Button, Divider, Dropdown, Flex, InputNumber, Space, Typography, } from 'antd'
 import React, { useEffect, useState, createContext, useContext } from 'react'
 import { RedoOutlined } from "@ant-design/icons"
 import { TitleProps } from 'antd/es/typography/Title'
@@ -20,44 +20,22 @@ export const Section = ({ children, title, extra, onRefresh, interval: _interval
     interval?: number,
     extra?: React.ReactNode
 }) => {
-    const [refreshInterval, setRefreshInterval] = useState(_interval || 0);
-    useEffect(() => {
-        if (refreshInterval > 0) {
-            const timer = setInterval(() => {
-                if (onRefresh) {
-                    onRefresh();
-                }
-            }, refreshInterval)
-            return () => {
-                console.log("refreshInterval Timer cleared")
-                clearInterval(timer);
-            }
-        }
-    }, [refreshInterval])
-
 
     const sectionContext = useContext(SectionContext);
     const titleLevel: TitleProps['level'] = sectionLevels[sectionContext.level] ?? 5
     return (
-        <Space style={{ width: "100%", height: "100%" }} direction='vertical'>
-            <Flex style={{ margin: "8px 0", width: "100%" }} align="end" justify="space-between">
+        <Space style={{ width: "100%", height: titleLevel == 1 ? "100%" : undefined, marginBottom: 12 }} direction='vertical'>
+            <Flex style={{ marginBottom: 4, width: "100%" }} align="end" justify="space-between">
                 {/* <span style={{ fontSize: "1.4em", margin: 0, padding: "16px 0 16px 0", fontWeight: "bold" }}>{title}</span> */}
-                <Typography.Title style={{ fontSize: `${1.9 - titleLevel * 0.25}em` }} level={titleLevel}>{title}</Typography.Title>
+                {titleLevel == 1 ? <Typography.Title style={{ fontSize: `${1.9 - titleLevel * 0.25}em` }} level={titleLevel}>{title}</Typography.Title>
+                    :
+                    <Divider style={{ margin: 0, fontSize: `${1.9 - titleLevel * 0.25}em` }} orientation="left" orientationMargin={0}>{title}</Divider>
+                }
                 <div>
                     <Space>
 
                         {onRefresh ? <Space.Compact>
                             <Button type="primary" onClick={() => onRefresh?.()} icon={<RedoOutlined />} />
-                            {refreshInterval > 0 ? <Dropdown placement="bottomRight" menu={{
-                                items: [{
-                                    label: <Space><span>刷新间隔</span><InputNumber value={refreshInterval} addonAfter={"s"} /></Space>,
-                                    key: 0
-                                }]
-                            }}
-                            >
-                                <Button icon={<span>{refreshInterval}s</span>}></Button>
-                            </Dropdown> : <></>
-                            }
                         </Space.Compact>
                             : <></>}
                         {extra ? extra : <></>}

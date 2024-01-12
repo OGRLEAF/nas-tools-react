@@ -47,6 +47,7 @@ export class IndexerEnabledSites extends APIDataResourceBase<IndexerSite['id'][]
     }
 
     protected async updateHook(value: string[]): Promise<boolean> {
+        console.log(value)
         this.setting.update({
             pt: {
                 indexer_sites: value

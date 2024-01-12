@@ -58,6 +58,7 @@ type NastoolApi =
     "subscribe/update" |
     "subscribe/delete" |
     "subscribe/search" |
+    "search/result" |
     "rss/list" |
     "rss/update" |
     "message/client/list" |

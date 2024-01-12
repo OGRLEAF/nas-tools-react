@@ -64,7 +64,7 @@ const getMenuItems = async () => {
       getItem('豆瓣电影', '/discover/douban-movie', <IconFilmSolid />),
       getItem('TMDB电影', '/discover/tmdb-movie', <IconFilmSolid />),
     ]),
-    getItem('资源搜索', '/search', <SearchOutlined />),
+    getItem('资源搜索', '/search/result', <SearchOutlined />),
     getItem('站点管理', '/sites', <UserOutlined />, [
       getItem('站点维护', '/sites/maintain', <ClusterOutlined />),
       getItem('数据统计', '/sites/statistics', <PieChartOutlined />),

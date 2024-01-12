@@ -8,7 +8,7 @@ import { ServerConfig } from "@/app/utils/api/serverConfig";
 import { StateMap, StateTag } from "../StateTag";
 
 type CardSize = "normal" | "small" | "tiny";
-interface DetaiCardStyle {
+interface DetailCardStyle {
     image?: CSSProperties,
     title?: CSSProperties,
     typography?: CSSProperties,
@@ -16,7 +16,7 @@ interface DetaiCardStyle {
 
 }
 
-const cardStyleMap: Record<CardSize, DetaiCardStyle> = {
+const cardStyleMap: Record<CardSize, DetailCardStyle> = {
     "normal": {
         textLimit: 999
     },
@@ -74,8 +74,9 @@ export function MediaDetailCard({
     size,
     action,
     onTitleClick,
+    layout,
     postImageStyle
-}: { mediaDetail?: MediaWork, size?: CardSize, action?: React.JSX.Element, onTitleClick?: (mediaDetail: MediaWork) => void, postImageStyle?: CSSProperties }) {
+}: { mediaDetail?: MediaWork, size?: CardSize, action?: React.JSX.Element, layout?: "vertical" | "horizonal", onTitleClick?: (mediaDetail: MediaWork) => void, postImageStyle?: CSSProperties }) {
     const { token } = theme.useToken()
     const _size = size ? size : "normal";
     const style = cardStyleMap[_size];
@@ -84,28 +85,32 @@ export function MediaDetailCard({
         const metadata = mediaDetail.metadata
         return <Flex
             align="start"
+            vertical={(layout ?? "horizontal") == "vertical"}
             gap={12}
             style={{
                 width: "100%",
                 marginBottom: 0,
                 position: "relative"
             }}>
-            <Image
-                placeholder={<Skeleton.Image style={{ width: 150, ...style.image, ...postImageStyle }} />}
-                style={{ ...style.image, ...postImageStyle, objectFit: "contain", flexShrink: 1, marginRight: 0, borderRadius: token.borderRadius, overflow: "hidden" }}
-                src={metadata?.image.cover} />
+            {metadata?.image?.cover ?
+                <Image
+                    placeholder={<Skeleton.Image style={{ width: 150, ...style.image, ...postImageStyle }} />}
+                    style={{ ...style.image, ...postImageStyle, objectFit: "contain", flexShrink: 1, marginRight: 0, borderRadius: token.borderRadius, overflow: "hidden" }}
+                    src={metadata?.image.cover} /> :
+                <Skeleton.Image style={{ width: 150, ...style.image, ...postImageStyle }} />
+            }
             {/* <div style={{ height: _size == "normal" ? "400px" : "150px", width: "100%", backgroundColor: "#00152991" }} /> */}
             <Flex align="end" vertical style={{ width: "100%" }}>
                 <Typography style={{ paddingTop: 4, ...style.typography, width: "100%" }}>
                     <Typography.Title level={2} style={{ color: token.colorTextBase, fontSize: "1.6rem", marginTop: 6, ...style.title }}>
                         <Space>
                             <span>{mediaDetail.title}</span>
-                            <span style={{ fontSize: "1rem" }}> {metadata?.date.release}</span>
+                            <span style={{ fontSize: "1rem" }}> {metadata?.date?.release}</span>
                             <StateTag stateMap={stateTagMap} value={mediaDetail.series.t ?? MediaWorkType.UNKNOWN} />
                         </Space>
                     </Typography.Title>
-                    <Typography.Link style={{ color: token.colorTextDescription }} href={metadata?.links.tmdb} target="_blank">
-                        {metadata?.links.tmdb}
+                    <Typography.Link style={{ color: token.colorTextDescription }} href={metadata?.links?.tmdb} target="_blank">
+                        {metadata?.links?.tmdb}
                     </Typography.Link>
                     <br />
                     <Typography.Text >
@@ -176,7 +181,7 @@ export default function TinyTMDBSearch({
                             }}
                         >
 
-                            <span>{resultItem.title} ({resultItem.metadata?.date.release})</span>
+                            <span>{resultItem.title} ({resultItem.metadata?.date?.release})</span>
                             <span style={{ display: "block", textAlign: "left", lineHeight: "1em", paddingLeft: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: token.colorTextDescription }}>
                                 {resultItem.metadata?.description.trimStart()}
                             </span>

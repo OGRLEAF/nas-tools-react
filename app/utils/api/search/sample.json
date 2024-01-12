@@ -1,0 +1,879 @@
+{
+    "code": 0,
+    "success": true,
+    "message": "",
+    "data": {
+      "total": 27,
+      "result": {
+        "水星领航员 (2005)": {
+          "key": 1,
+          "title": "水星领航员",
+          "year": "2005",
+          "type_key": "ANI",
+          "image": "https://assets.fanart.tv/fanart/tv/79839/tvthumb/aria-the-animation-5f4d3f38f40ea.jpg",
+          "type": "动漫",
+          "vote": "8.4",
+          "tmdbid": "53787",
+          "backdrop": "https://assets.fanart.tv/fanart/tv/79839/tvthumb/aria-the-animation-5f4d3f38f40ea.jpg",
+          "poster": "https://image.tmdb.org/t/p/w500/5g6Tv4VnmEYgw23N4xw6unPYukX.jpg",
+          "overview": "随着未来科技的飞速发展，人类在2301年将一颗蛮荒行星火星改造成为美丽的“水星”，并命名为“AQUA”。那里最著名的观光都市“新威尼斯”有着一群心怀梦想的少女，被称为“领航员”的她们每天以小船载着游客领略城市的美景。15岁的水无灯里从高度电子机械化的地球只身来到“新威尼斯”，在一所名为“ARIA”的小领航员公司找到了工作，就此开始了她的领航员生涯。",
+          "fav": "0",
+          "rssid": "",
+          "torrent_dict": [
+            [
+              "S01",
+              {
+                "1080p_bdrip": {
+                  "group_info": {
+                    "respix": "1080p",
+                    "restype": "BDrip"
+                  },
+                  "group_total": 2,
+                  "group_torrents": {
+                    "1080p_bdrip_x265__19g_none": {
+                      "unique_info": {
+                        "video_encode": "X265",
+                        "size": "1.9G",
+                        "reseffect": "",
+                        "releasegroup": null
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 1,
+                          "seeders": 8,
+                          "enclosure": "magnet:?xt=urn:btih:GR6ZOUOJ3E53CE2FW7CGYTBAC4XOX44S&dn=&tr=http%3A%2F%2F104.143.10.186%3A8000%2Fannounce&tr=udp%3A%2F%2F104.143.10.186%3A8000%2Fannounce&tr=http%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce&tr=http%3A%2F%2Ftracker4.itzmx.com%3A2710%2Fannounce&tr=http%3A%2F%2Ftracker.publicbt.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.prq.to%2Fannounce&tr=http%3A%2F%2Fopen.acgtracker.com%3A1096%2Fannounce&tr=https%3A%2F%2Ft-115.rhcloud.com%2Fonly_for_ylbud&tr=http%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=http%3A%2F%2Ftracker2.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=udp%3A%2F%2Ftracker2.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker4.itzmx.com%3A2710%2Fannounce",
+                          "site": "动漫花园",
+                          "torrent_name": "[7³ACG] Aria The Benedizione/水星领航员 The Benedizione/水星领航员 祝福/アリア ザ ベネディジオーネ [简繁日字幕] BDrip 1080p x265 FLAC",
+                          "description": null,
+                          "pageurl": "https://dmhy.org/topics/view/622789_7_ACG_Aria_The_Benedizione_The_Benedizione_BDrip_1080p_x265_FLAC.html",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "1.9G",
+                          "respix": "1080p",
+                          "restype": "BDrip",
+                          "reseffect": "",
+                          "releasegroup": null,
+                          "video_encode": "X265",
+                          "labels": []
+                        },
+                        {
+                          "id": 4,
+                          "seeders": 0,
+                          "enclosure": "magnet:?xt=urn:btih:347d9751c9d93bb11345b7c46c4c20172eebf392&tr=http%3a%2f%2ft.nyaatracker.com%2fannounce&tr=http%3a%2f%2ftracker.kamigami.org%3a2710%2fannounce&tr=http%3a%2f%2fshare.camoe.cn%3a8080%2fannounce&tr=http%3a%2f%2fopentracker.acgnx.se%2fannounce&tr=http%3a%2f%2fanidex.moe%3a6969%2fannounce&tr=http%3a%2f%2ft.acg.rip%3a6699%2fannounce&tr=https%3a%2f%2ftr.bangumi.moe%3a9696%2fannounce&tr=udp%3a%2f%2ftr.bangumi.moe%3a6969%2fannounce&tr=http%3a%2f%2fopen.acgtracker.com%3a1096%2fannounce&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce",
+                          "site": "MiKan",
+                          "torrent_name": "[7³ACG] Aria The Benedizione/水星领航员 The Benedizione/水星领航员 祝福/アリア ザ ベネディジオーネ [简繁日字幕] BDrip 1080p x265 FLAC",
+                          "description": null,
+                          "pageurl": "https://mikanani.me/Home/Episode/347d9751c9d93bb11345b7c46c4c20172eebf392",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "1.9G",
+                          "respix": "1080p",
+                          "restype": "BDrip",
+                          "reseffect": "",
+                          "releasegroup": null,
+                          "video_encode": "X265",
+                          "labels": []
+                        }
+                      ]
+                    }
+                  }
+                },
+                "1080p_webrip": {
+                  "group_info": {
+                    "respix": "1080p",
+                    "restype": "WebRip"
+                  },
+                  "group_total": 2,
+                  "group_torrents": {
+                    "1080p_webrip_avc__9584m_none": {
+                      "unique_info": {
+                        "video_encode": "AVC",
+                        "size": "958.4M",
+                        "reseffect": "",
+                        "releasegroup": null
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 12,
+                          "seeders": 2,
+                          "enclosure": "magnet:?xt=urn:btih:HWKBUTLZ2GZ2BRTAWUVL7UNQI4BKIXG5&dn=&tr=http%3A%2F%2F104.143.10.186%3A8000%2Fannounce&tr=udp%3A%2F%2F104.143.10.186%3A8000%2Fannounce&tr=http%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce&tr=http%3A%2F%2Ftracker4.itzmx.com%3A2710%2Fannounce&tr=http%3A%2F%2Ftracker.publicbt.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.prq.to%2Fannounce&tr=http%3A%2F%2Fopen.acgtracker.com%3A1096%2Fannounce&tr=https%3A%2F%2Ft-115.rhcloud.com%2Fonly_for_ylbud&tr=http%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=http%3A%2F%2Ftracker2.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=udp%3A%2F%2Ftracker2.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker4.itzmx.com%3A2710%2Fannounce&tr=http%3A%2F%2Ftr.bangumi.moe%3A6969%2Fannounce&tr=http%3A%2F%2Ft.nyaatracker.com%2Fannounce&tr=http%3A%2F%2Fopen.nyaatorrents.info%3A6544%2Fannounce&tr=http%3A%2F%2Ft2.popgo.org%3A7456%2Fannonce&tr=http%3A%2F%2Fshare.camoe.cn%3A8080%2Fannounce&tr=http%3A%2F%2Fopentracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Ftracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Fnyaa.tracker.wf%3A7777%2Fannounce&tr=https%3A%2F%2Ftracker.sakurato.art%3A23334%2Fannounce&tr=http%3A%2F%2Ftracker.sakurato.art%3A23333%2Fannounce&tr=https%3A%2F%2Ftr.bangumi.moe%3A9696%2Fannounce&tr=http%3A%2F%2Fsukebei.tracker.wf%3A8888%2Fannounce&tr=http%3A%2F%2Fopen.acgnxtracker.com%2Fannounce&tr=https%3A%2F%2Fopen.acgnxtracker.com%2Fannounce&tr=http%3A%2F%2Ft.acg.rip%3A6699%2Fannounce",
+                          "site": "动漫花园",
+                          "torrent_name": "[ARIA吧漢化組][水星領航員]ARIA The BENEDIZIONE[WebRip_1080p_AVC_AAC][CHT_JPN][繁日內嵌字幕]",
+                          "description": null,
+                          "pageurl": "https://dmhy.org/topics/view/609633_ARIA_ARIA_The_BENEDIZIONE_WebRip_1080p_AVC_AAC_CHT_JPN.html",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "958.4M",
+                          "respix": "1080p",
+                          "restype": "WebRip",
+                          "reseffect": "",
+                          "releasegroup": null,
+                          "video_encode": "AVC",
+                          "labels": []
+                        }
+                      ]
+                    },
+                    "1080p_webrip_avc__22g_none": {
+                      "unique_info": {
+                        "video_encode": "AVC",
+                        "size": "2.2G",
+                        "reseffect": "",
+                        "releasegroup": null
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 14,
+                          "seeders": 1,
+                          "enclosure": "magnet:?xt=urn:btih:PTSPU7W2RJULPQ43M2Q3UW6YY7RLCTWL&dn=&tr=http%3A%2F%2F104.238.198.186%3A8000%2Fannounce&tr=udp%3A%2F%2F104.238.198.186%3A8000%2Fannounce&tr=http%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=udp%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce&tr=http%3A%2F%2Ftracker4.itzmx.com%3A2710%2Fannounce&tr=http%3A%2F%2Ftracker.publicbt.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.prq.to%2Fannounce&tr=http%3A%2F%2Fopen.acgtracker.com%3A1096%2Fannounce&tr=https%3A%2F%2Ft-115.rhcloud.com%2Fonly_for_ylbud&tr=http%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=http%3A%2F%2Ftracker2.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=udp%3A%2F%2Ftracker2.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker4.itzmx.com%3A2710%2Fannounce&tr=http%3A%2F%2Fnyaa.tracker.wf%3A7777%2Fannounce&tr=http%3A%2F%2Ftr.bangumi.moe%3A6969%2Fannounce&tr=http%3A%2F%2Ft.nyaatracker.com%2Fannounce&tr=http%3A%2F%2Fopen.nyaatorrents.info%3A6544%2Fannounce&tr=http%3A%2F%2Ft2.popgo.org%3A7456%2Fannonce&tr=http%3A%2F%2Fshare.camoe.cn%3A8080%2Fannounce&tr=http%3A%2F%2Fopentracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Ftracker.acgnx.se%2Fannounce&tr=https%3A%2F%2Ftr.bangumi.moe%3A9696%2Fannounce&tr=http%3A%2F%2Ft.acg.rip%3A6699%2Fannounce&tr=http%3A%2F%2Ftorrentsmd.eu%3A8080%2Fannounce&tr=http%3A%2F%2Ftorrentsmd.com%3A8080%2Fannounce&tr=https%3A%2F%2Fopen.acgnxtracker.com%2Fannounce&tr=http%3A%2F%2Fopen.acgnxtracker.com%2Fannounce&tr=https%3A%2F%2Fopentracker.acgnx.se%2Fannounce&tr=https%3A%2F%2Ftracker.imgoingto.icu%2Fannounce&tr=https%3A%2F%2Ftr.ready4.icu%2Fannounce&tr=http%3A%2F%2Ftracker.internetwarriors.net%3A1337%2Fannounce&tr=http%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce",
+                          "site": "动漫花园",
+                          "torrent_name": "[Aria吧漢化組][水星領航員]AriaTheCrepuscolo[WebRip_1080p_AVC_AAC][JPN_CHT][繁日內嵌字幕]",
+                          "description": null,
+                          "pageurl": "https://dmhy.org/topics/view/577181_Aria_AriaTheCrepuscolo_WebRip_1080p_AVC_AAC_JPN_CHT.html",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "2.2G",
+                          "respix": "1080p",
+                          "restype": "WebRip",
+                          "reseffect": "",
+                          "releasegroup": null,
+                          "video_encode": "AVC",
+                          "labels": []
+                        }
+                      ]
+                    }
+                  }
+                },
+                "1080p_": {
+                  "group_info": {
+                    "respix": "1080p",
+                    "restype": ""
+                  },
+                  "group_total": 3,
+                  "group_torrents": {
+                    "1080p__hevc__113g_aria": {
+                      "unique_info": {
+                        "video_encode": "HEVC",
+                        "size": "11.3G",
+                        "reseffect": "",
+                        "releasegroup": "ARIA"
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 15,
+                          "seeders": 1,
+                          "enclosure": "magnet:?xt=urn:btih:B7ELYVDYQOXTI6DXFVF5X6H6YRFAZHXR&dn=&tr=http%3A%2F%2F208.67.16.113%3A8000%2Fannounce&tr=udp%3A%2F%2F208.67.16.113%3A8000%2Fannounce&tr=http%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.publicbt.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.prq.to%2Fannounce&tr=http%3A%2F%2Fopen.acgtracker.com%3A1096%2Fannounce&tr=http%3A%2F%2Ftr.bangumi.moe%3A6969%2Fannounce&tr=https%3A%2F%2Ft-115.rhcloud.com%2Fonly_for_ylbud&tr=http%3A%2F%2Fbtfile.sdo.com%3A6961%2Fannounce&tr=http%3A%2F%2Fexodus.desync.com%3A6969%2Fannounce&tr=https%3A%2F%2Ftr.bangumi.moe%3A9696%2Fannounce&tr=http%3A%2F%2Ft.acg.rip%3A6699%2Fannounce&tr=http%3A%2F%2Fmgtracker.org%3A2710%2Fannounce&tr=http%3A%2F%2Ft.nyaatracker.com%2Fannounce&tr=http%3A%2F%2Fshare.camoe.cn%3A8080%2Fannounce&tr=http%3A%2F%2F61.154.116.205%3A8000%2Fannounce&tr=http%3A%2F%2Ftracker.ktxp.com%3A7070%2Fannounce&tr=http%3A%2F%2Ft2.popgo.org%3A7456%2Fannonce&tr=http%3A%2F%2F208.67.16.113%3A8000%2Fannonuce",
+                          "site": "动漫花园",
+                          "torrent_name": "[ARIA][BDRIP][1080P][HEVC][CHS&CHT]【水星领航员】(增加音频延迟修正，内详）",
+                          "description": null,
+                          "pageurl": "https://dmhy.org/topics/view/445985_ARIA_BDRIP_1080P_HEVC_CHS_CHT.html",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "11.3G",
+                          "respix": "1080p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "ARIA",
+                          "video_encode": "HEVC",
+                          "labels": []
+                        },
+                        {
+                          "id": 24,
+                          "seeders": 0,
+                          "enclosure": "magnet:?xt=urn:btih:0fc8bc547883af3478772d4bdbf8fec44a0c9ef1&tr=http%3a%2f%2ft.nyaatracker.com%2fannounce&tr=http%3a%2f%2ftracker.kamigami.org%3a2710%2fannounce&tr=http%3a%2f%2fshare.camoe.cn%3a8080%2fannounce&tr=http%3a%2f%2fopentracker.acgnx.se%2fannounce&tr=http%3a%2f%2fanidex.moe%3a6969%2fannounce&tr=http%3a%2f%2ft.acg.rip%3a6699%2fannounce&tr=https%3a%2f%2ftr.bangumi.moe%3a9696%2fannounce&tr=udp%3a%2f%2ftr.bangumi.moe%3a6969%2fannounce&tr=http%3a%2f%2fopen.acgtracker.com%3a1096%2fannounce&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce",
+                          "site": "MiKan",
+                          "torrent_name": "[ARIA][BDRIP][1080P][HEVC][CHS&CHT]【水星领航员】",
+                          "description": null,
+                          "pageurl": "https://mikanani.me/Home/Episode/0fc8bc547883af3478772d4bdbf8fec44a0c9ef1",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "11.3G",
+                          "respix": "1080p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "ARIA",
+                          "video_encode": "HEVC",
+                          "labels": []
+                        }
+                      ]
+                    },
+                    "1080p__x264__13g_aria吧汉化组": {
+                      "unique_info": {
+                        "video_encode": "x264",
+                        "size": "1.3G",
+                        "reseffect": "",
+                        "releasegroup": "ARIA吧汉化组"
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 16,
+                          "seeders": 1,
+                          "enclosure": "magnet:?xt=urn:btih:3J3AJHON7C6S42YL7LE3NBBJFJNYMRL6&dn=&tr=http%3A%2F%2F208.67.16.113%3A8000%2Fannounce&tr=udp%3A%2F%2F208.67.16.113%3A8000%2Fannounce&tr=http%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.publicbt.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.prq.to%2Fannounce&tr=http%3A%2F%2Fopen.acgtracker.com%3A1096%2Fannounce&tr=http%3A%2F%2Ftr.bangumi.moe%3A6969%2Fannounce&tr=https%3A%2F%2Ft-115.rhcloud.com%2Fonly_for_ylbud&tr=http%3A%2F%2Fbtfile.sdo.com%3A6961%2Fannounce&tr=http%3A%2F%2Fexodus.desync.com%3A6969%2Fannounce&tr=https%3A%2F%2Ftr.bangumi.moe%3A9696%2Fannounce&tr=http%3A%2F%2Ft.nyaatracker.com%2Fannounce&tr=http%3A%2F%2Fopen.nyaatorrents.info%3A6544%2Fannounce&tr=http%3A%2F%2Ft2.popgo.org%3A7456%2Fannonce&tr=http%3A%2F%2Fbt.sc-ol.com%3A2710%2Fannounce&tr=http%3A%2F%2Fshare.camoe.cn%3A8080%2Fannounce&tr=http%3A%2F%2Ftracker.ktxp.com%3A7070%2Fannounce&tr=http%3A%2F%2Ftracker.ktxp.com%3A6868%2Fannounce&tr=http%3A%2F%2Ftracker.prq.to%2Fannounce.php&tr=http%3A%2F%2Ftracker.dmhy.org%3A8000%2Fannounce&tr=http%3A%2F%2F173.254.204.71%3A1096%2Fannounce&tr=http%3A%2F%2F188.190.120.74%3A80%2Fannounce&tr=http%3A%2F%2F95.68.246.30%3A80%2Fannounce&tr=http%3A%2F%2Fmgtracker.org%3A2710%2Fannounce&tr=http%3A%2F%2Fretracker.adminko.org%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.xelion.fr%3A6969%2Fannounce&tr=http%3A%2F%2Ft.acg.rip%3A6699%2Fannounce&tr=http%3A%2F%2F121.14.98.151%3A9090%2Fannounce&tr=http%3A%2F%2F94.228.192.98%2Fannounce&tr=http%3A%2F%2Fbt.dmhy.net%2Fannonuce&tr=http%3A%2F%2Fshare.dmhy.me%2Fannonuce&tr=http%3A%2F%2Ftracker.btcake.com%2Fannounce&tr=http%3A%2F%2Ftracker.ipv6tracker.org%3A80%2Fannounce&tr=http%3A%2F%2Ftracker3.torrentino.com%2Fannounce&tr=http%3A%2F%2Ftracker2.torrentino.com%2Fannounce&tr=http%3A%2F%2Fpubt.net%3A2710%2Fannounce&tr=http%3A%2F%2Ftracker.tfile.me%2Fannounce&tr=http%3A%2F%2Fbigfoot1942.sektori.org%3A6969%2Fannounce&tr=http%3A%2F%2Ftracker.dmcomic.org%3A2710%2Fannounce&tr=http%3A%2F%2Ftracker.dmcomic.com%3A2710%2Fannounce&tr=http%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=http%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fstats2920856887&tr=http%3A%2F%2Ftracker2.itzmx.com%3A6961%2Fannounce&tr=http%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce&tr=http%3A%2F%2Ftracker4.itzmx.com%3A2710%2Fannounce&tr=http%3A%2F%2F61.154.116.205%3A8000%2Fannounce&tr=http%3A%2F%2F61.154.116.205%3A8000%2Fannonuce&tr=http%3A%2F%2F222.186.43.219%3A7070%2Fannounce&tr=http%3A%2F%2Fexodus.desync.com%2Fannounce&tr=http%3A%2F%2Ftracker.sukimad.com%3A3901%2Fannounce&tr=http%3A%2F%2Fwww.sukimad.com%3A2710%2Fannounce&tr=http%3A%2F%2F208.67.16.113%3A8000%2Fannonuce",
+                          "site": "动漫花园",
+                          "torrent_name": "【1080p】【ARIA吧汉化组】ARIA THE AVVENIRE 水星领航员 OVA 全3话【简繁日外挂(JP_SC_TC)】【x264_flac】",
+                          "description": null,
+                          "pageurl": "https://dmhy.org/topics/view/436140_1080p_ARIA_THE_AVVENIRE_OVA_3_JP_SC_TC_x264_flac.html",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "1.3G",
+                          "respix": "1080p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "ARIA吧汉化组",
+                          "video_encode": "x264",
+                          "labels": []
+                        }
+                      ]
+                    }
+                  }
+                },
+                "1080p_bd": {
+                  "group_info": {
+                    "respix": "1080p",
+                    "restype": "BD"
+                  },
+                  "group_total": 1,
+                  "group_torrents": {
+                    "1080p_bd_avc__75g_none": {
+                      "unique_info": {
+                        "video_encode": "AVC",
+                        "size": "7.5G",
+                        "reseffect": "",
+                        "releasegroup": null
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 17,
+                          "seeders": 1,
+                          "enclosure": "magnet:?xt=urn:btih:VHP7OGQXANKDEYNFFO5RHUW3MDLMISHM&dn=&tr=http%3A%2F%2F208.67.16.113%3A8000%2Fannounce&tr=udp%3A%2F%2F208.67.16.113%3A8000%2Fannounce&tr=http%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.publicbt.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.prq.to%2Fannounce&tr=http%3A%2F%2Fopen.acgtracker.com%3A1096%2Fannounce&tr=http%3A%2F%2Ftr.bangumi.moe%3A6969%2Fannounce&tr=https%3A%2F%2Ft-115.rhcloud.com%2Fonly_for_ylbud&tr=http%3A%2F%2Fbtfile.sdo.com%3A6961%2Fannounce&tr=http%3A%2F%2Fexodus.desync.com%3A6969%2Fannounce&tr=https%3A%2F%2Ftr.bangumi.moe%3A9696%2Fannounce&tr=http%3A%2F%2Fopen.nyaatorrents.info%3A6544%2Fannounce",
+                          "site": "动漫花园",
+                          "torrent_name": "[UCCUSS]水星領航員 ARIA The AVVENIRE OVA 全3話 (BD 1920x1080p AVC FLAC AACx2)",
+                          "description": null,
+                          "pageurl": "https://dmhy.org/topics/view/435963_UCCUSS_ARIA_The_AVVENIRE_OVA_3_BD_1920x1080p_AVC_FLAC_AACx2.html",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "7.5G",
+                          "respix": "1080p",
+                          "restype": "BD",
+                          "reseffect": "",
+                          "releasegroup": null,
+                          "video_encode": "AVC",
+                          "labels": []
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            [
+              "S03 E01-E13",
+              {
+                "1080p_": {
+                  "group_info": {
+                    "respix": "1080p",
+                    "restype": ""
+                  },
+                  "group_total": 3,
+                  "group_torrents": {
+                    "1080p__avc__60g_lilithraws": {
+                      "unique_info": {
+                        "video_encode": "AVC",
+                        "size": "6.0G",
+                        "reseffect": "",
+                        "releasegroup": "Lilith-Raws"
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 10,
+                          "seeders": 3,
+                          "enclosure": "magnet:?xt=urn:btih:YWW3XAP6CNOFKWHJXN4UABHPSMROICIB&dn=&tr=http%3A%2F%2F104.143.10.186%3A8000%2Fannounce&tr=udp%3A%2F%2F104.143.10.186%3A8000%2Fannounce&tr=http%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=udp%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce&tr=http%3A%2F%2Ftracker4.itzmx.com%3A2710%2Fannounce&tr=http%3A%2F%2Ftracker.publicbt.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.prq.to%2Fannounce&tr=http%3A%2F%2Fopen.acgtracker.com%3A1096%2Fannounce&tr=https%3A%2F%2Ft-115.rhcloud.com%2Fonly_for_ylbud&tr=http%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=http%3A%2F%2Ftracker2.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=udp%3A%2F%2Ftracker2.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker4.itzmx.com%3A2710%2Fannounce&tr=http%3A%2F%2Ftr.bangumi.moe%3A6969%2Fannounce&tr=http%3A%2F%2Ft.nyaatracker.com%2Fannounce&tr=http%3A%2F%2Fopen.nyaatorrents.info%3A6544%2Fannounce&tr=http%3A%2F%2Ft2.popgo.org%3A7456%2Fannonce&tr=http%3A%2F%2Fshare.camoe.cn%3A8080%2Fannounce&tr=http%3A%2F%2Fopentracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Ftracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Fnyaa.tracker.wf%3A7777%2Fannounce&tr=https%3A%2F%2Ftracker.lilithraws.org%2Fannounce&tr=http%3A%2F%2Fopentracker.acgnx.com%3A6869%2Fannounce&tr=http%3A%2F%2Ft.acg.rip%3A6699%2Fannounce",
+                          "site": "动漫花园",
+                          "torrent_name": "[Lilith-Raws] 水星領航員 第三季 / Aria the Origination [01-13][Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]",
+                          "description": null,
+                          "pageurl": "https://dmhy.org/topics/view/603301_Lilith-Raws_Aria_the_Origination_01-13_Baha_WEB-DL_1080p_AVC_AAC_CHT_MP4.html",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "6.0G",
+                          "respix": "1080p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "Lilith-Raws",
+                          "video_encode": "AVC",
+                          "labels": []
+                        },
+                        {
+                          "id": 18,
+                          "seeders": 0,
+                          "enclosure": "https://acg.rip/t/257421.torrent",
+                          "site": "ACG.RIP",
+                          "torrent_name": "[Lilith-Raws] 水星領航員 第三季 / Aria the Origination [01-13][Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]",
+                          "description": null,
+                          "pageurl": "https://acg.rip/t/257421",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "6.0G",
+                          "respix": "1080p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "Lilith-Raws",
+                          "video_encode": "AVC",
+                          "labels": []
+                        }
+                      ]
+                    },
+                    "1080p__avc__602g_lilithraws": {
+                      "unique_info": {
+                        "video_encode": "AVC",
+                        "size": "6.02G",
+                        "reseffect": "",
+                        "releasegroup": "Lilith-Raws"
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 21,
+                          "seeders": 0,
+                          "enclosure": "magnet:?xt=urn:btih:c5adbb81fe135c5558e9bb794004ef9322e40901&tr=http%3a%2f%2ft.nyaatracker.com%2fannounce&tr=http%3a%2f%2ftracker.kamigami.org%3a2710%2fannounce&tr=http%3a%2f%2fshare.camoe.cn%3a8080%2fannounce&tr=http%3a%2f%2fopentracker.acgnx.se%2fannounce&tr=http%3a%2f%2fanidex.moe%3a6969%2fannounce&tr=http%3a%2f%2ft.acg.rip%3a6699%2fannounce&tr=https%3a%2f%2ftr.bangumi.moe%3a9696%2fannounce&tr=udp%3a%2f%2ftr.bangumi.moe%3a6969%2fannounce&tr=http%3a%2f%2fopen.acgtracker.com%3a1096%2fannounce&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce",
+                          "site": "MiKan",
+                          "torrent_name": "[Lilith-Raws] 水星领航员 第三季 / Aria the Origination [01-13][Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]",
+                          "description": null,
+                          "pageurl": "https://mikanani.me/Home/Episode/c5adbb81fe135c5558e9bb794004ef9322e40901",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "6.02G",
+                          "respix": "1080p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "Lilith-Raws",
+                          "video_encode": "AVC",
+                          "labels": []
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            [
+              "S02 E01-E26",
+              {
+                "1080p_": {
+                  "group_info": {
+                    "respix": "1080p",
+                    "restype": ""
+                  },
+                  "group_total": 3,
+                  "group_torrents": {
+                    "1080p__avc__78g_lilithraws": {
+                      "unique_info": {
+                        "video_encode": "AVC",
+                        "size": "7.8G",
+                        "reseffect": "",
+                        "releasegroup": "Lilith-Raws"
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 13,
+                          "seeders": 2,
+                          "enclosure": "magnet:?xt=urn:btih:WLFZNYOUCNMWVX2J627KAXGJRC3RYO3B&dn=&tr=http%3A%2F%2F104.143.10.186%3A8000%2Fannounce&tr=udp%3A%2F%2F104.143.10.186%3A8000%2Fannounce&tr=http%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=udp%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce&tr=http%3A%2F%2Ftracker4.itzmx.com%3A2710%2Fannounce&tr=http%3A%2F%2Ftracker.publicbt.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.prq.to%2Fannounce&tr=http%3A%2F%2Fopen.acgtracker.com%3A1096%2Fannounce&tr=https%3A%2F%2Ft-115.rhcloud.com%2Fonly_for_ylbud&tr=http%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=http%3A%2F%2Ftracker2.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=udp%3A%2F%2Ftracker2.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker4.itzmx.com%3A2710%2Fannounce&tr=http%3A%2F%2Ftr.bangumi.moe%3A6969%2Fannounce&tr=http%3A%2F%2Ft.nyaatracker.com%2Fannounce&tr=http%3A%2F%2Fopen.nyaatorrents.info%3A6544%2Fannounce&tr=http%3A%2F%2Ft2.popgo.org%3A7456%2Fannonce&tr=http%3A%2F%2Fshare.camoe.cn%3A8080%2Fannounce&tr=http%3A%2F%2Fopentracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Ftracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Fnyaa.tracker.wf%3A7777%2Fannounce&tr=https%3A%2F%2Ftracker.lilithraws.org%2Fannounce&tr=http%3A%2F%2Fopentracker.acgnx.com%3A6869%2Fannounce&tr=http%3A%2F%2Ft.acg.rip%3A6699%2Fannounce",
+                          "site": "动漫花园",
+                          "torrent_name": "[Lilith-Raws] 水星領航員 第二季 / Aria the Natural [01-26][Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]",
+                          "description": null,
+                          "pageurl": "https://dmhy.org/topics/view/603297_Lilith-Raws_Aria_the_Natural_01-26_Baha_WEB-DL_1080p_AVC_AAC_CHT_MP4.html",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "7.8G",
+                          "respix": "1080p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "Lilith-Raws",
+                          "video_encode": "AVC",
+                          "labels": []
+                        },
+                        {
+                          "id": 19,
+                          "seeders": 0,
+                          "enclosure": "https://acg.rip/t/257417.torrent",
+                          "site": "ACG.RIP",
+                          "torrent_name": "[Lilith-Raws] 水星領航員 第二季 / Aria the Natural [01-26][Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]",
+                          "description": null,
+                          "pageurl": "https://acg.rip/t/257417",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "7.8G",
+                          "respix": "1080p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "Lilith-Raws",
+                          "video_encode": "AVC",
+                          "labels": []
+                        }
+                      ]
+                    },
+                    "1080p__avc__783g_lilithraws": {
+                      "unique_info": {
+                        "video_encode": "AVC",
+                        "size": "7.83G",
+                        "reseffect": "",
+                        "releasegroup": "Lilith-Raws"
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 22,
+                          "seeders": 0,
+                          "enclosure": "magnet:?xt=urn:btih:b2cb96e1d413596adf49f6bea05cc988b71c3b61&tr=http%3a%2f%2ft.nyaatracker.com%2fannounce&tr=http%3a%2f%2ftracker.kamigami.org%3a2710%2fannounce&tr=http%3a%2f%2fshare.camoe.cn%3a8080%2fannounce&tr=http%3a%2f%2fopentracker.acgnx.se%2fannounce&tr=http%3a%2f%2fanidex.moe%3a6969%2fannounce&tr=http%3a%2f%2ft.acg.rip%3a6699%2fannounce&tr=https%3a%2f%2ftr.bangumi.moe%3a9696%2fannounce&tr=udp%3a%2f%2ftr.bangumi.moe%3a6969%2fannounce&tr=http%3a%2f%2fopen.acgtracker.com%3a1096%2fannounce&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce",
+                          "site": "MiKan",
+                          "torrent_name": "[Lilith-Raws] 水星领航员 第二季 / Aria the Natural [01-26][Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]",
+                          "description": null,
+                          "pageurl": "https://mikanani.me/Home/Episode/b2cb96e1d413596adf49f6bea05cc988b71c3b61",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "7.83G",
+                          "respix": "1080p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "Lilith-Raws",
+                          "video_encode": "AVC",
+                          "labels": []
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            [
+              "S01 E03",
+              {
+                "720p_": {
+                  "group_info": {
+                    "respix": "720p",
+                    "restype": ""
+                  },
+                  "group_total": 2,
+                  "group_torrents": {
+                    "720p____2725m_dhr百合組": {
+                      "unique_info": {
+                        "video_encode": "",
+                        "size": "272.5M",
+                        "reseffect": "",
+                        "releasegroup": "DHR百合組"
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 8,
+                          "seeders": 1,
+                          "enclosure": "magnet:?xt=urn:btih:4QUVUA6Z66ZO53V4VK7IUUZ4ZQ6SUENU&dn=&tr=http%3A%2F%2F104.238.198.186%3A8000%2Fannounce&tr=udp%3A%2F%2F104.238.198.186%3A8000%2Fannounce&tr=http%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.publicbt.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.prq.to%2Fannounce&tr=http%3A%2F%2Fopen.acgtracker.com%3A1096%2Fannounce&tr=http%3A%2F%2Ftr.bangumi.moe%3A6969%2Fannounce&tr=https%3A%2F%2Ft-115.rhcloud.com%2Fonly_for_ylbud&tr=http%3A%2F%2Fbtfile.sdo.com%3A6961%2Fannounce&tr=http%3A%2F%2Fexodus.desync.com%3A6969%2Fannounce&tr=https%3A%2F%2Ftr.bangumi.moe%3A9696%2Fannounce&tr=https%3A%2F%2Fopentracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Ftracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Ft.acg.rip%3A6699%2Fannounce&tr=http%3A%2F%2Ft.nyaatracker.com%2Fannounce&tr=http%3A%2F%2Fshare.camoe.cn%3A8080%2Fannounce",
+                          "site": "动漫花园",
+                          "torrent_name": "【DHR百合組】[水星領航員 The AVVENIRE_Aria the Avvenire][OVA03][繁體][BDRip][720P][MP4]",
+                          "description": null,
+                          "pageurl": "https://dmhy.org/topics/view/485259_DHR_The_AVVENIRE_Aria_the_Avvenire_OVA03_BDRip_720P_MP4.html",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "272.5M",
+                          "respix": "720p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "DHR百合組",
+                          "video_encode": "",
+                          "labels": []
+                        }
+                      ]
+                    },
+                    "720p____2725m_dhr百合组": {
+                      "unique_info": {
+                        "video_encode": "",
+                        "size": "272.5M",
+                        "reseffect": "",
+                        "releasegroup": "DHR百合组"
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 25,
+                          "seeders": 0,
+                          "enclosure": "magnet:?xt=urn:btih:e4295a03d9f7b2eeeebcaabe8a533ccc3d2a11b4&tr=http%3a%2f%2ft.nyaatracker.com%2fannounce&tr=http%3a%2f%2ftracker.kamigami.org%3a2710%2fannounce&tr=http%3a%2f%2fshare.camoe.cn%3a8080%2fannounce&tr=http%3a%2f%2fopentracker.acgnx.se%2fannounce&tr=http%3a%2f%2fanidex.moe%3a6969%2fannounce&tr=http%3a%2f%2ft.acg.rip%3a6699%2fannounce&tr=https%3a%2f%2ftr.bangumi.moe%3a9696%2fannounce&tr=udp%3a%2f%2ftr.bangumi.moe%3a6969%2fannounce&tr=http%3a%2f%2fopen.acgtracker.com%3a1096%2fannounce&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce",
+                          "site": "MiKan",
+                          "torrent_name": "【DHR百合组】[水星领航员 The AVVENIRE_Aria the Avvenire][OVA03][繁体][BDRip][720P][MP4]",
+                          "description": null,
+                          "pageurl": "https://mikanani.me/Home/Episode/e4295a03d9f7b2eeeebcaabe8a533ccc3d2a11b4",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "272.5M",
+                          "respix": "720p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "DHR百合组",
+                          "video_encode": "",
+                          "labels": []
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            [
+              "S01 E02",
+              {
+                "720p_": {
+                  "group_info": {
+                    "respix": "720p",
+                    "restype": ""
+                  },
+                  "group_total": 2,
+                  "group_torrents": {
+                    "720p____1859m_dhr百合組": {
+                      "unique_info": {
+                        "video_encode": "",
+                        "size": "185.9M",
+                        "reseffect": "",
+                        "releasegroup": "DHR百合組"
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 7,
+                          "seeders": 2,
+                          "enclosure": "magnet:?xt=urn:btih:KHX6WZDBIXWQWWUV3XZYOBWSV4I2BZ67&dn=&tr=http%3A%2F%2F104.238.198.186%3A8000%2Fannounce&tr=udp%3A%2F%2F104.238.198.186%3A8000%2Fannounce&tr=http%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.publicbt.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.prq.to%2Fannounce&tr=http%3A%2F%2Fopen.acgtracker.com%3A1096%2Fannounce&tr=http%3A%2F%2Ftr.bangumi.moe%3A6969%2Fannounce&tr=https%3A%2F%2Ft-115.rhcloud.com%2Fonly_for_ylbud&tr=http%3A%2F%2Fbtfile.sdo.com%3A6961%2Fannounce&tr=http%3A%2F%2Fexodus.desync.com%3A6969%2Fannounce&tr=https%3A%2F%2Ftr.bangumi.moe%3A9696%2Fannounce&tr=https%3A%2F%2Fopentracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Ftracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Ft.acg.rip%3A6699%2Fannounce&tr=http%3A%2F%2Ft.nyaatracker.com%2Fannounce&tr=http%3A%2F%2Fshare.camoe.cn%3A8080%2Fannounce",
+                          "site": "动漫花园",
+                          "torrent_name": "【DHR百合組】[水星領航員 The AVVENIRE_Aria the Avvenire][OVA02][繁體][BDRip][720P][MP4]",
+                          "description": null,
+                          "pageurl": "https://dmhy.org/topics/view/479522_DHR_The_AVVENIRE_Aria_the_Avvenire_OVA02_BDRip_720P_MP4.html",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "185.9M",
+                          "respix": "720p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "DHR百合組",
+                          "video_encode": "",
+                          "labels": []
+                        }
+                      ]
+                    },
+                    "720p____1859m_dhr百合组": {
+                      "unique_info": {
+                        "video_encode": "",
+                        "size": "185.9M",
+                        "reseffect": "",
+                        "releasegroup": "DHR百合组"
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 26,
+                          "seeders": 0,
+                          "enclosure": "magnet:?xt=urn:btih:51efeb646145ed0b5a95ddf38706d2af11a0e7df&tr=http%3a%2f%2ft.nyaatracker.com%2fannounce&tr=http%3a%2f%2ftracker.kamigami.org%3a2710%2fannounce&tr=http%3a%2f%2fshare.camoe.cn%3a8080%2fannounce&tr=http%3a%2f%2fopentracker.acgnx.se%2fannounce&tr=http%3a%2f%2fanidex.moe%3a6969%2fannounce&tr=http%3a%2f%2ft.acg.rip%3a6699%2fannounce&tr=https%3a%2f%2ftr.bangumi.moe%3a9696%2fannounce&tr=udp%3a%2f%2ftr.bangumi.moe%3a6969%2fannounce&tr=http%3a%2f%2fopen.acgtracker.com%3a1096%2fannounce&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce",
+                          "site": "MiKan",
+                          "torrent_name": "【DHR百合组】[水星领航员 The AVVENIRE_Aria the Avvenire][OVA02][繁体][BDRip][720P][MP4]",
+                          "description": null,
+                          "pageurl": "https://mikanani.me/Home/Episode/51efeb646145ed0b5a95ddf38706d2af11a0e7df",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "185.9M",
+                          "respix": "720p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "DHR百合组",
+                          "video_encode": "",
+                          "labels": []
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            [
+              "S01 E01-E13",
+              {
+                "1080p_": {
+                  "group_info": {
+                    "respix": "1080p",
+                    "restype": ""
+                  },
+                  "group_total": 3,
+                  "group_torrents": {
+                    "1080p__avc__41g_lilithraws": {
+                      "unique_info": {
+                        "video_encode": "AVC",
+                        "size": "4.1G",
+                        "reseffect": "",
+                        "releasegroup": "Lilith-Raws"
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 11,
+                          "seeders": 3,
+                          "enclosure": "magnet:?xt=urn:btih:YUFBZTVQXMUDP35JXCYXPF4RDA3RPQZE&dn=&tr=http%3A%2F%2F104.143.10.186%3A8000%2Fannounce&tr=udp%3A%2F%2F104.143.10.186%3A8000%2Fannounce&tr=http%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=udp%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce&tr=http%3A%2F%2Ftracker4.itzmx.com%3A2710%2Fannounce&tr=http%3A%2F%2Ftracker.publicbt.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.prq.to%2Fannounce&tr=http%3A%2F%2Fopen.acgtracker.com%3A1096%2Fannounce&tr=https%3A%2F%2Ft-115.rhcloud.com%2Fonly_for_ylbud&tr=http%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=http%3A%2F%2Ftracker2.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=udp%3A%2F%2Ftracker2.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker4.itzmx.com%3A2710%2Fannounce&tr=http%3A%2F%2Ftr.bangumi.moe%3A6969%2Fannounce&tr=http%3A%2F%2Ft.nyaatracker.com%2Fannounce&tr=http%3A%2F%2Fopen.nyaatorrents.info%3A6544%2Fannounce&tr=http%3A%2F%2Ft2.popgo.org%3A7456%2Fannonce&tr=http%3A%2F%2Fshare.camoe.cn%3A8080%2Fannounce&tr=http%3A%2F%2Fopentracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Ftracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Fnyaa.tracker.wf%3A7777%2Fannounce&tr=https%3A%2F%2Ftracker.lilithraws.org%2Fannounce&tr=http%3A%2F%2Fopentracker.acgnx.com%3A6869%2Fannounce&tr=http%3A%2F%2Ft.acg.rip%3A6699%2Fannounce",
+                          "site": "动漫花园",
+                          "torrent_name": "[Lilith-Raws] 水星領航員 / Aria the Animation [01-13][Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]",
+                          "description": null,
+                          "pageurl": "https://dmhy.org/topics/view/603293_Lilith-Raws_Aria_the_Animation_01-13_Baha_WEB-DL_1080p_AVC_AAC_CHT_MP4.html",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "4.1G",
+                          "respix": "1080p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "Lilith-Raws",
+                          "video_encode": "AVC",
+                          "labels": []
+                        },
+                        {
+                          "id": 20,
+                          "seeders": 0,
+                          "enclosure": "https://acg.rip/t/257413.torrent",
+                          "site": "ACG.RIP",
+                          "torrent_name": "[Lilith-Raws] 水星領航員 / Aria the Animation [01-13][Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]",
+                          "description": null,
+                          "pageurl": "https://acg.rip/t/257413",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "4.1G",
+                          "respix": "1080p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "Lilith-Raws",
+                          "video_encode": "AVC",
+                          "labels": []
+                        }
+                      ]
+                    },
+                    "1080p__avc__412g_lilithraws": {
+                      "unique_info": {
+                        "video_encode": "AVC",
+                        "size": "4.12G",
+                        "reseffect": "",
+                        "releasegroup": "Lilith-Raws"
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 23,
+                          "seeders": 0,
+                          "enclosure": "magnet:?xt=urn:btih:c50a1cceb0bb2837efa9b8b1779791183717c324&tr=http%3a%2f%2ft.nyaatracker.com%2fannounce&tr=http%3a%2f%2ftracker.kamigami.org%3a2710%2fannounce&tr=http%3a%2f%2fshare.camoe.cn%3a8080%2fannounce&tr=http%3a%2f%2fopentracker.acgnx.se%2fannounce&tr=http%3a%2f%2fanidex.moe%3a6969%2fannounce&tr=http%3a%2f%2ft.acg.rip%3a6699%2fannounce&tr=https%3a%2f%2ftr.bangumi.moe%3a9696%2fannounce&tr=udp%3a%2f%2ftr.bangumi.moe%3a6969%2fannounce&tr=http%3a%2f%2fopen.acgtracker.com%3a1096%2fannounce&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce",
+                          "site": "MiKan",
+                          "torrent_name": "[Lilith-Raws] 水星领航员 / Aria the Animation [01-13][Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]",
+                          "description": null,
+                          "pageurl": "https://mikanani.me/Home/Episode/c50a1cceb0bb2837efa9b8b1779791183717c324",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "4.12G",
+                          "respix": "1080p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "Lilith-Raws",
+                          "video_encode": "AVC",
+                          "labels": []
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            [
+              "S01 E01",
+              {
+                "1080p_bdrip": {
+                  "group_info": {
+                    "respix": "1080p",
+                    "restype": "BDRIP"
+                  },
+                  "group_total": 4,
+                  "group_torrents": {
+                    "1080p_bdrip_hevc__325g_none": {
+                      "unique_info": {
+                        "video_encode": "HEVC",
+                        "size": "3.25G",
+                        "reseffect": "",
+                        "releasegroup": null
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 2,
+                          "seeders": 0,
+                          "enclosure": "magnet:?xt=urn:btih:a5c9b288d38743624122f663fb2798a04f120915&tr=http%3a%2f%2ft.nyaatracker.com%2fannounce&tr=http%3a%2f%2ftracker.kamigami.org%3a2710%2fannounce&tr=http%3a%2f%2fshare.camoe.cn%3a8080%2fannounce&tr=http%3a%2f%2fopentracker.acgnx.se%2fannounce&tr=http%3a%2f%2fanidex.moe%3a6969%2fannounce&tr=http%3a%2f%2ft.acg.rip%3a6699%2fannounce&tr=https%3a%2f%2ftr.bangumi.moe%3a9696%2fannounce&tr=udp%3a%2f%2ftr.bangumi.moe%3a6969%2fannounce&tr=http%3a%2f%2fopen.acgtracker.com%3a1096%2fannounce&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce",
+                          "site": "MiKan",
+                          "torrent_name": "[爱恋字幕社&漫猫字幕社] 水星领航员/ARIA The ANIMATION (01-13Fin BDRIP 1080p HEVC AAC MP4 2005年10月 简中)",
+                          "description": null,
+                          "pageurl": "https://mikanani.me/Home/Episode/a5c9b288d38743624122f663fb2798a04f120915",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "3.25G",
+                          "respix": "1080p",
+                          "restype": "BDRIP",
+                          "reseffect": "",
+                          "releasegroup": null,
+                          "video_encode": "HEVC",
+                          "labels": []
+                        },
+                        {
+                          "id": 3,
+                          "seeders": 0,
+                          "enclosure": "magnet:?xt=urn:btih:6bdb92d47bf51a3fde56e708e77eeedd68b9befb&tr=http%3a%2f%2ft.nyaatracker.com%2fannounce&tr=http%3a%2f%2ftracker.kamigami.org%3a2710%2fannounce&tr=http%3a%2f%2fshare.camoe.cn%3a8080%2fannounce&tr=http%3a%2f%2fopentracker.acgnx.se%2fannounce&tr=http%3a%2f%2fanidex.moe%3a6969%2fannounce&tr=http%3a%2f%2ft.acg.rip%3a6699%2fannounce&tr=https%3a%2f%2ftr.bangumi.moe%3a9696%2fannounce&tr=udp%3a%2f%2ftr.bangumi.moe%3a6969%2fannounce&tr=http%3a%2f%2fopen.acgtracker.com%3a1096%2fannounce&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce",
+                          "site": "MiKan",
+                          "torrent_name": "[爱恋字幕社&漫猫字幕社] 水星领航员/ARIA The ANIMATION (01-13Fin BDRIP 1080p HEVC AAC MP4 2005年10月 繁中)",
+                          "description": null,
+                          "pageurl": "https://mikanani.me/Home/Episode/6bdb92d47bf51a3fde56e708e77eeedd68b9befb",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "3.25G",
+                          "respix": "1080p",
+                          "restype": "BDRIP",
+                          "reseffect": "",
+                          "releasegroup": null,
+                          "video_encode": "HEVC",
+                          "labels": []
+                        }
+                      ]
+                    },
+                    "1080p_bdrip_hevc__33g_none": {
+                      "unique_info": {
+                        "video_encode": "HEVC",
+                        "size": "3.3G",
+                        "reseffect": "",
+                        "releasegroup": null
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 5,
+                          "seeders": "-",
+                          "enclosure": "magnet:?xt=urn:btih:UXE3FCGTQ5BWEQJC6ZR7WJ4YUBHRECIV&dn=&tr=http%3A%2F%2F104.143.10.186%3A8000%2Fannounce&tr=udp%3A%2F%2F104.143.10.186%3A8000%2Fannounce&tr=http%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce&tr=http%3A%2F%2Ftracker4.itzmx.com%3A2710%2Fannounce&tr=http%3A%2F%2Ftracker.publicbt.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.prq.to%2Fannounce&tr=http%3A%2F%2Fopen.acgtracker.com%3A1096%2Fannounce&tr=https%3A%2F%2Ft-115.rhcloud.com%2Fonly_for_ylbud&tr=http%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=http%3A%2F%2Ftracker2.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=udp%3A%2F%2Ftracker2.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker4.itzmx.com%3A2710%2Fannounce&tr=http%3A%2F%2Ftr.bangumi.moe%3A6969%2Fannounce&tr=http%3A%2F%2Ft.nyaatracker.com%2Fannounce&tr=http%3A%2F%2Fopen.nyaatorrents.info%3A6544%2Fannounce&tr=http%3A%2F%2Ft2.popgo.org%3A7456%2Fannonce&tr=http%3A%2F%2Fshare.camoe.cn%3A8080%2Fannounce&tr=http%3A%2F%2Fopentracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Ftracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Fnyaa.tracker.wf%3A7777%2Fannounce&tr=http%3A%2F%2F104.238.198.186%3A8000%2Fannounce",
+                          "site": "动漫花园",
+                          "torrent_name": "[爱恋字幕社&漫猫字幕社] 水星领航员/ARIA The ANIMATION (01-13Fin BDRIP 1080p HEVC AAC MP4 2005年10月 简中)",
+                          "description": null,
+                          "pageurl": "https://dmhy.org/topics/view/638930_ARIA_The_ANIMATION_01-13Fin_BDRIP_1080p_AVC_AAC_MP4_2005_10.html",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "3.3G",
+                          "respix": "1080p",
+                          "restype": "BDRIP",
+                          "reseffect": "",
+                          "releasegroup": null,
+                          "video_encode": "HEVC",
+                          "labels": []
+                        },
+                        {
+                          "id": 6,
+                          "seeders": "-",
+                          "enclosure": "magnet:?xt=urn:btih:NPNZFVD36UND7XSW44EOO7XO3VULTPX3&dn=&tr=http%3A%2F%2F104.143.10.186%3A8000%2Fannounce&tr=udp%3A%2F%2F104.143.10.186%3A8000%2Fannounce&tr=http%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce&tr=http%3A%2F%2Ftracker4.itzmx.com%3A2710%2Fannounce&tr=http%3A%2F%2Ftracker.publicbt.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.prq.to%2Fannounce&tr=http%3A%2F%2Fopen.acgtracker.com%3A1096%2Fannounce&tr=https%3A%2F%2Ft-115.rhcloud.com%2Fonly_for_ylbud&tr=http%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=http%3A%2F%2Ftracker2.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=udp%3A%2F%2Ftracker2.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker3.itzmx.com%3A6961%2Fannounce&tr=udp%3A%2F%2Ftracker4.itzmx.com%3A2710%2Fannounce&tr=http%3A%2F%2Ftr.bangumi.moe%3A6969%2Fannounce&tr=http%3A%2F%2Ft.nyaatracker.com%2Fannounce&tr=http%3A%2F%2Fopen.nyaatorrents.info%3A6544%2Fannounce&tr=http%3A%2F%2Ft2.popgo.org%3A7456%2Fannonce&tr=http%3A%2F%2Fshare.camoe.cn%3A8080%2Fannounce&tr=http%3A%2F%2Fopentracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Ftracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Fnyaa.tracker.wf%3A7777%2Fannounce&tr=http%3A%2F%2F104.238.198.186%3A8000%2Fannounce",
+                          "site": "动漫花园",
+                          "torrent_name": "[愛戀字幕社&漫貓字幕社] 水星領航員/ARIA The ANIMATION (01-13Fin BDRIP 1080p HEVC AAC MP4 2005年10月 繁中)",
+                          "description": null,
+                          "pageurl": "https://dmhy.org/topics/view/638929_ARIA_The_ANIMATION_01-13Fin_BDRIP_1080p_AVC_AAC_MP4_2005_10.html",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "3.3G",
+                          "respix": "1080p",
+                          "restype": "BDRIP",
+                          "reseffect": "",
+                          "releasegroup": null,
+                          "video_encode": "HEVC",
+                          "labels": []
+                        }
+                      ]
+                    }
+                  }
+                },
+                "720p_": {
+                  "group_info": {
+                    "respix": "720p",
+                    "restype": ""
+                  },
+                  "group_total": 2,
+                  "group_torrents": {
+                    "720p____1646m_dhr百合組": {
+                      "unique_info": {
+                        "video_encode": "",
+                        "size": "164.6M",
+                        "reseffect": "",
+                        "releasegroup": "DHR百合組"
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 9,
+                          "seeders": "-",
+                          "enclosure": "magnet:?xt=urn:btih:XGB2QOSAWU3KZYK4JFMFJMV7MMADNSHG&dn=&tr=http%3A%2F%2F104.238.198.186%3A8000%2Fannounce&tr=udp%3A%2F%2F104.238.198.186%3A8000%2Fannounce&tr=http%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.publicbt.com%3A80%2Fannounce&tr=http%3A%2F%2Ftracker.prq.to%2Fannounce&tr=http%3A%2F%2Fopen.acgtracker.com%3A1096%2Fannounce&tr=http%3A%2F%2Ftr.bangumi.moe%3A6969%2Fannounce&tr=https%3A%2F%2Ft-115.rhcloud.com%2Fonly_for_ylbud&tr=http%3A%2F%2Fbtfile.sdo.com%3A6961%2Fannounce&tr=http%3A%2F%2Fexodus.desync.com%3A6969%2Fannounce&tr=https%3A%2F%2Ftr.bangumi.moe%3A9696%2Fannounce&tr=https%3A%2F%2Fopentracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Ftracker.acgnx.se%2Fannounce&tr=http%3A%2F%2Ft.acg.rip%3A6699%2Fannounce&tr=http%3A%2F%2Ft.nyaatracker.com%2Fannounce&tr=http%3A%2F%2Fshare.camoe.cn%3A8080%2Fannounce",
+                          "site": "动漫花园",
+                          "torrent_name": "【DHR百合組】[水星領航員 The AVVENIRE_Aria the Avvenire][OVA01][繁體][BDRip][720P][MP4]",
+                          "description": null,
+                          "pageurl": "https://dmhy.org/topics/view/479054_DHR_The_AVVENIRE_Aria_the_Avvenire_OVA01_BDRip_720P_MP4.html",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "164.6M",
+                          "respix": "720p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "DHR百合組",
+                          "video_encode": "",
+                          "labels": []
+                        }
+                      ]
+                    },
+                    "720p____1646m_dhr百合组": {
+                      "unique_info": {
+                        "video_encode": "",
+                        "size": "164.6M",
+                        "reseffect": "",
+                        "releasegroup": "DHR百合组"
+                      },
+                      "torrent_list": [
+                        {
+                          "id": 27,
+                          "seeders": 0,
+                          "enclosure": "magnet:?xt=urn:btih:b983a83a40b536ace15c495854b2bf630036c8e6&tr=http%3a%2f%2ft.nyaatracker.com%2fannounce&tr=http%3a%2f%2ftracker.kamigami.org%3a2710%2fannounce&tr=http%3a%2f%2fshare.camoe.cn%3a8080%2fannounce&tr=http%3a%2f%2fopentracker.acgnx.se%2fannounce&tr=http%3a%2f%2fanidex.moe%3a6969%2fannounce&tr=http%3a%2f%2ft.acg.rip%3a6699%2fannounce&tr=https%3a%2f%2ftr.bangumi.moe%3a9696%2fannounce&tr=udp%3a%2f%2ftr.bangumi.moe%3a6969%2fannounce&tr=http%3a%2f%2fopen.acgtracker.com%3a1096%2fannounce&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce",
+                          "site": "MiKan",
+                          "torrent_name": "【DHR百合组】[水星领航员 The AVVENIRE_Aria the Avvenire][OVA01][繁体][BDRip][720P][MP4]",
+                          "description": null,
+                          "pageurl": "https://mikanani.me/Home/Episode/b983a83a40b536ace15c495854b2bf630036c8e6",
+                          "uploadvalue": 1,
+                          "downloadvalue": 0,
+                          "size": "164.6M",
+                          "respix": "720p",
+                          "restype": "",
+                          "reseffect": "",
+                          "releasegroup": "DHR百合组",
+                          "video_encode": "",
+                          "labels": []
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          ],
+          "filter": {
+            "site": [
+              "动漫花园",
+              "MiKan",
+              "ACG.RIP"
+            ],
+            "free": [
+              {
+                "value": "1.0 0.0",
+                "name": "免费"
+              }
+            ],
+            "releasegroup": [
+              "ARIA",
+              "ARIA吧汉化组",
+              "DHR百合組",
+              "DHR百合组",
+              "Lilith-Raws",
+              "未知"
+            ],
+            "video": [
+              "X265",
+              "HEVC",
+              "AVC",
+              "x264"
+            ],
+            "season": [
+              "S03",
+              "S02",
+              "S01"
+            ]
+          }
+        }
+      }
+    }
+  }

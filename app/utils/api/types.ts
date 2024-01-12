@@ -45,15 +45,15 @@ export interface MediaFile {
 export interface MediaWorkMetadata {
   title: string,
   description: string,
-  image: {
+  image?: {
     cover: string,
     background?: string,
   },
-  links: {
+  links?: {
     tmdb?: string,
     douban?: string
   }
-  date: {
+  date?: {
     release: string
   }
 }

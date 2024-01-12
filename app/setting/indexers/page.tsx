@@ -17,14 +17,15 @@ export default function IndexersSetting() {
 function BuiltinIndexerSetting() {
     const { useList } = new Indexers().useResource()
     const { list: sites } = useList();
-    const { data: enabledSites, setData: setEnabledSites, update, messageContext } = new IndexerEnabledSites().useResource({ useMessage: true });
-    return <Space direction="vertical">
+    const { useData, update, messageContext } = new IndexerEnabledSites().useResource({ useMessage: true });
+    const { data: enabledSites, setData: setEnabledSites, } = useData();
+    return <>
         {messageContext}
         {sites ? <IndexerSitesSelector options={sites} value={enabledSites ?? []}
             onChange={((value) => { setEnabledSites(value) })} /> : <></>}
         <br />
         <Button type="primary" onClick={() => { update() }}>保存</Button>
-    </Space>
+    </>
 }
 
 function IndexerSitesSelector({ options: list, value, onChange }: { options: IndexerSite[], value: IndexerSite['id'][], onChange?: (value: IndexerSite['id'][]) => void }) {
@@ -43,7 +44,7 @@ function IndexerSitesSelector({ options: list, value, onChange }: { options: Ind
 
     const [checkedSites, setCheckedSites] = useState(value)
     // useEffect(() => setCheckedSites(list.filter(site => site.enabled).map(site => site.id)), [list]);
-    return <Space direction="vertical">
+    return <>
         <Section title="私有站点">
             <TagCheckboxGroup
                 onChange={(value) => {
@@ -68,5 +69,5 @@ function IndexerSitesSelector({ options: list, value, onChange }: { options: Ind
                 options={checkboxPublicOptions}
             />
         </Section>
-    </Space>
+    </>
 }

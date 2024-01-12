@@ -168,7 +168,9 @@ interface MediaWorkCategorySelectProp extends FormItemProp<MediaWorkCategoryType
     type: MediaWorkType
 }
 export const MediaWorkCategorySelect = (options: MediaWorkCategorySelectProp) => {
-    const { data, refresh } = new MediaWorkCategory(options.type).useResource();
+    const { useData, } = new MediaWorkCategory(options.type).useResource();
+    const { refresh, data } = useData();
+    console.log(refresh, data)
     useEffect(() => {
         refresh();
     }, [options.type])

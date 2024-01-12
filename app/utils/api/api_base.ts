@@ -144,6 +144,7 @@ export class APIArrayResourceBase<T, Options = never> extends APIArrayResource<T
 
 }
 
+
 export interface APIDataResourceOption extends APIResourceOption {
 }
 export class APIDataResourceBase<T, Options = never> extends APIBase {
@@ -161,22 +162,27 @@ export class APIDataResourceBase<T, Options = never> extends APIBase {
     public useResource(option?: APIDataResourceOption) {
         const message = useSubmitMessage(String(this));
         const useMessage = option?.useMessage ?? false;
-        const [data, setData] = useState<T>()
-        const [options, setOptions] = useState<Options>()
 
-        const refresh = (async () => {
-            if (useMessage) message.fetch.loading()
-            try {
-                setData(await this.dataHook(options))
-                if (useMessage) message.fetch.success()
-            } catch (e: any) {
-                if (useMessage) message.fetch.error(e)
-            }
-        })
-        useEffect(() => {
-            refresh();
-        }, [options])
         const self = this
+        
+        const [options, setOptions] = useState<Options>()
+        const [data, setData] = useState<T>()
+        const useData = () => {
+            const refresh = (async () => {
+                if (useMessage) message.fetch.loading()
+                try {
+                    setData(await self.dataHook(options))
+                    if (useMessage) message.fetch.success()
+                } catch (e: any) {
+                    if (useMessage) message.fetch.error(e)
+                }
+            })
+            useEffect(() => {
+                refresh();
+            }, [options])
+            return { data, setData, refresh }
+        }
+
         const update = async (value?: T) => {
             if (useMessage) message.update.loading()
             try {
@@ -189,7 +195,7 @@ export class APIDataResourceBase<T, Options = never> extends APIBase {
         }
 
         return {
-            data, setData, refresh, setOptions,
+            useData,
             messageContext: message.contextHolder,
             update
         }
