@@ -37,6 +37,7 @@ type NastoolApi =
     "download/start" |
     "download/stop" |
     "download/remove" |
+    "download/search" |
     "download/client/add" |
     "library/mediaserver/library" |
     "library/mediaserver/library/item" |

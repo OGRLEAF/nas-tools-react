@@ -67,4 +67,15 @@ export class TorrentSearchResult extends APIDataResourceBase<SearchResult> {
     protected dataHook(options?: undefined): Promise<SearchResult> {
         return this.get();
     }
+
+    public async download(searchId: number, downloadPath?: string, downloadSetting?: number) {
+        const result = await (await this.API).post("download/search", {
+            auth: true,
+            data: {
+                id: String(searchId),
+                dir: downloadPath,
+                setting: downloadSetting == 0 ? undefined : downloadSetting
+            }
+        })
+    }
 }

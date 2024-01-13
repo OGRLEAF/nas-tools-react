@@ -1,3 +1,4 @@
+"use client"
 import TagsSelect from "@/app/components/TagsSelect";
 import { Col, Form, Input, Row, Switch } from "antd";
 import React from "react";

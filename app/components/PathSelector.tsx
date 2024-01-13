@@ -14,14 +14,15 @@ export const PathManagerContext = createContext<PathManager>(new PathManager("/"
 export const PathManagerDispatchContext = createContext(({ type }: { type: any, path: string }) => { });
 
 
-export function PathSelector({ value , onChange, style }: PathSelectorProps) {
+export function PathSelector({ value, onChange, style }: PathSelectorProps) {
     const [loadingState, setLoadingState] = useState(true)
     const [treeData, setTreeData] = useState<Omit<DefaultOptionType, 'label'>[]>([]);
 
     const pathManagerContext = new PathManager("/") // useContext(PathManagerContext);
 
     useEffect(() => {
-        if(value==undefined) {
+        console.log(value)
+        if (value == undefined) {
 
         }
         setLoadingState(true);
@@ -39,7 +40,7 @@ export function PathSelector({ value , onChange, style }: PathSelectorProps) {
             })))
             setLoadingState(false);
         })
-    }, []);
+    }, [value]);
 
     const { token } = theme.useToken();
     const onLoadData: TreeSelectProps['loadData'] = async ({ id }) => {
@@ -74,14 +75,14 @@ export function PathSelector({ value , onChange, style }: PathSelectorProps) {
 
     return <>
         <TreeSelect
-            defaultValue={(value)}
+            value={value}
             loading={loadingState}
             treeDataSimpleMode
             style={style}
             treeData={treeData}
             loadData={(onLoadData)}
             treeLine
-            labelInValue
+            // labelInValue
             onSelect={(value) => onChange ? onChange(value) : undefined}
         />
     </>

@@ -1,7 +1,7 @@
 "use client"
 import CardnForm, { CardProps, CardnFormContext } from "@/app/components/CardnForm";
 import { SyncModeSelect } from "@/app/components/NTSelects";
-import { MediaLibrarySelect } from "@/app/components/LibraryPathSelector";
+import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
 import { DirectorySync, SyncDirectoryConfig, SyncDirectoryUpdateConfig, } from "@/app/utils/api/sync";
 import { SyncMode } from "@/app/utils/api/types"
 import { Button, Col, Descriptions, Form, Row, Space, Switch, Tag, message, theme } from "antd";
@@ -90,21 +90,21 @@ const SyncDirectoryForm = ({ record }: { record?: SyncDirectoryConfig }) => {
         <Row gutter={16}>
             <Col span={24}>
                 <Form.Item label="源目录" name="from">
-                    <MediaLibrarySelect allowLeftEmpty={false} />
+                    <UnionPathsSelect allowLeftEmpty={false} />
                 </Form.Item>
             </Col>
         </Row>
         <Row gutter={16}>
             <Col span={24}>
                 <Form.Item label="目的目录" name="to" >
-                    <MediaLibrarySelect allowLeftEmpty={false} />
+                    <UnionPathsSelect allowLeftEmpty={false} />
                 </Form.Item>
             </Col>
         </Row>
         <Row gutter={16}>
             <Col span={24}>
                 <Form.Item label="未识别目录" name="unknown" >
-                    <MediaLibrarySelect leftEmpty="不使用" />
+                    <UnionPathsSelect leftEmpty="不使用" />
                 </Form.Item>
             </Col>
         </Row>

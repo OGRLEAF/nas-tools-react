@@ -4,7 +4,7 @@ import { API, NastoolServerConfig } from '@/app/utils/api/api'
 import TagsSelect from "@/app/components/TagsSelect"
 import type { FormInstance } from 'antd/es/form';
 import { PathSelector } from '@/app/components/PathSelector';
-import { MediaLibrarySelect } from '@/app/components/LibraryPathSelector';
+import { UnionPathsSelect } from '@/app/components/LibraryPathSelector';
 import { CollapseProps } from 'antd/lib';
 
 const tmdbMatchModeOption = [
@@ -193,7 +193,7 @@ export default function SettingMedia() {
             </Col>
             <Col span={6}>
                 <Form.Item label="文件管理默认路径" name={["media", "media_default_path"]}>
-                    <MediaLibrarySelect />
+                    <UnionPathsSelect />
                 </Form.Item>
             </Col>
         </Row>

@@ -4,7 +4,7 @@ import React, { useContext, useState } from "react";
 import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
 import TinyTMDBSearch, { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { ResTypeSelect, PixSelect, FilterRuleSelect, DownloadSettingSelect, SiteSelect, IndexerSelect } from "@/app/components/NTSelects";
-import { MediaLibrarySelect } from "@/app/components/LibraryPathSelector";
+import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
 import { DBMediaType } from "@/app/utils/api/api";
 import { MovieRssInfo, MovieSubscription, RssState, Subscription } from "@/app/utils/api/subscription/subscribe";
 import { MediaWork, SeriesKey, MediaWorkType } from "@/app/utils/api/types";
@@ -213,7 +213,7 @@ const SubscribeMovieForm = ({ record: config }: { record?: MovieRssInfo }) => {
                 </Col>
                 <Col span={16}>
                     <Form.Item label="保存路径" name="save_path">
-                        <MediaLibrarySelect />
+                        <UnionPathsSelect />
                     </Form.Item>
                 </Col>
             </Row>

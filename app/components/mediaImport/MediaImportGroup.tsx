@@ -11,7 +11,7 @@ import { SearchContext } from "../TMDBSearch/SearchContext";
 import { IconEllipsisLoading } from "../icons";
 import _ from "lodash";
 import { ImportMode } from "@/app/utils/api/api";
-import { MediaLibrarySelect } from "../LibraryPathSelector";
+import { UnionPathsSelect } from "../LibraryPathSelector";
 import { useImportListContext } from "./mediaImportList";
 import { StateMap, StateTag } from "../StateTag";
 
@@ -199,7 +199,7 @@ function ImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Media
         </Space>
         <Form layout="inline" initialValues={{ type: ImportMode.LINK }} disabled={disableImport}>
             <Form.Item name="target_path" >
-                <MediaLibrarySelect width={400} />
+                <UnionPathsSelect width={400} />
             </Form.Item>
             <Form.Item name="type">
                 <Radio.Group>

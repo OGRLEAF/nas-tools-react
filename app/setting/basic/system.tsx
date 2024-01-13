@@ -1,3 +1,4 @@
+"use client"
 import React from 'react'
 import { Form, Input, Space, Row, Col, Select, InputNumber } from 'antd'
 import { API, NastoolServerConfig } from '@/app/utils/api/api'

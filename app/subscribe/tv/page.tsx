@@ -5,7 +5,7 @@ import { TVRssInfo, MovieRssList, RssState, Subscription, TvRssList, TVSubscript
 import TinyTMDBSearch, { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { MediaWork, MediaWorkType, SeriesKey } from "@/app/utils/api/types";
 import { DBMediaType, NastoolFilterruleBasic } from "@/app/utils/api/api";
-import { MediaLibrarySelect } from "@/app/components/LibraryPathSelector";
+import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
 import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 import { useForm } from "antd/es/form/Form";
 import { MediaSeasonInput } from "@/app/components/mediaImport/mediaImport";
@@ -254,7 +254,7 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
                 </Col>
                 <Col span={16}>
                     <Form.Item label="保存路径" name="save_path">
-                        <MediaLibrarySelect />
+                        <UnionPathsSelect />
                     </Form.Item>
                 </Col>
             </Row>

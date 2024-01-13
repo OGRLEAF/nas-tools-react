@@ -1,16 +1,19 @@
 
-import React, { useEffect, useState } from "react"
-import { API, NastoolFilterruleBasic, NastoolIndexer, NastoolSiteInfo, NastoolSiteProfile } from "../utils/api/api"
+import React, { CSSProperties, useEffect, useState } from "react"
+import { API, NastoolFilterruleBasic, NastoolIndexer, NastoolServerConfig, NastoolSiteInfo, NastoolSiteProfile } from "../utils/api/api"
 import { Select, Space } from "antd"
 import { Sites } from "../utils/api/sites"
 import { syncModeMap } from "../utils/api/sync"
 import { MediaWorkType } from "../utils/api/types"
 import { MediaWorkCategory, MediaWorkCategoryType } from "../utils/api/media/category"
 import { DownloadClient, DownloadClientConfig } from "../utils/api/download"
+import { Organize } from "../utils/api/import"
+import { normalize } from "path"
 
 interface FormItemProp<T> {
     value?: T,
-    onChange?: (value: T) => void
+    onChange?: (value: T) => void,
+    style?: CSSProperties
 }
 
 // export const DownloadSetting = createContext<{ label: string, value: string }>([
@@ -24,12 +27,11 @@ export const DownloadSettingSelect = (options: FormItemProp<string>) => {
 
     const downloadConfigSelectOption = [
         {
-            label: "默认",
+            label: "站点设置",
             value: 0
         },
-
     ]
-    const [selectOptions, setSelectOptions] = useState<{ value: undefined | number, label: string }[]>(downloadConfigSelectOption);
+    const [selectOptions, setSelectOptions] = useState<{ value: null | number, label: string }[]>(downloadConfigSelectOption);
     useEffect(() => {
         (async () => {
             const nastool = await API.getNastoolInstance();
@@ -41,7 +43,7 @@ export const DownloadSettingSelect = (options: FormItemProp<string>) => {
                 ])
         })()
     }, []);
-    return <Select options={selectOptions} value={options.value} onChange={options.onChange} />
+    return <Select style={{ ...options.style }} options={selectOptions} value={options.value} onChange={options.onChange} />
 }
 
 export const DownloadClientSelect = (options: { list?: DownloadClientConfig[] } & FormItemProp<string>) => {
@@ -170,7 +172,6 @@ interface MediaWorkCategorySelectProp extends FormItemProp<MediaWorkCategoryType
 export const MediaWorkCategorySelect = (options: MediaWorkCategorySelectProp) => {
     const { useData, } = new MediaWorkCategory(options.type).useResource();
     const { refresh, data } = useData();
-    console.log(refresh, data)
     useEffect(() => {
         refresh();
     }, [options.type])
@@ -193,3 +194,4 @@ export const MediaWorkCategoryUnionSelect = (options: FormItemProp<[MediaWorkTyp
         {(selectedType != "") && (category != undefined) ? <MediaWorkCategorySelect type={selectedType} value={selectedCat} onChange={(value) => { setSelectedCat(value) }} /> : <></>}
     </Space.Compact>
 }
+

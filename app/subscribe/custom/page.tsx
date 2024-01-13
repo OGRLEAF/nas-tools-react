@@ -10,7 +10,7 @@ import { asyncEffect } from "@/app/utils";
 import _ from "lodash";
 import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 import { useForm } from "antd/es/form/Form";
-import { MediaLibrarySelect } from "@/app/components/LibraryPathSelector";
+import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
 
 const CustomRssDownloadForm = () => {
     return <>
@@ -35,7 +35,7 @@ const CustomRssDownloadForm = () => {
         <Row>
             <Col span={24}>
                 <Form.Item label="保存路径" name="save_path">
-                    <MediaLibrarySelect />
+                    <UnionPathsSelect />
                 </Form.Item>
             </Col>
         </Row>
@@ -74,7 +74,7 @@ const CustomRssSubscribeForm = () => {
             </Col>
             <Col span={14}>
                 <Form.Item label="保存路径" name="save_path">
-                    <MediaLibrarySelect />
+                    <UnionPathsSelect />
                 </Form.Item>
             </Col>
             <Col span={2}>

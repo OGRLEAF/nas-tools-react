@@ -5,13 +5,15 @@ import { IconDownloader } from "@/app/components/icons";
 import { DownloadOutlined, ArrowUpOutlined } from "@ant-design/icons"
 import { TorrentSearchResult, SearchResult, TorrentGroup, Torrent } from "@/app/utils/api/search/torrentSearch";
 import { MediaWork, MediaWorkType, SeriesKey } from "@/app/utils/api/types";
-import { Button, Col, Collapse, ConfigProvider, Form, List, Modal, Row, Space, Tag } from "antd";
+import { Button, Col, Collapse, ConfigProvider, Divider, Form, Input, List, Modal, Row, Space, Tag } from "antd";
 import React from "react";
 import Link from "next/link";
 import { useForm } from "antd/es/form/Form";
 import { DownloadSettingSelect } from "@/app/components/NTSelects";
 import { PathSelector } from "@/app/components/PathSelector";
-import { MediaLibrarySelect } from "@/app/components/LibraryPathSelector";
+import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
+import { useSubmitMessage } from "@/app/utils";
+import { TagCheckboxGroup } from "@/app/components/TagCheckbox";
 
 export function SearchResult({ result }: { result: SearchResult }) {
     const mediaWork: MediaWork = {
@@ -50,16 +52,29 @@ export function SearchResult({ result }: { result: SearchResult }) {
             </ConfigProvider>
         </Section>
     })
-    return <>
-        <Row gutter={16}>
+    return <Space direction="vertical" style={{ width: "100%" }}>
+        <Row >
+            <Col span={24}></Col>
+        </Row >
+        <Row gutter={20}>
             <Col span={4}>
-                <MediaDetailCard layout="vertical" size="small" mediaDetail={mediaWork} />
+                <MediaDetailCard layout="vertical" size="tiny" mediaDetail={mediaWork} />
+                <br />
+                <Divider orientation="left" orientationMargin={0}>过滤</Divider>
+                <Form layout="vertical">
+                    <Form.Item label="关键词">
+                        <Input />
+                    </Form.Item>
+                    <Form.Item label="分辨率">
+                        <TagCheckboxGroup options={[]} />
+                    </Form.Item>
+                </Form>
             </Col>
             <Col span={20}>
                 {groupedTorernts}
             </Col>
         </Row>
-    </>
+    </Space>
 }
 
 
@@ -103,24 +118,35 @@ interface DownloadModalProps {
 export function DownloadModalEntry(options: DownloadModalProps) {
     const [form] = useForm();
     const [modal, contextHolder] = Modal.useModal();
-    const downloadForm = <Form form={form} initialValues={{ setting: 0, path: "" }} layout="vertical">
-        <Space >
-            <Form.Item name="setting" label="下载设置" style={{ width: 200 }}>
-                <DownloadSettingSelect />
-            </Form.Item>
-            <Form.Item name="path" label="下载路径" style={{ width: 200 }}>
-                <MediaLibrarySelect />
-            </Form.Item>
-        </Space>
+    const { bundle, contextHolder: messageContextHolder } = useSubmitMessage("下载");
+    const submit = bundle("下载提交")
+    const downloadForm = <Form form={form} initialValues={{ setting: 0, path: undefined }} layout="vertical">
+        <Form.Item name="setting" label="下载设置" >
+            <DownloadSettingSelect style={{ width: 150 }} />
+        </Form.Item>
+        <Form.Item name="path" label="下载路径" >
+            <UnionPathsSelect style={{ width: "100%" }} library={false} />
+        </Form.Item>
 
     </Form>
 
-    return <>{contextHolder}<Button type="text" icon={<DownloadOutlined />}
+    return <>{contextHolder}{messageContextHolder}<Button type="text" icon={<DownloadOutlined />}
         onClick={() => {
             modal.confirm({
                 title: `下载选项`,
                 content: downloadForm,
-                width: 500
+                width: 500,
+                onOk: () => {
+                    const values = form.getFieldsValue();
+                    submit.loading();
+                    new TorrentSearchResult().download(options.result.id, values.path, values.setting)
+                        .then((msg) => {
+                            submit.success()
+                        })
+                        .catch((e) => {
+                            submit.error(e)
+                        })
+                }
             })
         }} />
     </>
