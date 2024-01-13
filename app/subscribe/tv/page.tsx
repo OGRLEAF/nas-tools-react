@@ -109,7 +109,7 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
         setSeries(value.series)
         form.setFieldsValue({
             name: value.title,
-            year: value.metadata?.date.release,
+            year: value.metadata?.date?.release,
         })
     }
 
