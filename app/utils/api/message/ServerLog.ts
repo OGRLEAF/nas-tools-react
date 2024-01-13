@@ -19,6 +19,7 @@ export class ServerLog {
     private serverEvent: ServerEvent
     private logs: Log[] = []
     public onMessage: (msgs: Log[]) => void = () => { };
+    public onMessageUpdate?: (msgs: Log[]) => void = () => { };
     constructor(serverEvent: ServerEvent) {
         this.serverEvent = serverEvent;
         this.connect();
@@ -34,7 +35,8 @@ export class ServerLog {
     private handle_message(messageRaw: Log[]) {
 
         this.logs.push(...messageRaw)
-        if (this.onMessage) this.onMessage([...this.logs])
+        if (this.onMessage) this.onMessage([...this.logs.slice(this.logs.length - 100, -1)])
+        if (this.onMessageUpdate) this.onMessageUpdate(messageRaw);
 
     }
 

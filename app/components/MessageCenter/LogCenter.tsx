@@ -8,6 +8,7 @@ import { useForm } from "antd/es/form/Form";
 import { ServerLog, Log } from "@/app/utils/api/message/ServerLog";
 import { ServerConfig } from "@/app/utils/api/serverConfig";
 import { StateMap, StateTag } from "../StateTag";
+import VirtualList, { ListRef } from "rc-virtual-list"
 import _ from "lodash";
 
 const LogLevelStateTag: StateMap<Log['level']> = {
@@ -29,6 +30,13 @@ const LogLevelStateTag: StateMap<Log['level']> = {
     },
 }
 
+const MessageCard = ({ msg }: { msg: Log, }) => {
+    return <div style={{ wordBreak: "break-word" }}>
+        <Tag color="cyan">{msg.time}</Tag>
+        <StateTag key={msg.source} stateMap={LogLevelStateTag} value={msg.level} >{msg.source}</StateTag>
+        <p style={{ margin: 0, padding: "8px 0 0 0" }}>{_.unescape(msg.text)}</p>
+    </div>
+}
 
 export default function LogPanel() {
     const [msgs, setMsgs] = useState<Log[]>([]);
@@ -37,6 +45,7 @@ export default function LogPanel() {
 
     const onMessage = (msgs: Log[]) => {
         setMsgs(msgs);
+        list.current?.scrollTo({ index: msgs.length - 1 })
     }
     const connectMessage = async () => {
         const nt = await API.getNastoolInstance()
@@ -77,45 +86,40 @@ export default function LogPanel() {
     }, [])
 
 
-    const [form] = useForm();
 
-    const MessageCard = ({ msg, isLasted }: { msg: Log, isLasted: boolean, }) => {
-        const messagesEndRef = useRef<HTMLDivElement>(null);
-        if (isLasted)
-            useEffect(() => {
-                if (messagesEndRef.current) {
-                    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-                }
-            })
-        return <Card
-            size="small"
-            ref={messagesEndRef}
-            bordered={false} bodyStyle={{ paddingBottom: 0, padding: 12, borderRadius: "none" }} >
-            <div style={{ wordBreak: "break-word" }}>
-                <Tag color="cyan">{msg.time}</Tag>
-                <StateTag stateMap={LogLevelStateTag} value={msg.level} >{msg.source}</StateTag>
-                <p style={{ margin: 0, padding: "8px 0 0 0"}}>{_.unescape(msg.text)}</p>
-            </div>
-        </Card>
-    }
-    const LogContent = useRef<HTMLDivElement>(null);
-    return <Flex vertical gap={24} style={{ height: "100%" }}>
+
+    const logContent = useRef<HTMLDivElement>(null);
+    const list = useRef<ListRef>(null);
+    const [listHeight, setListHeight] = useState(0);
+    useEffect(() => {
+        if (logContent.current) {
+            if (logContent.current?.clientHeight > 0) {
+                setListHeight(logContent.current.clientHeight)
+            }
+        }
+    }, [logContent.current])
+    return <div ref={logContent} style={{ height: "100%", overflowY: "scroll"}} >
+
         <ConfigProvider theme={{
             token: {
                 borderRadiusLG: 0,
                 boxShadowTertiary: "none"
             }
-        }}>
-            <Space ref={LogContent} style={{ height: "100%", overflowY: "auto" }} direction="vertical" size={0} >
-                {
-                    msgs.map((msg, index) => (<div key={`${index}-${msg.timestamp}`}>
-                        {index > 0 ? <Divider style={{ margin: 0 }} /> : <></>}
-                        <MessageCard msg={msg} isLasted={index == msgs.length - 1} />
-
-                    </div>))
-                }
-                {/* <FloatButton /> */}
-            </Space>
+        }}><List>
+                <VirtualList
+                    ref={list}
+                    data={msgs}
+                    height={listHeight}
+                    itemHeight={20}
+                    itemKey="timestamp"
+                >
+                    {(msg, index) => {
+                        return <List.Item style={{ padding: "12px 4px 12px 4px" }}>
+                            <MessageCard msg={msg} />
+                        </List.Item>
+                    }}
+                </VirtualList>
+            </List>
         </ConfigProvider>
-    </Flex>
+    </div>
 }
