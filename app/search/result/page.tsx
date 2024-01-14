@@ -1,16 +1,14 @@
 "use client"
 import { Section } from "@/app/components/Section";
 import { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
-import { IconDownloader } from "@/app/components/icons";
 import { DownloadOutlined, ArrowUpOutlined, CaretUpOutlined, CaretDownOutlined } from "@ant-design/icons"
-import { TorrentSearchResult, SearchResult, TorrentGroup, Torrent } from "@/app/utils/api/search/torrentSearch";
-import { MediaWork, MediaWorkType, SeriesKey } from "@/app/utils/api/types";
+import { TorrentSearchResult, SearchResult, Torrent } from "@/app/utils/api/search/torrentSearch";
+import { MediaWork, SeriesKey } from "@/app/utils/api/types";
 import { Button, Col, Collapse, ConfigProvider, Divider, Form, Input, List, Modal, Row, Space, Tag as AntdTag, TagProps } from "antd";
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useForm } from "antd/es/form/Form";
 import { DownloadSettingSelect } from "@/app/components/NTSelects";
-import { PathSelector } from "@/app/components/PathSelector";
 import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
 import { useSubmitMessage } from "@/app/utils";
 import { TagCheckboxGroup } from "@/app/components/TagCheckbox";
@@ -229,22 +227,44 @@ export function DownloadModalEntry(options: DownloadModalProps) {
     const [modal, contextHolder] = Modal.useModal();
     const { bundle, contextHolder: messageContextHolder } = useSubmitMessage("下载");
     const submit = bundle("下载提交")
-    const downloadForm = <Form form={form} initialValues={{ setting: 0, path: undefined }} layout="vertical">
-        <Form.Item name="setting" label="下载设置" >
+    const downloadForm = <Form form={form} initialValues={{ setting: 0, path: undefined }} layout="horizontal">
+        <Form.Item name="setting" label="下载设置" style={{ marginTop: 12, marginBottom: 16 }}>
             <DownloadSettingSelect style={{ width: 150 }} />
         </Form.Item>
-        <Form.Item name="path" label="下载路径" >
+        <Form.Item name="path" label="下载路径" style={{ marginBottom: 4 }}>
             <UnionPathsSelect style={{ width: "100%" }} library={false} />
         </Form.Item>
 
     </Form>
 
+    // return <Popconfirm title="下载选项"
+    //     description={downloadForm}
+    //     onConfirm={() => {
+    //         const values = form.getFieldsValue();
+    //         submit.loading();
+    //         new TorrentSearchResult().download(options.result.id, values.path, values.setting)
+    //             .then((msg) => {
+    //                 submit.success()
+    //             })
+    //             .catch((e) => {
+    //                 submit.error(e)
+    //             })
+    //     }}
+    // >
+    //     {contextHolder}{messageContextHolder}
+    //     <Button type="link" icon={<DownloadOutlined />}></Button>
+    // </Popconfirm >
     return <>{contextHolder}{messageContextHolder}<Button type="link" icon={<DownloadOutlined />}
         onClick={() => {
             modal.confirm({
                 title: `下载选项`,
                 content: downloadForm,
                 width: 500,
+                styles: {
+                    "footer": {
+                        marginTop: 0
+                    }
+                },
                 onOk: () => {
                     const values = form.getFieldsValue();
                     submit.loading();
