@@ -9,16 +9,13 @@ import { DownloadClient } from "../utils/api/download";
 const normalize = (p: string) => p += p.endsWith("/") ? "" : "/"
 
 export type GroupedSelectType = "library" | "download"
-export type GroupedPathsType = Record<GroupedSelectType, string[]>
+export type GroupedPathsType = Record<string, string[]>
 type UnionPathSelectContextType = {
     groupedPaths: GroupedPathsType,
     setGroupedPaths: (key: GroupedSelectType, value: GroupedPathsType[GroupedSelectType]) => void;
 }
 const UnionPathSelectContext = createContext<UnionPathSelectContextType>({
-    groupedPaths: {
-        library: [],
-        download: []
-    },
+    groupedPaths: {},
     setGroupedPaths: () => { },
 })
 
@@ -110,6 +107,85 @@ export const UnionPathsSelect = (options: Props) => {
     </>
 }
 
+interface WrapperProps {
+    value?: string,
+    onChange?: (value: string | undefined) => void,
+    style?: React.CSSProperties,
+    leftEmpty?: string,
+    allowLeftEmpty?: boolean,
+    width?: number,
+    auto?: boolean,
+    children?: {
+        type: string,
+        label: string
+        render: (props: FormItemProp<string>) => React.ReactNode
+    }[]
+}
+
+
+export const UnionPathsSelectGroup = (options: WrapperProps) => {
+    const [groupedPaths, setGroupedPaths] = useState<Record<string, string[]>>({});
+    const [pathType, setPathType] = useState<string>("auto");
+    const [path, setPath] = useState<string | undefined>(options.value)
+    useEffect(() => setPath(options.value), [options.value])
+    useEffect(() => {
+        for (let [k, v] of Object.entries(groupedPaths)) {
+            const idx = v.map(normalize).indexOf(normalize(options.value ?? ""));
+            if (idx > -1) {
+                setPathType(k as GroupedSelectType);
+            }
+        }
+    }, [groupedPaths, options.value])
+    const outputPathTypeOptions = []
+    if (options.allowLeftEmpty === false) {
+    } else {
+        outputPathTypeOptions.push({
+            label: options.leftEmpty || "自动",
+            value: "auto"
+        },)
+    }
+    options.children?.forEach(({ type, label }) => {
+        outputPathTypeOptions.push({ label, value: type })
+    })
+
+    const handlePathTypeChange = (value: string) => {
+        setPathType(value);
+        if (value == "auto") {
+            if (options.onChange) options.onChange(undefined)
+        }
+    };
+    const handlePathChange = (value: string) => {
+        if (value != "auto") {
+            setPath(value);
+            if (options.onChange) options.onChange(value)
+        }
+    }
+
+    const unionPathSelectContext = {
+        groupedPaths,
+        setGroupedPaths: (key: string, value: string[]) => { setGroupedPaths({ ...groupedPaths, ...{ [key]: [...value] } }) },
+    }
+
+    const childrenMap = Object.fromEntries(options.children?.map((value) => [value.type, value.render({ value: path, onChange: handlePathChange })]) ?? [])
+
+    const allChildren = Object.values(childrenMap)
+    return <>
+        <UnionPathSelectContext.Provider value={unionPathSelectContext}>
+            <div style={{ display: "none" }} >{allChildren}</div>
+        </UnionPathSelectContext.Provider>
+        <Space.Compact style={{ width: "100%", ...options.style }}>
+            <Select
+                value={pathType}
+                defaultValue="auto"
+                style={{ width: 150 }}
+                onChange={handlePathTypeChange}
+                options={outputPathTypeOptions}
+            />
+            {childrenMap[pathType]}
+        </Space.Compact >
+    </>
+}
+
 interface FormItemProp<T> {
     value?: T,
     onChange?: (value: T) => void,
@@ -157,15 +233,19 @@ export const LibraryPathSelect = (options: FormItemProp<string>) => {
     />
 }
 
-export const DownloadPathSelect = (options: FormItemProp<string>) => {
+export const DownloadPathSelect = (options: { remote?: boolean } & FormItemProp<string>) => {
     const { useList } = new DownloadClient().useResource();
     const { list: clients, refresh: refreshClients } = useList();
     const [path, setPath] = useState<string | undefined>(options.value)
+    const remote = options.remote ?? true;
     const ctx = useContext(UnionPathSelectContext);
     const downloaderPathMap = useMemo(() => {
         return clients?.filter((cli) => (cli.download_dir.length > 0)).map((cli) => ({
             label: cli.name,
-            options: cli.download_dir.map(({ save_path }) => ({ label: save_path, value: save_path, key: `${cli.name}-${save_path}` })),
+            options: cli.download_dir.map(({ save_path, container_path }) => {
+                const path = remote ? save_path : container_path;
+                return { label: path, value: path, key: `${cli.name}-${save_path}` }
+            }),
         }))
     }, [clients])
 
@@ -174,21 +254,9 @@ export const DownloadPathSelect = (options: FormItemProp<string>) => {
     }, [downloaderPathMap])
 
     useEffect(() => {
-        ctx.setGroupedPaths("download", allPaths.map(({ save_path }) => save_path));
+        ctx.setGroupedPaths("download", allPaths.map(({ save_path, container_path }) => remote ? save_path : container_path));
     }, [allPaths])
-
-    // useEffect(() => {
-    //     if (options.value != undefined) {
-    //         if (allPaths.map((value) => value.save_path).indexOf(normalize(options.value)) > -1) {
-    //             console.log("set to download", options.value)
-    //             ctx.setPreGroupedSelect("download")
-    //         } else {
-    //             ctx.delPreGroupedSelect("download")
-    //         }
-    //         setPath(options.value)
-    //     }
-    // }, [options.value])
-
+    
     return <Select value={path} options={downloaderPathMap} onChange={(value) => { setPath(value); options.onChange?.(value) }}
         style={{
             width: options.width ? options.width - 150 : undefined
