@@ -202,7 +202,7 @@ const FileList = ({ fileList, loading }: { fileList: NastoolFileListItem[], load
                     <MediaImportEntry
                         flush={true}
                         appendFiles={
-                            selectedFiles.map((item) => ({ name: item.name, path: currentPath, rel: [], indentifyHistory: new IdentifyHistory() }))
+                            selectedFiles.map((item) => ({ name: item.name, path: currentPath, rel: [], indentifyHistory: new IdentifyHistory(), selected: false }))
                         } />
                 </Space>
                 <Table

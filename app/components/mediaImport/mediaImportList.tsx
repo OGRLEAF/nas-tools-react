@@ -8,7 +8,7 @@ import { ColumnsType } from "antd/es/table";
 import { MediaIdentify } from "@/app/utils/api/media/mediaIdentify";
 import { SearchContext } from "../TMDBSearch/SearchContext";
 import { MediaWork, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
-import _, {  } from "lodash";
+import _, { } from "lodash";
 import { MovieMediaImportGroup, TvMediaImportGroup } from "./MediaImportGroup";
 
 function isOverriden<T>(a: T, b: T): [boolean, T] {
@@ -72,18 +72,7 @@ export const ImportList = (options: { onSelect?: (value: MediaImportFile[]) => v
     const [filteredList, setFilteredList] = useState<MediaImportFile[]>()
     const [selectedFileKeys, setSelectedFileKeys] = useState<MediaImportFileKey[]>([])
     const [fileMap, setFileMap] = useState<Map<string, MediaImportFile>>(new Map())
-
-    useEffect(() => {   
-
-
-        if (mediaImportContext.penddingFiles) {
-            const keyMap = new Map<string, MediaImportFile>();
-            mediaImportContext.penddingFiles.forEach((file) => keyMap.set(file.name, file))
-            setFileMap(keyMap)
-        }
-
-
-    }, [mediaImportContext])
+    const mediaImportDispatch = useMediaImportDispatch();
     useEffect(() => {
         if (options.onSelect) {
             const selected = selectedFileKeys.map((key) => fileMap?.get(key)).filter(file => file !== undefined)
@@ -136,9 +125,10 @@ export const ImportList = (options: { onSelect?: (value: MediaImportFile[]) => v
             <Table
                 rowSelection={{
                     type: "checkbox",
-                    selectedRowKeys: selectedFileKeys,
+                    selectedRowKeys: files.filter(v => v.selected).map((v) => v.name),
                     onChange: (selectedRowKeys: React.Key[], selectedRows: MediaImportFile[]) => {
-                        setSelectedFileKeys(selectedRowKeys as MediaImportFileKey[])
+                        // setSelectedFileKeys(selectedRowKeys as MediaImportFileKey[])
+                        mediaImportDispatch({ type: MediaImportAction.SetSelected, fileKeys: selectedRowKeys as MediaImportFileKey[] })
                     },
                 }}
                 scroll={{ y: 580, }}
@@ -147,11 +137,33 @@ export const ImportList = (options: { onSelect?: (value: MediaImportFile[]) => v
                 rowKey="name"
                 dataSource={files}
                 columns={columns}
-            // virtual={true}
+                // virtual={true}
+                footer={(render) => {
+                    return <IdentifySelected />
+                }}
             />
 
         </Flex>
     </ImportListContext.Provider >
+}
+
+const IdentifySelected = () => {
+    const mediaImportContext = useMediaImport();
+    const mediaImportDispatch = useMediaImportDispatch();
+    const selected = mediaImportContext.penddingFiles.filter(v => v.selected);
+    const [loading, setLoading] = useState(false)
+    const identify = new MediaIdentify();
+    return <Button type="primary" loading={loading} disabled={selected.length == 0}
+        onClick={async () => {
+            setLoading(true)
+            const promises = selected.map((v) => () => identify.identifySeries(v.name)
+                .then((value) => mediaImportDispatch({ type: MediaImportAction.SetSeries, fileKeys: [v.name], series: [value] })))
+            for(let p of promises) {
+                await p();
+            }
+            setLoading(false)
+        }}
+    >识别</Button>
 }
 
 const TableFileName = (options: { name: string, item: MediaImportFile }) => {

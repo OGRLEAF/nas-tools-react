@@ -60,13 +60,15 @@ const tvImportColumns: ColumnsType<MediaImportFile> = [{
         return <ImportListItemAction fileKey={value} />
     },
     width: 50,
-    align: "center"
+    align: "center",
+    shouldCellUpdate: () => false
 }
 ]
 
 export function TvMediaImportGroup(props: MediaImportGroupProps) {
     const [work, setWork] = useState<MediaWork>();
     const importListContext = useImportListContext();
+    const mediaImportDispatch = useMediaImportDispatch();
     const { selectedFileKeys, fileMap } = importListContext;
     useEffect(asyncEffect(async () => {
         const series = new SeriesKey(props.seriesKey).slice(SeriesKeyType.TMDBID)
@@ -85,20 +87,18 @@ export function TvMediaImportGroup(props: MediaImportGroupProps) {
                     postImageStyle={{ width: 100 }}
                     mediaDetail={work} size="small"
                     onTitleClick={(mediaWork) => { setSeries(mediaWork.series) }}
-                    action={<Space>
-                        {selectButton}
-                        {searchButton}
-                    </Space>}
+                    action={<Space>{selectButton}{searchButton}</Space>}
                 /> : <>{props.seriesKey.t}</>}
             </div>
         }}
         bordered
         rowSelection={{
             type: "checkbox",
-            selectedRowKeys: selectedFileKeys.selectedFileKeys,
+            selectedRowKeys: props.files.filter(v => v.selected).map((v) => v.name),
             onChange: (selectedRowKeys: React.Key[], selectedRows: MediaImportFile[]) => {
-                selectedFileKeys.setSelectedFileKeys(selectedRowKeys as MediaImportFileKey[])
-                setLocalSelectedFile(new Set(...selectedRowKeys as MediaImportFileKey[]));
+                // selectedFileKeys.setSelectedFileKeys(selectedRowKeys as MediaImportFileKey[])
+                // setLocalSelectedFile(new Set(...selectedRowKeys as MediaImportFileKey[]));
+                mediaImportDispatch({ type: MediaImportAction.SetSelected, fileKeys: selectedRowKeys as MediaImportFileKey[] })
             },
         }}
         pagination={false}
@@ -106,9 +106,9 @@ export function TvMediaImportGroup(props: MediaImportGroupProps) {
         rowKey="name"
         dataSource={props.files}
         columns={tvImportColumns}
-        footer={() => <ImportSubmit
+        footer={() => <TvImportSubmit
             seriesKey={props.seriesKey}
-            files={props.files.map((file) => fileMap.fileMap.get(file.name)).filter((file) => file != undefined) as MediaImportFile[]}
+            files={props.files.filter(v => v.selected)}
         />
         }
     />
@@ -131,7 +131,8 @@ const movieImportColumns: ColumnsType<MediaImportFile> = [
             return <ImportListItemAction fileKey={value} />
         },
         width: 50,
-        align: "center"
+        align: "center",
+        shouldCellUpdate: () => false
     }
 ]
 
@@ -156,15 +157,15 @@ export function MovieMediaImportGroup(props: MediaImportGroupProps) {
             action={<Space>{selectButton}{searchButton}</Space>}
         /> : <>{props.seriesKey.t}</>}
     </div>
-
+    const mediaImportDispatch = useMediaImportDispatch();
     return <Table
         title={() => cardTitle}
         bordered
         rowSelection={{
             type: "checkbox",
-            selectedRowKeys: selectedFileKeys.selectedFileKeys,
+            selectedRowKeys: props.files.filter(v => v.selected).map((v) => v.name),
             onChange: (selectedRowKeys: React.Key[], selectedRows: MediaImportFile[]) => {
-                selectedFileKeys.setSelectedFileKeys(selectedRowKeys as MediaImportFileKey[])
+                mediaImportDispatch({ type: MediaImportAction.SetSelected, fileKeys: selectedRowKeys as MediaImportFileKey[] })
             },
             columnWidth: 20
         }}
@@ -173,16 +174,16 @@ export function MovieMediaImportGroup(props: MediaImportGroupProps) {
         rowKey="name"
         dataSource={props.files}
         columns={movieImportColumns}
-        footer={() => <ImportSubmit
+        footer={() => <MovieImportSubmit
             seriesKey={props.seriesKey}
-            files={props.files.map((file) => fileMap.fileMap.get(file.name)).filter((file) => file != undefined) as MediaImportFile[]}
+            files={props.files.filter(v => v.selected)}
         />
         }
     />
 }
 
 
-function ImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: MediaImportFile[], }) {
+function TvImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: MediaImportFile[], }) {
     const mergedSeriesKey = files.length > 0 ? files.map(file => file.indentifyHistory.last())?.reduce((prev, curr) => prev.merge(curr)) : new SeriesKey();
     const [mediaWork, setMediaWork] = useState<MediaWork>();
     useEffect(() => {
@@ -192,12 +193,57 @@ function ImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Media
     const metadata = mediaWork?.metadata;
 
     const disableImport = mergedSeriesKey.end < SeriesKeyType.SEASON;
+
     return <Flex style={{ width: "100%" }} justify="flex-end" align="center" gap="middle">
         <Space size={16}>
             <span>{metadata?.title} #{mergedSeriesKey.i}</span>
             <span>季 {mergedSeriesKey.s}</span>
+            <span>{String(disableImport)} {mergedSeriesKey.end}</span>
+            <span>共 {files.length} 个文件</span>
         </Space>
-        <Form layout="inline" initialValues={{ type: ImportMode.LINK }} disabled={disableImport}>
+        <Form layout="inline" initialValues={{ type: ImportMode.LINK }} disabled={disableImport}
+            onFinish={(value: any) => {
+                console.log(value)
+            }}
+        >
+            <Form.Item name="target_path" >
+                <UnionPathsSelect width={400} />
+            </Form.Item>
+            <Form.Item name="type">
+                <Radio.Group>
+                    <Radio.Button value={ImportMode.COPY}>复制</Radio.Button>
+                    <Radio.Button value={ImportMode.MOVE}>移动</Radio.Button>
+                    <Radio.Button value={ImportMode.LINK}>硬链接</Radio.Button>
+                </Radio.Group>
+            </Form.Item>
+            <Form.Item>
+                <Button type="primary" htmlType="submit">导入</Button>
+            </Form.Item>
+        </Form>
+    </Flex>
+}
+
+function MovieImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: MediaImportFile[], }) {
+    const mergedSeriesKey = files.length > 0 ? files.map(file => file.indentifyHistory.last())?.reduce((prev, curr) => prev.merge(curr)) : new SeriesKey();
+    const [mediaWork, setMediaWork] = useState<MediaWork>();
+    useEffect(() => {
+        new TMDB().fromSeries(mergedSeriesKey.slice(SeriesKeyType.TMDBID))?.get()
+            .then((mediaWork) => setMediaWork(mediaWork))
+    }, [mergedSeriesKey])
+    const metadata = mediaWork?.metadata;
+
+    const disableImport = mergedSeriesKey.end < SeriesKeyType.TMDBID;
+
+    return <Flex style={{ width: "100%" }} justify="flex-end" align="center" gap="middle">
+        <Space size={16}>
+            <span>{mergedSeriesKey.t}#{mergedSeriesKey.i} {metadata?.title}</span>
+            <span>共 {files.length} 个文件</span>
+        </Space>
+        <Form layout="inline" initialValues={{ type: ImportMode.LINK }} disabled={disableImport}
+            onFinish={(value: any) => {
+                console.log(value)
+            }}
+        >
             <Form.Item name="target_path" >
                 <UnionPathsSelect width={400} />
             </Form.Item>

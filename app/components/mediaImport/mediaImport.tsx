@@ -89,6 +89,7 @@ enum EpisodeMethod {
 }
 
 const MediaImport = () => {
+    const mediaImportContext = useMediaImport();
     const mediaImportDispatch = useMediaImportDispatch();
     const [form] = Form.useForm();
 
@@ -97,20 +98,23 @@ const MediaImport = () => {
     const [selectedFiles, setSelectedFiles] = useState<MediaImportFile[]>([])
     const onFinish = async (values: any) => {
         const series: SeriesKey = values.series;
-        const episodes = [...values.episodes];
+        const episodes = values.episodes ? [...values.episodes] : [];
 
         const episode_offset: number = values.episode_offset || 0;
         const tmdbId = series.i;
         if (tmdbId != undefined) {
 
             const season = Number(series.s);
-            const identify = selectedFiles.map(() => {
+            const selectedFiles = mediaImportContext.penddingFiles.filter(v => v.selected)
+            const identify = selectedFiles.map((v) => {
+                console.log(v)
                 const episode = episodes?.shift();
                 return new SeriesKey(series).type(mediaWork?.type || values.type)
                     .tmdbId(tmdbId)
                     .season(Number.isNaN(season) ? undefined : season)
                     .episode(Number.isNaN(episode) ? undefined : episode ? (episode + episode_offset) : undefined)
             })
+            console.log(identify)
             mediaImportDispatch({
                 type: MediaImportAction.SetSeries,
                 fileKeys: selectedFiles.map(({ name }) => name),
@@ -119,6 +123,7 @@ const MediaImport = () => {
         }
     }
 
+    const series = Form.useWatch("series", form) as SeriesKey;
     return <Row gutter={32} style={{ height: "100%" }}>
         <Col span={6}>
             <Form form={form}
@@ -126,35 +131,38 @@ const MediaImport = () => {
                 initialValues={{
                     type: NastoolMediaType.MOVIE,
                     // episodes: [],
-                    series: [],
                     episode_string: "",
                     episode_format: "{ep}",
                     tmdbid: undefined,
                     episode_offset: 0
                 }}
                 onFinish={onFinish}>
-                <Form.Item name="series" noStyle>
-                    <MediaSearch />
-                </Form.Item>
+                <Space direction="vertical" style={{ width: "100%" }}>
+                    <Form.Item name="series" noStyle>
+                        <MediaSearch />
+                    </Form.Item>
 
-                <Form.Item name="episodes">
-                    <EpisodeInput fileNames={selectedFiles.map((file) => file.name)} />
-                </Form.Item>
-                <Space>
-                    <Form.Item label="集数偏移" name="episode_offset">
-                        <InputNumber placeholder="集数偏移" />
+                    {series?.t == MediaWorkType.TV || series?.t == MediaWorkType.ANI ? <>
+                        <Form.Item name="episodes">
+                            <EpisodeInput fileNames={selectedFiles.map((file) => file.name)} />
+                        </Form.Item>
+
+                        <Form.Item label="集数偏移" name="episode_offset">
+                            <InputNumber placeholder="集数偏移" />
+                        </Form.Item>
+
+                    </> : <></>
+                    }
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit">应用</Button>
                     </Form.Item>
                 </Space>
-
-                <Form.Item>
-                    <Button type="primary" htmlType="submit">应用</Button>
-                </Form.Item>
             </Form>
         </Col>
         <Col span={18} style={{ height: "100%", overflowY: "auto" }}>
             <ImportList onSelect={(files) => { setSelectedFiles(files) }} />
         </Col>
-    </Row>
+    </Row >
 }
 
 const EpisodeInput = (options: { value?: number[], onChange?: (value: (number)[]) => void, fileNames: MediaImportFileKey[] },) => {
@@ -309,7 +317,6 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
         return (series.t == MediaWorkType.TV || series.t == MediaWorkType.ANI)
     }, [series])
     useEffect(asyncEffect(async () => {
-        console.log("On Series[0] updated")
         if (series.i != undefined) {
             const media = new TMDB().fromSeries(series.slice(SeriesKeyType.TMDBID));
             const mediaWork = await media?.get();
@@ -349,7 +356,7 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
         <MediaDetailCardFromSearch loading={loading} />
         {isTvSeries ?
             <Space>
-                <MediaSeasonInput style={{ width: 250 }}
+                季：<MediaSeasonInput style={{ width: 250 }}
                     series={series}
                     onChange={(value) => {
                         if (value !== undefined) setSelectedSeason(value);
@@ -357,8 +364,6 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
                             setSeries(new SeriesKey(series).season(value))
                         }
                     }} />
-
-
             </Space>
             : <></>}
     </Space>

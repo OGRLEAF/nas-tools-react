@@ -80,8 +80,8 @@ export const UnionPathsSelect = (options: Props) => {
         setGroupedPaths: (key: string, value: string[]) => { setGroupedPaths({ ...groupedPaths, ...{ [key]: [...value] } }) },
     }
 
-    const libraryPathSelect = useLibrary ? <LibraryPathSelect value={path} onChange={handlePathChange} /> : <></>
-    const downlaodPathSelect = useDownload ? <DownloadPathSelect value={path} onChange={handlePathChange} /> : <></>
+    const libraryPathSelect = useLibrary ? <LibraryPathSelect width={options.width} value={path} onChange={handlePathChange} /> : <></>
+    const downlaodPathSelect = useDownload ? <DownloadPathSelect width={options.width} value={path} onChange={handlePathChange} /> : <></>
 
     return <div>
         <UnionPathSelectContext.Provider value={unionPathSelectContext}>

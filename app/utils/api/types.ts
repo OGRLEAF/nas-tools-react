@@ -86,6 +86,10 @@ export class SeriesKey {
     if (type != undefined) {
       this.typeKey = type;
       this._end = SeriesKeyType.TYPE;
+      if (this.typeKey == MediaWorkType.MOVIE) {
+        this.seasonKey = undefined;
+        this.episodeKey = undefined;
+      }
     }
 
     return this
@@ -100,6 +104,7 @@ export class SeriesKey {
   }
 
   public season(season?: MediaWorkSeason['key']) {
+    if (this.t == MediaWorkType.MOVIE) return this;
     if (this.tmdbIdKey != undefined && season != undefined) {
       this._end = SeriesKeyType.SEASON
       this.seasonKey = season;
@@ -109,6 +114,7 @@ export class SeriesKey {
 
 
   public episode(episode?: MediaWorkEpisode['key']) {
+    if (this.t == MediaWorkType.MOVIE) return this;
     if (this.seasonKey != undefined && episode != undefined) {
       this._end = SeriesKeyType.EPISODE
       this.episodeKey = episode;
@@ -221,7 +227,7 @@ export interface Media {
 }
 
 export interface MediaFile {
-  key                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               : string,
+  key: string,
   path: string,
   metadata: {
     vcodec?: any,

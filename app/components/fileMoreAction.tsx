@@ -120,7 +120,7 @@ export default function FileMoreAction({ file, relFiles }:
             <Descriptions title={title}>
                 <Descriptions.Item label="类型">{seriesKey?.t}</Descriptions.Item>
                 <Descriptions.Item label="TMDBID">{seriesKey?.i}</Descriptions.Item>
-                <Descriptions.Item label="年份">{metadata?.date.release}</Descriptions.Item>
+                <Descriptions.Item label="年份">{metadata?.date?.release}</Descriptions.Item>
                 {ExtraInfo}
             </Descriptions>
         </Spin>
@@ -132,7 +132,8 @@ export default function FileMoreAction({ file, relFiles }:
                     name: file.name,
                     path: pathManagerState.deepestPath,
                     indentifyHistory: new IdentifyHistory().push(seriesKey),
-                    rel: relFiles?.map(file => file.name) || []
+                    rel: relFiles?.map(file => file.name) || [],
+                    selected: true
                 }]} />
         </Space>
     </>

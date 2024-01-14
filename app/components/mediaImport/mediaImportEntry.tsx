@@ -91,6 +91,17 @@ const reducer = (state: MediaImportState, action: MediaImportDispathPayload): Me
 
             return state
         }
+        case MediaImportAction.SetSelected: {
+            const fileKeysSet = new Set(action.fileKeys);
+            globalKeyMap.forEach((id) => {
+                const file = state.penddingFiles[id];
+                if (file) {
+                    file.selected = fileKeysSet.has(file.name) ?? file.selected
+                }
+            })
+
+            return { ...state }
+        }
     }
     throw Error("Unknown action,");
 }

@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode, useContext, useEffect, useState } from "react";
+import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from "react";
 import { API, NastoolMediaSearchResult, NastoolMediaSearchResultItem, NastoolMediaType, NastoolServerConfig } from "../../utils/api/api";
 import { AutoComplete, Form, Input, Radio, Space, theme, Image, Typography, Empty, Row, Col, Select, Skeleton, Button, Flex } from "antd";
 import { TMDB } from "../../utils/api/media/tmdb";
@@ -6,6 +6,7 @@ import { MediaIdentifyContext, MediaWork, MediaWorkType, SeriesKey } from "../..
 import { SearchContext } from "./SearchContext";
 import { ServerConfig } from "@/app/utils/api/serverConfig";
 import { StateMap, StateTag } from "../StateTag";
+import Link from "next/link";
 
 type CardSize = "normal" | "small" | "tiny";
 interface DetailCardStyle {
@@ -13,12 +14,15 @@ interface DetailCardStyle {
     title?: CSSProperties,
     typography?: CSSProperties,
     textLimit?: number,
-
+    maxWidth?: number,
+    height?: number
 }
 
 const cardStyleMap: Record<CardSize, DetailCardStyle> = {
     "normal": {
-        textLimit: 999
+        textLimit: 999,
+        height: 250
+
     },
     "small": {
         image: {
@@ -27,7 +31,8 @@ const cardStyleMap: Record<CardSize, DetailCardStyle> = {
         typography: {
 
         },
-        textLimit: 150
+        textLimit: 150,
+        height: 150
     },
     "tiny": {
         image: {
@@ -43,7 +48,9 @@ const cardStyleMap: Record<CardSize, DetailCardStyle> = {
             height: 155,
             margin: 0
         },
-        textLimit: 75
+        textLimit: 75,
+        maxWidth: 400,
+        height: 175
     }
 }
 const stateTagMap: StateMap<MediaWorkType> = {
@@ -73,58 +80,47 @@ export function MediaDetailCard({
     mediaDetail,
     size,
     action,
-    onTitleClick,
     layout,
     postImageStyle
 }: { mediaDetail?: MediaWork, size?: CardSize, action?: React.JSX.Element, layout?: "vertical" | "horizonal", onTitleClick?: (mediaDetail: MediaWork) => void, postImageStyle?: CSSProperties }) {
     const { token } = theme.useToken()
     const _size = size ? size : "normal";
     const style = cardStyleMap[_size];
-    const textLimit = style.textLimit == undefined ? 50 : style.textLimit;
     if (mediaDetail) {
         const metadata = mediaDetail.metadata
+        const coverImage = metadata?.image?.cover ? <img height={style.height} src={metadata.image.cover} style={{ aspectRatio: "auto" }} /> : <></>
         return <Flex
             align="start"
             vertical={(layout ?? "horizontal") == "vertical"}
             gap={12}
             style={{
-                width: "100%",
                 marginBottom: 0,
-                position: "relative"
+                position: "relative",
+                // maxWidth: style.maxWidth
+                width: "100%",
             }}>
-            {metadata?.image?.cover ?
-                <Image
-                    placeholder={<Skeleton.Image style={{ width: 150, ...style.image, ...postImageStyle }} />}
-                    style={{ ...style.image, ...postImageStyle, objectFit: "contain", flexShrink: 1, marginRight: 0, borderRadius: token.borderRadius, overflow: "hidden" }}
-                    src={metadata?.image.cover} /> :
-                <Skeleton.Image style={{ width: 150, ...style.image, ...postImageStyle }} />
-            }
-            {/* <div style={{ height: _size == "normal" ? "400px" : "150px", width: "100%", backgroundColor: "#00152991" }} /> */}
-            <Flex align="end" vertical style={{ width: "100%" }}>
-                <Typography style={{ paddingTop: 4, ...style.typography, width: "100%" }}>
-                    <Typography.Title level={2} style={{ color: token.colorTextBase, fontSize: "1.6rem", marginTop: 6, ...style.title }}>
+            {coverImage}
+            <div style={{ height: style.height, width: "100%", maxWidth: style.maxWidth }}>
+                <Typography style={{ paddingTop: 4, width: "100%", height: "100%", display: "flex", alignItems: "start", flexDirection: "column", justifyContent: "space-between" }}>
+                    <Typography.Title level={2} style={{ position: "sticky", top: 0, backgroundColor: "white", color: token.colorTextBase, fontSize: "1.6rem", margin: 0, padding: "4px 0px 4px 0px", ...style.title }}>
                         <Space>
                             <span>{mediaDetail.title}</span>
                             <span style={{ fontSize: "1rem" }}> {metadata?.date?.release}</span>
                             <StateTag stateMap={stateTagMap} value={mediaDetail.series.t ?? MediaWorkType.UNKNOWN} />
                         </Space>
                     </Typography.Title>
-                    <Typography.Link style={{ color: token.colorTextDescription }} href={metadata?.links?.tmdb} target="_blank">
-                        {metadata?.links?.tmdb}
-                    </Typography.Link>
-                    <br />
-                    <Typography.Text >
-                        <span style={{ color: token.colorTextDescription, display: "block", wordWrap: "break-word", whiteSpace: "pre-wrap" }}>{
-                            (metadata?.description?.length || 0) > textLimit ?
-                                metadata?.description.slice(0, textLimit) + "..." :
-                                metadata?.description
-                        }
+                    <Typography.Text style={{ height: "100%", overflowY: "auto", padding: "0px 4px" }}>
+                        <Typography.Link style={{ color: token.colorTextDescription }} href={metadata?.links?.tmdb} target="_blank">
+                            {metadata?.links?.tmdb}
+                        </Typography.Link>
+                        <span style={{ color: token.colorTextDescription, display: "block", wordWrap: "break-word", whiteSpace: "pre-wrap" }}>
+                            {metadata?.description}
                         </span>
                     </Typography.Text>
-                </Typography>
-                <div style={{ float: "right" }}>{action}</div>
-            </Flex>
 
+                    <div style={{ alignSelf: "end", paddingTop: 4 }}>{action}</div>
+                </Typography>
+            </div>
         </Flex >
 
     } else {

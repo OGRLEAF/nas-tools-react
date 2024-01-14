@@ -33,6 +33,7 @@ export interface MediaImportFile {
     // identifyContext?: MediaIdentifyContext,
     rel: string[],
     // overridenIdentify?: MediaIdentifyContext
+    selected: boolean,
     indentifyHistory: IdentifyHistory,
 }
 
@@ -47,7 +48,8 @@ export enum MediaImportAction {
     setOnImportFileKeys = "set_on_import_file_keys",
     // SetIdentity = "set_identity",
     SetSeries = "set_series",
-    CleanSeries = "clean_series"
+    CleanSeries = "clean_series",
+    SetSelected = "set_enabled"
     // OverrideSeries = "override_series",
     // OverrideIdentify = "override_identify"
 }
