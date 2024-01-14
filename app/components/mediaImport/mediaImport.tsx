@@ -38,9 +38,6 @@ const MediaImportFilter = () => {
     ]
     return <Form initialValues={{ filter: mediaImportContext.regexFilter, filteringType: "regex" }} form={toolsForm} layout="inline">
         <Space>
-            <Form.Item>
-
-            </Form.Item>
             <Form.Item name="filteringType">
                 <Select options={filteringOptions} />
             </Form.Item>
@@ -137,7 +134,8 @@ const MediaImport = () => {
                 }}
                 onFinish={onFinish}>
                 <Form.Item name="series" noStyle>
-                    <MediaSearch />                </Form.Item>
+                    <MediaSearch />
+                </Form.Item>
 
                 <Form.Item name="episodes">
                     <EpisodeInput fileNames={selectedFiles.map((file) => file.name)} />
@@ -145,8 +143,8 @@ const MediaImport = () => {
                 <Space>
                     <Form.Item label="集数偏移" name="episode_offset">
                         <InputNumber placeholder="集数偏移" />
-              </Form.Item>
-               </Space>
+                    </Form.Item>
+                </Space>
 
                 <Form.Item>
                     <Button type="primary" htmlType="submit">应用</Button>
@@ -360,7 +358,7 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
                         }
                     }} />
 
-                    
+
             </Space>
             : <></>}
     </Space>

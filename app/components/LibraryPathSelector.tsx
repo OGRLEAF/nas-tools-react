@@ -83,7 +83,7 @@ export const UnionPathsSelect = (options: Props) => {
     const libraryPathSelect = useLibrary ? <LibraryPathSelect value={path} onChange={handlePathChange} /> : <></>
     const downlaodPathSelect = useDownload ? <DownloadPathSelect value={path} onChange={handlePathChange} /> : <></>
 
-    return <>
+    return <div>
         <UnionPathSelectContext.Provider value={unionPathSelectContext}>
             <div style={{ display: "none" }} >{libraryPathSelect}{downlaodPathSelect}</div>
         </UnionPathSelectContext.Provider>
@@ -104,7 +104,7 @@ export const UnionPathsSelect = (options: Props) => {
             }
 
         </Space.Compact >
-    </>
+    </div>
 }
 
 interface WrapperProps {
@@ -256,7 +256,7 @@ export const DownloadPathSelect = (options: { remote?: boolean } & FormItemProp<
     useEffect(() => {
         ctx.setGroupedPaths("download", allPaths.map(({ save_path, container_path }) => remote ? save_path : container_path));
     }, [allPaths])
-    
+
     return <Select value={path} options={downloaderPathMap} onChange={(value) => { setPath(value); options.onChange?.(value) }}
         style={{
             width: options.width ? options.width - 150 : undefined
