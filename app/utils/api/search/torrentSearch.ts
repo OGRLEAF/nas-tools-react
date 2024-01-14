@@ -49,6 +49,14 @@ export interface SearchResult {
     overview: string,
     fav: string,
     rssid: string,
+    filter: {
+        site: string[],
+        free: {value: string, name: string}[],
+        releasegroup: string[],
+        season: string[],
+        title: string[],
+        video: string[],
+    }
     torrent_dict: [string, Record<string, TorrentGroup>][]
 }
 
