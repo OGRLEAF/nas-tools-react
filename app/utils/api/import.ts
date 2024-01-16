@@ -1,6 +1,6 @@
 import { ImportMode, NastoolMediaType } from "./api";
-import { APIArrayResourceBase, APIArrayResourceBaseD, APIBase, ResourceType } from "./api_base";
-import { MediaWorkSeason } from "./types";
+import { APIArrayResourceBase, APIBase, ResourceType } from "./api_base";
+import { MediaWorkSeason, MediaWorkType } from "./types";
 
 type optionalEpisode = undefined | number
 
@@ -39,7 +39,7 @@ export class Organize extends APIBase {
 export interface OrganizeRecord {
     ID: number,
     MODE: ImportMode,
-    CATEGORY: NastoolMediaType,
+    CATEGORY: MediaWorkType,
     TMDBID: number,
     TITLE: string,
     YEAR: string,
@@ -61,13 +61,13 @@ export interface HistoryListOption {
     keyword?: string
 }
 
-interface OrgnizeHistoryResource extends ResourceType {
+export interface OrgnizeHistoryResource extends ResourceType {
     ItemType: OrganizeRecord,
     ListOptionType: HistoryListOption,
     DeleteOptionType: { key: string }
 }
 
-export class OrganizeHistory extends APIArrayResourceBaseD<OrgnizeHistoryResource> {
+export class OrganizeHistory extends APIArrayResourceBase<OrgnizeHistoryResource> {
     private total: Promise<number>;
     private totalResolve?: (value: number | PromiseLike<number>) => void
     constructor() {
@@ -80,10 +80,13 @@ export class OrganizeHistory extends APIArrayResourceBaseD<OrgnizeHistoryResourc
         this.total = new Promise((resolve, reject) => {
             this.totalResolve = resolve;
         })
-        const result = await (await this.API).getOrganizationHistoryList({
-            page: page ?? 0,
-            length: length ?? 20,
-            keyword
+        const result = await (await this.API).post<{ result: OrganizeRecord[], total: number }>("organization/history/list", {
+            data: {
+                page: page,
+                pagenum: length,
+                keyword: keyword
+            },
+            auth: true
         });
         this.totalResolve?.(result.total);
         return result.result;
@@ -100,9 +103,13 @@ export class OrganizeHistory extends APIArrayResourceBaseD<OrgnizeHistoryResourc
         })
     }
 
-    protected async deleteManyHook<DeleteOption>(values: OrganizeRecord[], options?: DeleteOption | undefined): Promise<boolean> {
-        console.log(values)
-        return false
+    protected async deleteManyHook(records: OrganizeRecord[], options?: { key: string }): Promise<boolean> {
+        console.log(records, options)
+        if (options?.key) {
+            await this.delete(records.map((record) => record.ID), options?.key)
+            return true;
+        }
+        throw new Error("缺少options.key")
     }
 
     protected async deleteHook(value: OrganizeRecord, options: { key: string }): Promise<boolean> {

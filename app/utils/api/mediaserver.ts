@@ -1,5 +1,5 @@
 import { NastoolServerConfig } from "./api";
-import { APIArrayResourceBase } from "./api_base";
+import { APIArrayResourceBase, ResourceType } from "./api_base";
 import { ServerConfig } from "./serverConfig";
 
 export interface JellyfinOptions {
@@ -28,7 +28,11 @@ export interface MediaServerConfig {
     options: JellyfinOptions | EmbyOptions | PlexOptions
 }
 
-export class MediaServer extends APIArrayResourceBase<MediaServerConfig> {
+export interface MediaServerResource extends ResourceType {
+    ItemType: MediaServerConfig
+}
+
+export class MediaServer extends APIArrayResourceBase<MediaServerResource> {
     public async list(): Promise<MediaServerConfig[]> {
         const serverConfig = await new ServerConfig().get();
         const { jellyfin, plex, emby } = serverConfig;

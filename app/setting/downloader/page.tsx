@@ -2,7 +2,7 @@
 import { Cards, CardsForm, TestButton, CollapsableList } from "@/app/components/CardsForm"
 import { DownloadClientSelect, MediaWorkCategoryUnionSelect, SyncModeSelect } from "@/app/components/NTSelects"
 import { PathSelector } from "@/app/components/PathSelector"
-import { DownloadClient, DownloadClientConfig, DownloadClientType, DownloadConfig, DownloadConfigs } from "@/app/utils/api/download"
+import { DownloadClient, DownloadClientConfig, DownloadClientResource, DownloadClientType, DownloadConfig, DownloadConfigResource, DownloadConfigs } from "@/app/utils/api/download"
 import { MediaWorkCategoryType } from "@/app/utils/api/media/category"
 import { MediaWorkType, SyncMode } from "@/app/utils/api/types"
 import { PlusOutlined, DeleteOutlined, RetweetOutlined } from "@ant-design/icons"
@@ -31,12 +31,12 @@ const downloadClientConfigs: Record<DownloadClientConfig['type'], DownloadClient
 export default function DownloaderSetting() {
     const { token } = theme.useToken();
     return <>
-        <CardsForm<DownloadClientConfig, DownloadClient>
+        <CardsForm<DownloadClientResource>
             resource={DownloadClient}
             title={"下载器"}
             formComponent={DownloadClientConfigForm}
         >
-            <Cards<DownloadClientConfig, DownloadClient>
+            <Cards<DownloadClientResource>
                 cardProps={(record: DownloadClientConfig) => {
                     const config = downloadClientConfigs[record.type];
                     return ({
@@ -49,12 +49,12 @@ export default function DownloaderSetting() {
                     })
                 }} />
         </CardsForm>
-        <CardsForm<DownloadConfig, DownloadConfigs>
+        <CardsForm<DownloadConfigResource>
             resource={DownloadConfigs}
             title={"下载设置"}
             formComponent={DownloadConfigForm}
         >
-            <CollapsableList<DownloadConfig, DownloadConfigs>
+            <CollapsableList<DownloadConfigResource>
                 cardProps={(record: DownloadConfig) => {
                     return ({
                         title: record.name,

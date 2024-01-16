@@ -4,7 +4,7 @@ import { ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
 import { CardsForm, CardProps, Cards, TestButton } from "@/app/components/CardsForm";
 import { NastoolServerConfig } from "@/app/utils/api/api";
 import { APIArrayResourceBase } from "@/app/utils/api/api_base";
-import { MediaServer, MediaServerConfig } from "@/app/utils/api/mediaserver";
+import { MediaServer, MediaServerConfig, MediaServerResource } from "@/app/utils/api/mediaserver";
 import { Button, Divider, Form, Input, Space, Tag } from "antd";
 import React, { useMemo } from "react";
 
@@ -43,7 +43,7 @@ const mediaserverConfigs: Record<MediaServerConfig['options']['type'], MediaServ
 }
 
 export default function MediaServerPage() {
-    return <CardsForm<MediaServerConfig, MediaServer>
+    return <CardsForm<MediaServerResource>
         resource={MediaServer}
         title={"媒体服务器"}
         formComponent={MediaServerForm}

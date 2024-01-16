@@ -1,4 +1,4 @@
-import { APIBase, APIArrayResourceBase, APIArrayResourceOption } from "./api_base";
+import { APIBase, APIArrayResourceOption, ResourceType, APIArrayResourceBase } from "./api_base";
 import { MediaWorkType, SyncMode } from "./types";
 import { ImportMode as RmtMode } from "./api"
 /**
@@ -63,8 +63,13 @@ export interface TorrentInfo {
     }
 }
 
+export interface DownloadResource {
+    ItemType: TorrentInfo,
+    ListOptionType: ListOptions
+}
+
 type ListOptions = { page?: number, size?: number, hashs?: string[], state?: TorrentFilterState }
-export class Download extends APIArrayResourceBase<TorrentInfo, ListOptions> {
+export class Download extends APIArrayResourceBase<DownloadResource> {
     constructor() {
         super();
     }
@@ -198,7 +203,11 @@ type DownloadClientConfigListResult = {
     detail: DownloadClientConfig[]
 }
 
-export class DownloadClient extends APIArrayResourceBase<DownloadClientConfig> {
+export interface DownloadClientResource extends ResourceType {
+    ItemType: DownloadClientConfig,
+}
+
+export class DownloadClient extends APIArrayResourceBase<DownloadClientResource> {
     public async list() {
         const result = await (await this.API).post<DownloadClientConfigListResult>("download/client/list",
             { auth: true }
@@ -280,7 +289,12 @@ export interface DownloadConfig {
     downloader_type: DownloadClientConfig['type']
 }
 
-export class DownloadConfigs extends APIArrayResourceBase<DownloadConfig> {
+export interface DownloadConfigResource extends ResourceType {
+    ItemType: DownloadConfig,
+}
+
+
+export class DownloadConfigs extends APIArrayResourceBase<DownloadConfigResource> {
     public async list() {
         const result = await (await this.API).post<{ data: DownloadConfig[] }>("download/config/list", { auth: true })
         result.data.forEach(item => { item.downloader = Number(item.downloader) })

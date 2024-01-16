@@ -22,127 +22,6 @@ export interface APIArrayResourceOption<Options = never> extends APIResourceOpti
     initialOptions?: Options
 }
 
-export abstract class APIArrayResource<T, Options = {}> extends APIBase {
-}
-
-
-
-export class APIArrayResourceBase<T, Options = {}> extends APIArrayResource<T, Options> {
-
-    // public abstract list(): Promise<T[]>;
-    protected async listHook(options?: Options): Promise<T[]> {
-        throw new Error("Not implemented")
-    }
-
-    protected async totalHook?(): Promise<number>;
-
-    protected async updateHook(value: T) {
-
-    }
-
-    protected addHook?(value: T): Promise<boolean>;
-
-    protected deleteHook?<DeleteOption>(value: T, options?: DeleteOption): Promise<boolean>;
-
-    protected deleteManyHook?<DeleteOption>(values: T[], options?: DeleteOption): Promise<boolean>;
-
-    protected validateHook?(value: T): Promise<boolean>;
-
-    protected async updateManyHook(value: T[]) {
-
-    }
-
-
-    public useResource(option?: APIArrayResourceOption<Options>) {
-        function useList() {
-            const [options, setOptions] = useState<Options | undefined>(option?.initialOptions)
-            const [list, setList] = useState<T[]>()
-            const [total, setTotal] = useState<number>(0);
-            const refresh = (async () => {
-                if (useMessage) message.fetch.loading()
-                try {
-                    const list = await self.listHook(options)
-                    setList(list)
-                    setTotal((await self.totalHook?.()) ?? list.length)
-                    if (useMessage) message.fetch.success()
-                } catch (e: any) {
-                    if (useMessage) message.fetch.error(e)
-                }
-            })
-            useEffect(() => {
-                refresh();
-            }, [options])
-            return {
-                refresh,
-                list, setList,
-                options,
-                setOptions,
-                total,
-            }
-        }
-        let useListCache: ReturnType<typeof useList>;
-
-        const message = useSubmitMessage(String(this));
-        const deleteMessage = message.bundle("删除");
-        const validateMessage = message.bundle("测试");
-        const useMessage = option?.useMessage ?? false;
-
-        const self = this
-
-        const actionFlow = <Action extends (...args: any) => (any | undefined), T>(callback: Action, messageHandler: ReturnType<typeof message.bundle>) => {
-            return async (value: T, options?: Options) => {
-                let result: ReturnType<Action> | undefined = undefined;
-                if (useMessage) message.update.loading()
-                try {
-                    result = await callback(value, options);
-                    if (useMessage) message.update.success()
-                    useListCache?.refresh?.();
-                } catch (e: any) {
-                    if (useMessage) message.update.error(e)
-                }
-                return result;
-            }
-        }
-
-        const update = actionFlow((value: T) => self.addHook?.(value), message);
-
-        const add = self.addHook == undefined ? undefined : actionFlow((value: T) => self.addHook?.(value), message);
-
-        const del = self.deleteHook == undefined ? undefined : actionFlow((value: T) => self.deleteHook?.(value), deleteMessage);
-
-        const val = self.validateHook == undefined ? undefined : actionFlow((value: T) => self.validateHook?.(value) ?? false, validateMessage);
-
-        type ArgumentTypes<T, F extends Function> = F extends (value: T, args: infer A) => any ? A : never;
-
-        const delMany = this.deleteManyHook ? actionFlow<typeof this.deleteManyHook, T[]>(async (value: T[], options) => {
-            return await self.deleteManyHook?.(value, options) ?? false
-        },
-            deleteMessage) : undefined;
-
-        return {
-            useList: () => {
-                useListCache = useListCache ?? useList();
-                return useListCache;
-            },
-            add, del, val,
-            delMany,
-            updateMany: this.updateManyHook,
-            messageContext: message.contextHolder,
-            message,
-            update: update,
-            api: self
-
-        }
-    }
-
-}
-
-class APIArrayHooks {
-    constructor() {
-
-    }
-}
-
 export interface APIDataResourceOption extends APIResourceOption {
 }
 export class APIDataResourceBase<T, Options = never> extends APIBase {
@@ -200,7 +79,7 @@ export class APIDataResourceBase<T, Options = never> extends APIBase {
     }
 }
 
-export function useResource<T, OptionType>(cls: APIArrayResourceBase<T, OptionType>,) {
+export function useResource<T, OptionType>(cls: APIArrayResourceBase<{ ItemType: T, ListOptionType: OptionType }>,) {
     return cls.useResource()
 }
 
@@ -213,11 +92,11 @@ export interface ResourceType {
     DeleteOptionType?: any
 }
 
-type ItemType<T extends ResourceType> = T['ItemType'];
-type ListOptionType<T extends ResourceType> = T['ListOptionType']
-type DeleteOptionType<T extends ResourceType> = T['DeleteOptionType'];
+export type ItemType<T extends ResourceType> = T['ItemType'];
+export type ListOptionType<T extends ResourceType> = T['ListOptionType']
+export type DeleteOptionType<T extends ResourceType> = T['DeleteOptionType'];
 
-export class APIArrayResourceBaseD<T extends ResourceType> extends APIBase{
+export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
     // public abstract list(): Promise<T[]>;
     protected async listHook(options?: ListOptionType<T>): Promise<ItemType<T>[]> {
         throw new Error("Not implemented")
@@ -233,7 +112,7 @@ export class APIArrayResourceBaseD<T extends ResourceType> extends APIBase{
 
     protected deleteHook?(value: ItemType<T>, options?: DeleteOptionType<T>): Promise<boolean>;
 
-    protected deleteManyHook?<DeleteOption>(values: ItemType<T>[], options?: DeleteOptionType<T>): Promise<boolean>;
+    protected deleteManyHook?(values: ItemType<T>[], options?: DeleteOptionType<T>): Promise<boolean>;
 
     protected validateHook?(value: ItemType<T>): Promise<boolean>;
 
@@ -245,7 +124,7 @@ export class APIArrayResourceBaseD<T extends ResourceType> extends APIBase{
     public useResource(option?: APIArrayResourceOption<ListOptionType<T>>) {
         function useList() {
             const [options, setOptions] = useState<ListOptionType<T> | undefined>(option?.initialOptions)
-            const [list, setList] = useState<T[]>()
+            const [list, setList] = useState<ItemType<T>[]>()
             const [total, setTotal] = useState<number>(0);
             const refresh = (async () => {
                 if (useMessage) message.fetch.loading()
@@ -269,6 +148,7 @@ export class APIArrayResourceBaseD<T extends ResourceType> extends APIBase{
                 total,
             }
         }
+
         let useListCache: ReturnType<typeof useList>;
 
         const message = useSubmitMessage(String(this));
@@ -278,16 +158,17 @@ export class APIArrayResourceBaseD<T extends ResourceType> extends APIBase{
 
         const self = this
 
-        const actionFlow = <Action extends (...args: any) => (any | undefined), T, Options = never>(callback: Action, messageHandler: ReturnType<typeof message.bundle>) => {
+        const actionFlow = <Action extends (...args: any) => (any | void), T, Options = never>(callback: Action,
+            messageHandler: ReturnType<typeof message.bundle>) => {
             return async (value: T, options?: Options) => {
                 let result: ReturnType<Action> | undefined = undefined;
-                if (useMessage) message.update.loading()
+                if (useMessage) messageHandler.loading()
                 try {
                     result = await callback(value, options);
-                    if (useMessage) message.update.success()
+                    if (useMessage) messageHandler.success()
                     useListCache?.refresh?.();
                 } catch (e: any) {
-                    if (useMessage) message.update.error(e)
+                    if (useMessage) messageHandler.error(e)
                 }
                 return result;
             }
@@ -302,10 +183,13 @@ export class APIArrayResourceBaseD<T extends ResourceType> extends APIBase{
         const val = self.validateHook == undefined ? undefined : actionFlow((value: ItemType<T>) => self.validateHook?.(value) ?? false, validateMessage);
 
 
-        const delMany = this.deleteManyHook ? actionFlow<typeof this.deleteManyHook, ItemType<T>[]>(async (value: ItemType<T>[], options) => {
-            return await self.deleteManyHook?.(value, options) ?? false
-        },
-            deleteMessage) : undefined;
+        const delMany = this.deleteManyHook ?
+            actionFlow<typeof this.deleteManyHook, ItemType<T>[], DeleteOptionType<T>>(
+                async (value: ItemType<T>[], options) => {
+                    return await self.deleteManyHook?.(value, options) ?? false
+                },
+                deleteMessage
+            ) : undefined;
 
         return {
             useList: () => {

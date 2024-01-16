@@ -1,61 +1,72 @@
 "use client"
-import { APIArrayResourceBase, useResource } from "@/app/utils/api/api_base";
+import { APIArrayResourceBase, ItemType, ListOptionType, ResourceType, useResource } from "@/app/utils/api/api_base";
 import React, { useEffect, useState, createContext, useContext, MouseEventHandler, useMemo } from "react";
 import { Section } from "../Section";
 import { Button, ButtonProps, Card, Collapse, CollapseProps, Drawer, Modal, Space } from "antd";
 import { PlusOutlined, CloseOutlined, CheckOutlined, RetweetOutlined, ExclamationOutlined, EditOutlined } from "@ant-design/icons"
+import { once } from "lodash";
 
+type ResourceInstance<Res extends ResourceType> = ReturnType<APIArrayResourceBase<Res>['useResource']>;
 
-export interface CardsFormProps<T, API extends APIArrayResourceBase<T, Options>, Options = {}> {
-    resource: new () => API,
+export interface CardsFormProps<Res extends ResourceType> {
+    resource: new () => APIArrayResourceBase<Res>,
     title: React.ReactNode,
     layout?: "vertical" | "horizontal",
     children?: React.ReactNode,
-    initialOptions?: Options,
-    formComponent?: React.FC<{ record?: T, onChange?: (value: T) => void }>,// () => React.JSX.Element,
-    extra?: (resource: ReturnType<API['useResource']>) => React.ReactNode
+    initialOptions?: ListOptionType<Res>,
+    formComponent?: React.FC<{ record?: ItemType<Res>, onChange?: (value: ItemType<Res>) => void }>,// () => React.JSX.Element,
+    extra?: (resource: ResourceInstance<Res>) => React.ReactNode
 }
 
-export interface CardProps<T, API extends APIArrayResourceBase<T, Options>, Options = {}> {
+export interface CardProps<Res extends ResourceType> {
     cover?: React.ReactNode,
     title: React.ReactNode,
     description: React.ReactNode,
     readonly?: boolean,
-    extra?: (resource: ReturnType<API['useResource']>) => React.ReactNode
+    extra?: (resource: ResourceInstance<Res>) => React.ReactNode
 }
 
 
-type APIRecordType<Type> = Type extends APIArrayResourceBase<infer T, infer Option> ? T : never;
-type APIOptions<Type> = Type extends APIArrayResourceBase<infer T, infer Option> ? Option : never;
-
-export interface CardsFormContextType<T, API extends APIArrayResourceBase<T, Options>, Options = {}> {
-    resource: ReturnType<API['useResource']>,
-    options: CardsFormProps<T, API, Options>,
-    openEditor: (value: T) => void;
+export interface CardsFormContextType<Res extends ResourceType> {
+    resource: ResourceInstance<Res>,
+    options: CardsFormProps<Res>,
+    openEditor: (value: ItemType<Res>) => void;
 }
 
-type GenernalType = CardsFormContextType<any, APIArrayResourceBase<any, any | undefined | never>, any | undefined | never>
+type GenernalType = {
+    resource: ResourceInstance<ResourceType>,
+    options: ResourceType,
+    openEditor: ((value: ItemType<ResourceType>) => void);
+}
 export const CardsFormContext = createContext<GenernalType>({
     resource: {} as any,
     options: {} as any,
     openEditor: () => { }
 })
 
-export function useCardsFormContext<T, API extends APIArrayResourceBase<T, Options>, Options = {}>() {
-    type ContextType = CardsFormContextType<T, API, Options>
-    const context = useContext<ContextType>(CardsFormContext as unknown as React.Context<ContextType>);
+type CardFormContextType<Res extends ResourceType> = {
+    resource: ResourceInstance<ResourceType>,
+    options: ResourceType,
+    openEditor: ((value: ItemType<ResourceType>) => void);
+}
+
+const createCardFormContext = once(<T extends ResourceType,>() => createContext({} as CardsFormContextType<T>))
+
+export function useCardsFormContext<Res extends ResourceType>() {
+    type ContextType = CardsFormContextType<Res>
+    const context = useContext<ContextType>(createCardFormContext<Res>());
     return context
 }
 
-export function CardsForm<T, API extends APIArrayResourceBase<T, Options>, Options = {}>(props: CardsFormProps<T, API, Options>) {
+export function CardsForm<Res extends ResourceType>(props: CardsFormProps<Res>) {
     const resource = new props.resource().useResource({ initialOptions: props.initialOptions, useMessage: true });
     const { useList, add, update, messageContext } = resource;
     const { refresh } = useList();
     const FormComponent = props.formComponent;
     const [openEditing, setOpenEditing] = useState(false)
-    const [editingRecord, setEditingRecord] = useState<T>();
+    const [editingRecord, setEditingRecord] = useState<ItemType<Res>>();
     const [id, setId] = useState(0);
-    const openEditor = (value?: T) => {
+    const openEditor = (value?: ItemType<Res>) => {
         setId(id + 1);
         setEditingRecord(value)
         setOpenEditing(true);
@@ -74,13 +85,14 @@ export function CardsForm<T, API extends APIArrayResourceBase<T, Options>, Optio
             else return undefined
         }
     }, [editingRecord, openEditing])
+    const CardsFormContext = createCardFormContext<Res>()
     return <Section title={props.title}
         onRefresh={() => refresh()}
         extra={
             <Space>{add ? <Button icon={<PlusOutlined />}
                 onClick={() => { openEditor() }} type="primary">添加</Button> : <></>
             }
-                {props.extra?.(resource as :ReturnType<API['useResource']> )}
+                {props.extra?.(resource as ResourceInstance<Res>)}
             </Space>
         }
     >
@@ -94,12 +106,12 @@ export function CardsForm<T, API extends APIArrayResourceBase<T, Options>, Optio
     </Section >
 }
 
-export function TestButton<T, API extends APIArrayResourceBase<T>>(props: {
-    record: () => T,
-    resource?: ReturnType<API['useResource']>,
+export function TestButton<Res extends ResourceType>(props: {
+    record: () => ItemType<Res>,
+    resource?: ResourceInstance<Res>,
 } & ButtonProps) {
 
-    const ctx = useCardsFormContext<T, API>();
+    const ctx = useCardsFormContext<Res>();
     const val = props.resource?.val ?? ctx.resource.val;
     const [result, setResult] = useState<boolean | undefined>(undefined);
     const [loading, setLoading] = useState(false);
@@ -122,21 +134,21 @@ export function TestButton<T, API extends APIArrayResourceBase<T>>(props: {
     }
 }
 
-export function Cards<T, API extends APIArrayResourceBase<T>>({ cardProps }: { cardProps: (record: T) => CardProps<T, API> }) {
-    const ctx = useCardsFormContext<T, API>();
+export function Cards<Res extends ResourceType>({ cardProps }: { cardProps: (record: ItemType<Res>) => CardProps<Res> }) {
+    const ctx = useCardsFormContext<Res>();
     const { resource } = ctx;
     const { useList } = resource;
     const { list } = useList();
     return <Space>
         {
-            list ? Object.entries(list).map(([key, record]) => <ListItemCard<T, API> key={key} record={record} cardProps={cardProps(record)} />) : <></>
+            list ? Object.entries(list).map(([key, record]) => <ListItemCard<Res> key={key} record={record} cardProps={cardProps(record)} />) : <></>
         }
     </Space>
 }
 
 
-function ListItemCard<T, API extends APIArrayResourceBase<T>>({ record, cardProps }: { record: T, cardProps: CardProps<T, API> }) {
-    const ctx = useCardsFormContext<T, API>();
+function ListItemCard<Res extends ResourceType>({ record, cardProps }: { record: ItemType<Res>, cardProps: CardProps<Res> }) {
+    const ctx = useCardsFormContext<Res>();
     const props = cardProps;
     const coverCard = props.cover != undefined;
     const { confirm } = Modal;
@@ -177,12 +189,12 @@ function ListItemCard<T, API extends APIArrayResourceBase<T>>({ record, cardProp
     </>
 }
 
-export function CollapsableList<T, API extends APIArrayResourceBase<T>>({ cardProps }: { cardProps: (record: T) => CardProps<T, API> }) {
-    const ctx = useCardsFormContext<T, API>();
+export function CollapsableList<Res extends ResourceType>({ cardProps }: { cardProps: (record: ItemType<Res>) => CardProps<Res> }) {
+    const ctx = useCardsFormContext<Res>();
     const { useList } = ctx.resource;
     const { list } = useList();
     const { confirm } = Modal;
-    const items: CollapseProps['items'] = list?.map((record: T, index) => {
+    const items: CollapseProps['items'] = list?.map((record: ItemType<Res>, index) => {
         const props = cardProps(record);
         const actions = []
         if (!props.readonly) {

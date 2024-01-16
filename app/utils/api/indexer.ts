@@ -1,5 +1,5 @@
 import { NastoolServerConfig } from "./api";
-import { APIBase, APIArrayResourceBase, APIDataResourceBase } from "./api_base";
+import { APIBase, APIArrayResourceBase, APIDataResourceBase, ResourceType } from "./api_base";
 import { ServerConfig } from "./serverConfig";
 
 export interface IndexerSite {
@@ -10,8 +10,11 @@ export interface IndexerSite {
     enabled: boolean,
 }
 
+export interface IndexerResource extends ResourceType {
+    ItemType: IndexerSite
+}
 
-export class Indexers extends APIArrayResourceBase<IndexerSite> {
+export class Indexers extends APIArrayResourceBase<IndexerResource> {
     constructor() {
         super();
     }

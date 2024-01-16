@@ -1,15 +1,17 @@
 "use client"
-import { OrganizationHistory } from "@/app/utils/api/api";
-import { HistoryListOption, Organize, OrganizeHistory, OrganizeRecord } from "@/app/utils/api/import";
-import { Button, Dropdown, Flex, Form, Input, Modal, Space, Table, theme } from "antd";
-import { SearchOutlined } from "@ant-design/icons"
+import { OrganizeHistory, OrganizeRecord, OrgnizeHistoryResource } from "@/app/utils/api/import";
+import { Button, Dropdown, Flex, Form, Input, Space, Table, theme } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
 import { ColumnType, ColumnsType, TableProps } from "antd/es/table";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { CardsForm, useCardsFormContext } from "@/app/components/CardsForm";
-import { useSubmitMessage } from "@/app/utils";
+import MediaImportEntry, { MediaImportProvider } from "@/app/components/mediaImport/mediaImportEntry";
+import { IdentifyHistory } from "@/app/components/mediaImport/mediaImportContext";
+import MediaImportWrapper from "@/app/components/mediaImport/mediaImport";
+import { SeriesKey } from "@/app/utils/api/types";
 
-const MediaInfoColumn = ({ title, record, onTitleClick }: { title: string, record: OrganizationHistory, onTitleClick?: (value: string) => void }) => {
+const MediaInfoColumn = ({ title, record, onTitleClick }: { title: string, record: OrganizeRecord, onTitleClick?: (value: string) => void }) => {
     const { token } = theme.useToken();
     return <Space direction="vertical" size={0}>
 
@@ -29,7 +31,7 @@ const MediaInfoColumn = ({ title, record, onTitleClick }: { title: string, recor
     </Space>
 }
 
-const MediaFileInfoColumn = ({ record }: { record: OrganizationHistory }) => {
+const MediaFileInfoColumn = ({ record }: { record: OrganizeRecord }) => {
     const { token } = theme.useToken();
     return <Space direction="vertical" size={0}>
         <span style={{ color: token.colorInfoText }}>
@@ -41,7 +43,7 @@ const MediaFileInfoColumn = ({ record }: { record: OrganizationHistory }) => {
     </Space>
 }
 
-const MediaFileImportInfoColumn = ({ record }: { record: OrganizationHistory }) => {
+const MediaFileImportInfoColumn = ({ record }: { record: OrganizeRecord }) => {
     const { token } = theme.useToken();
     return <Space direction="vertical" size={0}>
         <span style={{ color: token.colorTextLabel }}>
@@ -56,9 +58,9 @@ const MediaFileImportInfoColumn = ({ record }: { record: OrganizationHistory }) 
     </Space>
 }
 
-type DataIndex = keyof OrganizationHistory;
+type DataIndex = keyof OrganizeRecord;
 
-const getColumnSearchProps = ({ keyword, onFinish }: { keyword?: string, onFinish: (keyword: string | undefined) => void }): ColumnType<OrganizationHistory> => ({
+const getColumnSearchProps = ({ keyword, onFinish }: { keyword?: string, onFinish: (keyword: string | undefined) => void }): ColumnType<OrganizeRecord> => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => {
         return <FilterDropDown value={keyword} onFinish={(value) => {
             console.log(value)
@@ -95,43 +97,54 @@ function FilterDropDown({ value: keyword, onFinish }: { value?: string, onFinish
 
 export default function ImportHistory() {
     const [selected, setSelectd] = useState<OrganizeRecord[]>([]);
-    return <CardsForm<OrganizeRecord, OrganizeHistory, HistoryListOption>
-        resource={OrganizeHistory}
-        title="历史记录"
-        initialOptions={{ page: 1, pageSize: 20, }}
-        extra={(res) => {
-            return <Flex justify="end" gap={12} style={{ width: "100%" }}>
-                <Button disabled={selected.length == 0} type="primary">重新识别</Button>
-                {/* <Button danger disabled={selected.length == 0} onClick={() => { res.delMany?.(selected) }}>批量删除({selected.length})</Button> */}
-                <Dropdown.Button menu={{
-                    items: [{
-                        label: "删除源文件",
-                        key: "del_source",
-                        danger: true
-                    }, {
-                        label: "删除媒体库文件",
-                        key: "del_dest",
-                        danger: true
-                    }, {
-                        label: "删除源文件和媒体库文件",
-                        key: "del_all",
-                        danger: true
-                    }],
-                    onClick: (value) => {
-                        console.log(value)
-                    }
-                }} disabled={selected.length == 0} onClick={(evt) => { console.log(evt.currentTarget) }} danger>
-                    批量删除({selected.length})
-                </Dropdown.Button>
-            </Flex >
-        }}
-    >
-        <ImportHistoryTable onSelected={(records) => setSelectd(records)} />
-    </CardsForm>
+    return <MediaImportProvider>
+        <MediaImportWrapper />
+        <CardsForm<OrgnizeHistoryResource>
+            resource={OrganizeHistory}
+            title="历史记录"
+            initialOptions={{ page: 1, pageSize: 20, }}
+            extra={(res) => {
+                return <Flex justify="end" gap={12} style={{ width: "100%" }}>
+                    {/* <Button disabled={selected.length == 0} type="primary">重新导入</Button> */}
+                    <MediaImportEntry appendFiles={selected.map((file) => ({
+                        path: file.SOURCE_PATH,
+                        name: file.SOURCE_FILENAME,
+                        rel: [],
+                        selected: true,
+                        indentifyHistory: new IdentifyHistory()
+                    }))} flush />
+                    {/* <Button danger disabled={selected.length == 0} onClick={() => { res.delMany?.(selected) }}>批量删除({selected.length})</Button> */}
+                    <Dropdown.Button menu={{
+                        items: [{
+                            label: "删除源文件",
+                            key: "del_source",
+                            danger: true
+                        }, {
+                            label: "删除媒体库文件",
+                            key: "del_dest",
+                            danger: true
+                        }, {
+                            label: "删除源文件和媒体库文件",
+                            key: "del_all",
+                            danger: true
+                        }],
+                        onClick: (value) => {
+                            console.log(value)
+                            res.delMany?.(selected, { key: value.key })
+                        }
+                    }} disabled={selected.length == 0}  danger>
+                        批量删除({selected.length})
+                    </Dropdown.Button>
+                </Flex >
+            }}
+        >
+            <ImportHistoryTable onSelected={(records) => setSelectd(records)} />
+        </CardsForm>
+    </MediaImportProvider>
 }
 
 function ImportHistoryTable({ onSelected }: { onSelected: (records: OrganizeRecord[]) => void }) {
-    const ctx = useCardsFormContext<OrganizeRecord, OrganizeHistory>();
+    const ctx = useCardsFormContext<OrgnizeHistoryResource>();
     const { useList, messageContext, delMany } = ctx.resource;
     const { list, total, options, setOptions } = useList();
     const [loading, setLoading] = useState(false);
@@ -177,7 +190,7 @@ function ImportHistoryTable({ onSelected }: { onSelected: (records: OrganizeReco
         }
     ]
 
-    const onTableChange: TableProps<OrganizationHistory>['onChange'] = (pagination, filters, sorter, extra) => {
+    const onTableChange: TableProps<OrganizeRecord>['onChange'] = (pagination, filters, sorter, extra) => {
         console.log("table changed")
         if (extra.action == "filter") {
             console.log("table filter change", filters);
@@ -215,46 +228,3 @@ function ImportHistoryTable({ onSelected }: { onSelected: (records: OrganizeReco
         />
     </>
 }
-
-// interface DeleteModalProps {
-//     records: OrganizeRecord[],
-//     onFinish: ()=>{}
-// }
-
-
-// const [form] = Form.useForm();
-//     const [modal, contextHolder] = Modal.useModal();
-//     const { bundle, contextHolder: messageContextHolder } = useSubmitMessage("删除");
-//     const submit = bundle("下载提交")
-//     const downloadForm = <Form form={form} initialValues={{ setting: 0, path: undefined }} layout="horizontal">
-//         <Form.Item name="setting" label="删除设置" style={{ marginTop: 12, marginBottom: 16 }}>
-//             <
-//         </Form.Item>
-//     </Form>
-
-//     return <>{contextHolder}{messageContextHolder}<Button type="link" icon={<DownloadOutlined />}
-//         onClick={() => {
-//             modal.confirm({
-//                 title: `下载选项`,
-//                 content: downloadForm,
-//                 width: 500,
-//                 styles: {
-//                     "footer": {
-//                         marginTop: 0
-//                     }
-//                 },
-//                 onOk: () => {
-//                     const values = form.getFieldsValue();
-//                     submit.loading();
-//                     new TorrentSearchResult().download(options.records.id, values.path, values.setting)
-//                         .then((msg) => {
-//                             submit.success()
-//                         })
-//                         .catch((e) => {
-//                             submit.error(e)
-//                         })
-//                 }
-//             })
-//         }} />
-//     </>
-// }
