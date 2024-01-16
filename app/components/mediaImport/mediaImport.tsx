@@ -95,24 +95,22 @@ const MediaImport = () => {
 
     const searchContext = useContext(SearchContext);
     const { selected: mediaWork } = searchContext;
-    const [selectedFiles, setSelectedFiles] = useState<MediaImportFile[]>([])
+    const selectedFiles = useMemo(() => mediaImportContext.penddingFiles.filter(v => v.selected), [mediaImportContext])
     const onFinish = async (values: any) => {
         const series: SeriesKey = values.series;
         const episodes = values.episodes ? [...values.episodes] : [];
-
-        const episode_offset: number = values.episode_offset || 0;
         const tmdbId = series.i;
         if (tmdbId != undefined) {
 
             const season = Number(series.s);
-            const selectedFiles = mediaImportContext.penddingFiles.filter(v => v.selected)
+
             const identify = selectedFiles.map((v) => {
-                console.log(v)
                 const episode = episodes?.shift();
+                console.log(v, episode)
                 return new SeriesKey(series).type(mediaWork?.type || values.type)
                     .tmdbId(tmdbId)
-                    .season(Number.isNaN(season) ? undefined : season)
-                    .episode(Number.isNaN(episode) ? undefined : episode ? (episode + episode_offset) : undefined)
+                    .season(Number.isNaN(season) ? v.indentifyHistory.last().s : season)
+                    .episode(Number.isNaN(episode) ? undefined : episode)
             })
             console.log(identify)
             mediaImportDispatch({
@@ -124,8 +122,8 @@ const MediaImport = () => {
     }
 
     const series = Form.useWatch("series", form) as SeriesKey;
-    return <Row gutter={32} style={{ height: "100%" }}>
-        <Col span={6}>
+    return <Row gutter={16} style={{ height: "100%" }}>
+        <Col span={7}>
             <Form form={form}
                 // layout="vertical"
                 initialValues={{
@@ -146,11 +144,6 @@ const MediaImport = () => {
                         <Form.Item name="episodes">
                             <EpisodeInput fileNames={selectedFiles.map((file) => file.name)} />
                         </Form.Item>
-
-                        <Form.Item label="集数偏移" name="episode_offset">
-                            <InputNumber placeholder="集数偏移" />
-                        </Form.Item>
-
                     </> : <></>
                     }
                     <Form.Item>
@@ -159,8 +152,8 @@ const MediaImport = () => {
                 </Space>
             </Form>
         </Col>
-        <Col span={18} style={{ height: "100%", overflowY: "auto" }}>
-            <ImportList onSelect={(files) => { setSelectedFiles(files) }} />
+        <Col span={17} style={{ height: "100%", overflowY: "auto" }}>
+            <ImportList />
         </Col>
     </Row >
 }
@@ -172,7 +165,7 @@ const EpisodeInput = (options: { value?: number[], onChange?: (value: (number)[]
         NUMBERS = "number",
         FORMAT = "format"
     }
-    const [currentTab, setCurrentTab] = useState<TabKey>(TabKey.NUMBERS)
+    const [currentTab, setCurrentTab] = useState<TabKey>(TabKey.TMDB)
     const [episodes, setEpisodes] = useState<Record<TabKey, number[]>>({
         [TabKey.TMDB]: [],
         [TabKey.NUMBERS]: [],
@@ -188,7 +181,8 @@ const EpisodeInput = (options: { value?: number[], onChange?: (value: (number)[]
     useEffect(() => {
         if (options.onChange) {
             const eps = episodes[currentTab];
-            if (options.onChange) options.onChange(eps);
+            console.log(episodes, currentTab, eps);
+            options.onChange(eps);
         }
     }, [currentTab, episodes])
 
@@ -212,7 +206,7 @@ const EpisodeInput = (options: { value?: number[], onChange?: (value: (number)[]
     ]
     return <><Tabs
         style={{ maxWidth: "100%" }}
-        defaultActiveKey={TabKey.NUMBERS}
+        defaultActiveKey={TabKey.TMDB}
         tabBarExtraContent={<span>{options.fileNames.length}</span>}
         onChange={(activeKey) => setCurrentTab(activeKey as TabKey)}
         items={TabOptions}
@@ -249,8 +243,9 @@ const EpisodeInputFromTMDB = (options: { onChange: (value: number[]) => void }) 
         options.onChange(values);
     }
     return <Select
+        placeholder={episodeOptions?.length ? `从共${episodeOptions?.length}集中选择` : "选择前置信息"}
         tokenSeparators={[',']}
-        disabled={loading}
+        disabled={loading || (episodeOptions?.length == 0)}
         loading={loading}
         mode="multiple"
         value={value}
@@ -273,26 +268,30 @@ const EpisodeInputFromString = (options: { onChange: (value: number[]) => void, 
             options.onChange([])
         }
     }, [format])
-    return <Input onChange={fromString} />
+    return <Input placeholder="1-3,4,5" onChange={fromString} />
 }
 
 const EpisodeInputFromFormat = (options: { onChange: (value: number[]) => void, fileNames: MediaImportFileKey[] }) => {
-    const fromFormat = (value: any) => {
-        const formatString = value.target.value as string;
+    const [offset, setOffset] = useState(0)
+    const [formatPat, setFormatPat] = useState<string>();
+    useEffect(() => {
+        const formatString = formatPat;
         const escapedFormString = _.escapeRegExp(formatString);
         const regexp = escapedFormString.replace(_.escapeRegExp("{ep}"), "(?<ep>\\d+)")
         const re = new RegExp(regexp)
         const eps: number[] = [];
         options.fileNames.forEach((filename) => {
             const result = re.exec(filename);
-            eps.push(Number(result?.groups?.ep))
+            eps.push(Number(result?.groups?.ep) + offset)
         })
-        console.log(eps)
-        if (options.onChange) options.onChange(eps);
-    }
-    return <>
-        <Input onChange={fromFormat} />
-    </>
+        if (options.onChange) {
+            options.onChange(eps);
+        }
+    }, [offset, formatPat])
+    return <Space direction="vertical" style={{ width: "100%" }}>
+        <Input placeholder="E{ep}" onChange={(value) => setFormatPat(value.currentTarget.value)} />
+        <InputNumber value={offset} onChange={(value) => { if (value != null) { setOffset(value) } }} precision={0} placeholder="集数偏移" />
+    </Space>
 }
 
 const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value: SeriesKey) => void }) => {
@@ -300,8 +299,6 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
     const { setSelected, selected, series, setSeries } = searchContext;
     const [seasons, setSeasons] = useState<MediaWorkSeason[]>([])
     const [loading, setLoading] = useState(false)
-
-    const [selectedSeason, setSelectedSeason] = useState<number>(); //Form.useWatch('season', form);
 
     const onTMDBSelected = async (value: MediaWork) => {
         setSeasons([])
@@ -311,8 +308,6 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
         if (mediaWork) setSeries(new SeriesKey(mediaWork.series).tmdbId(mediaWork.key))
         setLoading(false)
     }
-
-    const [seasonOptions, setSeasonOptions] = useState<SelectProps['options']>([])
     const isTvSeries = useMemo(() => {
         return (series.t == MediaWorkType.TV || series.t == MediaWorkType.ANI)
     }, [series])
@@ -322,31 +317,11 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
             const mediaWork = await media?.get();
             if (mediaWork && media) {
                 setSelected(mediaWork);
-                if (mediaWork.series.t == MediaWorkType.TV || mediaWork.series.t == MediaWorkType.ANI) {
-                    const seasons = await media.get_children()
-
-                    if (seasons?.length) {
-                        const options = seasons.map((item) => ({
-                            value: item.key,
-                            label: `季 ${item.key} - ${item.title}`,
-                        }))
-                        setSeasonOptions(options);
-                    } else {
-                        setSeasonOptions([])
-                    }
-                    setSelectedSeason(undefined)
-                }
             }
         }
     }), [series.i])
 
 
-    useEffect(() => {
-        if (series.has("season")) {
-            setSelectedSeason(series.s);
-        }
-
-    }, [series.s])
     useEffect(() => {
         if (onChange) onChange(new SeriesKey(series))
     }, [series])
@@ -359,7 +334,7 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
                 季：<MediaSeasonInput style={{ width: 250 }}
                     series={series}
                     onChange={(value) => {
-                        if (value !== undefined) setSelectedSeason(value);
+
                         if (series.has("tmdbId")) {
                             setSeries(new SeriesKey(series).season(value))
                         }
@@ -413,9 +388,7 @@ export const MediaSeasonInput = ({ series, value, onChange, style }: { series: S
 const MediaDetailCardFromSearch = ({ loading }: { loading?: boolean }) => {
     const searchContext = useContext(SearchContext);
     const { selected } = searchContext;
-    if (loading) return <Spin style={{ height: "150px", }}></Spin>
-    if (selected)
-        return <MediaDetailCard mediaDetail={selected} size="small" />
-    else
-        return <Empty />
+    return <Spin spinning={loading} style={{ height: "150px", }}>
+        <MediaDetailCard mediaDetail={selected} size="small" />
+    </Spin>
 }

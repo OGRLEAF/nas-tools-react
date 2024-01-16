@@ -40,8 +40,6 @@ const cardStyleMap: Record<CardSize, DetailCardStyle> = {
         },
         title: {
             fontSize: "1.4rem",
-            marginTop: 4,
-            marginBottom: 8
         },
         typography: {
             width: 350,
@@ -101,25 +99,25 @@ export function MediaDetailCard({
             }}>
             {coverImage}
             <div style={{ height: style.height, width: "100%", maxWidth: style.maxWidth }}>
-                <Typography style={{ paddingTop: 4, width: "100%", height: "100%", display: "flex", alignItems: "start", flexDirection: "column", justifyContent: "space-between" }}>
-                    <Typography.Title level={2} style={{ position: "sticky", top: 0, backgroundColor: "white", color: token.colorTextBase, fontSize: "1.6rem", margin: 0, padding: "4px 0px 4px 0px", ...style.title }}>
+                <div style={{ paddingTop: 0, width: "100%", height: "100%", display: "flex", overflowY: "auto", alignItems: "start", flexDirection: "column"}}>
+                    <div style={{ position: "sticky", top: 0, backgroundColor: "#ffffffa1", color: token.colorTextBase, fontSize: "1.6rem", margin: 0, padding: "0px 0px 4px 0px", ...style.title }}>
                         <Space>
-                            <span>{mediaDetail.title}</span>
+                            <span style={{ fontSize: "1.25rem", fontWeight: "bold" }}>{mediaDetail.title}</span>
                             <span style={{ fontSize: "1rem" }}> {metadata?.date?.release}</span>
                             <StateTag stateMap={stateTagMap} value={mediaDetail.series.t ?? MediaWorkType.UNKNOWN} />
                         </Space>
-                    </Typography.Title>
-                    <Typography.Text style={{ height: "100%", overflowY: "auto", padding: "0px 4px" }}>
+                    </div>
+                    <div style={{ padding: "0px 4px" }}>
                         <Typography.Link style={{ color: token.colorTextDescription }} href={metadata?.links?.tmdb} target="_blank">
                             {metadata?.links?.tmdb}
                         </Typography.Link>
                         <span style={{ color: token.colorTextDescription, display: "block", wordWrap: "break-word", whiteSpace: "pre-wrap" }}>
-                            {metadata?.description}
+                            {metadata?.description.replaceAll("\n\n", "\n").replaceAll("\n\n", "\n")}
                         </span>
-                    </Typography.Text>
+                    </div>
 
-                    <div style={{ alignSelf: "end", paddingTop: 4 }}>{action}</div>
-                </Typography>
+                    <div style={{ alignSelf: "end", position: "sticky", bottom: 0, right: 4 }}>{action}</div>
+                </div>
             </div>
         </Flex >
 

@@ -66,19 +66,10 @@ const ImportListContext = createContext<ImportListContextType>({
 
 export const useImportListContext = () => useContext(ImportListContext)
 
-export const ImportList = (options: { onSelect?: (value: MediaImportFile[]) => void }) => {
+export const ImportList = () => {
     // const mediaImportDispatch = useMediaImportDispatch();
     const mediaImportContext = useMediaImport();
-    const [filteredList, setFilteredList] = useState<MediaImportFile[]>()
-    const [selectedFileKeys, setSelectedFileKeys] = useState<MediaImportFileKey[]>([])
-    const [fileMap, setFileMap] = useState<Map<string, MediaImportFile>>(new Map())
     const mediaImportDispatch = useMediaImportDispatch();
-    useEffect(() => {
-        if (options.onSelect) {
-            const selected = selectedFileKeys.map((key) => fileMap?.get(key)).filter(file => file !== undefined)
-            options.onSelect(selected as MediaImportFile[])
-        }
-    }, [selectedFileKeys, fileMap])
     const files: MediaImportFile[] | undefined = Object.values(mediaImportContext.penddingFiles)
     const [identifiedTvGroup, identifiedMovieGroup] = useMemo((): Record<MediaWork['key'], MediaImportFile[]>[] => {
         const tvGroupMap: Record<MediaWork['key'], MediaImportFile[]> = {};
@@ -100,51 +91,46 @@ export const ImportList = (options: { onSelect?: (value: MediaImportFile[]) => v
         })
         return [tvGroupMap, movieGroupMap];
     }, [files])
-    return <ImportListContext.Provider value={{
-        selectedFileKeys: { selectedFileKeys, setSelectedFileKeys },
-        fileMap: { fileMap, setFileMap }
-    }}>
-        <Flex vertical style={{ width: "100%" }} gap={24}>
-            {
-                Object.entries(identifiedMovieGroup)
-                    .map(([key, files]) => {
-                        return <MovieMediaImportGroup key={key} seriesKey={new SeriesKey().type(MediaWorkType.MOVIE).tmdbId(key)} files={files} />
-                    })
-            }
-            {
-                Object.entries(identifiedTvGroup)
-                    .map(([key, files]) => {
-                        return <TvMediaImportGroup
-                            key={key}
-                            seriesKey={new SeriesKey().type(MediaWorkType.TV).tmdbId(key)}
-                            files={files}
-                        />
-                    })
-            }
+    return <Flex vertical style={{ width: "100%" }} gap={24}>
+        {
+            Object.entries(identifiedMovieGroup)
+                .map(([key, files]) => {
+                    return <MovieMediaImportGroup key={key} seriesKey={new SeriesKey().type(MediaWorkType.MOVIE).tmdbId(key)} files={files} />
+                })
+        }
+        {
+            Object.entries(identifiedTvGroup)
+                .map(([key, files]) => {
+                    return <TvMediaImportGroup
+                        key={key}
+                        seriesKey={new SeriesKey().type(MediaWorkType.TV).tmdbId(key)}
+                        files={files}
+                    />
+                })
+        }
 
-            <Table
-                rowSelection={{
-                    type: "checkbox",
-                    selectedRowKeys: files.filter(v => v.selected).map((v) => v.name),
-                    onChange: (selectedRowKeys: React.Key[], selectedRows: MediaImportFile[]) => {
-                        // setSelectedFileKeys(selectedRowKeys as MediaImportFileKey[])
-                        mediaImportDispatch({ type: MediaImportAction.SetSelected, fileKeys: selectedRowKeys as MediaImportFileKey[] })
-                    },
-                }}
-                scroll={{ y: 580, }}
-                pagination={false}
-                size="small"
-                rowKey="name"
-                dataSource={files}
-                columns={columns}
-                // virtual={true}
-                footer={(render) => {
-                    return <IdentifySelected />
-                }}
-            />
+        <Table
+            rowSelection={{
+                type: "checkbox",
+                selectedRowKeys: files.filter(v => v.selected).map((v) => v.name),
+                onChange: (selectedRowKeys: React.Key[], selectedRows: MediaImportFile[]) => {
+                    // setSelectedFileKeys(selectedRowKeys as MediaImportFileKey[])
+                    mediaImportDispatch({ type: MediaImportAction.SetSelected, fileKeys: selectedRowKeys as MediaImportFileKey[] })
+                },
+            }}
+            scroll={{ y: 580, }}
+            pagination={false}
+            size="small"
+            rowKey="name"
+            dataSource={files}
+            columns={columns}
+            // virtual={true}
+            footer={(render) => {
+                return <IdentifySelected />
+            }}
+        />
 
-        </Flex>
-    </ImportListContext.Provider >
+    </Flex>
 }
 
 const IdentifySelected = () => {
@@ -158,7 +144,7 @@ const IdentifySelected = () => {
             setLoading(true)
             const promises = selected.map((v) => () => identify.identifySeries(v.name)
                 .then((value) => mediaImportDispatch({ type: MediaImportAction.SetSeries, fileKeys: [v.name], series: [value] })))
-            for(let p of promises) {
+            for (let p of promises) {
                 await p();
             }
             setLoading(false)

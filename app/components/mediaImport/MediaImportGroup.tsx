@@ -12,7 +12,7 @@ import { IconEllipsisLoading } from "../icons";
 import _ from "lodash";
 import { ImportMode } from "@/app/utils/api/api";
 import { UnionPathsSelect } from "../LibraryPathSelector";
-import { useImportListContext } from "./mediaImportList";
+// import { useImportListContext } from "./mediaImportList";
 import { StateMap, StateTag } from "../StateTag";
 
 export interface MediaImportGroupProps {
@@ -67,9 +67,7 @@ const tvImportColumns: ColumnsType<MediaImportFile> = [{
 
 export function TvMediaImportGroup(props: MediaImportGroupProps) {
     const [work, setWork] = useState<MediaWork>();
-    const importListContext = useImportListContext();
     const mediaImportDispatch = useMediaImportDispatch();
-    const { selectedFileKeys, fileMap } = importListContext;
     useEffect(asyncEffect(async () => {
         const series = new SeriesKey(props.seriesKey).slice(SeriesKeyType.TMDBID)
         const target = new TMDB().fromSeries(series);
@@ -139,8 +137,6 @@ const movieImportColumns: ColumnsType<MediaImportFile> = [
 
 export function MovieMediaImportGroup(props: MediaImportGroupProps) {
     const [work, setWork] = useState<MediaWork>();
-    const importListContext = useImportListContext();
-    const { selectedFileKeys, fileMap } = importListContext;
     useEffect(asyncEffect(async () => {
         const series = new SeriesKey(props.seriesKey).slice(SeriesKeyType.TMDBID)
         const target = new TMDB().fromSeries(series);
@@ -198,7 +194,6 @@ function TvImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Med
         <Space size={16}>
             <span>{metadata?.title} #{mergedSeriesKey.i}</span>
             <span>季 {mergedSeriesKey.s}</span>
-            <span>{String(disableImport)} {mergedSeriesKey.end}</span>
             <span>共 {files.length} 个文件</span>
         </Space>
         <Form layout="inline" initialValues={{ type: ImportMode.LINK }} disabled={disableImport}
