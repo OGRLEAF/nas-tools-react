@@ -18,23 +18,23 @@ export interface APIResourceOption {
     refreshInterval?: number,
 }
 
-export interface APIArrayResourceOption extends APIResourceOption {
-
+export interface APIArrayResourceOption<Options = never> extends APIResourceOption {
+    initialOptions?: Options
 }
 
-export interface APIArrayResource<T, Options = never> {
+export abstract class APIArrayResource<T, Options = {}> extends APIBase {
 }
 
-export abstract class APIArrayResource<T, Options = never> extends APIBase {
-}
 
-export class APIArrayResourceBase<T, Options = never> extends APIArrayResource<T, Options> {
+
+export class APIArrayResourceBase<T, Options = {}> extends APIArrayResource<T, Options> {
 
     // public abstract list(): Promise<T[]>;
-
     protected async listHook(options?: Options): Promise<T[]> {
         throw new Error("Not implemented")
     }
+
+    protected async totalHook?(): Promise<number>;
 
     protected async updateHook(value: T) {
 
@@ -42,7 +42,9 @@ export class APIArrayResourceBase<T, Options = never> extends APIArrayResource<T
 
     protected addHook?(value: T): Promise<boolean>;
 
-    protected deleteHook?(value: T): Promise<boolean>;
+    protected deleteHook?<DeleteOption>(value: T, options?: DeleteOption): Promise<boolean>;
+
+    protected deleteManyHook?<DeleteOption>(values: T[], options?: DeleteOption): Promise<boolean>;
 
     protected validateHook?(value: T): Promise<boolean>;
 
@@ -51,14 +53,17 @@ export class APIArrayResourceBase<T, Options = never> extends APIArrayResource<T
     }
 
 
-    public useResource(option?: APIArrayResourceOption) {
+    public useResource(option?: APIArrayResourceOption<Options>) {
         function useList() {
-            const [options, setOptions] = useState<Options>()
+            const [options, setOptions] = useState<Options | undefined>(option?.initialOptions)
             const [list, setList] = useState<T[]>()
+            const [total, setTotal] = useState<number>(0);
             const refresh = (async () => {
                 if (useMessage) message.fetch.loading()
                 try {
-                    setList(await self.listHook(options))
+                    const list = await self.listHook(options)
+                    setList(list)
+                    setTotal((await self.totalHook?.()) ?? list.length)
                     if (useMessage) message.fetch.success()
                 } catch (e: any) {
                     if (useMessage) message.fetch.error(e)
@@ -68,7 +73,11 @@ export class APIArrayResourceBase<T, Options = never> extends APIArrayResource<T
                 refresh();
             }, [options])
             return {
-                list, setList, refresh
+                refresh,
+                list, setList,
+                options,
+                setOptions,
+                total,
             }
         }
         let useListCache: ReturnType<typeof useList>;
@@ -79,53 +88,36 @@ export class APIArrayResourceBase<T, Options = never> extends APIArrayResource<T
         const useMessage = option?.useMessage ?? false;
 
         const self = this
-        const update = async (value: T) => {
-            if (useMessage) message.update.loading()
-            try {
-                if (value != undefined) await self.updateHook(value)
-                if (useMessage) message.update.success()
-                useListCache?.refresh?.();
 
-            } catch (e: any) {
-                if (useMessage) message.update.error(e)
-            }
-        }
-
-        const add = self.addHook == undefined ? undefined : async (value: T) => {
-            if (useMessage) message.update.loading()
-            try {
-                if (value != undefined) await self.addHook?.(value)
-                if (useMessage) message.update.success()
-                useListCache?.refresh?.();
-            } catch (e: any) {
-                if (useMessage) message.update.error(e)
-            }
-        }
-
-        const del = self.deleteHook == undefined ? undefined : async (value: T) => {
-            if (useMessage) deleteMessage.loading()
-            try {
-                if (value != undefined) await self.deleteHook?.(value)
-                if (useMessage) deleteMessage.success()
-                useListCache?.refresh?.();
-            } catch (e: any) {
-                if (useMessage) deleteMessage.error(e)
-            }
-        }
-
-        const val = self.validateHook == undefined ? undefined : async (value: T) => {
-            let result = undefined;
-            if (useMessage) validateMessage.loading()
-            try {
-                if (value != undefined) {
-                    result = await self.validateHook?.(value)
+        const actionFlow = <Action extends (...args: any) => (any | undefined), T>(callback: Action, messageHandler: ReturnType<typeof message.bundle>) => {
+            return async (value: T, options?: Options) => {
+                let result: ReturnType<Action> | undefined = undefined;
+                if (useMessage) message.update.loading()
+                try {
+                    result = await callback(value, options);
+                    if (useMessage) message.update.success()
+                    useListCache?.refresh?.();
+                } catch (e: any) {
+                    if (useMessage) message.update.error(e)
                 }
-                if (useMessage) validateMessage.success()
-            } catch (e: any) {
-                if (useMessage) validateMessage.error(e)
+                return result;
             }
-            return result;
         }
+
+        const update = actionFlow((value: T) => self.addHook?.(value), message);
+
+        const add = self.addHook == undefined ? undefined : actionFlow((value: T) => self.addHook?.(value), message);
+
+        const del = self.deleteHook == undefined ? undefined : actionFlow((value: T) => self.deleteHook?.(value), deleteMessage);
+
+        const val = self.validateHook == undefined ? undefined : actionFlow((value: T) => self.validateHook?.(value) ?? false, validateMessage);
+
+        type ArgumentTypes<T, F extends Function> = F extends (value: T, args: infer A) => any ? A : never;
+
+        const delMany = this.deleteManyHook ? actionFlow<typeof this.deleteManyHook, T[]>(async (value: T[], options) => {
+            return await self.deleteManyHook?.(value, options) ?? false
+        },
+            deleteMessage) : undefined;
 
         return {
             useList: () => {
@@ -133,6 +125,7 @@ export class APIArrayResourceBase<T, Options = never> extends APIArrayResource<T
                 return useListCache;
             },
             add, del, val,
+            delMany,
             updateMany: this.updateManyHook,
             messageContext: message.contextHolder,
             message,
@@ -144,6 +137,11 @@ export class APIArrayResourceBase<T, Options = never> extends APIArrayResource<T
 
 }
 
+class APIArrayHooks {
+    constructor() {
+
+    }
+}
 
 export interface APIDataResourceOption extends APIResourceOption {
 }
@@ -164,7 +162,7 @@ export class APIDataResourceBase<T, Options = never> extends APIBase {
         const useMessage = option?.useMessage ?? false;
 
         const self = this
-        
+
         const [options, setOptions] = useState<Options>()
         const [data, setData] = useState<T>()
         const useData = () => {
@@ -204,4 +202,125 @@ export class APIDataResourceBase<T, Options = never> extends APIBase {
 
 export function useResource<T, OptionType>(cls: APIArrayResourceBase<T, OptionType>,) {
     return cls.useResource()
+}
+
+
+
+
+export interface ResourceType {
+    ItemType?: any,
+    ListOptionType?: any,
+    DeleteOptionType?: any
+}
+
+type ItemType<T extends ResourceType> = T['ItemType'];
+type ListOptionType<T extends ResourceType> = T['ListOptionType']
+type DeleteOptionType<T extends ResourceType> = T['DeleteOptionType'];
+
+export class APIArrayResourceBaseD<T extends ResourceType> extends APIBase{
+    // public abstract list(): Promise<T[]>;
+    protected async listHook(options?: ListOptionType<T>): Promise<ItemType<T>[]> {
+        throw new Error("Not implemented")
+    }
+
+    protected async totalHook?(): Promise<number>;
+
+    protected async updateHook(value: ItemType<T>) {
+
+    }
+
+    protected addHook?(value: ItemType<T>): Promise<boolean>;
+
+    protected deleteHook?(value: ItemType<T>, options?: DeleteOptionType<T>): Promise<boolean>;
+
+    protected deleteManyHook?<DeleteOption>(values: ItemType<T>[], options?: DeleteOptionType<T>): Promise<boolean>;
+
+    protected validateHook?(value: ItemType<T>): Promise<boolean>;
+
+    protected async updateManyHook(value: ItemType<T>[]) {
+
+    }
+
+
+    public useResource(option?: APIArrayResourceOption<ListOptionType<T>>) {
+        function useList() {
+            const [options, setOptions] = useState<ListOptionType<T> | undefined>(option?.initialOptions)
+            const [list, setList] = useState<T[]>()
+            const [total, setTotal] = useState<number>(0);
+            const refresh = (async () => {
+                if (useMessage) message.fetch.loading()
+                try {
+                    const list = await self.listHook(options)
+                    setList(list)
+                    setTotal((await self.totalHook?.()) ?? list.length)
+                    if (useMessage) message.fetch.success()
+                } catch (e: any) {
+                    if (useMessage) message.fetch.error(e)
+                }
+            })
+            useEffect(() => {
+                refresh();
+            }, [options])
+            return {
+                refresh,
+                list, setList,
+                options,
+                setOptions,
+                total,
+            }
+        }
+        let useListCache: ReturnType<typeof useList>;
+
+        const message = useSubmitMessage(String(this));
+        const deleteMessage = message.bundle("删除");
+        const validateMessage = message.bundle("测试");
+        const useMessage = option?.useMessage ?? false;
+
+        const self = this
+
+        const actionFlow = <Action extends (...args: any) => (any | undefined), T, Options = never>(callback: Action, messageHandler: ReturnType<typeof message.bundle>) => {
+            return async (value: T, options?: Options) => {
+                let result: ReturnType<Action> | undefined = undefined;
+                if (useMessage) message.update.loading()
+                try {
+                    result = await callback(value, options);
+                    if (useMessage) message.update.success()
+                    useListCache?.refresh?.();
+                } catch (e: any) {
+                    if (useMessage) message.update.error(e)
+                }
+                return result;
+            }
+        }
+
+        const update = actionFlow((value: T) => self.addHook?.(value), message);
+
+        const add = self.addHook == undefined ? undefined : actionFlow((value: ItemType<T>) => self.addHook?.(value), message);
+
+        const del = self.deleteHook == undefined ? undefined : actionFlow((value: ItemType<T>) => self.deleteHook?.(value), deleteMessage);
+
+        const val = self.validateHook == undefined ? undefined : actionFlow((value: ItemType<T>) => self.validateHook?.(value) ?? false, validateMessage);
+
+
+        const delMany = this.deleteManyHook ? actionFlow<typeof this.deleteManyHook, ItemType<T>[]>(async (value: ItemType<T>[], options) => {
+            return await self.deleteManyHook?.(value, options) ?? false
+        },
+            deleteMessage) : undefined;
+
+        return {
+            useList: () => {
+                useListCache = useListCache ?? useList();
+                return useListCache;
+            },
+            add, del, val,
+            delMany,
+            updateMany: this.updateManyHook,
+            messageContext: message.contextHolder,
+            message,
+            update: update,
+            api: self
+
+        }
+    }
+
 }
