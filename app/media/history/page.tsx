@@ -197,11 +197,6 @@ function ImportHistoryTable({ onSelected }: { onSelected: (records: OrganizeReco
         }
     }
 
-    const TableTitle = <Flex justify="end" gap={12} style={{ width: "100%" }}>
-        <Button type="primary">重新识别</Button>
-        <Button danger >批量删除</Button>
-    </Flex>
-
     return <>{messageContext}
         <Table
             rowSelection={{

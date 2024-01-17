@@ -1,6 +1,6 @@
 import { ImportMode, NastoolMediaType } from "./api";
 import { APIArrayResourceBase, APIBase, ResourceType } from "./api_base";
-import { MediaWorkSeason, MediaWorkType } from "./types";
+import { MediaWorkSeason, MediaWorkType, SyncMode } from "./types";
 
 type optionalEpisode = undefined | number
 
@@ -128,4 +128,28 @@ export class OrganizeHistory extends APIArrayResourceBase<OrgnizeHistoryResource
     }
 
 
+}
+
+
+export interface UnknownRecord {
+    id: number,
+    path: string,
+    to: string,
+    name: string,
+    rmt_mode: string,
+    sync_mode: ImportMode
+}
+
+export interface OrganizeUnkownResouce extends ResourceType {
+    ItemType: UnknownRecord
+}
+
+export class OrganizeUnknown extends APIArrayResourceBase<OrganizeUnkownResouce> {
+    async list() {
+        const result = await (await this.API).post<{ items: UnknownRecord[] }>("organization/unknown/list", { auth: true })
+        return result.items;
+    }
+    protected async listHook(options?: any): Promise<UnknownRecord[]> {
+        return this.list();
+    }
 }

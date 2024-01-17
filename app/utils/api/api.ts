@@ -22,6 +22,7 @@ type NastoolApi =
     "organization/import/group" |
     "organization/history/list" |
     "organization/history/delete" |
+    "organization/unknown/list" |
     "/unknown/renameudf" |
     "site/list" |
     "site/statistics" |
