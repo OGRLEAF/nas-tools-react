@@ -78,6 +78,7 @@ export default function StatisticPage() {
             loading={loading}
             dataSource={sitesStat}
             rowKey="site"
+            pagination={false}
         >
             <Table.Column title="站点" dataIndex="site" key="site" />
             <Table.Column title="等级" dataIndex="user_level" />

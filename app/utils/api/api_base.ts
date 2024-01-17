@@ -179,7 +179,7 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
             }
         }
 
-        const update = actionFlow((value: T) => self.addHook?.(value), message);
+        const update = actionFlow((value: T) => self.updateHook?.(value), message);
 
         const add = self.addHook == undefined ? undefined : actionFlow((value: ItemType<T>) => self.addHook?.(value), message);
 

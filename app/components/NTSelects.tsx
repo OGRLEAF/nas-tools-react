@@ -1,12 +1,12 @@
 
-import React, { CSSProperties, useEffect, useState } from "react"
+import React, { CSSProperties, useEffect, useMemo, useState } from "react"
 import { API, NastoolFilterruleBasic, NastoolIndexer, NastoolServerConfig, NastoolSiteInfo, NastoolSiteProfile } from "../utils/api/api"
 import { Select, Space } from "antd"
 import { Sites } from "../utils/api/sites"
 import { syncModeMap } from "../utils/api/sync"
 import { MediaWorkType } from "../utils/api/types"
 import { MediaWorkCategory, MediaWorkCategoryType } from "../utils/api/media/category"
-import { DownloadClient, DownloadClientConfig } from "../utils/api/download"
+import { DownloadClient, DownloadClientConfig, DownloadConfigs } from "../utils/api/download"
 import { Organize } from "../utils/api/import"
 import { normalize } from "path"
 
@@ -16,33 +16,16 @@ interface FormItemProp<T> {
     style?: CSSProperties
 }
 
-// export const DownloadSetting = createContext<{ label: string, value: string }>([
-//     {
-//         label: "默认",
-//         value: ""
-//     },
-// ])
-
-export const DownloadSettingSelect = (options: FormItemProp<string>) => {
-
-    const downloadConfigSelectOption = [
-        {
+export const DownloadSettingSelect = (options: { default?: { label: string, value: any } } & FormItemProp<string>) => {
+    const { useList } = new DownloadConfigs().useResource();
+    const { list } = useList();
+    const selectOptions = useMemo(() => [
+        (options.default ?? {
             label: "站点设置",
             value: 0
-        },
-    ]
-    const [selectOptions, setSelectOptions] = useState<{ value: null | number, label: string }[]>(downloadConfigSelectOption);
-    useEffect(() => {
-        (async () => {
-            const nastool = await API.getNastoolInstance();
-            const downloadConfig = await nastool.getDownloadConfigList();
-            setSelectOptions(
-                [
-                    ...downloadConfigSelectOption,
-                    ...downloadConfig.map((item) => ({ label: item.name, value: Number(item.id) }))
-                ])
-        })()
-    }, []);
+        }),
+        ...list?.map((config) => ({ label: config.name, value: config.id })) ?? []
+    ], [list])
     return <Select style={{ ...options.style }} options={selectOptions} value={options.value} onChange={options.onChange} />
 }
 
@@ -107,7 +90,7 @@ export const SiteSelect = (options: FormItemProp<string[]>) => {
     const [selectOptions, setSelectOptions] = useState<{ value: NastoolSiteProfile['name'], label: NastoolSiteProfile['name'] }[]>([]);
     useEffect(() => {
         (async () => {
-            const sites = await new Sites().sites();
+            const sites = await new Sites().list();
             setSelectOptions(
                 [
                     ...sites.map((item) => ({ label: item.name, value: item.name }))

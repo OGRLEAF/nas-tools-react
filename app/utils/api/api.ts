@@ -29,6 +29,7 @@ type NastoolApi =
     "site/indexers" |
     "site/resources" |
     "site/update" |
+    "site/delete" |
     "download/config/list" |
     "download/config/update" |
     "download/config/delete" |
@@ -378,7 +379,7 @@ export type NastoolSiteUpdateNote = {
 
 export type NastoolSiteUpdateProfile = {
     site_cookie: string,
-    site_id: string,
+    site_id: number,
     site_include: string,
     site_name: string,
     site_note: string,
@@ -903,7 +904,7 @@ export class NASTOOL {
         }
         const updateProfile: NastoolSiteUpdateProfile = {
             site_cookie: siteProfile.cookie,
-            site_id: String(siteProfile.id),
+            site_id: siteProfile.id,
             site_include: siteProfile.uses.join(""),
             site_name: siteProfile.name,
             site_note: JSON.stringify(updateNote),
