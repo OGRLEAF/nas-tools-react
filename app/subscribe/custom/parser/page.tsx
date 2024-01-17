@@ -3,6 +3,7 @@ import { Cards, CardsForm, useCardsFormContext } from "@/app/components/CardsFor
 import { RssParsers, RssParserResource, RssParserConfig } from "@/app/utils/api/subscription/rss";
 import { Button, Col, Flex, Form, Input, Modal, Row, Select, theme } from "antd";
 import CodeMirror from "@uiw/react-codemirror"
+import { vscodeDark } from "@uiw/codemirror-theme-vscode"
 import { json } from "@codemirror/lang-json"
 import Table, { ColumnsType } from "antd/es/table";
 import React from "react";
@@ -36,14 +37,10 @@ function RssParserForm({ record, onChange }: { record?: RssParserConfig, onChang
         </Row>
         <Form.Item name="format" label="解析格式">
             <CodeMirror
+                theme={vscodeDark}
                 extensions={[json()]}
-                style={{
-                    minHeight: 500,
-                    maxHeight: 700,
-                    overflowY: "auto",
-                    borderRadius: token.borderRadius,
-                    fontFamily: 'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
-                }} />
+                minHeight="400"
+            />
         </Form.Item>
         <Form.Item name="params" label="参数">
             <Input />
@@ -57,7 +54,7 @@ function RssParserForm({ record, onChange }: { record?: RssParserConfig, onChang
 function RssParserTable() {
     const ctx = useCardsFormContext<RssParserResource>();
     const { useList, messageContext } = ctx.resource;
-    const { list, total, options, loading } = useList();
+    const { list, total, loading } = useList();
     const { confirm } = Modal;
     const columns: ColumnsType<RssParserConfig> = [
         {
