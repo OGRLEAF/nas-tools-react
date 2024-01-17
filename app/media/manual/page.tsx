@@ -21,9 +21,8 @@ export default function ManualImportPage() {
 
 function ManualImportTable() {
     const ctx = useCardsFormContext<OrganizeUnkownResouce>();
-    const { useList, messageContext, delMany } = ctx.resource;
-    const { list, total, options, setOptions } = useList();
-    const [loading, setLoading] = useState(false);
+    const { useList, messageContext } = ctx.resource;
+    const { list, total, options, loading } = useList();
     const { token } = theme.useToken();
     const columns: ColumnsType<UnknownRecord> = [
         {

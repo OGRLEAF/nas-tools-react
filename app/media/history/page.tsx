@@ -145,9 +145,8 @@ export default function ImportHistory() {
 
 function ImportHistoryTable({ onSelected }: { onSelected: (records: OrganizeRecord[]) => void }) {
     const ctx = useCardsFormContext<OrgnizeHistoryResource>();
-    const { useList, messageContext, delMany } = ctx.resource;
-    const { list, total, options, setOptions } = useList();
-    const [loading, setLoading] = useState(false);
+    const { useList, messageContext,  } = ctx.resource;
+    const { list, total, options, loading, setOptions } = useList();
     const { token } = theme.useToken();
     const columns: ColumnsType<OrganizeRecord> = [
         {

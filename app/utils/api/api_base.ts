@@ -123,10 +123,12 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
 
     public useResource(option?: APIArrayResourceOption<ListOptionType<T>>) {
         function useList() {
+            const [loading, setLoading] = useState<boolean>(false);
             const [options, setOptions] = useState<ListOptionType<T> | undefined>(option?.initialOptions)
             const [list, setList] = useState<ItemType<T>[]>()
             const [total, setTotal] = useState<number>(0);
             const refresh = (async () => {
+                setLoading(true)
                 if (useMessage) message.fetch.loading()
                 try {
                     const list = await self.listHook(options)
@@ -135,6 +137,8 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
                     if (useMessage) message.fetch.success()
                 } catch (e: any) {
                     if (useMessage) message.fetch.error(e)
+                } finally {
+                    setLoading(false)
                 }
             })
             useEffect(() => {
@@ -146,6 +150,7 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
                 options,
                 setOptions,
                 total,
+                loading,
             }
         }
 
