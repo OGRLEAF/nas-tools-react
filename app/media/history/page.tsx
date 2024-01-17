@@ -189,13 +189,6 @@ function ImportHistoryTable({ onSelected }: { onSelected: (records: OrganizeReco
         }
     ]
 
-    const onTableChange: TableProps<OrganizeRecord>['onChange'] = (pagination, filters, sorter, extra) => {
-        console.log("table changed")
-        if (extra.action == "filter") {
-            console.log("table filter change", filters);
-        }
-    }
-
     return <>{messageContext}
         <Table
             rowSelection={{
@@ -218,7 +211,6 @@ function ImportHistoryTable({ onSelected }: { onSelected: (records: OrganizeReco
                 }
 
             }}
-            onChange={onTableChange}
         />
     </>
 }

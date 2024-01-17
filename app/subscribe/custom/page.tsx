@@ -5,12 +5,15 @@ import { Button, Card, Checkbox, Space, Descriptions, Tag, theme, Drawer, Form, 
 import { useEffect, useMemo, useState } from "react";
 import { PlusOutlined, PlayCircleOutlined, StopOutlined, MinusCircleOutlined } from "@ant-design/icons"
 import { IconDatabase, IconEdit } from "@/app/components/icons";
-import { Rss, RssDownloadTaskConfig, RssParser, RssTaskConfig, RssUse } from "@/app/utils/api/subscription/rss";
+import { Rss, RssDownloadTaskConfig, RssParserConfig, RssTaskConfig, RssUse } from "@/app/utils/api/subscription/rss";
 import { asyncEffect } from "@/app/utils";
 import _ from "lodash";
 import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 import { useForm } from "antd/es/form/Form";
 import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import RssParserPage from "./parser/page";
 
 const CustomRssDownloadForm = () => {
     return <>
@@ -119,7 +122,7 @@ const defaultConfig: RssTaskConfig = {
     filter: ""
 }
 
-const CustomRssForm = ({ config, parsers }: { config: RssTaskConfig, parsers: RssParser[] }) => {
+const CustomRssForm = ({ config, parsers }: { config: RssTaskConfig, parsers: RssParserConfig[] }) => {
     const parserOptions = parsers.map((parser) => ({
         label: parser.name,
         value: String(parser.id)
@@ -222,7 +225,7 @@ const CustomRssForm = ({ config, parsers }: { config: RssTaskConfig, parsers: Rs
     </Form >
 }
 
-const CustomRssCard = ({ config, parsers }: { config: RssTaskConfig, parsers: RssParser[] }) => {
+const CustomRssCard = ({ config, parsers }: { config: RssTaskConfig, parsers: RssParserConfig[] }) => {
     const { token } = theme.useToken();
     const [openEdit, setOpenEdit] = useState(false);
     const handleOpenEdit = () => {
@@ -276,7 +279,7 @@ const CustomRssCard = ({ config, parsers }: { config: RssTaskConfig, parsers: Rs
 
 export default function SubscribeMovie() {
     const [tasks, setTasks] = useState<RssTaskConfig[]>([]);
-    const [parsers, setParsers] = useState<RssParser[]>([]);
+    const [parsers, setParsers] = useState<RssParserConfig[]>([]);
 
     const taskCards = useMemo(() => {
         return Object.entries(tasks).map(([key, config]) => <CustomRssCard key={key} config={config} parsers={parsers} />)
@@ -290,25 +293,26 @@ export default function SubscribeMovie() {
     }
 
     const [openCreate, setOpenCreate] = useState(false)
-    return <Section title="自定义订阅"
+    return <><Section title="自定义订阅"
         onRefresh={update}
         extra={
             <Space>
                 <Button icon={<PlusOutlined />} onClick={() => setOpenCreate(true)} type="primary">添加订阅</Button>
                 <Button icon={<PlayCircleOutlined />} >启用</Button>
                 <Button icon={<StopOutlined />} >停用</Button>
-                <Button icon={<IconDatabase />} >RSS解析器</Button>
+                <Link href="/subscribe/custom/parser">
+                    <Button icon={<IconDatabase />} >RSS解析器</Button>
+                </Link>
             </Space>
         }>
         <Checkbox.Group style={{ width: '100%' }}>
             <Space direction="vertical" style={{ width: "100%" }}>
-
                 {taskCards}
-
             </Space>
         </Checkbox.Group>
         <Drawer size="large" open={openCreate} onClose={() => setOpenCreate(false)}>
             <CustomRssForm parsers={parsers} config={defaultConfig} />
         </Drawer>
     </Section>
+    </>
 }

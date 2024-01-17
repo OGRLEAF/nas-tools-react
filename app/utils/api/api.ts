@@ -65,6 +65,9 @@ type NastoolApi =
     "search/result" |
     "rss/list" |
     "rss/update" |
+    "rss/parser/list" |
+    "rss/parser/update" |
+    "rss/parser/delete" |
     "message/client/list" |
     "message/client/update" |
     "message/client/test" |

@@ -1,5 +1,5 @@
-import _ from "lodash";
-import { APIBase } from "../api_base";
+import _, { extend } from "lodash";
+import { APIArrayResourceBase, APIBase, ResourceType } from "../api_base";
 import { RssDownloadProps } from "./subscribe";
 
 
@@ -41,7 +41,7 @@ import { RssDownloadProps } from "./subscribe";
       },
  */
 
-export interface RssParser {
+export interface RssParserConfig {
     id: number,
     name: string,
     type: "XML" | "JSON",
@@ -114,13 +114,13 @@ export interface RssSubscribeTaskConfig extends RssTaskConfig, RssFilterProps, R
 }
 
 export class Rss extends APIBase {
-    public async list(): Promise<{ tasks: RssTaskConfig[], parsers: RssParser[] }> {
-        const list = await (await this.API).post<{ tasks: NTRssTaskFetchInfo[], parsers: RssParser[] }>("rss/list", { auth: true })
+    public async list(): Promise<{ tasks: RssTaskConfig[], parsers: RssParserConfig[] }> {
+        const list = await (await this.API).post<{ tasks: NTRssTaskFetchInfo[], parsers: RssParserConfig[] }>("rss/list", { auth: true })
         const { tasks, parsers } = list;
         tasks.map((item: any) => {
             if ((item.download_setting as unknown as string) == "") item.download_setting = 0;
             if (item.recognization != undefined) item.recognization = (item.recognization == "Y") ? true : false;
-            if (item.save_path == null) item.save_path = undefined  
+            if (item.save_path == null) item.save_path = undefined
             if (item.sites) {
                 item.sites.rss_sites = item.sites.rss_sites || [];
                 item.sites.search_sites = item.sites.search_sites || [];
@@ -164,5 +164,51 @@ export class Rss extends APIBase {
             json: true
         })
         console.log(update)
+    }
+}
+
+export interface RssParserResource extends ResourceType {
+    ItemType: RssParserConfig,
+}
+
+export class RssParsers extends APIArrayResourceBase<RssParserResource> {
+    public async list() {
+        const result = await (await this.API).post<{ parsers: RssParserConfig[] }>("rss/parser/list", { auth: true });
+        return result.parsers
+    }
+
+    public async update(value: RssParserConfig) {
+        const result = await (await this.API).post("rss/parser/update", {
+            auth: true,
+            data: {
+                ...value
+            }
+        });
+        return result;
+    }
+
+    public async delete(id: RssParserConfig['id']) {
+        return await (await this.API).post("rss/parser/delete", {
+            auth: true,
+            data: { id }
+        })
+    }
+
+    protected async deleteHook(value: RssParserConfig, options?: any): Promise<boolean> {
+        await this.delete(value.id);
+        return true;
+    }
+
+    protected async addHook(value: RssParserConfig): Promise<boolean> {
+        await this.update(value);
+        return true;
+    }
+
+    protected async updateHook(value: RssParserConfig): Promise<void> {
+        await this.update(value);
+    }
+
+    protected listHook(options?: any): Promise<RssParserConfig[]> {
+        return this.list();
     }
 }
