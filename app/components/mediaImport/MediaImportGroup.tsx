@@ -9,11 +9,12 @@ import { MediaImportAction, MediaImportFile, MediaImportFileKey, useMediaImportD
 import Table, { ColumnsType } from "antd/es/table";
 import { SearchContext } from "../TMDBSearch/SearchContext";
 import { IconEllipsisLoading } from "../icons";
-import _ from "lodash";
+import _, { values } from "lodash";
 import { ImportMode } from "@/app/utils/api/api";
 import { UnionPathsSelect } from "../LibraryPathSelector";
 // import { useImportListContext } from "./mediaImportList";
 import { StateMap, StateTag } from "../StateTag";
+import { ImportTask, ImportTaskConfig } from "@/app/utils/api/import";
 
 export interface MediaImportGroupProps {
     seriesKey: SeriesKey,
@@ -178,6 +179,10 @@ export function MovieMediaImportGroup(props: MediaImportGroupProps) {
     />
 }
 
+interface ImportFormValues {
+    type: ImportMode,
+    target_path?: string,
+}
 
 function TvImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: MediaImportFile[], }) {
     const mergedSeriesKey = files.length > 0 ? files.map(file => file.indentifyHistory.last())?.reduce((prev, curr) => prev.merge(curr)) : new SeriesKey();
@@ -190,16 +195,39 @@ function TvImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Med
 
     const disableImport = mergedSeriesKey.end < SeriesKeyType.SEASON;
 
+    const submitImport = (value: ImportFormValues) => {
+        const completedFiles: [number, MediaImportFile][] = []
+        files.forEach((file) => {
+            const episode = file.indentifyHistory.last().e;
+            if (episode != undefined) {
+                completedFiles.push([episode, file])
+            }
+        });
+        const commonPath = files.map(value => value.path).every(v => v === completedFiles[0][1].path);
+        if (commonPath && (mergedSeriesKey.t == MediaWorkType.ANI || mergedSeriesKey.t == MediaWorkType.TV)
+            && (mergedSeriesKey.i != undefined)
+            && (mergedSeriesKey.s != undefined)
+        ) {
+            new ImportTask().import({
+                target_path: value.target_path,
+                path: completedFiles[0][1].path,
+                rmt_mode: value.type,
+                files: completedFiles.map(([ep, file]) => [ep, file.name]),
+                season: mergedSeriesKey.s,
+                tmdbid: String(mergedSeriesKey.i),
+                mediaType: mergedSeriesKey.t
+            })
+        }
+    }
+
     return <Flex style={{ width: "100%" }} justify="flex-end" align="center" gap="middle">
         <Space size={16}>
             <span>{metadata?.title} #{mergedSeriesKey.i}</span>
             <span>季 {mergedSeriesKey.s}</span>
             <span>共 {files.length} 个文件</span>
         </Space>
-        <Form layout="inline" initialValues={{ type: ImportMode.LINK }} disabled={disableImport}
-            onFinish={(value: any) => {
-                console.log(value)
-            }}
+        <Form<ImportFormValues> layout="inline" initialValues={{ type: ImportMode.LINK }} disabled={disableImport}
+            onFinish={submitImport}
         >
             <Form.Item name="target_path" >
                 <UnionPathsSelect width={400} />

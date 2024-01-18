@@ -7,6 +7,7 @@ import { ServerConfig } from "@/app/utils/api/serverConfig";
 import { ColumnsType } from "antd/es/table";
 import { Section } from "@/app/components/Section";
 import { PathSelector } from "@/app/components/PathSelector";
+import { NastoolServerConfig } from "@/app/utils/api/api";
 
 type LibraryPathType = "movie_path" | "tv_path" | "anime_path"
 
@@ -50,7 +51,11 @@ const LibraryPathCard = (options: { value: LibraryPathConfig, }) => {
     const TableHeader = () => {
         return <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ fontSize: "1.15em", fontWeight: "bold" }}>{options.value.title}</div>
-            <LibraryPathForm onCreate={(value) => setPaths([...paths, value])} />
+            <LibraryPathForm onCreate={(value) => {
+                setPaths([...paths, value])
+                const mediaPath = { media: { [options.value.key]: [...paths, value] } }
+                new ServerConfig().update(mediaPath as unknown as NastoolServerConfig)
+            }} />
             {/* <div><Button type="primary" size="small" icon={<PlusOutlined />} /></div> */}
         </div>
     }
@@ -89,7 +94,7 @@ const LibraryPathCard = (options: { value: LibraryPathConfig, }) => {
     </List>
 }
 
-export default () => {
+export default function LibraryPage() {
     const [library, setLibrary] = useState<LibraryPathConfig[]>([])
     const loadLibrary = async () => {
         const libraryPathConfig = await new ServerConfig().get()
@@ -117,7 +122,7 @@ export default () => {
     // const cards = library.map((lib) => <LibraryPathCard key={lib.key} value={lib} />)
     return <Section title="媒体库" extra={
         <>
-            <Button type="primary" size="small" onClick={() => loadLibrary()} icon={<RedoOutlined />} />
+            <Button type="primary" onClick={() => loadLibrary()} icon={<RedoOutlined />} />
             {/* {library[2].paths} */}
         </>}>
         <Space direction="vertical" size={16} style={{ width: "100%" }}>

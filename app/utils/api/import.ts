@@ -1,6 +1,6 @@
-import { ImportMode, NastoolMediaType } from "./api";
+import { ImportMode, NastoolMediaType, TaskType } from "./api";
 import { APIArrayResourceBase, APIBase, ResourceType } from "./api_base";
-import { MediaWorkSeason, MediaWorkType, SyncMode } from "./types";
+import { MediaWorkSeason, MediaWorkType, SeriesKey, SyncMode } from "./types";
 
 type optionalEpisode = undefined | number
 
@@ -32,6 +32,24 @@ export class Organize extends APIBase {
 
     public async getHistory({ page, length, keyword }: { page: number, length: number, keyword?: string }) {
         const result = await (await this.API).getOrganizationHistoryList({ page, length, keyword });
+        return result;
+    }
+}
+
+
+export interface ImportTaskConfig {
+    path: string,
+    target_path?: string,
+    rmt_mode: ImportMode,
+    files: [episode: number, string][],
+    season: number,
+    tmdbid: string,
+    mediaType: MediaWorkType
+}
+export class ImportTask extends APIBase {
+    public async import(config: ImportTaskConfig) {
+        console.log(config)
+        const result = await (await this.API).createTask(TaskType.IMPORT, JSON.stringify(config));
         return result;
     }
 }
