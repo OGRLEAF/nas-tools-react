@@ -195,7 +195,7 @@ function DownloadClientConfigForm({ record, onChange }: { record?: DownloadClien
                         </Row>
                         <Row>
                             <Col span={2}>
-                                <Button size="small" danger icon={<DeleteOutlined />} onClick={() => remove(field.name)}>删除</Button>
+                                <Button type="text" size="small" danger icon={<DeleteOutlined />} onClick={() => remove(field.name)}>删除</Button>
                             </Col>
                         </Row>
                         <Divider />
