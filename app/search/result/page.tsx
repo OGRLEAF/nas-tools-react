@@ -13,27 +13,11 @@ import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
 import { useSubmitMessage } from "@/app/utils";
 import { TagCheckboxGroup } from "@/app/components/TagCheckbox";
 import { CollapseProps } from "antd/lib";
+import { DualArrowTag } from "@/app/components/DualArrowTag";
 
 const Tag = (props: TagProps) => {
     return props.children ? React.createElement(AntdTag, (props)) : <></>;
 }
-
-const DualArrowTag = (props:
-    { up?: number, down?: number, show?: (value?: number) => boolean, render?: (value: number) => string, bordered?: boolean }) => {
-    const show = props.show ?? ((value?: number) => (value != undefined))
-    const render = props.render ?? ((value) => value)
-    const { bordered } = props;
-    const up = props.up ?? 0;
-    const down = props.down ?? 0;
-    const showUp = show(up);
-    const showDown = show(down);
-    return showUp || showDown ? <Tag bordered={bordered} color="blue">
-        {showUp ? <><CaretUpOutlined /><span>{render(up)}</span></> : <></>}
-        {showUp && showDown ? <Divider type="vertical" /> : <></>}
-        {showDown ? <><CaretDownOutlined /><span>{render(down)}</span></> : <></>}
-    </Tag> : <></>
-}
-
 
 type FilterType = {
     site?: Set<string>,
@@ -236,24 +220,6 @@ export function DownloadModalEntry(options: DownloadModalProps) {
         </Form.Item>
 
     </Form>
-
-    // return <Popconfirm title="下载选项"
-    //     description={downloadForm}
-    //     onConfirm={() => {
-    //         const values = form.getFieldsValue();
-    //         submit.loading();
-    //         new TorrentSearchResult().download(options.result.id, values.path, values.setting)
-    //             .then((msg) => {
-    //                 submit.success()
-    //             })
-    //             .catch((e) => {
-    //                 submit.error(e)
-    //             })
-    //     }}
-    // >
-    //     {contextHolder}{messageContextHolder}
-    //     <Button type="link" icon={<DownloadOutlined />}></Button>
-    // </Popconfirm >
     return <>{contextHolder}{messageContextHolder}<Button type="link" icon={<DownloadOutlined />}
         onClick={() => {
             modal.confirm({

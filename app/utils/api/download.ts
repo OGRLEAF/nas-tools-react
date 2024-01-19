@@ -63,6 +63,20 @@ export interface TorrentInfo {
     }
 }
 
+export interface DownloadTaskProfile {
+    enclosure: string,
+    title: string,
+    site?: string,
+    description?: string,
+    page_url?: string,
+    size?: number,
+    seeders?: number,
+    uploadvolumefactor?: number,
+    downloadvolumefactor?: number,
+    dl_dir?: string,
+    dl_setting?: number
+}
+
 export interface DownloadResource {
     ItemType: TorrentInfo,
     ListOptionType: ListOptions
@@ -72,6 +86,14 @@ type ListOptions = { page?: number, size?: number, hashs?: string[], state?: Tor
 export class Download extends APIArrayResourceBase<DownloadResource> {
     constructor() {
         super();
+    }
+
+    public async submit(task: DownloadTaskProfile) {
+        const result = await (await this.API).post("download/item", {
+            auth: true,
+            data: {...task}
+        })
+        return result;
     }
 
     public async list(options: ListOptions = {})

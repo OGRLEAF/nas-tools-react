@@ -41,6 +41,7 @@ type NastoolApi =
     "download/stop" |
     "download/remove" |
     "download/search" |
+    "download/item" |
     "download/client/add" |
     "library/mediaserver/library" |
     "library/mediaserver/library/item" |
@@ -870,13 +871,14 @@ export class NASTOOL {
         return result.indexers
     }
 
-    public async getSiteResource(site_domain: string, page: number): Promise<NastoolSiteResourceItem[]> {
+    public async getSiteResource(site_domain: string, page: number, keyword?: string): Promise<NastoolSiteResourceItem[]> {
         const result = await this.post<NastoolSiteResourceList>("site/resources",
             {
                 auth: true,
                 data: {
                     site: site_domain,
-                    page: page
+                    page: page,
+                    keyword,
                 }
             })
         return result.data
