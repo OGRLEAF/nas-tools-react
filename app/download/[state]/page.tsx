@@ -196,7 +196,6 @@ export default function DownloadedPage() {
 
                 </Space>
             },
-            width: 300,
         },
         {
             title: "分类",
@@ -244,7 +243,7 @@ export default function DownloadedPage() {
                 return <>{dateStr.toLocaleDateString()} {dateStr.toLocaleTimeString()}</>
             },
             align: "right",
-            width: 150,
+            width: 200,
             defaultSortOrder: "descend",
             sorter: (a, b) => a.added_date - b.added_date
         },

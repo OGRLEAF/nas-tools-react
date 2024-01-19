@@ -178,7 +178,7 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
           <HeaderSearch />
         </Header>
         <Content style={{ margin: '0px 0px', overflow: 'initial' }}>
-          <div style={{ padding: "0px 16px 16px 16px", minHeight: "50vh", background: colorBgContainer }}>
+          <div style={{ padding: "0px 16px 16px 16px", minHeight: "50vh", height: "100%", background: colorBgContainer }}>
             {children}
           </div>
         </Content>

@@ -1,31 +1,35 @@
 "use client"
 import { Button, Divider, Dropdown, Flex, InputNumber, Space, Typography, } from 'antd'
-import React, { useEffect, useState, createContext, useContext } from 'react'
+import React, { useEffect, useState, createContext, useContext, CSSProperties, useRef, useMemo } from 'react'
 import { RedoOutlined } from "@ant-design/icons"
 import { TitleProps } from 'antd/es/typography/Title'
 
 
 
-interface SectionContext {
-    level: number
+export interface SectionContext {
+    level: number,
+    contentHeight: number
 }
 
-const SectionContext = createContext<SectionContext>({ level: 0 })
+export const SectionContext = createContext<SectionContext>({ level: 0, contentHeight: -1 })
 
 const sectionLevels: TitleProps['level'][] = [1, 2, 3, 4, 5]
-export const Section = ({ children, title, extra, onRefresh, interval: _interval }: {
+export const Section = ({ children, title, extra, onRefresh, interval: _interval, style }: {
     children?: React.ReactNode,
     title: React.ReactNode,
     onRefresh?: () => void,
     interval?: number,
-    extra?: React.ReactNode
+    extra?: React.ReactNode,
+    style?: CSSProperties
 }) => {
 
     const sectionContext = useContext(SectionContext);
     const titleLevel: TitleProps['level'] = sectionLevels[sectionContext.level] ?? 5
+    const outRef = useRef<HTMLDivElement>(null)
+    const headRef = useRef<HTMLDivElement>(null)
     return (
-        <Space style={{ width: "100%", height: titleLevel == 1 ? "100%" : undefined, marginBottom: 12 }} direction='vertical'>
-            <Flex style={{ marginBottom: 4, width: "100%" }} align="end" justify="space-between">
+        <Space ref={outRef} style={{ width: "100%", maxHeight: titleLevel == 1 ? "100%" : undefined, marginBottom: 12, ...style }} direction='vertical'>
+            <Flex ref={headRef} style={{ marginBottom: 4, width: "100%" }} align="end" justify="space-between">
                 {/* <span style={{ fontSize: "1.4em", margin: 0, padding: "16px 0 16px 0", fontWeight: "bold" }}>{title}</span> */}
                 {titleLevel == 1 ? <Typography.Title style={{ fontSize: `${1.9 - titleLevel * 0.25}em` }} level={titleLevel}>{title}</Typography.Title>
                     :
@@ -43,7 +47,8 @@ export const Section = ({ children, title, extra, onRefresh, interval: _interval
                 </div>
             </Flex>
             <SectionContext.Provider value={{
-                level: sectionContext.level + 1
+                level: sectionContext.level + 1,
+                contentHeight: (outRef.current?.scrollHeight ?? -1) - (headRef.current?.scrollHeight ?? -1) - 16
             }}>
                 {children}
             </SectionContext.Provider>

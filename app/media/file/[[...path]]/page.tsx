@@ -1,9 +1,10 @@
 'use client'
-import { Section } from "@/app/components/Section";
+import { Section, SectionContext } from "@/app/components/Section";
 import { API, NastoolFileListItem } from "@/app/utils/api/api";
-import { Col, Row, List, Typography, Space, Segmented, Button, theme, Table, Cascader, Input, Form, Select, Tooltip } from "antd";
-import { Reducer, memo, useEffect, useMemo, useReducer, useState } from "react";
+import { Col, Row, List, Typography, Space, Segmented, Button, theme, Table, Cascader, Input, Form, Select, Tooltip, Flex } from "antd";
+import React, { Reducer, memo, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { ColumnsType } from "antd/es/table";
+import { ReloadOutlined } from "@ant-design/icons"
 import FileMoreAction from "@/app/components/fileMoreAction";
 import MediaImportEntry, { MediaImportProvider } from "@/app/components/mediaImport/mediaImportEntry";
 import MediaImport from "@/app/components/mediaImport/mediaImport";
@@ -144,21 +145,24 @@ const FileFilter = () => {
 
 
 
-const FileList = ({ fileList, loading }: { fileList: NastoolFileListItem[], loading: boolean }) => {
+const FileList = ({ fileList, loading, selected, onSelectedChange, }: {
+    fileList: NastoolFileListItem[], loading: boolean,
+    selected: NastoolFileListItem[],
+    onSelectedChange: (selected: NastoolFileListItem[]) => void
+}) => {
     const { token: { colorTextTertiary }, } = theme.useToken();
     const pathManagerContext = usePathManager();
     const currentPath = pathManagerContext.deepestPath
     const fileExts = new Set<string>(fileList.map(item => item.name.split(".").pop()).filter((item) => item != undefined) as string[]);
-    const [selectedFiles, setSelectedFiles] = useState<NastoolFileListItem[]>([]);
+
     const columns: ColumnsType<NastoolFileListItem> = [
         {
             title: <Space><span>文件</span><span style={{ color: colorTextTertiary }}>共 {fileList.length} 个文件</span></Space>,
             dataIndex: "name",
             key: "name",
-            render: (text, item) => <Button type="link" size="small">{text}</Button>,
+            render: (text, item) => <Button style={{ padding: 0 }} type="link" size="small">{text}</Button>,
             defaultSortOrder: "descend",
             sorter: (a: NastoolFileListItem, b: NastoolFileListItem) => ((a.name > b.name) ? -1 : 1),
-            width: 300,
         },
         {
             title: "修改时间",
@@ -170,7 +174,7 @@ const FileList = ({ fileList, loading }: { fileList: NastoolFileListItem[], load
                 </span>
             },
             defaultSortOrder: "descend",
-            width: 50
+            width: 150
         },
         {
             title: <span>体积</span>,
@@ -182,7 +186,7 @@ const FileList = ({ fileList, loading }: { fileList: NastoolFileListItem[], load
             sorter: (a: NastoolFileListItem, b: NastoolFileListItem) => (a.size - b.size),
             // filters: Array.from(fileExts.keys()).map((item) => ({ text: item, value: item })),
             // onFilter: (value, record) => (record.name.split(".").pop() === value),
-            width: 25,
+            width: 100,
         },
         {
             title: <span>类型</span>,
@@ -190,56 +194,37 @@ const FileList = ({ fileList, loading }: { fileList: NastoolFileListItem[], load
             defaultSortOrder: "descend",
             filters: Array.from(fileExts.keys()).map((item) => ({ text: item, value: item })),
             onFilter: (value, record) => (record.name.split(".").pop() === value),
-            width: 25,
+            width: 100,
         }
     ]
-    return (
-        <MediaImportProvider>
-            <MediaImport></MediaImport>
-            <Space direction="vertical" align="end">
-                <Space size={16}>
-                    <FileFilter />
-                    <MediaImportEntry
-                        flush={true}
-                        appendFiles={
-                            selectedFiles.map((item) => ({ name: item.name, path: currentPath, rel: [], indentifyHistory: new IdentifyHistory(), selected: false }))
-                        } />
-                </Space>
-                <Table
-                    rowSelection={{
-                        type: "checkbox",
-                        columnWidth: 10,
-                        onChange: (selectedRowKeys: React.Key[], selectedRows: NastoolFileListItem[]) => {
-                            setSelectedFiles(selectedRows)
-                        },
-                    }}
-                    dataSource={fileList}
-                    columns={columns}
-                    loading={loading}
-                    rowKey="name"
-
-                    pagination={
-                        {
-                            showSizeChanger: true,
-                            defaultPageSize: 20,
-                        }
-                    }
-                    style={{ maxHeight: "calc(100vh - 200px)", overflowY: "auto" }}
-                    bordered size="middle"
-                    expandable={{
-                        expandedRowRender: (record: NastoolFileListItem) =>
-                            <FileMoreAction file={record} relFiles={fileList} />,
-                        expandRowByClick: true,
-                        fixed: "right",
-                        columnWidth: 16,
-                        showExpandColumn: false,
-                        rowExpandable: () => true
-                    }}
-                    scroll={{ y: 1000 }}
-                >
-                </Table>
-            </Space>
-        </MediaImportProvider>)
+    const sectionContext = useContext(SectionContext);
+    return <><Table
+        tableLayout="fixed"
+        rowSelection={{
+            type: "checkbox",
+            // columnWidth: 50,
+            onChange: (selectedRowKeys: React.Key[], selectedRows: NastoolFileListItem[]) => {
+                onSelectedChange(selectedRows)
+            },
+        }}
+        dataSource={fileList}
+        columns={columns}
+        loading={loading}
+        rowKey="name"
+        pagination={false}
+        bordered size="middle"
+        scroll={{ y: sectionContext.contentHeight - 80 }}
+        expandable={{
+            expandedRowRender: (record: NastoolFileListItem) =>
+                <FileMoreAction file={record} relFiles={fileList} />,
+            expandRowByClick: true,
+            fixed: "right",
+            showExpandColumn: false,
+            rowExpandable: () => true
+        }}
+    >
+    </Table>
+    </>
 }
 
 
@@ -286,28 +271,37 @@ const MediaFileExplorer = () => {
     // const enterDir = (dirName: string) => {
     //     pathManagerDispath({ type: "append_path", path: dirName })
     // }
+    const [selectedFiles, setSelectedFiles] = useState<NastoolFileListItem[]>([]);
 
-    return <Section title="文件管理" onRefresh={onRefresh}>
+    const extras = <Space>
+        <PathManagerBar />
+        <MediaImportEntry flush={true}
+            appendFiles={
+                selectedFiles.map((item) => ({ name: item.name, path: pathManagerContext.deepestPath, rel: [], indentifyHistory: new IdentifyHistory(), selected: false }))
+            } />
+    </Space>
 
-        <Space style={{ width: "100%" }} direction="vertical">
-            <Row>
-                <Col span={24}>
-                    {/* <Segmented options={segmentedPathTag} value={pathManagerState.deepestPath} onChange={onPathChange} /> */}
-                    <PathManagerBar />
-                </Col>
-            </Row>
 
-            <Row gutter={16} >
-                <Col span={6}>
-                    <DirectoryList dirList={dirList} loading={loadingState} />
-                </Col>
-                <Col span={18}>
-                    <FileList fileList={fileList} loading={loadingState} />
-                </Col>
-            </Row>
-        </Space>
-
-    </Section>
+    return <MediaImportProvider>
+        <MediaImport />
+        <Section title="文件管理" onRefresh={onRefresh} extra={extras} style={{ height: "100%" }}>
+            <SectionContext.Consumer>
+                {(sectionContext) => {
+                    return <Row gutter={16} style={{ overflow: "hidden" }}>
+                        <Col span={6}>
+                            <DirectoryList dirList={dirList} loading={loadingState} />
+                        </Col>
+                        <Col span={18}>
+                            <FileList fileList={fileList}
+                                loading={loadingState}
+                                selected={selectedFiles}
+                                onSelectedChange={(files) => setSelectedFiles(files)} />
+                        </Col>
+                    </Row>
+                }}
+            </SectionContext.Consumer>
+        </Section>
+    </MediaImportProvider>
 }
 
 function MediaFile() {

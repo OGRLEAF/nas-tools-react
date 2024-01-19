@@ -1,5 +1,5 @@
 import React, { useReducer, useContext, createContext, useEffect } from "react"
-import { Button, Segmented, Space } from "antd"
+import { Button, Segmented, Space, theme } from "antd"
 import PathManager from "../utils/pathManager"
 import CopyToClipboard from "@/app/components/copyToClipboard"
 import { CopyOutlined } from "@ant-design/icons"
@@ -42,8 +42,6 @@ export function PathManagerBar() {
         }
     })
     const onPathChange = (evt: any) => {
-        console.log('onPathChange', evt)
-        // setLoadingState(true);
         dispath({ type: "set_path", path: evt })
 
     }
@@ -51,6 +49,7 @@ export function PathManagerBar() {
         // setLoadingState(true);
         dispath({ type: "append_path", path: dirName })
     }
+    const {token} = theme.useToken()
 
     return <>
         <Space>
@@ -60,7 +59,7 @@ export function PathManagerBar() {
                 onChange={onPathChange}
             />
             <CopyToClipboard content={pathManagerState.deepestPath}>
-                <Button icon={<CopyOutlined />} />
+                <Button icon={<CopyOutlined color={token.colorIcon} />} />
             </CopyToClipboard>
         </Space>
     </>
