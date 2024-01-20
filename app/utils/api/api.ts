@@ -73,7 +73,12 @@ type NastoolApi =
     "message/client/update" |
     "message/client/test" |
     "message/client/delete" |
-    "scraper/config"
+    "scraper/config" |
+    "words/list" |
+    "words/group/add" |
+    "words/group/delete" |
+    "words/item/update" |
+    "words/item/delete"
 
 
 export interface NastoolResponse<T> {

@@ -1,8 +1,8 @@
 "use client"
-import { APIArrayResourceBase, ItemType, ListOptionType, ResourceType, useResource } from "@/app/utils/api/api_base";
-import React, { useEffect, useState, createContext, useContext, MouseEventHandler, useMemo } from "react";
+import { APIArrayResourceBase, AddItemType, ItemType, ListOptionType, ResourceType, useResource } from "@/app/utils/api/api_base";
+import React, { useEffect, useState, createContext, useContext, MouseEventHandler, useMemo, CSSProperties } from "react";
 import { Section } from "../Section";
-import { Button, ButtonProps, Card, Collapse, CollapseProps, Drawer, Modal, Space } from "antd";
+import { Button, ButtonProps, Card, Collapse, CollapseProps, ConfigProvider, Drawer, Modal, Space, SpaceProps } from "antd";
 import { PlusOutlined, CloseOutlined, CheckOutlined, RetweetOutlined, ExclamationOutlined, EditOutlined } from "@ant-design/icons"
 import { once } from "lodash";
 
@@ -14,7 +14,7 @@ export interface CardsFormProps<Res extends ResourceType> {
     layout?: "vertical" | "horizontal",
     children?: React.ReactNode,
     initialOptions?: ListOptionType<Res>,
-    formComponent?: React.FC<{ record?: ItemType<Res>, onChange?: (value: ItemType<Res>) => void }>,// () => React.JSX.Element,
+    formComponent?: React.FC<{ record?: ItemType<Res>, onChange?: (value: AddItemType<Res>) => void }>,// () => React.JSX.Element,
     extra?: (resource: ResourceInstance<Res>) => React.ReactNode
 }
 
@@ -81,7 +81,7 @@ export function CardsForm<Res extends ResourceType>(props: CardsFormProps<Res>) 
                     update(value).then(() => { setOpenEditing(false); setEditingRecord(undefined) })
                 }
 
-            }}></FormComponent >
+            }} />
             else return undefined
         }
     }, [editingRecord, openEditing])
@@ -134,12 +134,14 @@ export function TestButton<Res extends ResourceType>(props: {
     }
 }
 
-export function Cards<Res extends ResourceType>({ cardProps }: { cardProps: (record: ItemType<Res>) => CardProps<Res> }) {
+export function Cards<Res extends ResourceType>({ cardProps, direction }:
+    { direction?: SpaceProps['direction'] } &
+    { cardProps: (record: ItemType<Res>) => CardProps<Res> }) {
     const ctx = useCardsFormContext<Res>();
     const { resource } = ctx;
     const { useList } = resource;
     const { list } = useList();
-    return <Space>
+    return <Space direction={direction}>
         {
             list ? Object.entries(list).map(([key, record]) => <ListItemCard<Res> key={key} record={record} cardProps={cardProps(record)} />) : <></>
         }
@@ -189,7 +191,10 @@ function ListItemCard<Res extends ResourceType>({ record, cardProps }: { record:
     </>
 }
 
-export function CollapsableList<Res extends ResourceType>({ cardProps }: { cardProps: (record: ItemType<Res>) => CardProps<Res> }) {
+export function CollapsableList<Res extends ResourceType>(options:
+    { panelStyle?: CSSProperties, style?: CSSProperties, bordered?: boolean, contentPadding?: number } &
+    { cardProps: (record: ItemType<Res>) => CardProps<Res> }) {
+    const { cardProps, } = options;
     const ctx = useCardsFormContext<Res>();
     const { useList } = ctx.resource;
     const { list } = useList();
@@ -226,16 +231,24 @@ export function CollapsableList<Res extends ResourceType>({ cardProps }: { cardP
             label: props.title,
             children: props.description,
             key: String(index),
-            extra: <Space>{actions}</Space>
+            extra: <Space>{actions}</Space>,
+            style: options.panelStyle
         }
     })
 
-    return <>
+    return <ConfigProvider theme={{
+        components: {
+            Collapse: {
+                contentPadding: options.contentPadding ?? 16
+            }
+        }
+    }} >
         <Collapse
-            style={{ width: "100%" }}
+            style={{ width: "100%", ...options.style }}
             items={items}
+            {...options}
         >
         </Collapse>
-    </>
+    </ ConfigProvider >
 
 }

@@ -1,7 +1,7 @@
 "use client"
 import React, { CSSProperties } from 'react'
 import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome'
-import { IconDefinition, faFilm, faPlay, faTv, faRss, faExternalLink, faCalendarDays, faPenToSquare, faPhotoFilm, faFolderTree, faLink, faHistory, faDatabase, faBookBookmark, faArrowsRotate, faEllipsis, faCloudArrowDown, faSpinner, faEdit, faPause, faFilter, faDeleteLeft, faTrash, faPlus, faSearchLocation, faCopy } from '@fortawesome/free-solid-svg-icons'
+import { IconDefinition, faFilm, faPlay, faTv, faRss, faExternalLink, faCalendarDays, faPenToSquare, faPhotoFilm, faFolderTree, faLink, faHistory, faDatabase, faBookBookmark, faArrowsRotate, faEllipsis, faCloudArrowDown, faSpinner, faEdit, faPause, faFilter, faDeleteLeft, faTrash, faPlus, faSearchLocation, faCopy, faFont } from '@fortawesome/free-solid-svg-icons'
 import Icon from '@ant-design/icons'
 
 const FromFontAwesome = (faIcon: IconDefinition, options?: { fade?: boolean, }) => {
@@ -38,3 +38,4 @@ export const IconAdd = FromFontAwesome(faPlus)
 export const IconIndexer = FromFontAwesome(faSearchLocation)
 export const IconMediaServer = FromFontAwesome(faPhotoFilm)
 export const IconCopy = FromFontAwesome(faCopy)
+export const IconFont = FromFontAwesome(faFont)

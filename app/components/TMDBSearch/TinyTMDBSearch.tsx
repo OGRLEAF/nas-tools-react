@@ -1,12 +1,13 @@
-import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from "react";
+import React, { CSSProperties, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { API, NastoolMediaSearchResult, NastoolMediaSearchResultItem, NastoolMediaType, NastoolServerConfig } from "../../utils/api/api";
-import { AutoComplete, Form, Input, Radio, Space, theme, Image, Typography, Empty, Row, Col, Select, Skeleton, Button, Flex } from "antd";
+import { AutoComplete, Form, Input, Radio, Space, theme, Image, Typography, Empty, Row, Col, Select, Skeleton, Button, Flex, Spin, SelectProps } from "antd";
 import { TMDB } from "../../utils/api/media/tmdb";
-import { MediaIdentifyContext, MediaWork, MediaWorkType, SeriesKey } from "../../utils/api/types";
-import { SearchContext } from "./SearchContext";
+import { MediaIdentifyContext, MediaWork, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "../../utils/api/types";
+import { SearchContext, SearchContextType, useSearch } from "./SearchContext";
 import { ServerConfig } from "@/app/utils/api/serverConfig";
 import { StateMap, StateTag } from "../StateTag";
 import Link from "next/link";
+import { asyncEffect } from "@/app/utils";
 
 type CardSize = "normal" | "small" | "tiny";
 interface DetailCardStyle {
@@ -99,7 +100,7 @@ export function MediaDetailCard({
             }}>
             {coverImage}
             <div style={{ height: style.height, width: "100%", maxWidth: style.maxWidth }}>
-                <div style={{ paddingTop: 0, width: "100%", height: "100%", display: "flex", overflowY: "auto", alignItems: "start", flexDirection: "column"}}>
+                <div style={{ paddingTop: 0, width: "100%", height: "100%", display: "flex", overflowY: "auto", alignItems: "start", flexDirection: "column" }}>
                     <div style={{ position: "sticky", top: 0, backgroundColor: "#ffffffa1", color: token.colorTextBase, fontSize: "1.6rem", margin: 0, padding: "0px 0px 4px 0px", ...style.title }}>
                         <Space>
                             <span style={{ fontSize: "1.25rem", fontWeight: "bold" }}>{mediaDetail.title}</span>
@@ -253,4 +254,113 @@ export default function TinyTMDBSearch({
         </Space>
 
     </>
+}
+
+
+export interface MediaSearchProps {
+    value?: string[],
+    onChange?: (value: SeriesKey) => void,
+    children?: React.ReactNode,
+    ctx?: SearchContextType
+}
+
+export function MediaSearchGroup({ value, onChange, children, ctx }: MediaSearchProps) {
+    const searchContext = ctx ?? useSearch()[0];
+    const { setSelected, selected, series, setSeries } = searchContext;
+    const [seasons, setSeasons] = useState<MediaWorkSeason[]>([])
+    const [loading, setLoading] = useState(false)
+
+    const onTMDBSelected = async (value: MediaWork) => {
+        setSeasons([])
+        setLoading(true)
+        const work = new TMDB().work(String(value.key), value.type)
+        const mediaWork = await work.get();
+        if (mediaWork) setSeries(new SeriesKey(mediaWork.series).tmdbId(mediaWork.key))
+        setLoading(false)
+    }
+    useEffect(asyncEffect(async () => {
+        if (series.i != undefined) {
+            const media = new TMDB().fromSeries(series.slice(SeriesKeyType.TMDBID));
+            const mediaWork = await media?.get();
+            if (mediaWork && media) {
+                setSelected(mediaWork);
+            }
+        }
+    }), [series.i])
+
+
+    useEffect(() => {
+        if (onChange) onChange(new SeriesKey(series))
+    }, [series])
+
+    return <Space direction="vertical" style={{ width: "100%" }}>
+        <TinyTMDBSearch onSelected={onTMDBSelected} />
+        <SearchContext.Provider value={searchContext}>
+            {
+                children ?
+                    <Spin spinning={loading} style={{ height: "150px", }}>
+                        {children}
+                    </Spin>
+                    : <></>
+            }
+        </SearchContext.Provider>
+    </Space>
+}
+
+export function MediaSearchWork() {
+    const { selected } = useContext(SearchContext);
+    return <MediaDetailCard mediaDetail={selected} size="small" />
+}
+
+export function MediaSearchSeason() {
+    const { series, setSeries } = useContext(SearchContext);
+    const isTvSeries = useMemo(() => {
+        return (series.t == MediaWorkType.TV || series.t == MediaWorkType.ANI)
+    }, [series])
+    if (isTvSeries) {
+        return <Space>
+            季：<MediaSeasonInput style={{ width: 250 }
+            }
+                series={series}
+                onChange={(value) => {
+                    if (series.has("tmdbId")) {
+                        setSeries(new SeriesKey(series).season(value))
+                    }
+                }} />
+        </Space >
+    }
+}
+
+export const MediaSeasonInput = ({ series, value, onChange, style }: { series: SeriesKey, value?: number, onChange?: (value: number) => void, style?: CSSProperties }) => {
+    const [seasonOptions, setSeasonOptions] = useState<SelectProps['options']>([])
+    const [loading, setLoading] = useState(false)
+    useEffect(asyncEffect(async () => {
+        setLoading(true)
+        if (series.i) {
+            const media = new TMDB().fromSeries(series.slice(SeriesKeyType.TMDBID));
+            const mediaWork = await media?.get();
+            if (mediaWork && media) {
+                if (mediaWork.series.t == MediaWorkType.TV || mediaWork.series.t == MediaWorkType.ANI) {
+                    const seasons = await media.get_children()
+                    if (seasons?.length) {
+                        const options = seasons.map((item) => ({
+                            value: item.key,
+                            label: `季 ${item.key} - ${item.title}`,
+                        }))
+                        setSeasonOptions(options);
+                    } else {
+                        setSeasonOptions([])
+                    }
+                }
+            }
+            setLoading(false)
+        }
+    }), [series.i])
+
+    return <Select value={value} disabled={loading} loading={loading} style={style}
+        options={seasonOptions}
+        onSelect={(value: number) => {
+            if (onChange) onChange(value)
+        }}
+    />
 }

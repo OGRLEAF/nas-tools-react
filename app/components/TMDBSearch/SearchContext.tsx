@@ -3,14 +3,17 @@ import { createContext, useState } from 'react';
 
 export type SearchSeriesType = SeriesKey// = [MediaWorkType?, MediaWork['key']?, MediaWorkSeason['key']?, MediaWorkEpisode['key']?]
 
-export const SearchContext = createContext<{
+
+export interface SearchContextType {
     keyword: string,
     selected?: MediaWork,
     setKeyword: (keyword: string) => void,
     setSelected: (value: MediaWork) => void,
     series: SearchSeriesType,
     setSeries: (value: SearchSeriesType) => void
-}>({
+}
+
+export const SearchContext = createContext<SearchContextType>({
     keyword: "",
     setKeyword: (keyword) => { },
     setSelected: (value) => { },
@@ -19,19 +22,20 @@ export const SearchContext = createContext<{
 });
 
 
-
-export const SearchContextProvider = ({ children }: { children: React.ReactNode }) => {
+export const useSearch = () => {
     const [keyword, setKeyword] = useState("");
     const [selected, setSelected] = useState<MediaWork>();
     const [series, setSeries] = useState<SearchSeriesType>(new SeriesKey())
-    const value = {
+    return [{
         keyword, setKeyword,
         selected, setSelected,
         series,
         setSeries,
-    }
-
-    return <SearchContext.Provider value={value}>
+    }]
+}
+export const SearchContextProvider = ({ children }: { children: React.ReactNode }) => {
+    const [search] = useSearch();
+    return <SearchContext.Provider value={search}>
         {children}
     </SearchContext.Provider>
 }

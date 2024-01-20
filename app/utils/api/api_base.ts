@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { API, NASTOOL } from "./api";
 import { useSubmitMessage } from "..";
 import { get } from "lodash";
+import { Modal } from "antd";
 
 export class APIBase {
     protected API: Promise<NASTOOL>
@@ -19,7 +20,7 @@ export interface APIResourceOption {
 }
 
 export interface APIArrayResourceOption<Options = never> extends APIResourceOption {
-    initialOptions?: Options
+    initialOptions?: Options,
 }
 
 export interface APIDataResourceOption extends APIResourceOption {
@@ -89,10 +90,12 @@ export function useResource<T, OptionType>(cls: APIArrayResourceBase<{ ItemType:
 export interface ResourceType {
     ItemType?: any,
     ListOptionType?: any,
-    DeleteOptionType?: any
+    DeleteOptionType?: any,
+    AddItemType?: ResourceType['ItemType']
 }
 
 export type ItemType<T extends ResourceType> = T['ItemType'];
+export type AddItemType<T extends ResourceType> = T['AddItemType'];
 export type ListOptionType<T extends ResourceType> = T['ListOptionType']
 export type DeleteOptionType<T extends ResourceType> = T['DeleteOptionType'];
 
@@ -108,7 +111,7 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
 
     }
 
-    protected addHook?(value: ItemType<T>): Promise<boolean>;
+    protected addHook?(value: AddItemType<T>): Promise<boolean>;
 
     protected deleteHook?(value: ItemType<T>, options?: DeleteOptionType<T>): Promise<boolean>;
 
@@ -160,6 +163,7 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
         const deleteMessage = message.bundle("删除");
         const validateMessage = message.bundle("测试");
         const useMessage = option?.useMessage ?? false;
+        const [modal, modalContextHolder] = Modal.useModal();
 
         const self = this
 
@@ -181,11 +185,14 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
 
         const update = actionFlow((value: T) => self.updateHook?.(value), message);
 
-        const add = self.addHook == undefined ? undefined : actionFlow((value: ItemType<T>) => self.addHook?.(value), message);
+        const add = self.addHook == undefined ? undefined :
+            actionFlow((value: AddItemType<T>) => self.addHook?.(value), message);
 
-        const del = self.deleteHook == undefined ? undefined : actionFlow((value: ItemType<T>) => self.deleteHook?.(value), deleteMessage);
+        const del = self.deleteHook == undefined ? undefined :
+            actionFlow<typeof self.deleteHook, DeleteOptionType<T>>(async (value: DeleteOptionType<T>) => self.deleteHook?.(value) ?? false, deleteMessage);
 
-        const val = self.validateHook == undefined ? undefined : actionFlow((value: ItemType<T>) => self.validateHook?.(value) ?? false, validateMessage);
+        const val = self.validateHook == undefined ? undefined :
+            actionFlow<typeof self.validateHook, ItemType<T>>(async (value: ItemType<T>) => self.validateHook?.(value) ?? false, validateMessage);
 
 
         const delMany = this.deleteManyHook ?
@@ -202,9 +209,19 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
                 return useListCache;
             },
             add, del, val,
+            confirm: (action?: (value: T) => any) => {
+                if (action)
+                    return async (value: ItemType<T>, title?: string, content?: string) => {
+                        await modal.confirm({
+                            content,
+                            title,
+                        })
+                        await action(value)
+                    }
+            },
             delMany,
             updateMany: this.updateManyHook,
-            messageContext: message.contextHolder,
+            messageContext: [message.contextHolder, modalContextHolder],
             message,
             update: update,
             api: self

@@ -6,10 +6,10 @@ import { useWatch } from "antd/es/form/Form";
 import { MediaImportAction } from "./mediaImportContext";
 import { MediaWork, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
 import { asyncEffect, number_string_to_list } from "@/app/utils"
-import TinyTMDBSearch, { MediaDetailCard } from "../TMDBSearch/TinyTMDBSearch";
+import TinyTMDBSearch, { MediaDetailCard, MediaSearchGroup, MediaSearchSeason, MediaSearchWork } from "../TMDBSearch/TinyTMDBSearch";
 import { TMDB } from "@/app/utils/api/media/tmdb";
 import { ImportList } from "./mediaImportList";
-import { SearchContext, SearchContextProvider } from "../TMDBSearch/SearchContext";
+import { SearchContext, SearchContextProvider, useSearch } from "../TMDBSearch/SearchContext";
 import _ from "lodash";
 export interface MediaImportInitial {
     type: NastoolMediaType,
@@ -76,9 +76,7 @@ export default function MediaImportWrapper({ initialValue }: { initialValue?: Me
                 <MediaImportFilter />
             }
         >
-            <SearchContextProvider>
-                <MediaImport />
-            </SearchContextProvider>
+            <MediaImport />
         </Drawer>
     </div>)
 }
@@ -92,9 +90,8 @@ const MediaImport = () => {
     const mediaImportContext = useMediaImport();
     const mediaImportDispatch = useMediaImportDispatch();
     const [form] = Form.useForm();
+    const [search] = useSearch();
 
-    const searchContext = useContext(SearchContext);
-    const { selected: mediaWork } = searchContext;
     const selectedFiles = useMemo(() => mediaImportContext.penddingFiles.filter(v => v.selected), [mediaImportContext])
     const onFinish = async (values: any) => {
         const series: SeriesKey = values.series;
@@ -107,8 +104,9 @@ const MediaImport = () => {
             const identify = selectedFiles.map((v) => {
                 const episode = episodes?.shift();
                 console.log(v, episode)
-                return new SeriesKey(series).type(mediaWork?.type || values.type)
-                    .tmdbId(tmdbId)
+                return new SeriesKey(series)
+                    // .type(mediaWork?.type || values.type)
+                    // .tmdbId(tmdbId)
                     .season(Number.isNaN(season) ? v.indentifyHistory.last().s : season)
                     .episode(Number.isNaN(episode) ? undefined : episode)
             })
@@ -120,6 +118,7 @@ const MediaImport = () => {
             })
         }
     }
+
 
     const series = Form.useWatch("series", form) as SeriesKey;
     return <Row gutter={16} style={{ height: "100%" }}>
@@ -137,13 +136,21 @@ const MediaImport = () => {
                 onFinish={onFinish}>
                 <Space direction="vertical" style={{ width: "100%" }}>
                     <Form.Item name="series" noStyle>
-                        <MediaSearch />
+                        {/* <MediaSearch /> */}
+                        <MediaSearchGroup ctx={search}>
+                            <MediaSearchWork />
+                            <br />
+                            <MediaSearchSeason />
+                            <br />
+                        </MediaSearchGroup>
                     </Form.Item>
 
                     {series?.t == MediaWorkType.TV || series?.t == MediaWorkType.ANI ? <>
-                        <Form.Item name="episodes">
-                            <EpisodeInput fileNames={selectedFiles.map((file) => file.name)} />
-                        </Form.Item>
+                        <SearchContext.Provider value={search}>
+                            <Form.Item name="episodes">
+                                <EpisodeInput fileNames={selectedFiles.map((file) => file.name)} />
+                            </Form.Item>
+                        </SearchContext.Provider>
                     </> : <></>
                     }
                     <Form.Item>
@@ -153,7 +160,9 @@ const MediaImport = () => {
             </Form>
         </Col>
         <Col span={17} style={{ height: "100%", overflowY: "auto" }}>
-            <ImportList />
+            <SearchContext.Provider value={search}>
+                <ImportList />
+            </SearchContext.Provider>
         </Col>
     </Row >
 }
@@ -328,7 +337,11 @@ const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value:
 
     return <Space direction="vertical" style={{ width: "100%" }}>
         <TinyTMDBSearch onSelected={onTMDBSelected} />
-        <MediaDetailCardFromSearch loading={loading} />
+        {/* <MediaDetailCardFromSearch loading={loading} />
+         */}
+        <Spin spinning={loading} style={{ height: "150px", }}>
+            <MediaDetailCard mediaDetail={selected} size="small" />
+        </Spin>
         {isTvSeries ?
             <Space>
                 季：<MediaSeasonInput style={{ width: 250 }}
@@ -383,12 +396,4 @@ export const MediaSeasonInput = ({ series, value, onChange, style }: { series: S
     //     }
     // }}
     />
-}
-
-const MediaDetailCardFromSearch = ({ loading }: { loading?: boolean }) => {
-    const searchContext = useContext(SearchContext);
-    const { selected } = searchContext;
-    return <Spin spinning={loading} style={{ height: "150px", }}>
-        <MediaDetailCard mediaDetail={selected} size="small" />
-    </Spin>
 }
