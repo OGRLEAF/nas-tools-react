@@ -21,15 +21,14 @@ const HeaderSearch = () => {
     }
     const [open, setOpen] = useState(false)
     return (
-        <div style={{ padding: "0 0px 0 16px", width: "100%", lineHeight: "0px", }}>
+        <div style={{ padding: "0 0px 0 16px", width: "100%", }}>
             <Flex justify="flex-end">
-                <Search placeholder="input search text"
-                    style={{ maxWidth: 500 }}
+                <Search placeholder="搜索"
+                    style={{ width: 500 }}
                     onSearch={onSearch}
-                    suffix={suffix}
+                    // suffix={suffix}
                     enterButton
                 />
-
                 <MessageCenterEntry />
             </Flex>
             {/* <Row gutter={0}>

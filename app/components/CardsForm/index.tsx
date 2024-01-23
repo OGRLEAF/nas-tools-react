@@ -78,7 +78,7 @@ export function CardsForm<Res extends ResourceType>(props: CardsFormProps<Res>) 
                 if (editingRecord == undefined) {
                     add?.(value).then(() => { setOpenEditing(false); setEditingRecord(undefined) })
                 } else {
-                    update(value).then(() => { setOpenEditing(false); setEditingRecord(undefined) })
+                    update?.(value).then(() => { setOpenEditing(false); setEditingRecord(undefined) })
                 }
 
             }} />

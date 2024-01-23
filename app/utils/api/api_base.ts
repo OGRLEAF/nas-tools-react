@@ -183,10 +183,11 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
             }
         }
 
-        const update = actionFlow((value: T) => self.updateHook?.(value), message);
-
+        const update = self.updateHook == undefined ? undefined :
+        actionFlow<typeof self.updateHook, ItemType<T>>(async (value: AddItemType<T>) => self.updateHook?.(value) ?? false, message);
+        
         const add = self.addHook == undefined ? undefined :
-            actionFlow((value: AddItemType<T>) => self.addHook?.(value), message);
+            actionFlow<typeof self.addHook, ItemType<T>>(async (value: AddItemType<T>) => self.addHook?.(value) ?? false, message);
 
         const del = self.deleteHook == undefined ? undefined :
             actionFlow<typeof self.deleteHook, DeleteOptionType<T>>(async (value: DeleteOptionType<T>) => self.deleteHook?.(value) ?? false, deleteMessage);
