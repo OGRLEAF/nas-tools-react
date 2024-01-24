@@ -107,7 +107,48 @@ export class Plugin extends APIArrayResourceBase<PluginResource>{
         return true;
     }
 
-    protected async updateHook(value: PluginProfile): Promise<void> {
+    protected async updateHook(value: PluginProfile): Promise<boolean> {
         await this.update(value.key, value.config)
+        return true
+    }
+}
+
+export interface PluginRepoItem {
+    key: string,
+    id: string,
+    installed: boolean,
+    name: string,
+    desc: string,
+    version: string,
+    icon: string,
+    color: string,
+    author: string,
+    author_url: string
+}
+
+export interface PluginRepoResource extends ResourceType {
+    ItemType: PluginRepoItem,
+    AddItemType: PluginRepoItem['key']
+}
+
+
+export class PluginRepo extends APIArrayResourceBase<PluginRepoResource>{
+    public async list() {
+        const result = await (await this.API).post<{ result: Record<string, PluginRepoItem> }>("plugin/apps", { auth: true });
+        return Object.entries(result.result).map(([key, value]) => ({ ...value, key }));
+    }
+
+    protected listHook(options?: any): Promise<PluginRepoItem[]> {
+        return this.list();
+    }
+
+    public async install(id: PluginRepoItem['key']) {
+        const result = await (await this.API).post("plugin/install",
+            {
+                auth: true,
+                data: {
+                    id: id
+                }
+            })
     }
 }

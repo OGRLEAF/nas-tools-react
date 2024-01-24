@@ -6,12 +6,15 @@ import { QuestionCircleOutlined } from "@ant-design/icons"
 import React from "react";
 import { TagCheckboxGroup } from "@/app/components/TagCheckbox";
 import { values } from "lodash";
+import { IconCubes, IconEdit } from "@/app/components/icons";
+import Link from "next/link";
 
 
 export default function PluginPage() {
     return <CardsForm<PluginResource>
         title="插件"
         resource={Plugin}
+        extra={() => <Link href="/setting/plugin/repo"><Button icon={<IconCubes />} >插件库</Button></Link>}
         formComponent={PluginConfigForm}
     >
         <Cards<PluginResource>
@@ -27,9 +30,12 @@ export default function PluginPage() {
     </CardsForm>
 }
 
-function PluginIcon({ src }: { src: string }) {
-    return <div style={{ height: 100, borderRadius: "8px 8px 0px 0px", width: "100%", backgroundColor: "#3872C2" }}>
-        <img style={{ height: 90, padding: "10px 0 0 10px", objectFit: "contain" }} src={src} />
+export function PluginIcon({ src }: { src: string }) {
+    return <div style={{
+        height: 105, padding: 7.5,
+        borderRadius: "8px 8px 0px 0px", width: "100%", backgroundColor: "#3872C2",
+    }}>
+        <img style={{ borderRadius: 45, width: 90, height: 90, objectFit: "cover" }} src={src} />
     </div>
 }
 

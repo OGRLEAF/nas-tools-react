@@ -274,8 +274,9 @@ export class DownloadClient extends APIArrayResourceBase<DownloadClientResource>
         return this.list();
     }
 
-    protected async updateHook(value: DownloadClientConfig): Promise<void> {
+    protected async updateHook(value: DownloadClientConfig): Promise<boolean> {
         await this.update(value)
+        return true
     }
 
     protected async addHook(value: DownloadClientConfig): Promise<boolean> {
@@ -338,8 +339,9 @@ export class DownloadConfigs extends APIArrayResourceBase<DownloadConfigResource
         return true;
     }
 
-    protected async updateHook(value: DownloadConfig): Promise<void> {
+    protected async updateHook(value: DownloadConfig): Promise<boolean> {
         await this.update(value);
+        return true
     }
 
     protected addHook(value: DownloadConfig): Promise<boolean> {

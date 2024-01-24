@@ -204,9 +204,10 @@ export class RssParsers extends APIArrayResourceBase<RssParserResource> {
         return true;
     }
 
-    protected async updateHook(value: RssParserConfig): Promise<void> {
+    protected async updateHook(value: RssParserConfig): Promise<boolean> {
         await this.update(value);
-    }
+        return true  
+    } 
 
     protected listHook(options?: any): Promise<RssParserConfig[]> {
         return this.list();

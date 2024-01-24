@@ -135,7 +135,7 @@ export function TestButton<Res extends ResourceType>(props: {
 }
 
 export function Cards<Res extends ResourceType>({ cardProps, spaceProps }:
-    {spaceProps?: SpaceProps} &
+    { spaceProps?: SpaceProps } &
     { cardProps: (record: ItemType<Res>) => CardProps<Res> }) {
     const ctx = useCardsFormContext<Res>();
     const { resource } = ctx;
@@ -175,7 +175,13 @@ function ListItemCard<Res extends ResourceType>({ record, cardProps }: { record:
         <Card
             hoverable
             cover={props.cover}
-            onClick={() => ctx.openEditor(record)}
+            onClick={(evt) => {
+                evt.stopPropagation();
+                console.log(ctx.resource.update)
+                if (ctx.resource.update) {
+                    ctx.openEditor(record)
+                }
+            }}
             title={coverCard ? undefined : props.title}
             extra={coverCard ? undefined : actions}
             actions={!coverCard ? undefined : actions}

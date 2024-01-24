@@ -107,9 +107,7 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
 
     protected async totalHook?(): Promise<number>;
 
-    protected async updateHook(value: ItemType<T>) {
-
-    }
+    protected async updateHook?(value: ItemType<T>): Promise<boolean>;
 
     protected addHook?(value: AddItemType<T>): Promise<boolean>;
 
@@ -184,8 +182,8 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
         }
 
         const update = self.updateHook == undefined ? undefined :
-        actionFlow<typeof self.updateHook, ItemType<T>>(async (value: AddItemType<T>) => self.updateHook?.(value) ?? false, message);
-        
+            actionFlow<typeof self.updateHook, ItemType<T>>(async (value: AddItemType<T>) => self.updateHook?.(value) ?? false, message);
+
         const add = self.addHook == undefined ? undefined :
             actionFlow<typeof self.addHook, ItemType<T>>(async (value: AddItemType<T>) => self.addHook?.(value) ?? false, message);
 

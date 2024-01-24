@@ -106,7 +106,8 @@ export class MediaServer extends APIArrayResourceBase<MediaServerResource> {
             } as NastoolServerConfig)
         }
     }
-    protected async updateHook(value: MediaServerConfig): Promise<void> {
+    protected async updateHook(value: MediaServerConfig): Promise<boolean> {
         await this.update(value);
+        return true;
     }
 }
