@@ -91,7 +91,8 @@ export interface ResourceType {
     ItemType?: any,
     ListOptionType?: any,
     DeleteOptionType?: any,
-    AddItemType?: ResourceType['ItemType']
+    AddItemType?: ResourceType['ItemType'],
+    ValidateRetType?: boolean
 }
 
 export type ItemType<T extends ResourceType> = T['ItemType'];
@@ -115,7 +116,7 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
 
     protected deleteManyHook?(values: ItemType<T>[], options?: DeleteOptionType<T>): Promise<boolean>;
 
-    protected validateHook?(value: ItemType<T>): Promise<boolean>;
+    protected async validateHook?(value: ItemType<T>): Promise<[boolean, string]>;
 
     protected async updateManyHook(value: ItemType<T>[]) {
 
@@ -165,41 +166,57 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
 
         const self = this
 
-        const actionFlow = <Action extends (...args: any) => (any | void), T, Options = never>(callback: Action,
-            messageHandler: ReturnType<typeof message.bundle>) => {
-            return async (value: T, options?: Options) => {
-                let result: ReturnType<Action> | undefined = undefined;
+        const attachMessage = <Action extends (...args: any) => Promise<(any | undefined)>, T, Options = never>(callback: Action,
+            messageHandler: ReturnType<typeof message.bundle>, refresh?: boolean) => {
+            return async (value: T, options?: Options): Promise<Awaited<ReturnType<Action>>> => {
                 if (useMessage) messageHandler.loading()
-                try {
-                    result = await callback(value, options);
-                    if (useMessage) messageHandler.success()
-                    useListCache?.refresh?.();
-                } catch (e: any) {
-                    if (useMessage) messageHandler.error(e)
-                }
-                return result;
+                return await callback(value, options)
+                    .then((res) => {
+                        if (useMessage) messageHandler.success();
+                        if (refresh) useListCache?.refresh?.();
+                        return res;
+                    })
+                    .catch((e) => {
+                        if (useMessage) messageHandler.error(e)
+                        throw e
+                    })
             }
         }
 
+        // const withMessage = <Func extends (...args: any) => any>(func: Func, msg: ReturnType<typeof message.bundle>): ReturnType<Func> => {
+        //     type Ret = ReturnType<Func>
+        //     try {
+        //         return await func()
+        //         .then(res=>res)
+        //     }
+        // }
+
         const update = self.updateHook == undefined ? undefined :
-            actionFlow<typeof self.updateHook, ItemType<T>>(async (value: AddItemType<T>) => self.updateHook?.(value) ?? false, message);
+            attachMessage<typeof self.updateHook, ItemType<T>>(async (value: AddItemType<T>) => await self.updateHook?.(value) ?? false, message, true);
 
         const add = self.addHook == undefined ? undefined :
-            actionFlow<typeof self.addHook, ItemType<T>>(async (value: AddItemType<T>) => self.addHook?.(value) ?? false, message);
+            attachMessage<typeof self.addHook, ItemType<T>>(async (value: AddItemType<T>) => await self.addHook?.(value) ?? false, message, true);
 
         const del = self.deleteHook == undefined ? undefined :
-            actionFlow<typeof self.deleteHook, DeleteOptionType<T>>(async (value: DeleteOptionType<T>) => self.deleteHook?.(value) ?? false, deleteMessage);
+            attachMessage<typeof self.deleteHook, DeleteOptionType<T>>(async (value: DeleteOptionType<T>) => await self.deleteHook?.(value) ?? false, deleteMessage, true);
+
+        // const val = self.validateHook == undefined ? undefined :
+        //     actionFlow<typeof self.validateHook, ItemType<T>>(async (value: ItemType<T>) =>
+        //         self.validateHook?.(value) ?? [false, "Validation method not implemented"],
+        //         validateMessage);
 
         const val = self.validateHook == undefined ? undefined :
-            actionFlow<typeof self.validateHook, ItemType<T>>(async (value: ItemType<T>) => self.validateHook?.(value) ?? false, validateMessage);
-
+            attachMessage<typeof self.validateHook, ItemType<T>>(async (value: ItemType<T>) =>
+                await self.validateHook?.(value) ?? [false, "Validation method not implemented"],
+                validateMessage);
 
         const delMany = this.deleteManyHook ?
-            actionFlow<typeof this.deleteManyHook, ItemType<T>[], DeleteOptionType<T>>(
+            attachMessage<typeof this.deleteManyHook, ItemType<T>[], DeleteOptionType<T>>(
                 async (value: ItemType<T>[], options) => {
                     return await self.deleteManyHook?.(value, options) ?? false
                 },
-                deleteMessage
+                deleteMessage,
+                true
             ) : undefined;
 
         return {

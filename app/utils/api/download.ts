@@ -91,7 +91,7 @@ export class Download extends APIArrayResourceBase<DownloadResource> {
     public async submit(task: DownloadTaskProfile) {
         const result = await (await this.API).post("download/item", {
             auth: true,
-            data: {...task}
+            data: { ...task }
         })
         return result;
     }
@@ -287,13 +287,9 @@ export class DownloadClient extends APIArrayResourceBase<DownloadClientResource>
         return this.delete(value);
     }
 
-    protected async validateHook(value: DownloadClientConfig): Promise<boolean> {
-        try {
-            await this.test(value);
-            return true;
-        } catch (e) {
-            return false;
-        }
+    protected async validateHook(value: DownloadClientConfig): Promise<[boolean, string]> {
+        await this.test(value);
+        return [true, "配置正确"];
     }
 }
 

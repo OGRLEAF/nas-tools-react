@@ -6,7 +6,7 @@ import { API, NastoolDownloadConfig, NastoolFilterruleBasic, NastoolSiteProfile 
 import { Button, Card, Checkbox, Descriptions, Switch, Form, Input, InputNumber, Radio, Space, Table, Select, Drawer, theme, Flex, Divider, Modal } from 'antd';
 import { EditOutlined, RedoOutlined, CloseOutlined } from '@ant-design/icons';
 import Column from 'antd/es/table/Column';
-import { CardsForm, useCardsFormContext } from '@/app/components/CardsForm';
+import { CardsForm, TestButton, useCardsFormContext } from '@/app/components/CardsForm';
 import { SiteProfile, Sites, SitesResouce } from '@/app/utils/api/sites';
 import { ColumnsType, TableProps } from 'antd/es/table';
 import { DownloadClientSelect, DownloadSettingSelect, FilterRuleSelect } from '@/app/components/NTSelects';
@@ -69,6 +69,7 @@ function SitesTable() {
                             onOk: () => { ctx.resource.del?.(record) }
                         })
                     }}>删除</Button>
+                    <TestButton btnProps={{ size: "small", type: "text", }} msgType="popover" record={() => record}></TestButton>
                 </Flex>
             },
             width: 100
@@ -109,8 +110,9 @@ const siteUsageCheckOption = [
 ]
 
 const SiteProfileEditor = ({ record: profile, onChange }: { record?: SiteProfile, onChange?: (record: SiteProfile) => void }) => {
+    const [form] = Form.useForm()
     return <>
-        <Form initialValues={profile} layout="vertical" onFinish={(values) => {
+        <Form form={form} initialValues={profile} layout="vertical" onFinish={(values) => {
             onChange?.({ ...profile, ...values })
         }}>
 
@@ -176,10 +178,16 @@ const SiteProfileEditor = ({ record: profile, onChange }: { record?: SiteProfile
                     <InputNumber stringMode style={{ width: 120 }} min={1} placeholder='5'></InputNumber>
                 </Form.Item>
             </Space>
-
-            <Form.Item>
-                <Button type="primary" htmlType='submit'>更新</Button>
-            </Form.Item>
+            <br />
+            <Space>
+                <Form.Item noStyle>
+                    <Button type="primary" htmlType='submit'>更新</Button>
+                </Form.Item>
+                <TestButton record={() => {
+                    const values = (form.getFieldsValue());
+                    return { ...profile, ...values }
+                }} />
+            </Space>
         </Form>
     </>
 }

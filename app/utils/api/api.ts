@@ -30,6 +30,7 @@ type NastoolApi =
     "site/resources" |
     "site/update" |
     "site/delete" |
+    "site/test" |
     "download/config/list" |
     "download/config/update" |
     "download/config/delete" |

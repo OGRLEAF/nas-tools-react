@@ -2,7 +2,7 @@
 import { APIArrayResourceBase, AddItemType, ItemType, ListOptionType, ResourceType, useResource } from "@/app/utils/api/api_base";
 import React, { useEffect, useState, createContext, useContext, MouseEventHandler, useMemo, CSSProperties } from "react";
 import { Section } from "../Section";
-import { Button, ButtonProps, Card, Collapse, CollapseProps, ConfigProvider, Drawer, Modal, Space, SpaceProps } from "antd";
+import { Alert, Button, ButtonProps, Card, Collapse, CollapseProps, ConfigProvider, Drawer, Modal, Popover, Space, SpaceProps } from "antd";
 import { PlusOutlined, CloseOutlined, CheckOutlined, RetweetOutlined, ExclamationOutlined, EditOutlined } from "@ant-design/icons"
 import { once } from "lodash";
 
@@ -109,26 +109,52 @@ export function CardsForm<Res extends ResourceType>(props: CardsFormProps<Res>) 
 export function TestButton<Res extends ResourceType>(props: {
     record: () => ItemType<Res>,
     resource?: ResourceInstance<Res>,
-} & ButtonProps) {
+    msgType?: "alert" | "popover",
+    btnProps?: ButtonProps
+}) {
 
     const ctx = useCardsFormContext<Res>();
     const val = props.resource?.val ?? ctx.resource.val;
     const [result, setResult] = useState<boolean | undefined>(undefined);
+    const [msg, setMsg] = useState<string>();
     const [loading, setLoading] = useState(false);
+    const type = props.msgType ?? "alert"
     if (val) {
-        return <Button type={props.type} size={props.size} loading={loading}
-            icon={result == undefined ? <RetweetOutlined /> :
-                result ? <CheckOutlined /> : <ExclamationOutlined />}
-            onClick={(evt) => {
-                setLoading(true);
 
-                evt.stopPropagation();
-                val(props.record()).then(async (value) => {
-                    console.log(value)
-                    setResult(await value)
-                    setLoading(false);
-                });
-            }} >测试</Button>
+        const content = <Alert style={{ paddingTop: 4, paddingBottom: 4 }} message={msg} type={result ? "success" : "error"} closable
+            showIcon
+            onClose={() => {
+                setMsg(undefined);
+                setResult(undefined)
+            }} />
+
+        return <Space>
+            <Popover content={content} open={(result != undefined) && props.msgType == "popover"}>
+                <Button {...props.btnProps} loading={loading}
+                    icon={result == undefined ? <RetweetOutlined /> :
+                        result ? <CheckOutlined /> : <ExclamationOutlined />}
+                    onClick={(evt) => {
+                        setLoading(true);
+                        evt.stopPropagation();
+                        val(props.record())
+                            .then(async ([flag, msg]) => {
+                                setResult(flag)
+                                setMsg(msg);
+                            })
+                            .catch(e => {
+                                console.log(e)
+                                setResult(false)
+                                setMsg(String(e))
+                            })
+                            .finally(() => setLoading(false))
+                            ;
+                    }} >测试</Button>
+            </Popover>
+
+            {
+                ((result != undefined) && type == "alert") ? content : <></>
+            }
+        </Space>
     } else {
         return undefined
     }

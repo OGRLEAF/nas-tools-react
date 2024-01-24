@@ -67,8 +67,25 @@ export class Sites extends APIArrayResourceBase<SitesResouce> {
         return true;
     }
 
-    protected async updateHook(value: SiteProfile): Promise<void> {
+    protected async updateHook(value: SiteProfile): Promise<boolean> {
         await this.update(value)
+        return true
+    }
+
+    protected async val(value: SiteProfile): Promise<[boolean, string]> {
+        const result = await (await this.API).post<{ time: number }>("site/test", {
+            auth: true, json: true,
+            data: {
+                id: value.id,
+                config: value
+            }
+        })
+        console.log(result)
+        return [true, `连接成功 用时${result.time}ms`]
+    }
+
+    protected validateHook(value: SiteProfile): Promise<[boolean, string]> {
+        return this.val(value);
     }
 
     protected async listHook(options?: SiteListOptions | undefined): Promise<SiteProfile[]> {
