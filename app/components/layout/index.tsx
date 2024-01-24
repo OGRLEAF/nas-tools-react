@@ -18,7 +18,7 @@ import {
   VerticalAlignBottomOutlined,
   BellOutlined
 } from '@ant-design/icons';
-import { IconBookBookMark, IconCalendarDaysSolid, IconCustomSolid, IconDatabase, IconDownloader, IconFilmSolid, IconFilter, IconFolderTreeSolid, IconFont, IconHistory, IconIndexer, IconLink, IconLoading, IconMediaServer, IconMediaSolid, IconRefresh, IconRssSolid, IconTvSolid } from '../icons';
+import { IconBookBookMark, IconCalendarDaysSolid, IconCubes, IconCustomSolid, IconDatabase, IconDownloader, IconFilmSolid, IconFilter, IconFolderTreeSolid, IconFont, IconHistory, IconIndexer, IconLink, IconLoading, IconMediaServer, IconMediaSolid, IconRefresh, IconRssSolid, IconTvSolid } from '../icons';
 import type { MenuProps } from 'antd';
 import { Breadcrumb, Divider, Layout, Menu, theme } from 'antd';
 
@@ -53,8 +53,6 @@ const getMenuItems = async () => {
     .then(res => {
       const default_path = res.media.media_default_path;
       return "/media/file" + default_path;
-      // if (mediaFileMenuItem?.key) 
-      // setMenuKeyMap({ [mediaFileMenuItem.key as string]: mediaFileMenuItem.key + default_path })
     })
     .catch(() => "/media/file")
   const items: MenuItem[] = [
@@ -99,7 +97,8 @@ const getMenuItems = async () => {
       getItem("索引器", "/setting/indexers", <IconIndexer />),
       getItem("下载器", "/setting/downloader", <IconDownloader />),
       getItem("识别词", "/setting/words", <IconFont />),
-      getItem("媒体服务器", "/setting/mediaserver", <IconMediaServer />)
+      getItem("媒体服务器", "/setting/mediaserver", <IconMediaServer />),
+      getItem("插件", "/setting/plugin", <IconCubes />)
     ]),
   ];
   return items;
@@ -164,7 +163,8 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
         <span style={{ color: "white" }}>
           openKey:{selectedPath?.openKey}<br />
           selectedKey:{selectedPath?.selectedKey}<br />
-          {pathName}
+          {pathName}<br />
+          
         </span>
       </Sider>
       <Layout>

@@ -78,7 +78,13 @@ type NastoolApi =
     "words/group/add" |
     "words/group/delete" |
     "words/item/update" |
-    "words/item/delete"
+    "words/item/delete" |
+    "plugin/apps" |
+    "plugin/install" |
+    "plugin/list" |
+    "plugin/status" |
+    "plugin/uninstall" |
+    "plugin/config/update"
 
 
 export interface NastoolResponse<T> {

@@ -134,14 +134,14 @@ export function TestButton<Res extends ResourceType>(props: {
     }
 }
 
-export function Cards<Res extends ResourceType>({ cardProps, direction }:
-    { direction?: SpaceProps['direction'] } &
+export function Cards<Res extends ResourceType>({ cardProps, spaceProps }:
+    {spaceProps?: SpaceProps} &
     { cardProps: (record: ItemType<Res>) => CardProps<Res> }) {
     const ctx = useCardsFormContext<Res>();
     const { resource } = ctx;
     const { useList } = resource;
     const { list } = useList();
-    return <Space direction={direction}>
+    return <Space {...spaceProps}>
         {
             list ? Object.entries(list).map(([key, record]) => <ListItemCard<Res> key={key} record={record} cardProps={cardProps(record)} />) : <></>
         }

@@ -6,7 +6,6 @@ export class ServerConfig extends APIDataResourceBase<NastoolServerConfig> {
 
     public async get(refresh = false) {
         if (this._serverConfig == undefined || refresh) this._serverConfig = await (await this.API).getServerConfig();
-        // this._serverConfig = config;
         return this._serverConfig
     }
 
