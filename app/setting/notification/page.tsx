@@ -1,11 +1,12 @@
 "use client"
 import CardnForm, { CardProps, CardnFormContext } from "@/app/components/CardnForm";
-import { NotifiClientConfig, Notification } from "@/app/utils/api/notification";
+import { NotifiClientConfig, Notification, NotificationResource } from "@/app/utils/api/notification";
 import { Button, Checkbox, CheckboxOptionType, Col, Form, Input, Radio, Row, Space, Switch, Tag, notification, theme } from "antd";
 import { RetweetOutlined, WechatOutlined, SlackOutlined } from "@ant-design/icons"
 import React, { useContext, useMemo } from "react";
 import { TagCheckboxGroup } from "@/app/components/TagCheckbox";
 import { ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
+import { Cards, CardsForm } from "@/app/components/CardsForm";
 
 export interface NotifiClientProps {
     cover: React.ReactNode,
@@ -36,40 +37,67 @@ const notifyClientConfigs: Record<NotifiClientConfig['type'], NotifiClientProps>
 
 export default function NotificationPage() {
     const { token } = theme.useToken();
-    return <CardnForm<NotifiClientConfig>
+    return <CardsForm<NotificationResource>
         title="消息通知"
-        onFetch={() => new Notification().list()}
-        onDelete={async (record) => {
-            const result = new Notification().delete(record.id);
-            console.log(result)
-            return true;
-        }}
-        extraActions={[{
-            icon: <RetweetOutlined />,
-            key: "test",
-            async onClick(record) {
-                await new Notification().test(record.type, record.config);
-            }
-        }]}
-        formRender={NotifiClientConfigForm}
+        resource={Notification}
+        formComponent={NotifiClientConfigForm}
     >
-        <ListItemCardList cardProps={(record: NotifiClientConfig) => {
-            const config = notifyClientConfigs[record.type];
-            return ({
-                title: record.name,
-                cover: config.cover,
-                description: <>
-                    {
-                        record.enabled ? <Tag color={token.colorSuccess}>启用</Tag> :
-                            <Tag color={token.colorInfo}>停用</Tag>
-                    }
-                    {
-                        record.interactive ? <Tag color={token.colorSuccess}>交互</Tag> :
-                            <Tag color={token.colorInfo}>消息</Tag>
-                    } </>,
-            })
-        }} />
-    </CardnForm>
+        <Cards<NotificationResource>
+            cardProps={(record: NotifiClientConfig) => {
+                const config = notifyClientConfigs[record.type];
+                return ({
+                    title: record.name,
+                    cover: config.cover,
+                    description: <>
+                        {
+                            record.enabled ? <Tag color={token.colorSuccess}>启用</Tag> :
+                                <Tag color={token.colorInfo}>停用</Tag>
+                        }
+                        {
+                            record.interactive ? <Tag color={token.colorSuccess}>交互</Tag> :
+                                <Tag color={token.colorInfo}>消息</Tag>
+                        } </>,
+                    extra: (resource) => <Button icon={<RetweetOutlined />} type="text"
+                        onClick={(evt) => { evt.stopPropagation(); resource.val?.(record); }}
+                    />
+                })
+            }}
+        ></Cards>
+    </CardsForm>
+    // return <CardnForm<NotifiClientConfig>
+    //     title="消息通知"
+    //     onFetch={() => new Notification().list()}
+    //     onDelete={async (record) => {
+    //         const result = new Notification().delete(record.id);
+    //         console.log(result)
+    //         return true;
+    //     }}
+    //     extraActions={[{
+    //         icon: <RetweetOutlined />,
+    //         key: "test",
+    //         async onClick(record) {
+    //             await new Notification().test(record.type, record.config);
+    //         }
+    //     }]}
+    //     formRender={NotifiClientConfigForm}
+    // >
+    //     <ListItemCardList cardProps={(record: NotifiClientConfig) => {
+    //         const config = notifyClientConfigs[record.type];
+    //         return ({
+    //             title: record.name,
+    //             cover: config.cover,
+    //             description: <>
+    //                 {
+    //                     record.enabled ? <Tag color={token.colorSuccess}>启用</Tag> :
+    //                         <Tag color={token.colorInfo}>停用</Tag>
+    //                 }
+    //                 {
+    //                     record.interactive ? <Tag color={token.colorSuccess}>交互</Tag> :
+    //                         <Tag color={token.colorInfo}>消息</Tag>
+    //                 } </>,
+    //         })
+    //     }} />
+    // </CardnForm>
 }
 
 
@@ -144,25 +172,26 @@ const defaultConfig = {
     interactive: false,
     enabled: false
 }
-const NotifiClientConfigForm = ({ record }: { record?: NotifiClientConfig }) => {
+const NotifiClientConfigForm = ({ record, onChange }: { record?: NotifiClientConfig, onChange?: (value: NotifiClientConfig) => void }) => {
     const initialConfig = record || defaultConfig;
 
     const ctx = useContext(CardnFormContext);
     const onFinish = async (value: NotifiClientConfig) => {
+        onChange?.({ ...record, ...value })
         // console.log(value, initialConfig)
-        ctx.loading(String(value?.name) || "+");
-        new Notification().update({
-            ...record,
-            ...value,
-        })
-            .then((res) => {
-                ctx.success(JSON.stringify(res))
-                ctx.refresh();
-                ctx.exit();
-            })
-            .catch((e) => {
-                ctx.error(e);
-            })
+        // ctx.loading(String(value?.name) || "+");
+        // new Notification().update({
+        //     ...record,
+        //     ...value,
+        // })
+        //     .then((res) => {
+        //         ctx.success(JSON.stringify(res))
+        //         ctx.refresh();
+        //         ctx.exit();
+        //     })
+        //     .catch((e) => {
+        //         ctx.error(e);
+        //     })
     }
 
     const [form] = Form.useForm();

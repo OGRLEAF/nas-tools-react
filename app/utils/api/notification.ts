@@ -1,4 +1,4 @@
-import { APIBase } from "./api_base";
+import { APIArrayResourceBase, APIBase, ResourceType } from "./api_base";
 
 type NotificationSource = "download_start" |
     "download_fail" |
@@ -36,8 +36,11 @@ export interface NotifiClientConfig {
     enabled: boolean
 }
 
+export interface NotificationResource extends ResourceType {
+    ItemType: NotifiClientConfig
+}
 
-export class Notification extends APIBase {
+export class Notification extends APIArrayResourceBase<NotificationResource> {
     public async list() {
         const result = await (await this.API).post<{ detail: Record<string, NotifiClientConfig> }>("message/client/list", { auth: true });
         return Object.values(result.detail).map((conf: any) => {
@@ -86,4 +89,29 @@ export class Notification extends APIBase {
         );
         return result;
     }
+
+    protected async updateHook(value: NotifiClientConfig): Promise<boolean> {
+        await this.update(value);
+        return true
+    }
+
+    protected async deleteHook(value: NotifiClientConfig, options?: any): Promise<boolean> {
+        await this.delete(value.id);
+        return true;
+    }
+
+    protected async validateHook(value: NotifiClientConfig): Promise<[boolean, string]> {
+        await this.test(value.type, value.config);
+        return [true, "测试消息已发送"]
+    }
+
+    protected async addHook(value: NotifiClientConfig): Promise<boolean> {
+        await this.update(value);
+        return true
+    }
+
+    protected listHook(options?: any): Promise<NotifiClientConfig[]> {
+        return this.list();
+    }
+
 }

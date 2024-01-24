@@ -183,14 +183,6 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
             }
         }
 
-        // const withMessage = <Func extends (...args: any) => any>(func: Func, msg: ReturnType<typeof message.bundle>): ReturnType<Func> => {
-        //     type Ret = ReturnType<Func>
-        //     try {
-        //         return await func()
-        //         .then(res=>res)
-        //     }
-        // }
-
         const update = self.updateHook == undefined ? undefined :
             attachMessage<typeof self.updateHook, ItemType<T>>(async (value: AddItemType<T>) => await self.updateHook?.(value) ?? false, message, true);
 
@@ -199,11 +191,6 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
 
         const del = self.deleteHook == undefined ? undefined :
             attachMessage<typeof self.deleteHook, DeleteOptionType<T>>(async (value: DeleteOptionType<T>) => await self.deleteHook?.(value) ?? false, deleteMessage, true);
-
-        // const val = self.validateHook == undefined ? undefined :
-        //     actionFlow<typeof self.validateHook, ItemType<T>>(async (value: ItemType<T>) =>
-        //         self.validateHook?.(value) ?? [false, "Validation method not implemented"],
-        //         validateMessage);
 
         const val = self.validateHook == undefined ? undefined :
             attachMessage<typeof self.validateHook, ItemType<T>>(async (value: ItemType<T>) =>

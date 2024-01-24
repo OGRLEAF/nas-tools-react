@@ -27,10 +27,15 @@ export interface CardProps<Res extends ResourceType> {
 }
 
 
+export interface OpenEditorOptions<Res extends ResourceType> {
+    title?: React.ReactNode,
+    form?: CardsFormProps<Res>['formComponent'],
+}
+
 export interface CardsFormContextType<Res extends ResourceType> {
     resource: ResourceInstance<Res>,
     options: CardsFormProps<Res>,
-    openEditor: (value: ItemType<Res>) => void;
+    openEditor: (value: ItemType<Res>, options?: OpenEditorOptions<Res>) => void;
 }
 
 type GenernalType = {
@@ -65,11 +70,13 @@ export function CardsForm<Res extends ResourceType>(props: CardsFormProps<Res>) 
     const FormComponent = props.formComponent;
     const [openEditing, setOpenEditing] = useState(false)
     const [editingRecord, setEditingRecord] = useState<ItemType<Res>>();
+    const [editorOptions, setEditorOptions] = useState<OpenEditorOptions<Res>>();
     const [id, setId] = useState(0);
-    const openEditor = (value?: ItemType<Res>) => {
+    const openEditor = (value?: ItemType<Res>, options?: OpenEditorOptions<Res>) => {
         setId(id + 1);
         setEditingRecord(value)
         setOpenEditing(true);
+        setEditorOptions(options)
     }
 
     const form = useMemo(() => {
@@ -99,7 +106,7 @@ export function CardsForm<Res extends ResourceType>(props: CardsFormProps<Res>) 
         {messageContext}
         <CardsFormContext.Provider value={{ resource, options: props, openEditor }}>
             {props.children}
-            <Drawer title={props.title} open={openEditing} size="large" onClose={() => { setOpenEditing(false); setEditingRecord(undefined) }}>
+            <Drawer title={editorOptions?.title ?? props.title} open={openEditing} size="large" onClose={() => { setOpenEditing(false); setEditingRecord(undefined) }}>
                 {form}
             </Drawer>
         </CardsFormContext.Provider>
@@ -203,9 +210,8 @@ function ListItemCard<Res extends ResourceType>({ record, cardProps }: { record:
             cover={props.cover}
             onClick={(evt) => {
                 evt.stopPropagation();
-                console.log(ctx.resource.update)
                 if (ctx.resource.update) {
-                    ctx.openEditor(record)
+                    ctx.openEditor(record, { title: <>{ctx.options.title} / {props.title}</> })
                 }
             }}
             title={coverCard ? undefined : props.title}
