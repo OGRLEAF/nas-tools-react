@@ -1,16 +1,19 @@
 "use client"
-import React, { useState } from 'react'
+import React, { RefObject, useRef, useState } from 'react'
 import { Section } from "@/app/components/Section";
 import { useEffect } from 'react';
 import { API, NastoolDownloadConfig, NastoolFilterruleBasic, NastoolSiteProfile } from "@/app/utils/api/api"
 import { Button, Card, Checkbox, Descriptions, Switch, Form, Input, InputNumber, Radio, Space, Table, Select, Drawer, theme, Flex, Divider, Modal } from 'antd';
 import { EditOutlined, RedoOutlined, CloseOutlined } from '@ant-design/icons';
 import Column from 'antd/es/table/Column';
-import { CardsForm, TestButton, useCardsFormContext } from '@/app/components/CardsForm';
+import { CardsForm, TestButton, TestButtonAction, useCardsFormContext } from '@/app/components/CardsForm';
 import { SiteProfile, Sites, SitesResouce } from '@/app/utils/api/sites';
 import { ColumnsType, TableProps } from 'antd/es/table';
 import { DownloadClientSelect, DownloadSettingSelect, FilterRuleSelect } from '@/app/components/NTSelects';
 import Link from 'next/link';
+
+
+type ListItem = SiteProfile // & { action: [(() => React.RefObject<TestButtonAction>) | undefined, React.ReactNode] }
 
 export default function SiteMaintain() {
     return <CardsForm resource={Sites} title="站点维护" formComponent={SiteProfileEditor}>
@@ -22,8 +25,10 @@ function SitesTable() {
     const ctx = useCardsFormContext<SitesResouce>();
     const { useList, messageContext } = ctx.resource;
     const { list, total, loading } = useList();
-    const { confirm } = Modal;
-    const columns: ColumnsType<SiteProfile> = [
+
+    const [selected, setSelected] = useState<ListItem['id'][]>([])
+    const [actionSelected, setActionSelected] = useState<Set<ListItem['id']>>();
+    const columns: ColumnsType<ListItem> = [
         {
             title: "ID",
             dataIndex: "id",
@@ -60,27 +65,20 @@ function SitesTable() {
             title: "操作",
             align: "center",
             render: (value, record) => {
-                return <Flex>
-                    <Button type="link" onClick={() => ctx.openEditor(record)}>编辑</Button>
-                    <Button type="link" danger onClick={() => {
-                        confirm({
-                            title: `确认删除站点?`,
-                            content: <>{record.name}</>,
-                            onOk: () => { ctx.resource.del?.(record) }
-                        })
-                    }}>删除</Button>
-                    <TestButton btnProps={{ size: "small", type: "text", }} msgType="popover" record={() => record}></TestButton>
-                </Flex>
+                return <SiteAction record={record} selected={actionSelected?.has(record.id) ?? false} />
             },
             width: 100
         }
     ]
 
     return <>{messageContext}
-        <Table
+        <Table<ListItem>
             rowSelection={{
                 type: "checkbox",
+                onChange(selectedRowKeys, selectedRows, info) {
+                    setSelected(selectedRowKeys as ListItem['id'][])
 
+                },
             }}
             loading={loading}
             rowKey="id"
@@ -90,9 +88,40 @@ function SitesTable() {
                 defaultPageSize: 20,
                 total,
             }}
+            footer={() => {
+                return <Button onClick={() => {
+                    setActionSelected(new Set(selected));
+                    setTimeout(() => setActionSelected(new Set()))
+                }}>测试</Button>
+            }}
         />
     </>
 }
+
+function SiteAction({ record, selected }: { record: ListItem, selected: boolean }) {
+    const { confirm } = Modal;
+    const ctx = useCardsFormContext<SitesResouce>();
+    const ref = useRef<TestButtonAction>(null)
+    useEffect(() => {
+        if (selected) {
+            console.log('selected', record.name)
+            ref.current?.doTest()
+        }
+    }, [selected])
+    return <Flex>
+        <Button type="link" onClick={() => ctx.openEditor(record)}>编辑</Button>
+        <Button type="link" danger onClick={() => {
+            confirm({
+                title: `确认删除站点?`,
+                content: <>{record.name}</>,
+                onOk: () => { ctx.resource.del?.(record) }
+            })
+        }}>删除</Button>
+        <TestButton ref={ref} popoverProps={{ placement: "left" }}
+            btnProps={{ size: "small", type: "text", }} msgType="popover" record={() => record} />
+    </Flex>
+}
+
 
 const siteUsageCheckOption = [
     {

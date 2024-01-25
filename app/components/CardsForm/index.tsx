@@ -1,8 +1,8 @@
 "use client"
 import { APIArrayResourceBase, AddItemType, ItemType, ListOptionType, ResourceType, UpdateItemType, useResource } from "@/app/utils/api/api_base";
-import React, { useEffect, useState, createContext, useContext, MouseEventHandler, useMemo, CSSProperties } from "react";
+import React, { useEffect, useState, createContext, useContext, MouseEventHandler, useMemo, CSSProperties, forwardRef, useImperativeHandle, ForwardedRef } from "react";
 import { Section } from "../Section";
-import { Alert, Button, ButtonProps, Card, Collapse, CollapseProps, ConfigProvider, Drawer, Modal, Popover, Space, SpaceProps } from "antd";
+import { Alert, Button, ButtonProps, Card, Collapse, CollapseProps, ConfigProvider, Drawer, Modal, Popover, PopoverProps, Space, SpaceProps, theme } from "antd";
 import { PlusOutlined, CloseOutlined, CheckOutlined, RetweetOutlined, ExclamationOutlined, EditOutlined } from "@ant-design/icons"
 import { once } from "lodash";
 
@@ -106,56 +106,73 @@ export function CardsForm<Res extends ResourceType>(props: CardsFormProps<Res>) 
         {messageContext}
         <CardsFormContext.Provider value={{ resource, options: props, openEditor }}>
             {props.children}
-            <Drawer title={editorOptions?.title ?? props.title} open={openEditing} size="large" onClose={() => { setOpenEditing(false); setEditingRecord(undefined) }}>
+            <Drawer title={editorOptions?.title ?? props.title} open={openEditing} size="large"
+                onClose={() => { setOpenEditing(false); setEditingRecord(undefined) }}>
                 {form}
             </Drawer>
         </CardsFormContext.Provider>
     </Section >
 }
 
-export function TestButton<Res extends ResourceType>(props: {
+
+export type TestButtonAction = { doTest: () => void, doClear: () => void };
+export const TestButton = forwardRef(function <Res extends ResourceType>(props: {
     record: () => ItemType<Res>,
     resource?: ResourceInstance<Res>,
     msgType?: "alert" | "popover",
-    btnProps?: ButtonProps
-}) {
-
+    btnProps?: ButtonProps,
+    popoverProps?: PopoverProps,
+}, ref: ForwardedRef<TestButtonAction>) {
     const ctx = useCardsFormContext<Res>();
     const val = props.resource?.val ?? ctx.resource.val;
     const [result, setResult] = useState<boolean | undefined>(undefined);
     const [msg, setMsg] = useState<string>();
     const [loading, setLoading] = useState(false);
     const type = props.msgType ?? "alert"
-    if (val) {
+    const { token } = theme.useToken()
 
-        const content = <Alert style={{ paddingTop: 4, paddingBottom: 4 }} message={msg} type={result ? "success" : "error"} closable
+    const doTest = async () => {
+        if (val) {
+            setLoading(true);
+            return await val(props.record())
+                .then(async ([flag, msg]) => {
+                    setResult(flag)
+                    setMsg(msg);
+                })
+                .catch(e => {
+                    setResult(false)
+                    setMsg(String(e))
+                })
+                .finally(() => setLoading(false))
+        }
+    }
+
+    const doClear = () => {
+        setMsg(undefined);
+        setResult(undefined)
+    }
+    useImperativeHandle(ref, () => {
+        return {
+            doTest,
+            doClear,
+        }
+    })
+
+    if (val) {
+        const content = <Alert banner style={{ paddingTop: 4, paddingBottom: 4 }} message={msg} type={result ? "success" : "error"} closable
             showIcon
-            onClose={() => {
-                setMsg(undefined);
-                setResult(undefined)
-            }} />
+            onClose={() => {doClear()}} />
 
         return <Space>
-            <Popover content={content} open={(result != undefined) && props.msgType == "popover"}>
+            <Popover {...props.popoverProps}
+                
+                color={result ? token.colorSuccessBg : token.colorErrorBg}
+                overlayInnerStyle={{ padding: 2, }}
+                content={content} open={(result != undefined) && props.msgType == "popover"}>
                 <Button {...props.btnProps} loading={loading}
                     icon={result == undefined ? <RetweetOutlined /> :
                         result ? <CheckOutlined /> : <ExclamationOutlined />}
-                    onClick={(evt) => {
-                        setLoading(true);
-                        evt.stopPropagation();
-                        val(props.record())
-                            .then(async ([flag, msg]) => {
-                                setResult(flag)
-                                setMsg(msg);
-                            })
-                            .catch(e => {
-                                console.log(e)
-                                setResult(false)
-                                setMsg(String(e))
-                            })
-                            .finally(() => setLoading(false))
-                            ;
-                    }} >测试</Button>
+                    onClick={(evt) => { evt.stopPropagation(); doTest(); }} >测试</Button>
             </Popover>
 
             {
@@ -165,7 +182,8 @@ export function TestButton<Res extends ResourceType>(props: {
     } else {
         return undefined
     }
-}
+})
+
 
 export function Cards<Res extends ResourceType>({ cardProps, spaceProps }:
     { spaceProps?: SpaceProps } &
