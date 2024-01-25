@@ -90,6 +90,8 @@ const torrentPrivateTag: StateMap<number> = {
     }
 }
 
+const _EMPTY_LIST = {};
+
 export default function DownloadedPage() {
     const [param, setParam] = useState<string>()
     const [state, setState] = useState(0);
@@ -98,7 +100,7 @@ export default function DownloadedPage() {
         setParam(pathParam.state as string)
     }, [pathParam])
 
-    const [torrents, setTorrents] = useState<Record<string, TorrentInfo>>({});
+    const [torrents, setTorrents] = useState<Record<string, TorrentInfo>>(_EMPTY_LIST);
     const [totalTorrents, setTotalTorrents] = useState(20);
     const [categories, setCategories] = useState<string[]>([]);
     const [loading, setLoading] = useState(false)
@@ -153,8 +155,10 @@ export default function DownloadedPage() {
 
     const [refreshInterval, setRefreshInterval] = useState(3);
     const intervalRefresh = async () => {
-        const result = await new Download().list({ state: TorrentVagueState.ACTIVE })
-        updateTorrents(result);
+        if (torrents != _EMPTY_LIST) {
+            const result = await new Download().list({ state: TorrentVagueState.ACTIVE })
+            updateTorrents(result);
+        }
     }
 
     useEffect(() => {
