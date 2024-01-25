@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { Section } from "@/app/components/Section"
 import { API, NastoolMediaLibraryItem, NastoolMediaServerLibraryItem } from '@/app/utils/api/api'
-import { Space, Card, Image } from 'antd';
+import { Space, Card, Image, Spin } from 'antd';
 import { usePathname, useRouter } from 'next/navigation';
 
 
@@ -34,20 +34,25 @@ export default function LibraryView({
     params
 }: { params: { id: string } }) {
     const [items, setItems] = useState<NastoolMediaServerLibraryItem[]>([]);
+    const [loading, setLoading] = useState(false)
     useEffect(() => {
+        setLoading(true)
         API.getNastoolInstance()
             .then(async (nt) => {
                 const items = await nt.getMediaServerLibrary(params.id)
-                console.log(items)
                 setItems(items)
+
             })
+            .finally(() => setLoading(false))
     }, [])
 
     return <Section title="媒体库">
-        <Space wrap>
-            {items.map(item => (
-                <LibraryMediaCard key={item.id} info={item} />
-            ))}
-        </Space>
+        <Spin spinning={loading}>
+            <Space wrap align="start">
+                {items.map(item => (
+                    <LibraryMediaCard key={item.id} info={item} />
+                ))}
+            </Space>
+        </Spin>
     </Section>
 }

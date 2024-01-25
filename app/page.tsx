@@ -54,12 +54,12 @@ const Home = () => {
       hoverable
       style={{ width: cardStyle.width, }}
       cover={image}
-      // onClick={}
-      actions={[
-        <LinkOutlined key="setting" onClick={() => { router.push(`/media/library/${library.id}`) }} />,
-        <EyeOutlined key="edit" />,
-        <EllipsisOutlined key="ellipsis" />,
-      ]}
+      onClick={() => { router.push(`/media/library/${library.id}`) }}
+    // actions={[
+    //   <LinkOutlined key="setting" onClick={() => { router.push(`/media/library/${library.id}`) }} />,
+    //   <EyeOutlined key="edit" />,
+    //   <EllipsisOutlined key="ellipsis" />,
+    // ]}
     >
       <Meta title={library.name} description={library.type} />
 
