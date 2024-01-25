@@ -42,7 +42,7 @@ export interface ImportTaskConfig {
     target_path?: string,
     rmt_mode: ImportMode,
     files: [episode: number, string][],
-    season: number,
+    season?: number,
     tmdbid: string,
     mediaType: MediaWorkType
 }

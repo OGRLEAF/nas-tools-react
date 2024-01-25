@@ -265,8 +265,17 @@ function MovieImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: 
         <Form layout="inline" initialValues={{ type: ImportMode.LINK }} disabled={disableImport}
             onFinish={(value: any) => {
                 console.log(mergedSeriesKey, value)
-                if(mergedSeriesKey.t == MediaWorkType.MOVIE) {
-                     console.log(value)
+                if (mergedSeriesKey.t == MediaWorkType.MOVIE) {
+                    const path = files[0].path;
+                    new ImportTask().import({
+                        target_path: value.target_path,
+                        path: files[0].path,
+                        rmt_mode: value.type,
+                        files: files.map((file) => [0, file.name]),
+                        season: mergedSeriesKey.s,
+                        tmdbid: String(mergedSeriesKey.i),
+                        mediaType: mergedSeriesKey.t
+                    })
                 }
             }}
         >
