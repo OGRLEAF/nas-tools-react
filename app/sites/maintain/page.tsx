@@ -80,7 +80,7 @@ function SitesTable() {
             rowSelection={{
                 type: "checkbox",
                 onChange(selectedRowKeys, selectedRows, info) {
-                    selected.forEach(key=>refMap[key]?.current?.doClear())
+                    selected.forEach(key => refMap[key]?.current?.doClear())
                     setSelected(selectedRowKeys as ListItem['id'][])
                 },
             }}
@@ -150,12 +150,19 @@ const siteUsageCheckOption = [
     }
 ]
 
+const defaultSiteProfile = {
+    rule: "",
+    download_setting: ''
+}
+
 const SiteProfileEditor = ({ record: profile, onChange }: { record?: SiteProfile, onChange?: (record: SiteProfile) => void }) => {
     const [form] = Form.useForm()
     return <>
-        <Form form={form} initialValues={profile} layout="vertical" onFinish={(values) => {
-            onChange?.({ ...profile, ...values })
-        }}>
+        <Form form={form} initialValues={{ ...defaultSiteProfile, ...profile }}
+            layout="vertical"
+            onFinish={(values) => {
+                onChange?.({ ...profile, ...values })
+            }}>
 
             <Space wrap size="large">
                 <Form.Item label="名称" name="name">
@@ -210,13 +217,13 @@ const SiteProfileEditor = ({ record: profile, onChange }: { record?: SiteProfile
             <Divider orientation="left" orientationMargin={0}>流控规则</Divider>
             <Space wrap>
                 <Form.Item label="单位时间" name="limit_interval">
-                    <InputNumber stringMode style={{ width: 120 }} min={1} placeholder='10'></InputNumber>
+                    <InputNumber stringMode style={{ width: 120 }} min={0} placeholder='10'></InputNumber>
                 </Form.Item>
                 <Form.Item label="访问次数" name="limit_count" >
-                    <InputNumber stringMode style={{ width: 120 }} min={1} placeholder='10'></InputNumber>
+                    <InputNumber stringMode style={{ width: 120 }} min={0} placeholder='10'></InputNumber>
                 </Form.Item>
                 <Form.Item label="访问间隔" name="limit_seconds" >
-                    <InputNumber stringMode style={{ width: 120 }} min={1} placeholder='5'></InputNumber>
+                    <InputNumber stringMode style={{ width: 120 }} min={0} placeholder='5'></InputNumber>
                 </Form.Item>
             </Space>
             <br />
