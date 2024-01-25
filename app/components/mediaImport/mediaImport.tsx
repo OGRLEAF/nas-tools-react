@@ -135,16 +135,17 @@ const MediaImport = () => {
                 }}
                 onFinish={onFinish}>
                 <Space direction="vertical" style={{ width: "100%" }}>
-                    <Form.Item name="series" noStyle>
-                        {/* <MediaSearch /> */}
-                        <MediaSearchGroup ctx={search}>
-                            <MediaSearchWork />
-                            <br />
-                            <MediaSearchSeason />
-                            <br />
-                        </MediaSearchGroup>
-                    </Form.Item>
-
+                    <SearchContext.Provider value={search}>
+                        <Form.Item name="series" noStyle>
+                            {/* <MediaSearch /> */}
+                            <MediaSearchGroup ctx={search}>
+                                <MediaSearchWork />
+                                <br />
+                                <MediaSearchSeason />
+                                <br />
+                            </MediaSearchGroup>
+                        </Form.Item>
+                    </SearchContext.Provider>
                     {series?.t == MediaWorkType.TV || series?.t == MediaWorkType.ANI ? <>
                         <SearchContext.Provider value={search}>
                             <Form.Item name="episodes">

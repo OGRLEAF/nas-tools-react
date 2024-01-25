@@ -92,10 +92,12 @@ export interface ResourceType {
     ListOptionType?: any,
     DeleteOptionType?: any,
     AddItemType?: ResourceType['ItemType'],
+    UpdateItemType?: ResourceType['ItemType'],
     ValidateRetType?: boolean
 }
 
 export type ItemType<T extends ResourceType> = T['ItemType'];
+export type UpdateItemType<T extends ResourceType> = T['UpdateItemType'];
 export type AddItemType<T extends ResourceType> = T['AddItemType'];
 export type ListOptionType<T extends ResourceType> = T['ListOptionType']
 export type DeleteOptionType<T extends ResourceType> = T['DeleteOptionType'];
@@ -108,7 +110,7 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
 
     protected async totalHook?(): Promise<number>;
 
-    protected async updateHook?(value: ItemType<T>): Promise<boolean>;
+    protected async updateHook?(value: UpdateItemType<T>): Promise<boolean>;
 
     protected addHook?(value: AddItemType<T>): Promise<boolean>;
 
@@ -184,7 +186,7 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
         }
 
         const update = self.updateHook == undefined ? undefined :
-            attachMessage<typeof self.updateHook, ItemType<T>>(async (value: AddItemType<T>) => await self.updateHook?.(value) ?? false, message, true);
+            attachMessage<typeof self.updateHook, UpdateItemType<T>>(async (value: UpdateItemType<T>) => await self.updateHook?.(value) ?? false, message, true);
 
         const add = self.addHook == undefined ? undefined :
             attachMessage<typeof self.addHook, ItemType<T>>(async (value: AddItemType<T>) => await self.addHook?.(value) ?? false, message, true);

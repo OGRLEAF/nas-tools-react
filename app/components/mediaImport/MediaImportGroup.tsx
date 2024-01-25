@@ -264,7 +264,10 @@ function MovieImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: 
         </Space>
         <Form layout="inline" initialValues={{ type: ImportMode.LINK }} disabled={disableImport}
             onFinish={(value: any) => {
-                console.log(value)
+                console.log(mergedSeriesKey, value)
+                if(mergedSeriesKey.t == MediaWorkType.MOVIE) {
+                     console.log(value)
+                }
             }}
         >
             <Form.Item name="target_path" >

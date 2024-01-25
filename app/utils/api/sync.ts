@@ -1,4 +1,4 @@
-import { APIBase } from "./api_base";
+import { APIArrayResourceBase, APIBase, ResourceType } from "./api_base";
 import { ImportMode as RmtMode } from "./api"
 import { SyncMode } from "./types";
 
@@ -32,14 +32,22 @@ export interface SyncDirectoryConfig extends SyncDirectoryBaseConfig {
 export interface SyncDirectoryUpdateConfig extends SyncDirectoryBaseConfig {
     id?: number
 }
-export class DirectorySync extends APIBase {
+
+
+export interface DirectorySynResource extends ResourceType {
+    ItemType: SyncDirectoryConfig,
+    UpdateItemType: SyncDirectoryUpdateConfig
+}
+
+
+export class DirectorySync extends APIArrayResourceBase<DirectorySynResource> {
     constructor() {
         super();
     }
 
     public async list() {
         const result = await (await this.API).post<{ result: Record<string, SyncDirectoryConfig> }>("sync/directory/list", { auth: true });
-        const dirList = Object.values(result.result).map((conf:any) => {
+        const dirList = Object.values(result.result).map((conf: any) => {
             if (conf.unknown == "") conf.unknown = undefined;
             return conf;
         })
@@ -65,5 +73,19 @@ export class DirectorySync extends APIBase {
             auth: true,
         })
         return result;
+    }
+
+    protected async deleteHook(value: SyncDirectoryConfig, options?: any): Promise<boolean> {
+        await this.delete(value.id);
+        return true;
+    }
+
+    protected async updateHook(value: SyncDirectoryConfig): Promise<boolean> {
+        await this.update(value)
+        return true
+    }
+
+    protected listHook(options?: any): Promise<SyncDirectoryConfig[]> {
+        return this.list()
     }
 }

@@ -26,6 +26,7 @@ import LoginModal from '../login';
 import HeaderSearch from '../headerSearch';
 import { ServerConfig } from '@/app/utils/api/serverConfig';
 import Link from 'next/link';
+import { Next13ProgressBar } from 'next13-progressbar';
 
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -125,7 +126,7 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
 
 
   const [collapsed, setCollapsed] = useState(false);
-  const { token: { colorBgContainer }, } = theme.useToken();
+  const { token: { colorBgContainer, colorPrimary }, } = theme.useToken();
 
   const [selectedPath, setSelectedPath] = useState<{ selectedKey: string[], openKey: string[] }>();
 
@@ -164,7 +165,7 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
           openKey:{selectedPath?.openKey}<br />
           selectedKey:{selectedPath?.selectedKey}<br />
           {pathName}<br />
-          
+
         </span>
       </Sider>
       <Layout>
@@ -176,6 +177,7 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
             top: 0,
             zIndex: 1
           }} >
+          <Next13ProgressBar height="3px" color={colorPrimary} options={{ showSpinner: true }} showOnShallow />
           <HeaderSearch />
         </Header>
         <Content style={{ margin: '0px 0px', overflow: 'initial' }}>

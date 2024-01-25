@@ -1,5 +1,5 @@
 "use client"
-import { APIArrayResourceBase, AddItemType, ItemType, ListOptionType, ResourceType, useResource } from "@/app/utils/api/api_base";
+import { APIArrayResourceBase, AddItemType, ItemType, ListOptionType, ResourceType, UpdateItemType, useResource } from "@/app/utils/api/api_base";
 import React, { useEffect, useState, createContext, useContext, MouseEventHandler, useMemo, CSSProperties } from "react";
 import { Section } from "../Section";
 import { Alert, Button, ButtonProps, Card, Collapse, CollapseProps, ConfigProvider, Drawer, Modal, Popover, Space, SpaceProps } from "antd";
@@ -14,7 +14,7 @@ export interface CardsFormProps<Res extends ResourceType> {
     layout?: "vertical" | "horizontal",
     children?: React.ReactNode,
     initialOptions?: ListOptionType<Res>,
-    formComponent?: React.FC<{ record?: ItemType<Res>, onChange?: (value: AddItemType<Res>) => void }>,// () => React.JSX.Element,
+    formComponent?: React.FC<{ record?: ItemType<Res>, onChange?: (value: UpdateItemType<Res>) => void }>,// () => React.JSX.Element,
     extra?: (resource: ResourceInstance<Res>) => React.ReactNode
 }
 
