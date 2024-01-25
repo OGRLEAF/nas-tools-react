@@ -58,11 +58,11 @@ const getMenuItems = async () => {
     .catch(() => "/media/file")
   const items: MenuItem[] = [
     getItem('首页', '/', <HomeOutlined />),
-    getItem('探索', '/discover', <CompassOutlined />, [
-      getItem('榜单推荐', '/discover/recommand', <BarChartOutlined />),
-      getItem('豆瓣电影', '/discover/douban-movie', <IconFilmSolid />),
-      getItem('TMDB电影', '/discover/tmdb-movie', <IconFilmSolid />),
-    ]),
+    // getItem('探索', '/discover', <CompassOutlined />, [
+    //   getItem('榜单推荐', '/discover/recommand', <BarChartOutlined />),
+    //   getItem('豆瓣电影', '/discover/douban-movie', <IconFilmSolid />),
+    //   getItem('TMDB电影', '/discover/tmdb-movie', <IconFilmSolid />),
+    // ]),
     getItem('资源搜索', '/search/result', <SearchOutlined />),
     getItem('站点管理', '/sites', <UserOutlined />, [
       getItem('站点维护', '/sites/maintain', <ClusterOutlined />),
@@ -70,18 +70,19 @@ const getMenuItems = async () => {
       getItem('刷流任务', '/sites/tasks', <FileDoneOutlined />),
       getItem('站点资源', '/sites/resource', <ClusterOutlined />),
     ]),
-    getItem('下载管理', '/download', <IconDownloader />, [
-      getItem('正在下载', '/download/ing', <IconLoading />),
-      getItem('下载完成', '/download/ed', <VerticalAlignBottomOutlined />),
-      // getItem('下载器管理', '/download/manage', <IconLoading />),
-    ]),
+    getItem('下载任务', '/download/ing', <IconLoading />),
+    // getItem('下载管理', '/download', <IconDownloader />, [
+    //   getItem('正在下载', '/download/ing', <IconLoading />),
+    //   getItem('下载完成', '/download/ed', <VerticalAlignBottomOutlined />),
+    //   // getItem('下载器管理', '/download/manage', <IconLoading />),
+    // ]),
     getItem('订阅管理', '/subscribe', <IconRssSolid />, [
       getItem('电影订阅', '/subscribe/movie', <IconFilmSolid />),
       getItem('电视剧订阅', '/subscribe/tv', <IconTvSolid />),
       getItem('自定义订阅', '/subscribe/custom', <IconCustomSolid />),
       getItem('订阅日历', '/subscribe/calendar', <IconCalendarDaysSolid />),
     ]),
-    getItem("任务", "/task", <BuildOutlined />),
+    // getItem("任务", "/task", <BuildOutlined />),
     getItem("媒体整理", '/media', <IconMediaSolid />, [
       getItem("文件管理", '/media/file', <IconFolderTreeSolid />, undefined, mediaPageDefaultUrl),
       getItem("手动识别", '/media/manual', <IconLink />),
