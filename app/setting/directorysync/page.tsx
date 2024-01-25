@@ -1,23 +1,20 @@
 "use client"
 import CardnForm, { CardProps, CardnFormContext } from "@/app/components/CardnForm";
 import { SyncModeSelect } from "@/app/components/NTSelects";
-import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
-import { DirectorySync, SyncDirectoryConfig, SyncDirectoryUpdateConfig, } from "@/app/utils/api/sync";
+import { DownloadPathSelect, EmptyPathSelect, LibraryPathSelect, UnionPathsSelect, UnionPathsSelectGroup } from "@/app/components/LibraryPathSelector";
+import { DirectorySynResource, DirectorySync, SyncDirectoryConfig, SyncDirectoryUpdateConfig, } from "@/app/utils/api/sync";
 import { SyncMode } from "@/app/utils/api/types"
 import { Button, Col, Descriptions, Form, Row, Space, Switch, Tag, message, theme } from "antd";
 import React, { useContext } from "react";
-import { CollapsableList } from "@/app/components/CardnForm/CollapsableList";
+import { CardsForm, CollapsableList } from "@/app/components/CardsForm";
+import { PathSelector } from "@/app/components/PathSelector";
 
 export default function DirectorySyncPage() {
     const { token } = theme.useToken();
-    return <CardnForm title="同步目录"
-        onFetch={() => new DirectorySync().list()}
-        onDelete={async (record) => {
-            const result = await new DirectorySync().delete(record.id)
-            return true;
-        }}
-        layout="vertical"
-        formRender={SyncDirectoryForm}
+    return <CardsForm<DirectorySynResource>
+        title="同步目录"
+        resource={DirectorySync}
+        formComponent={SyncDirectoryForm}
     >
         <CollapsableList cardProps={(record: SyncDirectoryConfig) => ({
             title: <Space>
@@ -37,7 +34,7 @@ export default function DirectorySyncPage() {
                 {/* <Descriptions.Item label="">{record ? "开" : "关"}</Descriptions.Item> */}
             </Descriptions>
         })} />
-    </CardnForm>
+    </CardsForm>
 }
 
 
@@ -52,8 +49,7 @@ interface SyncDirFormType {
 
 }
 
-const SyncDirectoryForm = ({ record }: { record?: SyncDirectoryConfig }) => {
-    const ctx = useContext(CardnFormContext);
+const SyncDirectoryForm = ({ record, onChange }: { record?: SyncDirectoryConfig, onChange?: (record: SyncDirectoryUpdateConfig) => void }) => {
     const onFinish = async (values: SyncDirFormType) => {
         const updateRecord: SyncDirectoryUpdateConfig = {
             id: record?.id,
@@ -65,16 +61,7 @@ const SyncDirectoryForm = ({ record }: { record?: SyncDirectoryConfig }) => {
             rename: values.rename || false,
             enabled: values.enable || false
         }
-        ctx.loading(String(record?.id) || "+");
-        await new DirectorySync().update(updateRecord)
-            .then((res) => {
-                ctx.success(JSON.stringify(res))
-                ctx.refresh();
-                ctx.exit();
-            })
-            .catch((e) => {
-                ctx.error(e);
-            })
+        onChange?.(updateRecord)
     }
 
     const initalValue: SyncDirFormType = {
@@ -90,21 +77,70 @@ const SyncDirectoryForm = ({ record }: { record?: SyncDirectoryConfig }) => {
         <Row gutter={16}>
             <Col span={24}>
                 <Form.Item label="源目录" name="from">
-                    <UnionPathsSelect allowLeftEmpty={false} />
+                    <UnionPathsSelectGroup
+                        allowLeftEmpty={false}
+                        fallback="customize"
+                        children={[
+                            {
+                                type: "download",
+                                label: "下载目录",
+                                render: (props) => <DownloadPathSelect key="download" remote={false} value={props.value} onChange={props.onChange} />
+                            },
+                            {
+                                type: "customize",
+                                label: "自定义目录",
+                                render: (props) => <PathSelector key="customize" value={props.value} onChange={props.onChange} />
+                            }
+                        ]}
+                    />
                 </Form.Item>
             </Col>
         </Row>
         <Row gutter={16}>
             <Col span={24}>
                 <Form.Item label="目的目录" name="to" >
-                    <UnionPathsSelect allowLeftEmpty={false} />
+                    <UnionPathsSelectGroup
+                        allowLeftEmpty={false}
+                        fallback="customize"
+                        children={[{
+                            type: "library",
+                            label: "媒体库",
+                            render: (props) => <LibraryPathSelect key="library" value={props.value} onChange={props.onChange} />
+                        },
+                        {
+                            type: "customize",
+                            label: "自定义目录",
+                            render: (props) => <PathSelector key="customize" value={props.value} onChange={props.onChange} />
+                        }
+                        ]}
+                    />
                 </Form.Item>
             </Col>
         </Row>
         <Row gutter={16}>
             <Col span={24}>
                 <Form.Item label="未识别目录" name="unknown" >
-                    <UnionPathsSelect leftEmpty="不使用" />
+                    <UnionPathsSelectGroup
+                        allowLeftEmpty={true}
+                        fallback="customize"
+                        children={[
+                            {
+                                type: "auto",
+                                label: "不适用",
+                                render: (props) => <EmptyPathSelect key="auto" {...props} />
+                            },
+                            {
+                                type: "library",
+                                label: "媒体库",
+                                render: (props) => <LibraryPathSelect key="library" value={props.value} onChange={props.onChange} />
+                            },
+                            {
+                                type: "customize",
+                                label: "自定义目录",
+                                render: (props) => <PathSelector key="customize" value={props.value} onChange={props.onChange} />
+                            }
+                        ]}
+                    />
                 </Form.Item>
             </Col>
         </Row>
@@ -134,7 +170,7 @@ const SyncDirectoryForm = ({ record }: { record?: SyncDirectoryConfig }) => {
         </Row>
         <Row gutter={16}>
             <Col span={24}>
-                <Form.Item style={{ float: "right" }}>
+                <Form.Item >
                     <Button type="primary" htmlType="submit">保存</Button>
                 </Form.Item>
             </Col>

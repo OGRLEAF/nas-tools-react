@@ -8,7 +8,7 @@ import { DownloadClient } from "../utils/api/download";
 
 const normalize = (p: string) => p += p.endsWith("/") ? "" : "/"
 
-export type GroupedSelectType = "library" | "download"
+export type GroupedSelectType = "auto" | "library" | "download"
 export type GroupedPathsType = Record<string, string[]>
 type UnionPathSelectContextType = {
     groupedPaths: GroupedPathsType,
@@ -115,17 +115,19 @@ interface WrapperProps {
     allowLeftEmpty?: boolean,
     width?: number,
     auto?: boolean,
+    fallback?: string,
     children?: {
         type: string,
-        label: string
+        label: string,
         render: (props: FormItemProp<string>) => React.ReactNode
     }[]
 }
 
 
 export const UnionPathsSelectGroup = (options: WrapperProps) => {
+    const allowLeftEmpty = options.allowLeftEmpty ?? true;
     const [groupedPaths, setGroupedPaths] = useState<Record<string, string[]>>({});
-    const [pathType, setPathType] = useState<string>("auto");
+    const [pathType, setPathType] = useState<string>(options.fallback ?? "auto");
     const [path, setPath] = useState<string | undefined>(options.value)
     useEffect(() => setPath(options.value), [options.value])
     useEffect(() => {
@@ -136,29 +138,18 @@ export const UnionPathsSelectGroup = (options: WrapperProps) => {
             }
         }
     }, [groupedPaths, options.value])
-    const outputPathTypeOptions = []
-    if (options.allowLeftEmpty === false) {
-    } else {
-        outputPathTypeOptions.push({
-            label: options.leftEmpty || "自动",
-            value: "auto"
-        },)
-    }
+    const outputPathTypeOptions: { label: string, value: string }[] = []
     options.children?.forEach(({ type, label }) => {
         outputPathTypeOptions.push({ label, value: type })
     })
 
     const handlePathTypeChange = (value: string) => {
         setPathType(value);
-        if (value == "auto") {
-            if (options.onChange) options.onChange(undefined)
-        }
+        if (options.onChange) options.onChange(undefined)
     };
     const handlePathChange = (value: string) => {
-        if (value != "auto") {
-            setPath(value);
-            if (options.onChange) options.onChange(value)
-        }
+        setPath(value);
+        if (options.onChange) options.onChange(value)
     }
 
     const unionPathSelectContext = {
@@ -169,11 +160,16 @@ export const UnionPathsSelectGroup = (options: WrapperProps) => {
     const childrenMap = Object.fromEntries(options.children?.map((value) => [value.type, value.render({ value: path, onChange: handlePathChange })]) ?? [])
 
     const allChildren = Object.values(childrenMap)
+
+    const CompactWrapper = ({ children }: { children: React.ReactNode }) => {
+        return childrenMap[pathType] ? <Space.Compact style={{ width: "100%", ...options.style }}>{children}</Space.Compact>
+            : <Space style={{ width: "100%", ...options.style }}>{children}</Space>
+    }
     return <>
         <UnionPathSelectContext.Provider value={unionPathSelectContext}>
             <div style={{ display: "none" }} >{allChildren}</div>
         </UnionPathSelectContext.Provider>
-        <Space.Compact style={{ width: "100%", ...options.style }}>
+        <CompactWrapper>
             <Select
                 value={pathType}
                 defaultValue="auto"
@@ -182,7 +178,7 @@ export const UnionPathsSelectGroup = (options: WrapperProps) => {
                 options={outputPathTypeOptions}
             />
             {childrenMap[pathType]}
-        </Space.Compact >
+        </CompactWrapper >
     </>
 }
 
@@ -190,6 +186,18 @@ interface FormItemProp<T> {
     value?: T,
     onChange?: (value: T) => void,
     width?: number,
+}
+
+export const EmptyPathSelect = (options: FormItemProp<string>) => {
+    const ctx = useContext(UnionPathSelectContext);
+    useEffect(() => {
+        ctx.setGroupedPaths("auto", [""])
+    }, [options.value])
+    return <Select disabled
+        style={{
+            width: options.width ? options.width - 150 : undefined
+        }}
+    />
 }
 
 export const LibraryPathSelect = (options: FormItemProp<string>) => {

@@ -21,7 +21,6 @@ export function PathSelector({ value, onChange, style }: PathSelectorProps) {
     const pathManagerContext = new PathManager("/") // useContext(PathManagerContext);
 
     useEffect(() => {
-        console.log(value)
         if (value == undefined) {
 
         }
