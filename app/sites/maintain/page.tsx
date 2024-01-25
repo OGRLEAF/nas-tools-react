@@ -28,6 +28,8 @@ function SitesTable() {
 
     const [selected, setSelected] = useState<ListItem['id'][]>([])
     const [actionSelected, setActionSelected] = useState<Set<ListItem['id']>>();
+    const refMap: Record<ListItem['id'], React.RefObject<TestButtonAction>> = {};
+
     const columns: ColumnsType<ListItem> = [
         {
             title: "ID",
@@ -65,7 +67,9 @@ function SitesTable() {
             title: "操作",
             align: "center",
             render: (value, record) => {
-                return <SiteAction record={record} selected={actionSelected?.has(record.id) ?? false} />
+                return <SiteAction record={record} selected={actionSelected?.has(record.id) ?? false}
+                    onRefReady={(ref) => { refMap[record.id] = ref }}
+                />
             },
             width: 100
         }
@@ -76,8 +80,8 @@ function SitesTable() {
             rowSelection={{
                 type: "checkbox",
                 onChange(selectedRowKeys, selectedRows, info) {
+                    selected.forEach(key=>refMap[key]?.current?.doClear())
                     setSelected(selectedRowKeys as ListItem['id'][])
-
                 },
             }}
             loading={loading}
@@ -90,18 +94,26 @@ function SitesTable() {
             }}
             footer={() => {
                 return <Button onClick={() => {
-                    setActionSelected(new Set(selected));
-                    setTimeout(() => setActionSelected(new Set()))
+                    selected.forEach(key => {
+                        console.log(key, refMap[key])
+                        refMap[key]?.current?.doTest();
+                    })
                 }}>测试</Button>
             }}
         />
     </>
 }
 
-function SiteAction({ record, selected }: { record: ListItem, selected: boolean }) {
+function SiteAction({ record, selected, onRefReady }:
+    { record: ListItem, selected: boolean, onRefReady?: (ref: React.RefObject<TestButtonAction>) => void }) {
     const { confirm } = Modal;
     const ctx = useCardsFormContext<SitesResouce>();
     const ref = useRef<TestButtonAction>(null)
+    useEffect(() => {
+        if (ref != null) {
+            onRefReady?.(ref)
+        }
+    }, [ref.current])
     useEffect(() => {
         if (selected) {
             console.log('selected', record.name)
