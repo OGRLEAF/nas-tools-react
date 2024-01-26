@@ -158,7 +158,6 @@ export class Rss extends APIArrayResourceBase<RssResource> {
                 search_sites: taskConfig.sites?.search || []
             }
         }
-        console.log(postData)
         const update = await (await this.API).post<any>("rss/update", {
             data: {
                 ...postData
@@ -166,7 +165,6 @@ export class Rss extends APIArrayResourceBase<RssResource> {
             auth: true,
             json: true
         })
-        console.log(update)
     }
 
     protected async listHook(options?: any): Promise<RssTaskConfig[]> {
@@ -183,11 +181,7 @@ export class Rss extends APIArrayResourceBase<RssResource> {
     }
 
     protected async updateManyHook(value: RssTaskConfig[]): Promise<void> {
-        console.log(value)
-        for (let record of value) {
-            await this._update(record);
-        }
-        // await Promise.all(value.map((value) => this._update(value)))
+        await Promise.all(value.map((value) => this._update(value)))
     }
 }
 

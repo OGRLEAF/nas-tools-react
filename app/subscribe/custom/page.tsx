@@ -9,6 +9,60 @@ import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResT
 import { useForm } from "antd/es/form/Form";
 import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
 import { Cards, CardsForm } from "@/app/components/CardsForm";
+import { IconPause, IconPlay } from "@/app/components/icons";
+
+
+export default function SubscribeMoviePage() {
+    const [selected, setSelected] = useState<RssTaskConfig[]>([]);
+    return <CardsForm<RssResource>
+        title="自定义订阅"
+        resource={Rss}
+        formComponent={CustomRssForm}
+        extra={(resource) => {
+            const { list, refresh } = resource.useList()
+            return [
+                <Divider key="divider" type="vertical" />,
+                <Button key="select_all">
+                    <Checkbox
+                        indeterminate={selected.length > 0 && (selected.length < (list?.length ?? 0))}
+                        checked={selected.length == list?.length}
+                        onClick={() => {
+                            if (selected.length == 0 && list != undefined) { setSelected([...list]) }
+                            else setSelected([])
+                        }}
+                    >
+                        全选 {selected.length}/{list?.length}
+                    </Checkbox>
+                </Button>,
+                <Button key="enable_btn" icon={<IconPlay />}
+                    onClick={async () => {
+                        await resource.updateMany?.(selected.map(v => ({ ...v, state: true })));
+                    }}>开启</Button>,
+                <Button key="disable_btn" icon={<IconPause />}
+                    onClick={async () => {
+                        await resource.updateMany?.(selected.map(v => ({ ...v, state: false })));
+                        refresh()
+                    }}>停止</Button>
+            ]
+        }}
+    >
+        <Cards<RssResource>
+            cardSelection={{
+                key: "id",
+                selected: selected.map(v => v.id),
+                onChange: (selectedKeys, selected) => { setSelected(selected) }
+            }}
+            spaceProps={{ direction: "vertical" }}
+            cardProps={(record) => ({
+                title: <Space size="small" align="center">
+                    <Tag color="pink" bordered={false}>{record.uses_text}</Tag>
+                    <span>{record.name}</span>
+                </Space>,
+                description: <CustomRssCard config={record} />
+            })}
+        />
+    </CardsForm>
+}
 
 const CustomRssDownloadForm = () => {
     return <>
@@ -227,58 +281,6 @@ const CustomRssCard = ({ config, }: { config: RssTaskConfig }) => {
     </>
 }
 
-
-export default function SubscribeMoviePage() {
-    const [selected, setSelected] = useState<RssTaskConfig[]>([]);
-    return <CardsForm<RssResource>
-        title="自定义订阅"
-        resource={Rss}
-        formComponent={CustomRssForm}
-        extra={(resource) => {
-            const { list, refresh } = resource.useList()
-            return [
-                <Divider key="divider" type="vertical" />,
-                <Button key="select_all">
-                    <Checkbox
-                        indeterminate={selected.length > 0 && (selected.length < (list?.length ?? 0))}
-                        checked={selected.length == list?.length}
-                        onClick={() => {
-                            if (selected.length == 0 && list != undefined) { setSelected([...list]) }
-                            else setSelected([])
-                        }}
-                    >
-                        全选 {selected.length}/{list?.length}
-                    </Checkbox>
-                </Button>,
-                <Button key="enable_btn"
-                    onClick={async () => {
-                        await resource.updateMany?.(selected.map(v => ({ ...v, state: true })));
-                    }}>开启</Button>,
-                <Button key="disable_btn"
-                    onClick={async () => {
-                        await resource.updateMany?.(selected.map(v => ({ ...v, state: false })));
-                        refresh()
-                    }}>停止</Button>
-            ]
-        }}
-    >
-        <Cards<RssResource>
-            cardSelection={{
-                key: "id",
-                selected: selected.map(v => v.id),
-                onChange: (selectedKeys, selected) => { setSelected(selected) }
-            }}
-            spaceProps={{ direction: "vertical" }}
-            cardProps={(record) => ({
-                title: <Space size="small" align="center">
-                    <Tag color="pink" bordered={false}>{record.uses_text}</Tag>
-                    <span>{record.name}</span>
-                </Space>,
-                description: <CustomRssCard config={record} />
-            })}
-        />
-    </CardsForm>
-}
 
 function RssParserSelect({ value, onChange }: { value?: string, onChange?: (value: string) => void }) {
     const { useList } = new RssParsers().useResource();
