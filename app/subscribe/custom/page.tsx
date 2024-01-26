@@ -1,19 +1,16 @@
 "use client"
 
 import { Section } from "@/app/components/Section";
-import { Button, Card, Checkbox, Space, Descriptions, Tag, theme, Drawer, Form, Input, Flex, Row, Col, Switch, Select, Radio } from "antd";
+import { Button, Card, Checkbox, Space, Descriptions, Tag, theme, Drawer, Form, Input, Row, Col, Switch, Select, Radio } from "antd";
 import { useEffect, useMemo, useState } from "react";
-import { PlusOutlined, PlayCircleOutlined, StopOutlined, MinusCircleOutlined } from "@ant-design/icons"
+import { PlusOutlined, PlayCircleOutlined, StopOutlined, DeleteOutlined } from "@ant-design/icons"
 import { IconDatabase, IconEdit } from "@/app/components/icons";
-import { Rss, RssDownloadTaskConfig, RssParserConfig, RssTaskConfig, RssUse } from "@/app/utils/api/subscription/rss";
-import { asyncEffect } from "@/app/utils";
+import { Rss, RssParserConfig, RssTaskConfig, RssUse } from "@/app/utils/api/subscription/rss";
 import _ from "lodash";
 import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 import { useForm } from "antd/es/form/Form";
 import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import RssParserPage from "./parser/page";
 
 const CustomRssDownloadForm = () => {
     return <>
@@ -167,9 +164,9 @@ const CustomRssForm = ({ config, parsers }: { config: RssTaskConfig, parsers: Rs
                     // <Form.Item name={[field.name, "url"]}>
                     //     <Input />
                     // </Form.Item>
-                    <Row gutter={16} key={field.key}>
-                        <Col span={17}>
-                            <Form.Item name={[field.name, "url"]} required>
+                    <Row gutter={6} >
+                        <Col span={18}>
+                            <Form.Item name={[field.name, "url"]} required >
                                 <Input />
                             </Form.Item>
                         </Col>
@@ -178,15 +175,15 @@ const CustomRssForm = ({ config, parsers }: { config: RssTaskConfig, parsers: Rs
                                 <Select options={parserOptions} />
                             </Form.Item>
                         </Col>
-                        <Col span={2}>
-                            <Button type="text" icon={<MinusCircleOutlined />} onClick={() => remove(field.name)} />
+                        <Col span={1}>
+                            <Form.Item>
+                                <Button type="text" danger icon={<DeleteOutlined />} onClick={() => remove(field.name)} />
+                            </Form.Item>
                         </Col>
                     </Row>))}
-                <Row>
-                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                        Add field
-                    </Button>
-                </Row>
+                <Form.Item>
+                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>添加</Button>
+                </Form.Item>
             </>
             }
         </Form.List>
@@ -252,32 +249,23 @@ const CustomRssCard = ({ config, parsers }: { config: RssTaskConfig, parsers: Rs
             <CustomRssForm config={config} parsers={parsers} />
         </Drawer>
         <Descriptions size="small" column={5}>
-            <Descriptions.Item label="刷新周期">
-                {config.interval}分
-            </Descriptions.Item>
-            <Descriptions.Item label="动作">
-                {config.uses_text}
-            </Descriptions.Item>
-            <Descriptions.Item label="包含">
-                {config.include}
-            </Descriptions.Item>
-            <Descriptions.Item label="排除">
-                {config.exclude}
-            </Descriptions.Item>
-            <Descriptions.Item label="状态">
-                {config.state ? "正在运行" : "停止"}
-            </Descriptions.Item>
-            <Descriptions.Item label="已处理">
-                {config.counter}
-            </Descriptions.Item>
-            <Descriptions.Item label="更新时间">
-                {config.update_time}
-            </Descriptions.Item>
+            <Descriptions.Item label="刷新周期">{config.interval}分</Descriptions.Item>
+            <Descriptions.Item label="动作">{config.uses_text}</Descriptions.Item>
+            <Descriptions.Item label="包含">{config.include}</Descriptions.Item>
+            <Descriptions.Item label="排除">{config.exclude}</Descriptions.Item>
+            <Descriptions.Item label="状态">{config.state ? "正在运行" : "停止"}</Descriptions.Item>
+            <Descriptions.Item label="已处理">{config.counter}</Descriptions.Item>
+            <Descriptions.Item label="更新时间">{config.update_time}</Descriptions.Item>
         </Descriptions>
     </Card>
 }
 
-export default function SubscribeMovie() {
+
+export default function SubscribeMoviePage() {
+    return <SubscribeMovie />
+}
+
+export function SubscribeMovie() {
     const [tasks, setTasks] = useState<RssTaskConfig[]>([]);
     const [parsers, setParsers] = useState<RssParserConfig[]>([]);
 
@@ -305,7 +293,7 @@ export default function SubscribeMovie() {
                 </Link>
             </Space>
         }>
-        <Checkbox.Group style={{ width: '100%' }}>
+        <Checkbox.Group onChange={(value) => { console.log(value) }} style={{ width: '100%' }}>
             <Space direction="vertical" style={{ width: "100%" }}>
                 {taskCards}
             </Space>
