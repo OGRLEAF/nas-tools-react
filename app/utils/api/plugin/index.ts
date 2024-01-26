@@ -107,10 +107,10 @@ export class Plugin extends APIArrayResourceBase<PluginResource>{
         return true;
     }
 
-    protected async updateHook(value: PluginProfile): Promise<boolean> {
-        await this.update(value.key, value.config)
-        return true
-    }
+    // protected async updateHook(value: PluginProfile): Promise<boolean> {
+    //     await this.update(value.key, value.config)
+    //     return true
+    // }
 }
 
 export interface PluginRepoItem {

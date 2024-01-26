@@ -56,7 +56,7 @@ export enum RssUse {
 }
 
 interface NTRssTaskFetchInfo {
-    id?: number,
+    id: number,
     name: string,
     address: string[],
     proxy: boolean,
@@ -74,7 +74,7 @@ interface NTRssTaskFetchInfo {
 }
 
 export interface RssTaskConfig {
-    id?: number,
+    id: number,
     name: string,
     rss: {
         parser: string,
@@ -110,10 +110,13 @@ interface RssFilterProps {
 }
 export interface RssSubscribeTaskConfig extends RssTaskConfig, RssFilterProps, RssDownloadProps {
     use: RssUse.SUBSCRIBE
-
 }
 
-export class Rss extends APIBase {
+export interface RssResource extends ResourceType {
+    ItemType: RssTaskConfig
+}
+
+export class Rss extends APIArrayResourceBase<RssResource> {
     public async list(): Promise<{ tasks: RssTaskConfig[], parsers: RssParserConfig[] }> {
         const list = await (await this.API).post<{ tasks: NTRssTaskFetchInfo[], parsers: RssParserConfig[] }>("rss/list", { auth: true })
         const { tasks, parsers } = list;
@@ -145,7 +148,7 @@ export class Rss extends APIBase {
         };
     }
 
-    public async update(taskConfig: RssTaskConfig) {
+    public async _update(taskConfig: RssTaskConfig) {
         const postData: NTRssTaskFetchInfo = {
             ...taskConfig,
             address: taskConfig.rss.map(rss => rss.url),
@@ -164,6 +167,27 @@ export class Rss extends APIBase {
             json: true
         })
         console.log(update)
+    }
+
+    protected async listHook(options?: any): Promise<RssTaskConfig[]> {
+        return (await this.list()).tasks
+    }
+    protected async addHook(value: RssTaskConfig): Promise<boolean> {
+        await this._update(value);
+        return true
+    }
+
+    protected async updateHook(value: RssTaskConfig): Promise<boolean> {
+        await this._update(value);
+        return true
+    }
+
+    protected async updateManyHook(value: RssTaskConfig[]): Promise<void> {
+        console.log(value)
+        for (let record of value) {
+            await this._update(record);
+        }
+        // await Promise.all(value.map((value) => this._update(value)))
     }
 }
 
@@ -206,8 +230,8 @@ export class RssParsers extends APIArrayResourceBase<RssParserResource> {
 
     protected async updateHook(value: RssParserConfig): Promise<boolean> {
         await this.update(value);
-        return true  
-    } 
+        return true
+    }
 
     protected listHook(options?: any): Promise<RssParserConfig[]> {
         return this.list();

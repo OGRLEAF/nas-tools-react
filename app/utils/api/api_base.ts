@@ -85,22 +85,22 @@ export function useResource<T, OptionType>(cls: APIArrayResourceBase<{ ItemType:
 }
 
 
-
+type NoUndefined<T> = T extends undefined ? never : T;
 
 export interface ResourceType {
     ItemType?: any,
     ListOptionType?: any,
     DeleteOptionType?: any,
-    AddItemType?: ResourceType['ItemType'],
-    UpdateItemType?: ResourceType['ItemType'],
+    AddItemType?: any, //NoUndefined<this['ItemType']>,
+    UpdateItemType?: any, // NoUndefined<this['ItemType']>,
     ValidateRetType?: boolean
 }
 
 export type ItemType<T extends ResourceType> = T['ItemType'];
-export type UpdateItemType<T extends ResourceType> = T['UpdateItemType'];
-export type AddItemType<T extends ResourceType> = T['AddItemType'];
-export type ListOptionType<T extends ResourceType> = T['ListOptionType']
-export type DeleteOptionType<T extends ResourceType> = T['DeleteOptionType'];
+export type UpdateItemType<T extends ResourceType> = NoUndefined<T['UpdateItemType']>;
+export type AddItemType<T extends ResourceType> = NoUndefined<T['AddItemType']>;
+export type ListOptionType<T extends ResourceType> = NoUndefined<T['ListOptionType']>;
+export type DeleteOptionType<T extends ResourceType> = NoUndefined<T['DeleteOptionType']>;
 
 export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
     // public abstract list(): Promise<T[]>;
@@ -120,9 +120,7 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
 
     protected async validateHook?(value: ItemType<T>): Promise<[boolean, string]>;
 
-    protected async updateManyHook(value: ItemType<T>[]) {
-
-    }
+    protected async updateManyHook?(value: UpdateItemType<T>[]): Promise<void>;
 
 
     public useResource(option?: APIArrayResourceOption<ListOptionType<T>>) {
@@ -208,6 +206,18 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
                 true
             ) : undefined;
 
+        const updateMany = this.updateManyHook ?
+            attachMessage<typeof this.updateManyHook, ItemType<T>[]>(
+                async (value: ItemType<T>[]) => {
+                    return await self.updateManyHook?.(value)
+                },
+                message,
+                true
+            ) : undefined;
+
+
+
+
         return {
             useList: () => {
                 useListCache = useListCache ?? useList();
@@ -225,7 +235,7 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
                     }
             },
             delMany,
-            updateMany: this.updateManyHook,
+            updateMany: updateMany,
             messageContext: [message.contextHolder, modalContextHolder],
             message,
             update: update,

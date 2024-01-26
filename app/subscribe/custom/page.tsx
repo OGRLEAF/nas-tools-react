@@ -1,16 +1,14 @@
 "use client"
 
-import { Section } from "@/app/components/Section";
-import { Button, Card, Checkbox, Space, Descriptions, Tag, theme, Drawer, Form, Input, Row, Col, Switch, Select, Radio } from "antd";
-import { useEffect, useMemo, useState } from "react";
-import { PlusOutlined, PlayCircleOutlined, StopOutlined, DeleteOutlined } from "@ant-design/icons"
-import { IconDatabase, IconEdit } from "@/app/components/icons";
-import { Rss, RssParserConfig, RssTaskConfig, RssUse } from "@/app/utils/api/subscription/rss";
+import { Button, Space, Descriptions, Tag, Form, Input, Row, Col, Switch, Select, Radio, Checkbox, Divider } from "antd";
+import { useState } from "react";
+import { PlusOutlined, DeleteOutlined } from "@ant-design/icons"
+import { Rss, RssParsers, RssResource, RssTaskConfig, RssUse } from "@/app/utils/api/subscription/rss";
 import _ from "lodash";
 import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 import { useForm } from "antd/es/form/Form";
 import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
-import Link from "next/link";
+import { Cards, CardsForm } from "@/app/components/CardsForm";
 
 const CustomRssDownloadForm = () => {
     return <>
@@ -100,7 +98,7 @@ const CustomRssSubscribeForm = () => {
     </>
 }
 
-const defaultConfig: RssTaskConfig = {
+const defaultConfig = {
     name: "",
     rss: [],
     proxy: false,
@@ -119,21 +117,17 @@ const defaultConfig: RssTaskConfig = {
     filter: ""
 }
 
-const CustomRssForm = ({ config, parsers }: { config: RssTaskConfig, parsers: RssParserConfig[] }) => {
-    const parserOptions = parsers.map((parser) => ({
-        label: parser.name,
-        value: String(parser.id)
-    }))
+const CustomRssForm = ({ record, onChange }:
+    { record?: RssTaskConfig, onChange?: (record: RssTaskConfig) => void }) => {
     const [form] = useForm();
     const rssUseType: RssUse = Form.useWatch("uses", form)
     const onFinish = (values: any) => {
-        console.log(values)
-        new Rss().update({
+        onChange?.({
             ...values,
-            id: config.id
+            id: record?.id
         })
     }
-    return <Form form={form} onFinish={onFinish} initialValues={config} layout="vertical">
+    return <Form form={form} onFinish={onFinish} initialValues={record} layout="vertical">
         <Row gutter={16}>
             <Col span={18}>
                 <Form.Item label="名称" name="name">
@@ -161,10 +155,7 @@ const CustomRssForm = ({ config, parsers }: { config: RssTaskConfig, parsers: Rs
         <Form.List name={["rss"]}>
             {(fields, { add, remove }) => <>
                 {fields.map((field) => (
-                    // <Form.Item name={[field.name, "url"]}>
-                    //     <Input />
-                    // </Form.Item>
-                    <Row gutter={6} >
+                    <Row gutter={6} key={field.key} >
                         <Col span={18}>
                             <Form.Item name={[field.name, "url"]} required >
                                 <Input />
@@ -172,7 +163,7 @@ const CustomRssForm = ({ config, parsers }: { config: RssTaskConfig, parsers: Rs
                         </Col>
                         <Col span={5}>
                             <Form.Item name={[field.name, "parser"]} required>
-                                <Select options={parserOptions} />
+                                <RssParserSelect />
                             </Form.Item>
                         </Col>
                         <Col span={1}>
@@ -222,32 +213,8 @@ const CustomRssForm = ({ config, parsers }: { config: RssTaskConfig, parsers: Rs
     </Form >
 }
 
-const CustomRssCard = ({ config, parsers }: { config: RssTaskConfig, parsers: RssParserConfig[] }) => {
-    const { token } = theme.useToken();
-    const [openEdit, setOpenEdit] = useState(false);
-    const handleOpenEdit = () => {
-        setOpenEdit(true)
-    }
-    return <Card
-        hoverable
-        headStyle={{ padding: 16 }}
-        bodyStyle={{ padding: 16 }}
-        title={
-            <Space style={{ paddingLeft: 6 }} size="large">
-                <Checkbox value={config.id}></Checkbox>
-                <Space size="small">
-                    <Tag color="pink" bordered={false}>{config.uses_text}</Tag>
-                    <span>{config.name}</span>
-                </Space>
-            </Space>
-
-        }
-        extra={<Button type="text" onClick={handleOpenEdit} icon={<IconEdit style={{ color: token.colorTextDescription }} />}></Button>}
-    >
-
-        <Drawer open={openEdit} size="large" onClose={() => setOpenEdit(false)}>
-            <CustomRssForm config={config} parsers={parsers} />
-        </Drawer>
+const CustomRssCard = ({ config, }: { config: RssTaskConfig }) => {
+    return <>
         <Descriptions size="small" column={5}>
             <Descriptions.Item label="刷新周期">{config.interval}分</Descriptions.Item>
             <Descriptions.Item label="动作">{config.uses_text}</Descriptions.Item>
@@ -257,50 +224,69 @@ const CustomRssCard = ({ config, parsers }: { config: RssTaskConfig, parsers: Rs
             <Descriptions.Item label="已处理">{config.counter}</Descriptions.Item>
             <Descriptions.Item label="更新时间">{config.update_time}</Descriptions.Item>
         </Descriptions>
-    </Card>
+    </>
 }
 
 
 export default function SubscribeMoviePage() {
-    return <SubscribeMovie />
+    const [selected, setSelected] = useState<RssTaskConfig[]>([]);
+    return <CardsForm<RssResource>
+        title="自定义订阅"
+        resource={Rss}
+        formComponent={CustomRssForm}
+        extra={(resource) => {
+            const { list, refresh } = resource.useList()
+            return [
+                <Divider key="divider" type="vertical" />,
+                <Button key="select_all">
+                    <Checkbox
+                        indeterminate={selected.length > 0 && (selected.length < (list?.length ?? 0))}
+                        checked={selected.length == list?.length}
+                        onClick={() => {
+                            if (selected.length == 0 && list != undefined) { setSelected([...list]) }
+                            else setSelected([])
+                        }}
+                    >
+                        全选 {selected.length}/{list?.length}
+                    </Checkbox>
+                </Button>,
+                <Button key="enable_btn"
+                    onClick={async () => {
+                        await resource.updateMany?.(selected.map(v => ({ ...v, state: true })));
+                    }}>开启</Button>,
+                <Button key="disable_btn"
+                    onClick={async () => {
+                        await resource.updateMany?.(selected.map(v => ({ ...v, state: false })));
+                        refresh()
+                    }}>停止</Button>
+            ]
+        }}
+    >
+        <Cards<RssResource>
+            cardSelection={{
+                key: "id",
+                selected: selected.map(v => v.id),
+                onChange: (selectedKeys, selected) => { setSelected(selected) }
+            }}
+            spaceProps={{ direction: "vertical" }}
+            cardProps={(record) => ({
+                title: <Space size="small" align="center">
+                    <Tag color="pink" bordered={false}>{record.uses_text}</Tag>
+                    <span>{record.name}</span>
+                </Space>,
+                description: <CustomRssCard config={record} />
+            })}
+        />
+    </CardsForm>
 }
 
-export function SubscribeMovie() {
-    const [tasks, setTasks] = useState<RssTaskConfig[]>([]);
-    const [parsers, setParsers] = useState<RssParserConfig[]>([]);
+function RssParserSelect({ value, onChange }: { value?: string, onChange?: (value: string) => void }) {
+    const { useList } = new RssParsers().useResource();
+    const { list } = useList();
+    const parserOptions = list?.map((parser) => ({
+        label: parser.name,
+        value: String(parser.id)
+    }))
 
-    const taskCards = useMemo(() => {
-        return Object.entries(tasks).map(([key, config]) => <CustomRssCard key={key} config={config} parsers={parsers} />)
-    }, [tasks])
-
-    useEffect(() => { update() }, [])
-    const update = async () => {
-        const { tasks, parsers } = await new Rss().list();
-        setTasks(tasks);
-        setParsers(parsers)
-    }
-
-    const [openCreate, setOpenCreate] = useState(false)
-    return <><Section title="自定义订阅"
-        onRefresh={update}
-        extra={
-            <Space>
-                <Button icon={<PlusOutlined />} onClick={() => setOpenCreate(true)} type="primary">添加订阅</Button>
-                <Button icon={<PlayCircleOutlined />} >启用</Button>
-                <Button icon={<StopOutlined />} >停用</Button>
-                <Link href="/subscribe/custom/parser">
-                    <Button icon={<IconDatabase />} >RSS解析器</Button>
-                </Link>
-            </Space>
-        }>
-        <Checkbox.Group onChange={(value) => { console.log(value) }} style={{ width: '100%' }}>
-            <Space direction="vertical" style={{ width: "100%" }}>
-                {taskCards}
-            </Space>
-        </Checkbox.Group>
-        <Drawer size="large" open={openCreate} onClose={() => setOpenCreate(false)}>
-            <CustomRssForm parsers={parsers} config={defaultConfig} />
-        </Drawer>
-    </Section>
-    </>
+    return <Select value={value} onChange={onChange} options={parserOptions} />
 }

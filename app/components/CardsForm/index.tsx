@@ -184,10 +184,13 @@ export const TestButton = forwardRef(function <Res extends ResourceType>(props: 
     }
 })
 
-type CardsSelectionProps<Res extends ResourceType> = {
+interface CardsSelectionPropsObject<Res extends ResourceType> {
     key: keyof ItemType<Res>,
-    onChange: (selected: ItemType<Res>) => void
-} | false
+    selected?: ItemType<Res>[this['key']][],
+    onChange: (selectedKeys: ItemType<Res>[this['key']][], selected: ItemType<Res>[]) => void
+}
+
+type CardsSelectionProps<Res extends ResourceType> = CardsSelectionPropsObject<Res> | false
 
 export interface CardsProps<Res extends ResourceType> {
     cardProps: (record: ItemType<Res>) => CardProps<Res>,
@@ -206,14 +209,20 @@ export function Cards<Res extends ResourceType>({ cardProps, spaceProps, cardSel
     const { resource } = ctx;
     const { useList } = resource;
     const { list } = useList();
-    const cards = <Space {...spaceProps}>
+    const cards = useMemo(() => <Space {...spaceProps}>
         {
             list ? Object.entries(list).map(([key, record]) =>
                 <ListItemCard<Res> key={key} record={record} cardProps={cardProps(record)} />) : <></>
         }
-    </Space >
+    </Space >, [list])
     return <SelectionContext.Provider value={cardSelection ?? false}>
-        <Checkbox.Group onChange={cardSelection ? (values) => cardSelection.onChange(values) : undefined}>
+        <Checkbox.Group<ItemType<Res>>
+            value={cardSelection ? cardSelection.selected : undefined}
+            onChange={cardSelection ? (values) => {
+                const selected = list?.filter((value) => (values.indexOf(value[cardSelection.key]) > -1)) ?? [];
+                const selectedKeys = selected?.map(v => v[cardSelection.key])
+                cardSelection.onChange(selectedKeys, selected)
+            } : undefined}>
             {cards}
         </Checkbox.Group>
     </SelectionContext.Provider>
@@ -240,6 +249,8 @@ function ListItemCard<Res extends ResourceType>({ record, cardProps, }: { record
         }
         actions.push(<Button key="delete_button" danger icon={<CloseOutlined />} onClick={onDelete} type="text"></Button>)
     }
+
+
 
     const cardTitle = selectContext ?
         <Checkbox value={record[selectContext.key]} key={record[selectContext.key]}
