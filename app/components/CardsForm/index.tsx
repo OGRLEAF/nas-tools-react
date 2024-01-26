@@ -2,7 +2,7 @@
 import { APIArrayResourceBase, AddItemType, ItemType, ListOptionType, ResourceType, UpdateItemType, useResource } from "@/app/utils/api/api_base";
 import React, { useEffect, useState, createContext, useContext, MouseEventHandler, useMemo, CSSProperties, forwardRef, useImperativeHandle, ForwardedRef } from "react";
 import { Section } from "../Section";
-import { Alert, Button, ButtonProps, Card, Collapse, CollapseProps, ConfigProvider, Drawer, Modal, Popover, PopoverProps, Space, SpaceProps, theme } from "antd";
+import { Alert, Button, ButtonProps, Card, Checkbox, Collapse, CollapseProps, ConfigProvider, Drawer, Modal, Popover, PopoverProps, Space, SpaceProps, theme } from "antd";
 import { PlusOutlined, CloseOutlined, CheckOutlined, RetweetOutlined, ExclamationOutlined, EditOutlined } from "@ant-design/icons"
 import { once } from "lodash";
 
@@ -161,11 +161,11 @@ export const TestButton = forwardRef(function <Res extends ResourceType>(props: 
     if (val) {
         const content = <Alert banner style={{ paddingTop: 4, paddingBottom: 4 }} message={msg} type={result ? "success" : "error"} closable
             showIcon
-            onClose={() => {doClear()}} />
+            onClose={() => { doClear() }} />
 
         return <Space>
             <Popover {...props.popoverProps}
-                
+
                 color={result ? token.colorSuccessBg : token.colorErrorBg}
                 overlayInnerStyle={{ padding: 2, }}
                 content={content} open={(result != undefined) && props.msgType == "popover"}>
@@ -184,24 +184,46 @@ export const TestButton = forwardRef(function <Res extends ResourceType>(props: 
     }
 })
 
+type CardsSelectionProps<Res extends ResourceType> = {
+    key: keyof ItemType<Res>,
+    onChange: (selected: ItemType<Res>) => void
+} | false
 
-export function Cards<Res extends ResourceType>({ cardProps, spaceProps }:
-    { spaceProps?: SpaceProps } &
-    { cardProps: (record: ItemType<Res>) => CardProps<Res> }) {
+export interface CardsProps<Res extends ResourceType> {
+    cardProps: (record: ItemType<Res>) => CardProps<Res>,
+    spaceProps?: SpaceProps,
+    cardSelection?: CardsSelectionProps<Res>
+}
+
+type CardsSelectionContext<Res extends ResourceType> = CardsSelectionProps<Res>;
+
+const SelectionContext = createContext<CardsSelectionContext<any>>(false)
+
+const useSelectionContext = <Res extends ResourceType>() => useContext<CardsSelectionContext<Res>>(SelectionContext)
+
+export function Cards<Res extends ResourceType>({ cardProps, spaceProps, cardSelection }: CardsProps<Res>) {
     const ctx = useCardsFormContext<Res>();
     const { resource } = ctx;
     const { useList } = resource;
     const { list } = useList();
-    return <Space {...spaceProps}>
+    const cards = <Space {...spaceProps}>
         {
-            list ? Object.entries(list).map(([key, record]) => <ListItemCard<Res> key={key} record={record} cardProps={cardProps(record)} />) : <></>
+            list ? Object.entries(list).map(([key, record]) =>
+                <ListItemCard<Res> key={key} record={record} cardProps={cardProps(record)} />) : <></>
         }
-    </Space>
+    </Space >
+    return <SelectionContext.Provider value={cardSelection ?? false}>
+        <Checkbox.Group onChange={cardSelection ? (values) => cardSelection.onChange(values) : undefined}>
+            {cards}
+        </Checkbox.Group>
+    </SelectionContext.Provider>
+
 }
 
 
-function ListItemCard<Res extends ResourceType>({ record, cardProps }: { record: ItemType<Res>, cardProps: CardProps<Res> }) {
+function ListItemCard<Res extends ResourceType>({ record, cardProps, }: { record: ItemType<Res>, cardProps: CardProps<Res> }) {
     const ctx = useCardsFormContext<Res>();
+    const selectContext = useSelectionContext<Res>()
     const props = cardProps;
     const coverCard = props.cover != undefined;
     const { confirm } = Modal;
@@ -219,6 +241,12 @@ function ListItemCard<Res extends ResourceType>({ record, cardProps }: { record:
         actions.push(<Button key="delete_button" danger icon={<CloseOutlined />} onClick={onDelete} type="text"></Button>)
     }
 
+    const cardTitle = selectContext ?
+        <Checkbox value={record[selectContext.key]} key={record[selectContext.key]}
+            onClick={(evt) => { evt.stopPropagation() }}
+        >{props.title}</Checkbox>
+        : props.title
+
     if (cardProps.extra) {
         actions.push(cardProps.extra(ctx.resource))
     }
@@ -232,7 +260,8 @@ function ListItemCard<Res extends ResourceType>({ record, cardProps }: { record:
                     ctx.openEditor(record, { title: <>{ctx.options.title} / {props.title}</> })
                 }
             }}
-            title={coverCard ? undefined : props.title}
+
+            title={coverCard ? undefined : cardTitle}
             extra={coverCard ? undefined : actions}
             actions={!coverCard ? undefined : actions}
             style={{
@@ -240,7 +269,7 @@ function ListItemCard<Res extends ResourceType>({ record, cardProps }: { record:
             }}
         >
             <Card.Meta
-                title={props.cover ? props.title : undefined}
+                title={props.cover ? cardTitle : undefined}
                 description={props.description}
             ></Card.Meta>
         </Card>
