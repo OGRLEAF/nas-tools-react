@@ -40,11 +40,11 @@ const sortOption: SortOption[] = [{
 const DirectoryList = ({ dirList, loading, }:
     { dirList: NastoolFileListItem[], loading: boolean }) => {
     const { token: { colorTextTertiary }, } = theme.useToken();
-    const FileBrowserFooter = () => {
-        return (<>
-            <span style={{ color: colorTextTertiary }}>共 {dirList.length} 个文件夹</span>
-        </>)
-    }
+    // const FileBrowserFooter = () => {
+    //     return (<>
+    //         <span style={{ color: colorTextTertiary }}>共 {dirList.length} 个文件夹</span>
+    //     </>)
+    // }
     const pathParams = useParams()
     const pathname = usePathname();
     const [sortConfig, setSortConfig] = useState<{ key: SortKey, dir: SortDirection }>()
@@ -59,34 +59,35 @@ const DirectoryList = ({ dirList, loading, }:
                 }
             })), [dirList, sortConfig, filterConfig])
 
+    const footer = <Row>
+        <Col span={8}>
+            <Cascader style={{ width: 130 }}
+                value={[sortConfig?.key || "name", sortConfig?.dir || "dec"]}
+                onChange={(value) => {
+                    setSortConfig({
+                        // ...sortConfig,
+                        key: value[0] as SortKey || sortConfig?.key || "name",
+                        dir: value[1] as SortDirection || sortConfig?.dir || "dec",
+                    })
+                }} options={sortOption} placeholder="排序" />
+        </Col>
+        <Col span={16}>
+            <Input
+                allowClear
+                value={filterConfig}
+                onChange={(evt) => {
+                    setFilterConfig(evt.target.value);
+                }}
+                placeholder="搜索" />
+        </Col>
+    </Row>
+
     return (
         <Space direction="vertical" style={{ width: "100%" }}>
-            <Row>
-                <Col span={8}>
-                    <Cascader style={{ width: 130 }}
-                        value={[sortConfig?.key || "name", sortConfig?.dir || "dec"]}
-                        onChange={(value) => {
-                            setSortConfig({
-                                // ...sortConfig,
-                                key: value[0] as SortKey || sortConfig?.key || "name",
-                                dir: value[1] as SortDirection || sortConfig?.dir || "dec",
-                            })
-                        }} options={sortOption} placeholder="排序" />
-                </Col>
-                <Col span={16}>
-                    <Input
-                        allowClear
-                        value={filterConfig}
-                        onChange={(evt) => {
-                            setFilterConfig(evt.target.value);
-                        }}
-                        placeholder="搜索" />
-                </Col>
-            </Row>
 
             <List
                 style={{ maxHeight: "calc(100vh - 220px)", overflowY: "auto" }}
-                footer={<FileBrowserFooter />}
+                footer={footer}
                 size="small"
                 bordered
                 loading={loading}
@@ -273,31 +274,31 @@ const MediaFileExplorer = () => {
     // }
     const [selectedFiles, setSelectedFiles] = useState<NastoolFileListItem[]>([]);
 
-    const extras = <Space>
-        <PathManagerBar />
-        <MediaImportEntry flush={true}
-            appendFiles={
-                selectedFiles.map((item) => ({ name: item.name, path: pathManagerContext.deepestPath, rel: [], indentifyHistory: new IdentifyHistory(), selected: false }))
-            } />
-    </Space>
-
-
     return <MediaImportProvider>
         <MediaImport />
-        <Section title="文件管理" onRefresh={onRefresh} extra={extras} style={{ height: "100%" }}>
+        <Section title="文件管理" onRefresh={onRefresh} style={{ height: "100%" }}>
             <SectionContext.Consumer>
                 {(sectionContext) => {
-                    return <Row gutter={16} style={{ overflow: "hidden" }}>
-                        <Col span={6}>
-                            <DirectoryList dirList={dirList} loading={loadingState} />
-                        </Col>
-                        <Col span={18}>
-                            <FileList fileList={fileList}
-                                loading={loadingState}
-                                selected={selectedFiles}
-                                onSelectedChange={(files) => setSelectedFiles(files)} />
-                        </Col>
-                    </Row>
+                    return <Space direction="vertical">
+                        <Flex justify="space-between">
+                            <PathManagerBar />
+                            <MediaImportEntry flush={true}
+                                appendFiles={
+                                    selectedFiles.map((item) => ({ name: item.name, path: pathManagerContext.deepestPath, rel: [], indentifyHistory: new IdentifyHistory(), selected: false }))
+                                } />
+                        </Flex>
+                        <Row gutter={16} style={{ overflow: "hidden" }}>
+                            <Col span={6}>
+                                <DirectoryList dirList={dirList} loading={loadingState} />
+                            </Col>
+                            <Col span={18}>
+                                <FileList fileList={fileList}
+                                    loading={loadingState}
+                                    selected={selectedFiles}
+                                    onSelectedChange={(files) => setSelectedFiles(files)} />
+                            </Col>
+                        </Row>
+                    </Space>
                 }}
             </SectionContext.Consumer>
         </Section>

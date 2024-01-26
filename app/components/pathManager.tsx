@@ -1,4 +1,4 @@
-import React, { useReducer, useContext, createContext, useEffect } from "react"
+import React, { useReducer, useContext, createContext, useEffect, useMemo } from "react"
 import { Button, Segmented, Space, theme } from "antd"
 import PathManager from "../utils/pathManager"
 import CopyToClipboard from "@/app/components/copyToClipboard"
@@ -29,18 +29,12 @@ export function usePathManagerDispatch() {
 export function PathManagerBar() {
     const pathManagerState = usePathManager();
     const dispath = usePathManagerDispatch();
-    const segmentedPathTag = pathManagerState.getPathArray().map(({ full, name }) => {
+    const segmentedPathTag = useMemo(() => pathManagerState.getPathArray().map(({ full, name }) => {
         return {
-            label: (
-                <span key={full}>
-                    {/* <CopyToClipboard content={name}> */}
-                    {name}
-                    {/* </CopyToClipboard> */}
-                </span>
-            ),
+            label: <span key={full}>{name}</span>,
             value: full
         }
-    })
+    }), [pathManagerState])
     const onPathChange = (evt: any) => {
         dispath({ type: "set_path", path: evt })
 
@@ -49,7 +43,7 @@ export function PathManagerBar() {
         // setLoadingState(true);
         dispath({ type: "append_path", path: dirName })
     }
-    const {token} = theme.useToken()
+    const { token } = theme.useToken()
 
     return <>
         <Space>
@@ -65,7 +59,7 @@ export function PathManagerBar() {
     </>
 }
 
-export const PathManagerProvider = ({ children }:{ children: React.ReactNode, startPath?: string }) => {
+export const PathManagerProvider = ({ children }: { children: React.ReactNode, startPath?: string }) => {
     const pathParams = useParams();
     const query = useSearchParams();
     const path: string[] = pathParams.path as string[];

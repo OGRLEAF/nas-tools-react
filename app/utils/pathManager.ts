@@ -1,4 +1,4 @@
-import { get } from "http";
+"use client"
 import { API, NastoolFileListItem } from "@/app/utils/api/api";
 
 export interface FileListTree extends NastoolFileListItem {
@@ -12,6 +12,7 @@ export default class PathManager {
     private currentLevel: number = 0;
     private tree: FileListTree[] = [];
     constructor(startPath = "/", initialPath: PathManager | undefined = undefined, enableTree = false) {
+        
         if (initialPath) {
             this.pathArray = [...initialPath.pathArray];
             this.startPath = initialPath.startPath;
@@ -23,7 +24,6 @@ export default class PathManager {
             this.startPath = startPath;
             // this.setPath(startPath)
         }
-
     }
 
     private updateTree() {
