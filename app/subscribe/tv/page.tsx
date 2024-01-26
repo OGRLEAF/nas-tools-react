@@ -1,10 +1,10 @@
 "use client"
 import React, { useContext, useEffect, useState } from "react";
-import { Button, Card, Col, Drawer, Form, Input, InputNumber, Row, Select, Space, Spin, Switch, Tag, theme } from "antd";
-import { TVRssInfo, MovieRssList, RssState, Subscription, TvRssList, TVSubscription } from "@/app/utils/api/subscription/subscribe";
-import TinyTMDBSearch, { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
-import { MediaWork, MediaWorkType, SeriesKey } from "@/app/utils/api/types";
-import { DBMediaType, NastoolFilterruleBasic } from "@/app/utils/api/api";
+import { Button, Col, Form, Input, InputNumber, Row, Space, Switch, Tag, theme } from "antd";
+import { TVRssInfo, RssState, TVSubscription } from "@/app/utils/api/subscription/subscribe";
+import { MediaSearchGroup, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
+import { MediaWork, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
+import { DBMediaType } from "@/app/utils/api/api";
 import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
 import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 import { useForm } from "antd/es/form/Form";
@@ -54,7 +54,7 @@ export default function SubscribeTV() {
         [RssState.FINISH]: <Tag>已完成</Tag>,
     })
 
-    return <CardnForm title="电影订阅"
+    return <CardnForm title="电视剧订阅"
         onFetch={() => new TVSubscription().list()}
         onDelete={async (record) => {
             if (record.rssid != undefined) new TVSubscription().delete(record.rssid);
@@ -105,13 +105,19 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
     }
     const [form] = useForm();
     const onSelect = (value: MediaWork) => {
-        setDetail(value)
-        setSeries(value.series)
         form.setFieldsValue({
             name: value.title,
             year: value.metadata?.date?.release,
         })
     }
+    useEffect(() => {
+        const mediaWork = new TMDB().fromSeries(series.slice(SeriesKeyType.TMDBID));
+        mediaWork?.get().then((work) => setDetail(work))
+    }, [series.t])
+
+    useEffect(() => {
+        if (detail) onSelect(detail)
+    }, [detail])
 
     const season = Form.useWatch("season", form);
     useEffect(() => {
@@ -119,7 +125,7 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
             console.log(season, initialConfig.season, season != initialConfig.season)
             if (season != initialConfig.season) {
                 const seasonKey = series.season(season);
-                const media = new TMDB().fromSeries(seasonKey);
+                const media = new TMDB().fromSeries(seasonKey.slice(SeriesKeyType.TMDBID));
                 media?.get_children()
                     .then((list) => {
                         console.log("season changed", season, list)
@@ -156,10 +162,10 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
     }
 
     return <Space direction="vertical" style={{ width: "100%" }}>
-        <TinyTMDBSearch filter={{ type: [MediaWorkType.TV, MediaWorkType.ANI] }} onSelected={onSelect} />
-        {/* <Spin spinning> */}
-        <MediaDetailCard size="small" mediaDetail={detail || detailFromConfig} />
-        {/* </Spin> */}
+        <MediaSearchGroup value={series} filter={{ type: [MediaWorkType.TV, MediaWorkType.ANI] }}
+            onChange={(series) => setSeries(series)}>
+            <MediaSearchWork />
+        </MediaSearchGroup>
         <Form
             form={form}
             layout="vertical"

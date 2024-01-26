@@ -1,8 +1,8 @@
 "use client"
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
-import TinyTMDBSearch, { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
+import TinyTMDBSearch, { MediaDetailCard, MediaSearchGroup, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { ResTypeSelect, PixSelect, FilterRuleSelect, DownloadSettingSelect, SiteSelect, IndexerSelect } from "@/app/components/NTSelects";
 import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
 import { DBMediaType } from "@/app/utils/api/api";
@@ -12,6 +12,7 @@ import { Button, Col, Form, Input, Row, Space, Switch, Tag, theme } from "antd";
 import { RetweetOutlined } from "@ant-design/icons"
 import { useForm } from "antd/es/form/Form";
 import { ListItemCard, ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
+import { TMDB } from "@/app/utils/api/media/tmdb";
 
 const defaultConfig: MovieRssInfo = {
     image: "",
@@ -70,7 +71,7 @@ export default function SubscribeMovie() {
         layout="horizontal"
     >
         <ListItemCardList cardProps={(record: MovieRssInfo) => ({
-            cover: <img src={record.image} />,
+            cover: <img style={{ maxHeight: 175, objectFit: "cover" }} src={record.image} />,
             title: record.name,
             description: StatusTag[record.state]
         })}
@@ -83,6 +84,7 @@ export default function SubscribeMovie() {
 const SubscribeMovieForm = ({ record: config }: { record?: MovieRssInfo }) => {
     const [detail, setDetail] = useState<MediaWork>();
     const initialConfig = config || defaultConfig;
+    const [series, setSeries] = useState(new SeriesKey().type(MediaWorkType.MOVIE).tmdbId(initialConfig.mediaid))
     const detailFromConfig = {
         series: new SeriesKey().type(MediaWorkType.MOVIE).tmdbId(initialConfig.mediaid),
         type: MediaWorkType.MOVIE,
@@ -105,9 +107,14 @@ const SubscribeMovieForm = ({ record: config }: { record?: MovieRssInfo }) => {
         setDetail(value)
         form.setFieldsValue({
             name: value.title,
-            year: value.metadata?.date.release,
+            year: value.metadata?.date?.release,
         })
     }
+
+    useEffect(() => {
+        const mediaWork = new TMDB().fromSeries(series);
+        mediaWork?.get().then((work) => { if (work) onSelect(work) })
+    }, [series])
 
     const ctx = useContext(CardnFormContext);
 
@@ -130,12 +137,12 @@ const SubscribeMovieForm = ({ record: config }: { record?: MovieRssInfo }) => {
                 ctx.error(e);
             })
     }
-
     return <Space direction="vertical" style={{ width: "100%" }}>
-        <TinyTMDBSearch filter={{ type: [MediaWorkType.MOVIE] }} onSelected={onSelect} />
-        {/* <Spin spinning> */}
-        <MediaDetailCard size="small" mediaDetail={detail || detailFromConfig} />
-        {/* </Spin> */}
+        <MediaSearchGroup value={series} onChange={(series) => setSeries(series)}
+            filter={{ type: [MediaWorkType.MOVIE] }}
+        >
+            <MediaSearchWork />
+        </MediaSearchGroup>
         <Form
             form={form}
             layout="vertical"

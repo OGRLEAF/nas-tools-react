@@ -22,10 +22,10 @@ export const SearchContext = createContext<SearchContextType>({
 });
 
 
-export const useSearch = () => {
+export const useSearch = (initialSeries?:SeriesKey) => {
     const [keyword, setKeyword] = useState("");
     const [selected, setSelected] = useState<MediaWork>();
-    const [series, setSeries] = useState<SearchSeriesType>(new SeriesKey())
+    const [series, setSeries] = useState<SearchSeriesType>(new SeriesKey(initialSeries))
     return [{
         keyword, setKeyword,
         selected, setSelected,

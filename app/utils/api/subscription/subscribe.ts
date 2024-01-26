@@ -208,7 +208,6 @@ export class TVSubscription extends Subscription {
             if (item.filter_pix == null) item.filter_pix = ""
             if (item.filter_restype == null) item.filter_restype = ""
             if (item.filter_team == null) item.filter_team = ""
-            if (item.filter_pix == null) item.filter_pix = ""
             item.mediaid = item.tmdbid
             item.rssid = item.id == null ? undefined : Number(item.id)
             if (item.save_path == null) item.save_path = undefined
@@ -237,18 +236,26 @@ export class MovieSubscription extends Subscription {
         const list = await (await this.API).post<{ result: MovieRssList }>("subscribe/movie/list", {
             auth: true
         })
-        Object.values(list.result).forEach((item) => {
+        Object.values(list.result).forEach((item: any) => {
             if (item.filter_rule == null) item.filter_rule = ""
+            if (item.filter_exclude == null) item.filter_exclude = ""
+            if (item.filter_pix == null) item.filter_pix = ""
+            if (item.filter_restype == null) item.filter_restype = ""
+            if (item.filter_team == null) item.filter_team = ""
+            item.mediaid = item.tmdbid
+            item.rssid = item.id == null ? undefined : Number(item.id)
+            if (item.save_path == null) item.save_path = undefined
+            if ((item.download_setting as unknown as string) == "") item.download_setting = 0
         })
         // console.log(list)
         return Object.values(list.result);
     }
-    
+
     public async delete(rssid: number) {
         return await super.delete(rssid, DBMediaType.MOVIE)
     }
 
-    
+
     public async refresh(rssid: number) {
         return await super.refresh(rssid, DBMediaType.MOVIE)
     }

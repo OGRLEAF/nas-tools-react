@@ -258,14 +258,17 @@ export default function TinyTMDBSearch({
 
 
 export interface MediaSearchProps {
-    value?: string[],
+    filter?: {
+        type: MediaWorkType[],
+    },
+    value?: SeriesKey,
     onChange?: (value: SeriesKey) => void,
     children?: React.ReactNode,
     ctx?: SearchContextType
 }
 
-export function MediaSearchGroup({ value, onChange, children, ctx }: MediaSearchProps) {
-    const searchContext = ctx ?? useSearch()[0];
+export function MediaSearchGroup({ value, onChange, children, ctx, filter }: MediaSearchProps) {
+    const searchContext = ctx ?? useSearch(value)[0];
     const { setSelected, selected, series, setSeries } = searchContext;
     const [seasons, setSeasons] = useState<MediaWorkSeason[]>([])
     const [loading, setLoading] = useState(false)
@@ -294,7 +297,7 @@ export function MediaSearchGroup({ value, onChange, children, ctx }: MediaSearch
     }, [series])
 
     return <Space direction="vertical" style={{ width: "100%" }}>
-        <TinyTMDBSearch onSelected={onTMDBSelected} />
+        <TinyTMDBSearch onSelected={onTMDBSelected} filter={filter} />
         <SearchContext.Provider value={searchContext}>
             {
                 children ?
