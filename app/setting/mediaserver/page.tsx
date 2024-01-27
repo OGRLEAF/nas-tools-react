@@ -63,11 +63,13 @@ export default function MediaServerPage() {
 function MediaServerForm({ record, onChange }: { record?: MediaServerConfig, onChange?: (value: MediaServerConfig) => void }) {
     const [form] = Form.useForm();
     const clientType = record?.options.type;
+
+    const EmptyForm = () => <>表单未加载</>;
     const ConfigForm = useMemo(() => {
         if (clientType) {
             const selectedForm = mediaserverConfigs[clientType];
-            return selectedForm ? selectedForm.configForm : () => <>表单未加载</>
-        } else return () => <>表单未加载</>
+            return selectedForm ? selectedForm.configForm : EmptyForm
+        } else return EmptyForm
 
     }, [clientType])
     return <>

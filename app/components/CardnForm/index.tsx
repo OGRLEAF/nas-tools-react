@@ -64,7 +64,7 @@ export default function CardnForm<T>(options: CardnFormProps<T>) {
         const result = options.onFetch();
         result.then((result) => setList(result));
     }
-    useEffect(() => { updateList() }, []);
+    useEffect(() => { updateList() }, [updateList]);
 
     const [openCreateDrawer, setOpenCreateDrawer] = useState(false)
     const RecordForm = options.formRender;

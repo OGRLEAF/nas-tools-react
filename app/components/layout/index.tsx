@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   BarChartOutlined,
@@ -183,7 +183,9 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
         </Header>
         <Content style={{ margin: '0px 0px', overflow: 'initial' }}>
           <div style={{ padding: "0px 16px 16px 16px", minHeight: "50vh", height: "100%", background: colorBgContainer }}>
-            {children}
+            <Suspense >
+              {children}
+            </Suspense>
           </div>
         </Content>
         {/* <Footer style={{ textAlign: 'center', background: colorBgContainer, }}>Ant Design ©2023 Created by Ant UED</Footer> */}

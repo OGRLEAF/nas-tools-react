@@ -3,7 +3,8 @@ import { NastoolServerConfig } from "../utils/api/api";
 import { Organize } from "../utils/api/import";
 import { Select, Space } from "antd";
 import { PathSelector } from "./PathSelector";
-import { DownloadClient } from "../utils/api/download";
+import { DownloadClient, DownloadClientResource } from "../utils/api/download";
+import { useResource } from "../utils/api/api_base";
 
 
 const normalize = (p: string) => p += p.endsWith("/") ? "" : "/"
@@ -116,7 +117,7 @@ interface WrapperProps {
     width?: number,
     auto?: boolean,
     fallback?: string,
-    children?: {
+    items?: {
         type: string,
         label: string,
         render: (props: FormItemProp<string>) => React.ReactNode
@@ -139,7 +140,7 @@ export const UnionPathsSelectGroup = (options: WrapperProps) => {
         }
     }, [groupedPaths, options.value])
     const outputPathTypeOptions: { label: string, value: string }[] = []
-    options.children?.forEach(({ type, label }) => {
+    options.items?.forEach(({ type, label }) => {
         outputPathTypeOptions.push({ label, value: type })
     })
 
@@ -157,7 +158,7 @@ export const UnionPathsSelectGroup = (options: WrapperProps) => {
         setGroupedPaths: (key: string, value: string[]) => { setGroupedPaths({ ...groupedPaths, ...{ [key]: [...value] } }) },
     }
 
-    const childrenMap = Object.fromEntries(options.children?.map((value) => [value.type, value.render({ value: path, onChange: handlePathChange })]) ?? [])
+    const childrenMap = Object.fromEntries(options.items?.map((value) => [value.type, value.render({ value: path, onChange: handlePathChange })]) ?? [])
 
     const allChildren = Object.values(childrenMap)
 
@@ -242,7 +243,7 @@ export const LibraryPathSelect = (options: FormItemProp<string>) => {
 }
 
 export const DownloadPathSelect = (options: { remote?: boolean } & FormItemProp<string>) => {
-    const { useList } = new DownloadClient().useResource();
+    const { useList } = useResource<DownloadClientResource>(new DownloadClient())
     const { list: clients, refresh: refreshClients } = useList();
     const [path, setPath] = useState<string | undefined>(options.value)
     const remote = options.remote ?? true;

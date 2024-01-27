@@ -75,17 +75,17 @@ export class DirectorySync extends APIArrayResourceBase<DirectorySynResource> {
         return result;
     }
 
-    protected async deleteHook(value: SyncDirectoryConfig, options?: any): Promise<boolean> {
+    public async deleteHook(value: SyncDirectoryConfig, options?: any): Promise<boolean> {
         await this.delete(value.id);
         return true;
     }
 
-    protected async updateHook(value: SyncDirectoryConfig): Promise<boolean> {
+    public async updateHook(value: SyncDirectoryConfig): Promise<boolean> {
         await this.update(value)
         return true
     }
 
-    protected listHook(options?: any): Promise<SyncDirectoryConfig[]> {
+    public listHook(options?: any): Promise<SyncDirectoryConfig[]> {
         return this.list()
     }
 }

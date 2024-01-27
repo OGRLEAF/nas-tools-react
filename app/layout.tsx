@@ -2,7 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import DefaultLayout from './components/layout'
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { App, ConfigProvider } from 'antd'
 import zhCN from 'antd/locale/zh_CN';
 
@@ -22,11 +22,13 @@ export default function RootLayout({
   return (
     <html lang="zh">
       <body className={inter.className}>
-        <ConfigProvider locale={zhCN}>
-          <App>
-            <DefaultLayout>{children}</DefaultLayout>
-          </App>
-        </ConfigProvider>
+        <Suspense fallback={"加载中"}>
+          <ConfigProvider locale={zhCN}>
+            <App>
+              <DefaultLayout>{children}</DefaultLayout>
+            </App>
+          </ConfigProvider>
+        </Suspense>
       </body>
     </html>
   )

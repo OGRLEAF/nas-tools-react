@@ -72,7 +72,7 @@ export class TorrentSearchResult extends APIDataResourceBase<SearchResult> {
         const result = await (await this.API).post<SearchResultResponse>("search/result", { auth: true });
         return Object.values(result.result)[0];
     }
-    protected dataHook(options?: undefined): Promise<SearchResult> {
+    public dataHook(options?: undefined): Promise<SearchResult> {
         return this.get();
     }
 

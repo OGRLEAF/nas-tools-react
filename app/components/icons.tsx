@@ -5,11 +5,13 @@ import { IconDefinition, faFilm, faPlay, faTv, faRss, faExternalLink, faCalendar
 import Icon from '@ant-design/icons'
 
 const FromFontAwesome = (faIcon: IconDefinition, options?: { fade?: boolean, }) => {
-    return ({ style, faProps }: { style?: CSSProperties, faProps?: Omit<FontAwesomeIconProps, 'icon'>  }) => (<Icon
-        component={
-            () => <FontAwesomeIcon icon={faIcon} style={{ width: "1em", height: "1em", ...style }} {...faProps}/>
-        }
-    />)
+    return function FontProxy({ style, faProps }: { style?: CSSProperties, faProps?: Omit<FontAwesomeIconProps, 'icon'> }) {
+        return (<Icon
+            component={
+                () => <FontAwesomeIcon icon={faIcon} style={{ width: "1em", height: "1em", ...style }} {...faProps} />
+            }
+        />)
+    }
 }
 
 

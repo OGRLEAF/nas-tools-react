@@ -67,7 +67,7 @@ export class MediaServer extends APIArrayResourceBase<MediaServerResource> {
             }
         }]
     }
-    protected listHook(options?: undefined): Promise<MediaServerConfig[]> {
+    public listHook(options?: undefined): Promise<MediaServerConfig[]> {
         return this.list();
     }
     public async update(config: MediaServerConfig) {
@@ -106,7 +106,7 @@ export class MediaServer extends APIArrayResourceBase<MediaServerResource> {
             } as NastoolServerConfig)
         }
     }
-    protected async updateHook(value: MediaServerConfig): Promise<boolean> {
+    public async updateHook(value: MediaServerConfig): Promise<boolean> {
         await this.update(value);
         return true;
     }

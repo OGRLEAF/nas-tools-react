@@ -41,8 +41,8 @@ const FilterRuleCard = ({ config }: { config: FilterRuleConfig }) => {
     return <List.Item
         style={{ width: "100%" }}
         actions={[
-            <Button icon={<IconEdit />} type="link" size="small" onClick={() => setOpenDrawer(true)} style={{ padding: 0 }}>编辑</Button>,
-            <Button icon={<IconDelete />} type="link" danger size="small" onClick={() => deleteRule()} style={{ padding: 0 }}>删除</Button >,
+            <Button key="edit_btn" icon={<IconEdit />} type="link" size="small" onClick={() => setOpenDrawer(true)} style={{ padding: 0 }}>编辑</Button>,
+            <Button key="delete_btn" icon={<IconDelete />} type="link" danger size="small" onClick={() => deleteRule()} style={{ padding: 0 }}>删除</Button >,
         ]}
     >
         <List.Item.Meta title={config.name} />

@@ -86,7 +86,7 @@ const LibraryPathCard = (options: { value: LibraryPathConfig, }) => {
     return <List size="small" dataSource={tableData} bordered header={<TableHeader />}
         renderItem={(item) => <List.Item
             actions={[
-                <Button type="text" danger icon={<CloseOutlined />} onClick={() => item.onDelete(item.value)} />
+                <Button key="delete_btn" type="text" danger icon={<CloseOutlined />} onClick={() => item.onDelete(item.value)} />
             ]}
         >
             {item.title}

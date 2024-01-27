@@ -6,7 +6,7 @@ import { Alert, Button, ButtonProps, Card, Checkbox, Collapse, CollapseProps, Co
 import { PlusOutlined, CloseOutlined, CheckOutlined, RetweetOutlined, ExclamationOutlined, EditOutlined } from "@ant-design/icons"
 import { once } from "lodash";
 
-type ResourceInstance<Res extends ResourceType> = ReturnType<APIArrayResourceBase<Res>['useResource']>;
+type ResourceInstance<Res extends ResourceType> = ReturnType<typeof useResource<Res>>;
 
 export interface CardsFormProps<Res extends ResourceType> {
     resource: new () => APIArrayResourceBase<Res>,
@@ -64,7 +64,7 @@ export function useCardsFormContext<Res extends ResourceType>() {
 }
 
 export function CardsForm<Res extends ResourceType>(props: CardsFormProps<Res>) {
-    const resource = new props.resource().useResource({ initialOptions: props.initialOptions, useMessage: true });
+    const resource = useResource<Res>(new props.resource(), { initialOptions: props.initialOptions, useMessage: true })
     const { useList, add, update, messageContext } = resource;
     const { refresh } = useList();
     const FormComponent = props.formComponent;
@@ -116,7 +116,7 @@ export function CardsForm<Res extends ResourceType>(props: CardsFormProps<Res>) 
 
 
 export type TestButtonAction = { doTest: () => void, doClear: () => void };
-export const TestButton = forwardRef(function <Res extends ResourceType>(props: {
+export const TestButton = forwardRef(function TestButton<Res extends ResourceType>(props: {
     record: () => ItemType<Res>,
     resource?: ResourceInstance<Res>,
     msgType?: "alert" | "popover",

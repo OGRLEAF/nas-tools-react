@@ -191,7 +191,7 @@ export default function SettingMedia() {
             <Col span={6}>
                 <Form.Item label="文件管理默认路径" name={["media", "media_default_path"]}>
                     <UnionPathsSelectGroup
-                        children={[{
+                        items={[{
                             type: "library",
                             label: "媒体库",
                             render: (props) => <LibraryPathSelect key="library" value={props.value} onChange={props.onChange} />

@@ -103,7 +103,7 @@ function WordsGroupTable() {
 
 
 
-export function WordsTable(options: { group: WordConfigGroup }) {
+function WordsTable(options: { group: WordConfigGroup }) {
     const { group } = options;
     const wordsTable: TableProps<WordConfig>['columns'] = [
         {
@@ -225,7 +225,7 @@ const FormSection = ({ title, content, enable, onEnableChange }:
 }
 
 
-export interface WordConfigFormData {
+interface WordConfigFormData {
     replace: {
         enable: boolean,
         replaced: string,

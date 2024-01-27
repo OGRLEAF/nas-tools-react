@@ -22,7 +22,7 @@ export class MediaWorkCategory extends APIDataResourceBase<MediaWorkCategoryType
         return category;
     }
 
-    protected dataHook(options?: undefined): Promise<MediaWorkCategoryType[]> {
+    public dataHook(options?: undefined): Promise<MediaWorkCategoryType[]> {
         return this.get();
     }
 }

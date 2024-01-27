@@ -642,7 +642,7 @@ type TMDBCacheListResult = NastoolListResult<[string, TMDBCacheItem, string]>
 //     TMDBCacheListResult
 // }
 
-function useStorage() {
+function Storage() {
     return localStorage
 }
 export enum DBMediaType {
@@ -679,7 +679,7 @@ export class NASTOOL {
     public hook: {
         onLoginRequired?: () => (Promise<NastoolLoginConfig>)
     } = {};
-    constructor(config: NastoolConfig, apiBasePath = "/api/v1") {
+    constructor(config: NastoolConfig, apiBasePath = "/ui/proxy/api/v1") {
         this.config = config;
         this.baseUrl = `http${this.config.https ? 's' : ''}://${this.config.host}:${this.config.port}`
         this.apiBaseUrl = `${this.baseUrl}${apiBasePath}/`
@@ -707,7 +707,7 @@ export class NASTOOL {
                 return true
             } catch (e) {
                 this.token = null;
-                await useStorage().removeItem("db:nastool-login-cache");
+                await Storage().removeItem("db:nastool-login-cache");
                 return false
             }
         }
@@ -746,7 +746,7 @@ export class NASTOOL {
             console.log(e);
             this.token = null;
 
-            await useStorage().removeItem("db:nastool-login-cache");
+            await Storage().removeItem("db:nastool-login-cache");
         }
         return false;
     }

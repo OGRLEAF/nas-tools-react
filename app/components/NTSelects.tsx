@@ -6,9 +6,10 @@ import { Sites } from "../utils/api/sites"
 import { syncModeMap } from "../utils/api/sync"
 import { MediaWorkType } from "../utils/api/types"
 import { MediaWorkCategory, MediaWorkCategoryType } from "../utils/api/media/category"
-import { DownloadClient, DownloadClientConfig, DownloadConfigs } from "../utils/api/download"
+import { DownloadClient, DownloadClientConfig, DownloadClientResource, DownloadConfigResource, DownloadConfigs } from "../utils/api/download"
 import { Organize } from "../utils/api/import"
 import { normalize } from "path"
+import { useDataResource, useResource } from "../utils/api/api_base"
 
 interface FormItemProp<T> {
     value?: T,
@@ -17,7 +18,7 @@ interface FormItemProp<T> {
 }
 
 export const DownloadSettingSelect = (options: { default?: { label: string, value: any } } & FormItemProp<string>) => {
-    const { useList } = new DownloadConfigs().useResource();
+    const { useList } = useResource<DownloadConfigResource>(new DownloadConfigs())
     const { list } = useList();
     const selectOptions = useMemo(() => [
         (options.default ?? {
@@ -29,9 +30,10 @@ export const DownloadSettingSelect = (options: { default?: { label: string, valu
     return <Select style={{ ...options.style }} options={selectOptions} value={options.value} onChange={options.onChange} />
 }
 
-export const DownloadClientSelect = (options: { list?: DownloadClientConfig[] } & FormItemProp<string>) => {
-    const { useList } = new DownloadClient().useResource();
-    const list = options.list ?? useList().list;
+export const DownloadClientSelect = (options: & FormItemProp<string>) => {
+
+    const { useList } = useResource<DownloadClientResource>(new DownloadClient());
+    const { list } = useList();
     const downloadClientOptions = list?.map((client) => ({
         label: client.name,
         value: client.id
@@ -153,7 +155,7 @@ interface MediaWorkCategorySelectProp extends FormItemProp<MediaWorkCategoryType
     type: MediaWorkType
 }
 export const MediaWorkCategorySelect = (options: MediaWorkCategorySelectProp) => {
-    const { useData, } = new MediaWorkCategory(options.type).useResource();
+    const { useData, } = useDataResource(new MediaWorkCategory(options.type));
     const { refresh, data } = useData();
     useEffect(() => {
         refresh();

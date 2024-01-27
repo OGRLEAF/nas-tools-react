@@ -268,7 +268,7 @@ export interface MediaSearchProps {
 }
 
 export function MediaSearchGroup({ value, onChange, children, ctx, filter }: MediaSearchProps) {
-    const searchContext = ctx ?? useSearch(value)[0];
+    const [searchContext] = useSearch(value);
     const { setSelected, selected, series, setSeries } = searchContext;
     const [seasons, setSeasons] = useState<MediaWorkSeason[]>([])
     const [loading, setLoading] = useState(false)

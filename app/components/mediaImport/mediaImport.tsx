@@ -138,7 +138,7 @@ const MediaImport = () => {
                     <SearchContext.Provider value={search}>
                         <Form.Item name="series" noStyle>
                             {/* <MediaSearch /> */}
-                            <MediaSearchGroup ctx={search}>
+                            <MediaSearchGroup >
                                 <MediaSearchWork />
                                 <br />
                                 <MediaSearchSeason />

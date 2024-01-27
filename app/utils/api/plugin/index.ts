@@ -77,11 +77,11 @@ export class Plugin extends APIArrayResourceBase<PluginResource>{
         return Object.entries(result.result).map(([key, value]) => ({ ...value, key }));
     }
 
-    protected async listHook(options?: any): Promise<PluginProfile[]> {
+    public async listHook(options?: any): Promise<PluginProfile[]> {
         return await this.list();
     }
 
-    protected async update(pluginId: PluginProfile['key'], config: any) {
+    public async update(pluginId: PluginProfile['key'], config: any) {
         const result = await (await this.API).post("plugin/config/update", {
             auth: true,
             json: true,
@@ -92,7 +92,7 @@ export class Plugin extends APIArrayResourceBase<PluginResource>{
         })
     }
 
-    protected async uninstall(pluginId: PluginProfile['key']) {
+    public async uninstall(pluginId: PluginProfile['key']) {
         const result = await (await this.API).post("plugin/uninstall",
             {
                 auth: true,
@@ -102,15 +102,15 @@ export class Plugin extends APIArrayResourceBase<PluginResource>{
             })
     }
 
-    protected async deleteHook(value: PluginProfile, options?: any): Promise<boolean> {
+    public async deleteHook(value: PluginProfile, options?: any): Promise<boolean> {
         await this.uninstall(value.key)
         return true;
     }
 
-    // protected async updateHook(value: PluginProfile): Promise<boolean> {
-    //     await this.update(value.key, value.config)
-    //     return true
-    // }
+    public async updateHook(value: PluginProfile): Promise<boolean> {
+        await this.update(value.key, value.config)
+        return true
+    }
 }
 
 export interface PluginRepoItem {
@@ -138,7 +138,7 @@ export class PluginRepo extends APIArrayResourceBase<PluginRepoResource>{
         return Object.entries(result.result).map(([key, value]) => ({ ...value, key }));
     }
 
-    protected listHook(options?: any): Promise<PluginRepoItem[]> {
+    public listHook(options?: any): Promise<PluginRepoItem[]> {
         return this.list();
     }
 

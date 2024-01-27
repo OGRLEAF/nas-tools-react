@@ -121,7 +121,7 @@ export class OrganizeHistory extends APIArrayResourceBase<OrgnizeHistoryResource
         })
     }
 
-    protected async deleteManyHook(records: OrganizeRecord[], options?: { key: string }): Promise<boolean> {
+    public async deleteManyHook(records: OrganizeRecord[], options?: { key: string }): Promise<boolean> {
         console.log(records, options)
         if (options?.key) {
             await this.delete(records.map((record) => record.ID), options?.key)
@@ -130,18 +130,18 @@ export class OrganizeHistory extends APIArrayResourceBase<OrgnizeHistoryResource
         throw new Error("缺少options.key")
     }
 
-    protected async deleteHook(value: OrganizeRecord, options: { key: string }): Promise<boolean> {
+    public async deleteHook(value: OrganizeRecord, options: { key: string }): Promise<boolean> {
         if (options.key) {
             await this.delete([value.ID], options.key);
         }
         return true;
     }
 
-    protected async listHook(options: HistoryListOption) {
+    public async listHook(options: HistoryListOption) {
         return this.list(options)
     }
 
-    protected async totalHook() {
+    public async totalHook() {
         return await this.total;
     }
 
@@ -167,7 +167,7 @@ export class OrganizeUnknown extends APIArrayResourceBase<OrganizeUnkownResouce>
         const result = await (await this.API).post<{ items: UnknownRecord[] }>("organization/unknown/list", { auth: true })
         return result.items;
     }
-    protected async listHook(options?: any): Promise<UnknownRecord[]> {
+    public async listHook(options?: any): Promise<UnknownRecord[]> {
         return this.list();
     }
 }

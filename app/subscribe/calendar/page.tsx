@@ -37,7 +37,7 @@ export default function SubscribeCalendar() {
     const episodesGroupByDate = useMemo(() => {
         const dateMap = new Map<string, MediaWork[]>()
         tvEpisodes.forEach((tv) => {
-            const releaseDate = tv.metadata?.date.release
+            const releaseDate = tv.metadata?.date?.release
             if (releaseDate != undefined) {
                 const episodesInDay = dateMap.get(releaseDate);
                 if (episodesInDay) episodesInDay.push(tv);

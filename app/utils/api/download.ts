@@ -270,24 +270,24 @@ export class DownloadClient extends APIArrayResourceBase<DownloadClientResource>
         })
     }
 
-    protected async listHook() {
+    public async listHook() {
         return this.list();
     }
 
-    protected async updateHook(value: DownloadClientConfig): Promise<boolean> {
+    public async updateHook(value: DownloadClientConfig): Promise<boolean> {
         await this.update(value)
         return true
     }
 
-    protected async addHook(value: DownloadClientConfig): Promise<boolean> {
+    public async addHook(value: DownloadClientConfig): Promise<boolean> {
         await this.update(value);
         return true;
     }
-    protected deleteHook(value: DownloadClientConfig): Promise<boolean> {
+    public deleteHook(value: DownloadClientConfig): Promise<boolean> {
         return this.delete(value);
     }
 
-    protected async validateHook(value: DownloadClientConfig): Promise<[boolean, string]> {
+    public async validateHook(value: DownloadClientConfig): Promise<[boolean, string]> {
         await this.test(value);
         return [true, "配置正确"];
     }
@@ -319,7 +319,7 @@ export class DownloadConfigs extends APIArrayResourceBase<DownloadConfigResource
         result.data.forEach(item => { item.downloader = Number(item.downloader) })
         return result.data;
     }
-    protected listHook(options?: undefined): Promise<DownloadConfig[]> {
+    public listHook(options?: undefined): Promise<DownloadConfig[]> {
         return this.list();
     }
 
@@ -335,12 +335,12 @@ export class DownloadConfigs extends APIArrayResourceBase<DownloadConfigResource
         return true;
     }
 
-    protected async updateHook(value: DownloadConfig): Promise<boolean> {
+    public async updateHook(value: DownloadConfig): Promise<boolean> {
         await this.update(value);
         return true
     }
 
-    protected addHook(value: DownloadConfig): Promise<boolean> {
+    public addHook(value: DownloadConfig): Promise<boolean> {
         return this.update(value);
     }
 
@@ -354,7 +354,7 @@ export class DownloadConfigs extends APIArrayResourceBase<DownloadConfigResource
         return true;
     }
 
-    protected deleteHook(value: DownloadConfig): Promise<boolean> {
+    public deleteHook(value: DownloadConfig): Promise<boolean> {
         return this.delete(value.id);
     }
 }

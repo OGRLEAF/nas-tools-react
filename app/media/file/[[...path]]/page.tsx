@@ -9,7 +9,7 @@ import FileMoreAction from "@/app/components/fileMoreAction";
 import MediaImportEntry, { MediaImportProvider } from "@/app/components/mediaImport/mediaImportEntry";
 import MediaImport from "@/app/components/mediaImport/mediaImport";
 import { PathManagerBar, PathManagerProvider, usePathManager, usePathManagerDispatch } from "@/app/components/pathManager"
-import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { bytes_to_human } from "@/app/utils";
 import { IdentifyHistory } from "@/app/components/mediaImport/mediaImportContext";

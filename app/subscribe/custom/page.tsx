@@ -3,7 +3,7 @@
 import { Button, Space, Descriptions, Tag, Form, Input, Row, Col, Switch, Select, Radio, Checkbox, Divider, Collapse, Table, Flex, Dropdown } from "antd";
 import { ForwardedRef, forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { PlusOutlined, DeleteOutlined, DownOutlined, CheckOutlined, CloseOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons"
-import { Rss, RssParsers, RssPreview, RssPreviewItem, RssResource, RssTaskConfig, RssUse } from "@/app/utils/api/subscription/rss";
+import { Rss, RssParserResource, RssParsers, RssPreview, RssPreviewItem, RssPreviewResource, RssResource, RssTaskConfig, RssUse } from "@/app/utils/api/subscription/rss";
 import _ from "lodash";
 import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 import { useForm } from "antd/es/form/Form";
@@ -15,6 +15,7 @@ import { RssConfig } from "@/app/utils/api/subscription/subscribe";
 import { ColumnProps, ColumnsType } from "antd/lib/table";
 import { faRefresh } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
+import { useResource } from "@/app/utils/api/api_base";
 
 
 export default function SubscribeMoviePage() {
@@ -291,7 +292,7 @@ const CustomRssCard = ({ config, }: { config: RssTaskConfig }) => {
 
 
 function RssParserSelect({ value, onChange }: { value?: string, onChange?: (value: string) => void }) {
-    const { useList } = new RssParsers().useResource();
+    const { useList } = useResource<RssParserResource>(new RssParsers());
     const { list, } = useList();
     const parserOptions = list?.map((parser) => ({
         label: parser.name,
@@ -318,16 +319,12 @@ function RssPreviewList({ id }: { id: RssTaskConfig['id'] }) {
     />
 }
 
-const RssPreviewTable = forwardRef(function ({ id }: { id: RssTaskConfig['id'] }, ref: ForwardedRef<{ refresh: () => void }>) {
-    const { useList, messageContext, message, updateMany } = new RssPreview().useResource({ initialOptions: { id } })
+const RssPreviewTable = forwardRef(function RssPreviewTable({ id }: { id: RssTaskConfig['id'] }, ref: ForwardedRef<{ refresh: () => void }>) {
+    const { useList, messageContext, message, updateMany } = useResource<RssPreviewResource>(new RssPreview(), { initialOptions: { id } })
     const { list, loading, refresh } = useList();
     const [selected, setSelected] = useState<RssPreviewItem[]>([])
 
-    useImperativeHandle(ref, () => {
-        return {
-            refresh
-        }
-    })
+    useImperativeHandle(ref, () => ({ refresh }))
 
     const download = async (records: RssPreviewItem[]) => {
         downloadMessage.loading();

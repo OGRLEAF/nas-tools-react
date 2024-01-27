@@ -171,24 +171,24 @@ export class Rss extends APIArrayResourceBase<RssResource> {
         await (await this.API).post("rss/delete", { auth: true, data: { id: id } })
     }
 
-    protected async listHook(options?: any): Promise<RssTaskConfig[]> {
+    public async listHook(options?: any): Promise<RssTaskConfig[]> {
         return (await this.list()).tasks
     }
-    protected async addHook(value: RssTaskConfig): Promise<boolean> {
+    public async addHook(value: RssTaskConfig): Promise<boolean> {
         await this._update(value);
         return true
     }
 
-    protected async updateHook(value: RssTaskConfig): Promise<boolean> {
+    public async updateHook(value: RssTaskConfig): Promise<boolean> {
         await this._update(value);
         return true
     }
 
-    protected async updateManyHook(value: RssTaskConfig[]): Promise<void> {
+    public async updateManyHook(value: RssTaskConfig[]): Promise<void> {
         await Promise.all(value.map((value) => this._update(value)))
     }
 
-    protected async deleteHook(value: RssTaskConfig, options?: any): Promise<boolean> {
+    public async deleteHook(value: RssTaskConfig, options?: any): Promise<boolean> {
         await this.delete(value.id);
         return true
     }
@@ -221,22 +221,22 @@ export class RssParsers extends APIArrayResourceBase<RssParserResource> {
         })
     }
 
-    protected async deleteHook(value: RssParserConfig, options?: any): Promise<boolean> {
+    public async deleteHook(value: RssParserConfig, options?: any): Promise<boolean> {
         await this.delete(value.id);
         return true;
     }
 
-    protected async addHook(value: RssParserConfig): Promise<boolean> {
+    public async addHook(value: RssParserConfig): Promise<boolean> {
         await this.update(value);
         return true;
     }
 
-    protected async updateHook(value: RssParserConfig): Promise<boolean> {
+    public async updateHook(value: RssParserConfig): Promise<boolean> {
         await this.update(value);
         return true
     }
 
-    protected listHook(options?: any): Promise<RssParserConfig[]> {
+    public listHook(options?: any): Promise<RssParserConfig[]> {
         return this.list();
     }
 }
@@ -280,7 +280,7 @@ export class RssPreview extends APIArrayResourceBase<RssPreviewResource> {
         return (await result).data
     }
 
-    protected async updateManyHook(value: RssPreviewItem[], options?: { flag: boolean; id: RssTaskConfig['id'] }): Promise<void> {
+    public async updateManyHook(value: RssPreviewItem[], options?: { flag: boolean; id: RssTaskConfig['id'] }): Promise<void> {
         if (options) {
             const result = await (await this.API).post("rss/item/set", {
                 auth: true,
@@ -295,7 +295,7 @@ export class RssPreview extends APIArrayResourceBase<RssPreviewResource> {
 
     }
 
-    // protected async updateManyHook(value: { flag: boolean; records: RssPreviewItem[]; }[]): Promise<void> {
+    // public async updateManyHook(value: { flag: boolean; records: RssPreviewItem[]; }[]): Promise<void> {
     //     const result = (await this.API).post("rss/item/set", {
     //         auth: true,
     //         data: {
@@ -306,7 +306,7 @@ export class RssPreview extends APIArrayResourceBase<RssPreviewResource> {
     // }
 
 
-    protected async listHook(options: { id: number; } | undefined): Promise<RssPreviewItem[]> {
+    public async listHook(options: { id: number; } | undefined): Promise<RssPreviewItem[]> {
         if (options) return await this.list(options.id)
         else return []
     }

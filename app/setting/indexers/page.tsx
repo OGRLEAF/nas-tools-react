@@ -1,7 +1,8 @@
 "use client"
 import { Section } from "@/app/components/Section";
 import { TagCheckboxGroup, TagCheckboxGroupProps } from "@/app/components/TagCheckbox";
-import { IndexerEnabledSites, IndexerSite, Indexers } from "@/app/utils/api/indexer";
+import { useDataResource, useResource } from "@/app/utils/api/api_base";
+import { IndexerEnabledSites, IndexerResource, IndexerSite, Indexers } from "@/app/utils/api/indexer";
 import { Button, Space } from "antd";
 import _ from "lodash";
 import React, { useState } from "react";
@@ -15,9 +16,9 @@ export default function IndexersSetting() {
 }
 
 function BuiltinIndexerSetting() {
-    const { useList } = new Indexers().useResource()
+    const { useList } = useResource<IndexerResource>(new Indexers())
     const { list: sites } = useList();
-    const { useData, update, messageContext } = new IndexerEnabledSites().useResource({ useMessage: true });
+    const { useData, update, messageContext } = useDataResource(new IndexerEnabledSites(), { useMessage: true });
     const { data: enabledSites, setData: setEnabledSites, } = useData();
     return <>
         {messageContext}

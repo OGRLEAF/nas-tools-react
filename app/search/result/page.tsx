@@ -14,6 +14,7 @@ import { useSubmitMessage } from "@/app/utils";
 import { TagCheckboxGroup } from "@/app/components/TagCheckbox";
 import { CollapseProps } from "antd/lib";
 import { DualArrowTag } from "@/app/components/DualArrowTag";
+import { useDataResource } from "@/app/utils/api/api_base";
 
 const Tag = (props: TagProps) => {
     return props.children ? React.createElement(AntdTag, (props)) : <></>;
@@ -27,7 +28,7 @@ type FilterType = {
     series?: Set<string>
 }
 
-export function SearchResult({ result }: { result: SearchResult }) {
+function SearchResult({ result }: { result: SearchResult }) {
     const mediaWork: MediaWork = {
         series: new SeriesKey().type(result.type).tmdbId(result.tmdbid),
         type: result.type,
@@ -168,7 +169,7 @@ export function SearchResult({ result }: { result: SearchResult }) {
 }
 
 
-export function TorrentsList({ list: group }: { list: Torrent[] }) {
+function TorrentsList({ list: group }: { list: Torrent[] }) {
     const list = group;
     return <List
         size="small"
@@ -206,7 +207,7 @@ interface DownloadModalProps {
     result: Torrent
 }
 
-export function DownloadModalEntry(options: DownloadModalProps) {
+function DownloadModalEntry(options: DownloadModalProps) {
     const [form] = useForm();
     const [modal, contextHolder] = Modal.useModal();
     const { bundle, contextHolder: messageContextHolder } = useSubmitMessage("下载");
@@ -248,7 +249,7 @@ export function DownloadModalEntry(options: DownloadModalProps) {
 }
 
 export default function SearchResultPage() {
-    const { useData } = new TorrentSearchResult().useResource();
+    const { useData } = useDataResource(new TorrentSearchResult())
     const { data } = useData();
 
     return <Section title="搜索结果">

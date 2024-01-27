@@ -64,12 +64,12 @@ export default function MessagePanel() {
 
     const MessageCard = ({ msg, isLasted }: { msg: Message, isLasted: boolean, }) => {
         const messagesEndRef = useRef<HTMLDivElement>(null);
-        if (isLasted)
-            useEffect(() => {
-                if (messagesEndRef.current) {
-                    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-                }
-            })
+
+        useEffect(() => {
+            if (messagesEndRef.current && isLasted) {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }
+        }, [isLasted])
         return <Card
             ref={messagesEndRef}
             bordered={false} bodyStyle={{ paddingBottom: 0, padding: "24px 16px 8px 16px", borderRadius: "none" }}

@@ -62,17 +62,17 @@ export class Sites extends APIArrayResourceBase<SitesResouce> {
         return (await this.API).post("site/delete", { auth: true, data: { id: value } })
     }
 
-    protected async deleteHook(value: SiteProfile, options?: any): Promise<boolean> {
+    public async deleteHook(value: SiteProfile, options?: any): Promise<boolean> {
         await this.delete(value.id);
         return true;
     }
 
-    protected async updateHook(value: SiteProfile): Promise<boolean> {
+    public async updateHook(value: SiteProfile): Promise<boolean> {
         await this.update(value)
         return true
     }
 
-    protected async val(value: SiteProfile): Promise<[boolean, string]> {
+    public async val(value: SiteProfile): Promise<[boolean, string]> {
         const result = await (await this.API).post<{ time: number }>("site/test", {
             auth: true, json: true,
             data: {
@@ -84,15 +84,15 @@ export class Sites extends APIArrayResourceBase<SitesResouce> {
         return [true, `连接成功 用时${result.time}ms`]
     }
 
-    protected validateHook(value: SiteProfile): Promise<[boolean, string]> {
+    public validateHook(value: SiteProfile): Promise<[boolean, string]> {
         return this.val(value);
     }
 
-    protected async listHook(options?: SiteListOptions | undefined): Promise<SiteProfile[]> {
+    public async listHook(options?: SiteListOptions | undefined): Promise<SiteProfile[]> {
         return await this.list(options);
     }
 
-    protected async addHook(value: SiteProfile): Promise<boolean> {
+    public async addHook(value: SiteProfile): Promise<boolean> {
         await this.update(value);
         return true;
     }

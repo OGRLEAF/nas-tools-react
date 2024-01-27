@@ -90,27 +90,27 @@ export class Notification extends APIArrayResourceBase<NotificationResource> {
         return result;
     }
 
-    protected async updateHook(value: NotifiClientConfig): Promise<boolean> {
+    public async updateHook(value: NotifiClientConfig): Promise<boolean> {
         await this.update(value);
         return true
     }
 
-    protected async deleteHook(value: NotifiClientConfig, options?: any): Promise<boolean> {
+    public async deleteHook(value: NotifiClientConfig, options?: any): Promise<boolean> {
         await this.delete(value.id);
         return true;
     }
 
-    protected async validateHook(value: NotifiClientConfig): Promise<[boolean, string]> {
+    public async validateHook(value: NotifiClientConfig): Promise<[boolean, string]> {
         await this.test(value.type, value.config);
         return [true, "测试消息已发送"]
     }
 
-    protected async addHook(value: NotifiClientConfig): Promise<boolean> {
+    public async addHook(value: NotifiClientConfig): Promise<boolean> {
         await this.update(value);
         return true
     }
 
-    protected listHook(options?: any): Promise<NotifiClientConfig[]> {
+    public listHook(options?: any): Promise<NotifiClientConfig[]> {
         return this.list();
     }
 

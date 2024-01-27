@@ -19,7 +19,7 @@ export function TabCards<T>({ cardProps, onAddTab }: { cardProps: (record: T) =>
             cardProps: props,
             record
         }
-    }), [ctx.data])
+    }), [ctx.data, cardProps])
 
     const onEdit: TabsProps['onEdit'] = (e, action) => {
         const itemKey = Number(e);

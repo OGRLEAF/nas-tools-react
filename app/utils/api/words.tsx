@@ -52,7 +52,7 @@ export class Words extends APIArrayResourceBase<WordsResource>{
         return result;
     }
 
-    protected listHook(options?: any): Promise<WordConfigGroup[]> {
+    public listHook(options?: any): Promise<WordConfigGroup[]> {
         return this.list()
     }
 
@@ -100,12 +100,12 @@ export class Words extends APIArrayResourceBase<WordsResource>{
         })
     }
 
-    protected async deleteHook(value: WordConfigGroup, options?: any): Promise<boolean> {
+    public async deleteHook(value: WordConfigGroup, options?: any): Promise<boolean> {
         await this.del(value.id);
         return true;
     }
 
-    protected async addHook(value: AddItemType<WordsResource>): Promise<boolean> {
+    public async addHook(value: AddItemType<WordsResource>): Promise<boolean> {
         const { seriesKey } = value;
         if (seriesKey.i != undefined && seriesKey.t != undefined) {
             await this.add(String(seriesKey.i), seriesKey.t)

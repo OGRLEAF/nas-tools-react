@@ -5,7 +5,7 @@ import { Button, Divider, Input, Popconfirm, Progress, Space, Table, Tag, Toolti
 import { PlusOutlined } from "@ant-design/icons"
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Download, DownloadClient, TorrentInfo, TorrentState, TorrentVagueState } from "@/app/utils/api/download";
+import { Download, DownloadClient, DownloadClientResource, TorrentInfo, TorrentState, TorrentVagueState } from "@/app/utils/api/download";
 import { ColumnsType } from "antd/es/table";
 import Link from "next/link";
 import { FolderOpenOutlined, CloseOutlined, CaretUpOutlined, CaretDownOutlined } from "@ant-design/icons"
@@ -134,7 +134,7 @@ export default function DownloadedPage() {
     useEffect(() => {
         getTorrents();
     }, [])
-    const { useList } = new DownloadClient().useResource();
+    const { useList } = useResource<DownloadClientResource>(new DownloadClient());
     const { list: clients, refresh: refreshClients } = useList();
     const downloaderPathMap = useMemo(() => {
         const pathMap: Record<string, string> = {};

@@ -80,7 +80,7 @@ const SyncDirectoryForm = ({ record, onChange }: { record?: SyncDirectoryConfig,
                     <UnionPathsSelectGroup
                         allowLeftEmpty={false}
                         fallback="customize"
-                        children={[
+                        items={[
                             {
                                 type: "download",
                                 label: "下载目录",
@@ -102,7 +102,7 @@ const SyncDirectoryForm = ({ record, onChange }: { record?: SyncDirectoryConfig,
                     <UnionPathsSelectGroup
                         allowLeftEmpty={false}
                         fallback="customize"
-                        children={[{
+                        items={[{
                             type: "library",
                             label: "媒体库",
                             render: (props) => <LibraryPathSelect key="library" value={props.value} onChange={props.onChange} />
@@ -123,7 +123,7 @@ const SyncDirectoryForm = ({ record, onChange }: { record?: SyncDirectoryConfig,
                     <UnionPathsSelectGroup
                         allowLeftEmpty={true}
                         fallback="customize"
-                        children={[
+                        items={[
                             {
                                 type: "auto",
                                 label: "不适用",

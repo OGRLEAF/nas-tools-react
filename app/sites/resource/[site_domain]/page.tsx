@@ -85,7 +85,7 @@ export default function SiteResource({
 }
 
 
-export function DownloadModalEntry(options: { item: NastoolSiteResourceItem }) {
+function DownloadModalEntry(options: { item: NastoolSiteResourceItem }) {
     const { item } = options;
     const [form] = Form.useForm<{ setting: number, path?: string }>();
     const [modal, contextHolder] = Modal.useModal();

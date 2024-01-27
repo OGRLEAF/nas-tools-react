@@ -2,10 +2,10 @@
 import { Cards, CardsForm } from "@/app/components/CardsForm";
 import { PluginRepo, PluginRepoResource } from "@/app/utils/api/plugin";
 import React from "react";
-import { PluginIcon } from "../page";
 import { Button } from "antd";
 import { IconDownloader } from "@/app/components/icons";
 import { useSubmitMessage } from "@/app/utils";
+import { PluginIcon } from "../PluginIcon";
 
 
 export default function PluginRepoPage() {

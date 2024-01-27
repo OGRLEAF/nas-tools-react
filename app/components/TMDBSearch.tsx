@@ -45,7 +45,7 @@ export function TMDBSearchList({ keyword, onSelected }:
             <List.Item key={item.id}
                 extra={<Image width={100} src={item.image} />}
                 actions={[
-                    <Button type="link" onClick={() => onSelected(item.id, item)} icon={<VerticalAlignBottomOutlined />}></Button>
+                    <Button key="download_btn" type="link" onClick={() => onSelected(item.id, item)} icon={<VerticalAlignBottomOutlined />}></Button>
                 ]}
             >
                 <List.Item.Meta

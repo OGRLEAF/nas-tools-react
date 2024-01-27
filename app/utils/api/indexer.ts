@@ -24,11 +24,11 @@ export class Indexers extends APIArrayResourceBase<IndexerResource> {
         return result.indexers
     }
 
-    protected async listHook<IndexerSite>(): Promise<IndexerSite[]> {
+    public async listHook<IndexerSite>(): Promise<IndexerSite[]> {
         return this.list()
     }
 
-    protected async updateManyHook(value: IndexerSite[]): Promise<void> {
+    public async updateManyHook(value: IndexerSite[]): Promise<void> {
         console.log(value)
     }
 
@@ -45,11 +45,11 @@ export class IndexerEnabledSites extends APIDataResourceBase<IndexerSite['id'][]
         return (await setting).pt.indexer_sites
     }
 
-    protected async dataHook() {
+    public async dataHook() {
         return this.list()
     }
 
-    protected async updateHook(value: string[]): Promise<boolean> {
+    public async updateHook(value: string[]): Promise<boolean> {
         console.log(value)
         this.setting.update({
             pt: {
