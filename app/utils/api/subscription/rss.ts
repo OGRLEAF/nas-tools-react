@@ -167,6 +167,10 @@ export class Rss extends APIArrayResourceBase<RssResource> {
         })
     }
 
+    public async delete(id: RssTaskConfig['id']) {
+        await (await this.API).post("rss/delete", { auth: true, data: { id: id } })
+    }
+
     protected async listHook(options?: any): Promise<RssTaskConfig[]> {
         return (await this.list()).tasks
     }
@@ -182,6 +186,11 @@ export class Rss extends APIArrayResourceBase<RssResource> {
 
     protected async updateManyHook(value: RssTaskConfig[]): Promise<void> {
         await Promise.all(value.map((value) => this._update(value)))
+    }
+
+    protected async deleteHook(value: RssTaskConfig, options?: any): Promise<boolean> {
+        await this.delete(value.id);
+        return true
     }
 }
 
@@ -229,5 +238,89 @@ export class RssParsers extends APIArrayResourceBase<RssParserResource> {
 
     protected listHook(options?: any): Promise<RssParserConfig[]> {
         return this.list();
+    }
+}
+
+/**
+ *  {
+        "title": "[ANi] Sōsō no Frieren /  葬送的芙莉莲 - 20 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]",
+        "link": null,
+        "enclosure": "https://mikanime.tv/Download/20240126/a9be93fe7be42e36a6058bcac5a84c20cc9e2578.torrent",
+        "size": "656.09M",
+        "description": "[ANi] Sōsō no Frieren /  葬送的芙莉莲 - 20 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4][656.09 MB]",
+        "date": "",
+        "finish_flag": false,
+        "year": null,
+        "address_index": 1
+      },
+ */
+
+export interface RssPreviewItem {
+    title: string,
+    link?: string,
+    enclosure: string,
+    size: string,
+    description: string,
+    date: string,
+    finish_flag: boolean,
+    year?: string,
+    address_index: number
+}
+
+export interface RssPreviewResource extends ResourceType {
+    ItemType: RssPreviewItem
+    ListOptionType: { id: number },
+    UpdateOptionType: { flag: boolean, id: RssTaskConfig['id'] },
+
+}
+
+export class RssPreview extends APIArrayResourceBase<RssPreviewResource> {
+    public async list(id: number) {
+        const result = (await this.API).post<{ data: RssPreviewItem[] }>("rss/preview", { auth: true, data: { id } });
+        return (await result).data
+    }
+
+    protected async updateManyHook(value: RssPreviewItem[], options?: { flag: boolean; id: RssTaskConfig['id'] }): Promise<void> {
+        if (options) {
+            const result = await (await this.API).post("rss/item/set", {
+                auth: true,
+                json: true,
+                data: {
+                    flag: options.flag ? "set_finished" : "set_unfinish",
+                    taskid: options.id,
+                    articles: value,
+                }
+            });
+        }
+
+    }
+
+    // protected async updateManyHook(value: { flag: boolean; records: RssPreviewItem[]; }[]): Promise<void> {
+    //     const result = (await this.API).post("rss/item/set", {
+    //         auth: true,
+    //         data: {
+    //             flag: value.flag ? "set_finished" : "set_unfinish",
+    //             articles: value
+    //         }
+    //     });
+    // }
+
+
+    protected async listHook(options: { id: number; } | undefined): Promise<RssPreviewItem[]> {
+        if (options) return await this.list(options.id)
+        else return []
+    }
+
+
+
+    public async download(id: number, items: RssPreviewItem[]) {
+        const result = await (await this.API).post("rss/item/download", {
+            auth: true,
+            json: true,
+            data: {
+                taskid: id,
+                articles: items
+            }
+        })
     }
 }

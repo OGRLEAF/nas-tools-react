@@ -93,6 +93,7 @@ export interface ResourceType {
     DeleteOptionType?: any,
     AddItemType?: any, //NoUndefined<this['ItemType']>,
     UpdateItemType?: any, // NoUndefined<this['ItemType']>,
+    UpdateOptionType?: any,
     ValidateRetType?: boolean
 }
 
@@ -101,6 +102,7 @@ export type UpdateItemType<T extends ResourceType> = NoUndefined<T['UpdateItemTy
 export type AddItemType<T extends ResourceType> = NoUndefined<T['AddItemType']>;
 export type ListOptionType<T extends ResourceType> = NoUndefined<T['ListOptionType']>;
 export type DeleteOptionType<T extends ResourceType> = NoUndefined<T['DeleteOptionType']>;
+export type UpdateOptionType<T extends ResourceType> = NoUndefined<T['UpdateOptionType']>;
 
 export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
     // public abstract list(): Promise<T[]>;
@@ -110,7 +112,7 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
 
     protected async totalHook?(): Promise<number>;
 
-    protected async updateHook?(value: UpdateItemType<T>): Promise<boolean>;
+    protected async updateHook?(value: UpdateItemType<T>, options?: UpdateOptionType<T>): Promise<boolean>;
 
     protected addHook?(value: AddItemType<T>): Promise<boolean>;
 
@@ -120,7 +122,7 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
 
     protected async validateHook?(value: ItemType<T>): Promise<[boolean, string]>;
 
-    protected async updateManyHook?(value: UpdateItemType<T>[]): Promise<void>;
+    protected async updateManyHook?(value: UpdateItemType<T>[], options?: UpdateOptionType<T>): Promise<void>;
 
 
     public useResource(option?: APIArrayResourceOption<ListOptionType<T>>) {
@@ -184,7 +186,8 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
         }
 
         const update = self.updateHook == undefined ? undefined :
-            attachMessage<typeof self.updateHook, UpdateItemType<T>>(async (value: UpdateItemType<T>) => await self.updateHook?.(value) ?? false, message, true);
+            attachMessage<typeof self.updateHook, UpdateItemType<T>, UpdateOptionType<T>>(
+                async (value: UpdateItemType<T>, options) => await self.updateHook?.(value, options) ?? false, message, true);
 
         const add = self.addHook == undefined ? undefined :
             attachMessage<typeof self.addHook, ItemType<T>>(async (value: AddItemType<T>) => await self.addHook?.(value) ?? false, message, true);
@@ -207,9 +210,9 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
             ) : undefined;
 
         const updateMany = this.updateManyHook ?
-            attachMessage<typeof this.updateManyHook, ItemType<T>[]>(
-                async (value: ItemType<T>[]) => {
-                    return await self.updateManyHook?.(value)
+            attachMessage<typeof this.updateManyHook, ItemType<T>[], UpdateOptionType<T>>(
+                async (value: ItemType<T>[], options) => {
+                    return await self.updateManyHook?.(value, options)
                 },
                 message,
                 true

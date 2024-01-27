@@ -48,7 +48,7 @@ export function asyncEffect(func: CallableFunction) {
 }
 
 export function useSubmitMessage(key: string) {
-    const [messageApi, contextHolder] = message.useMessage();
+    const [messageApi, contextHolder] = message.useMessage({});
 
     const success = (msg?: string) => {
         messageApi.open({
@@ -72,9 +72,10 @@ export function useSubmitMessage(key: string) {
         })
     }
 
-    const bundle = (action: string) => ({
+    const bundle = (action: string, duration?: number) => ({
         loading: (msg?: string) => {
             messageApi.open({
+                duration,
                 type: "loading",
                 key,
                 content: `${action}中 ` + (msg ?? "")
