@@ -1,7 +1,7 @@
 "use client"
 
 import { Button, Space, Descriptions, Tag, Form, Input, Row, Col, Switch, Select, Radio, Checkbox, Divider, Collapse, Table, Flex, Dropdown } from "antd";
-import { useState } from "react";
+import { ForwardedRef, forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { PlusOutlined, DeleteOutlined, DownOutlined, CheckOutlined, CloseOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons"
 import { Rss, RssParsers, RssPreview, RssPreviewItem, RssResource, RssTaskConfig, RssUse } from "@/app/utils/api/subscription/rss";
 import _ from "lodash";
@@ -302,9 +302,32 @@ function RssParserSelect({ value, onChange }: { value?: string, onChange?: (valu
 }
 
 function RssPreviewList({ id }: { id: RssTaskConfig['id'] }) {
+    const ref = useRef<{ refresh: () => void }>(null)
+    return <Collapse size="small" ghost
+        items={[{
+            label: "下载预览",
+            children: <RssPreviewTable id={id} ref={ref} />,
+            forceRender: false,
+            extra: <Button icon={<IconRefresh />}
+                onClick={(evt) => {
+                    evt.stopPropagation();
+                    ref.current?.refresh()
+                }}
+                type="link" size="small" />
+        }]}
+    />
+}
+
+const RssPreviewTable = forwardRef(function ({ id }: { id: RssTaskConfig['id'] }, ref: ForwardedRef<{ refresh: () => void }>) {
     const { useList, messageContext, message, updateMany } = new RssPreview().useResource({ initialOptions: { id } })
     const { list, loading, refresh } = useList();
     const [selected, setSelected] = useState<RssPreviewItem[]>([])
+
+    useImperativeHandle(ref, () => {
+        return {
+            refresh
+        }
+    })
 
     const download = async (records: RssPreviewItem[]) => {
         downloadMessage.loading();
@@ -378,7 +401,7 @@ function RssPreviewList({ id }: { id: RssTaskConfig['id'] }) {
         },
     ]
 
-    const table = <>{messageContext}<Table
+    return <>{messageContext}<Table
         rowSelection={{
             type: "checkbox",
             onChange: (keys, rows) => {
@@ -399,16 +422,4 @@ function RssPreviewList({ id }: { id: RssTaskConfig['id'] }) {
             </Dropdown>
         }}
     /></>
-    return <Collapse size="small" ghost
-        items={[{
-            label: "下载预览",
-            children: table,
-            extra: <Button icon={<IconRefresh />}
-                onClick={(evt) => {
-                    evt.stopPropagation();
-                    refresh()
-                }}
-                type="link" size="small" />
-        }]}
-    />
-}
+})
