@@ -211,8 +211,8 @@ export function Cards<Res extends ResourceType>({ cardProps, spaceProps, cardSel
     const { list } = useList();
     const cards = useMemo(() => <Space {...spaceProps}>
         {
-            list ? Object.entries(list).map(([key, record]) =>
-                <ListItemCard<Res> key={key} record={record} cardProps={cardProps(record)} />) : <></>
+            list ? list.map((record, indexAsKey) =>
+                <ListItemCard<Res> key={cardSelection ? record[cardSelection.key] : indexAsKey} record={record} cardProps={cardProps(record)} />) : <></>
         }
     </Space >, [list])
     return <SelectionContext.Provider value={cardSelection ?? false}>

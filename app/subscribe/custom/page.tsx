@@ -14,6 +14,7 @@ import RssParserPage from "./parser/page";
 import { RssConfig } from "@/app/utils/api/subscription/subscribe";
 import { ColumnProps, ColumnsType } from "antd/lib/table";
 import { faRefresh } from "@fortawesome/free-solid-svg-icons";
+import Link from "next/link";
 
 
 export default function SubscribeMoviePage() {
@@ -319,11 +320,18 @@ function RssPreviewList({ id }: { id: RssTaskConfig['id'] }) {
     const columns: ColumnsType<RssPreviewItem> = [
         {
             title: "标题",
-            dataIndex: "title"
+            dataIndex: "title",
+            render: (value, record) => {
+                return record.link ? <Link href={record.link} target="_blank" >{value}</Link> : value
+            }
         },
         {
             title: "体积",
             dataIndex: "size"
+        },
+        {
+            title: "发布时间",
+            dataIndex: "date"
         },
         {
             title: "状态",
@@ -338,7 +346,8 @@ function RssPreviewList({ id }: { id: RssTaskConfig['id'] }) {
                 return <Button type="link" size="small" icon={<IconDownloader />}
                     onClick={async () => { download([record]) }}
                 />
-            }
+            },
+            align: "center"
         }
     ]
 
