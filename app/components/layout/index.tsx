@@ -183,9 +183,7 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
         </Header>
         <Content style={{ margin: '0px 0px', overflow: 'initial' }}>
           <div style={{ padding: "0px 16px 16px 16px", minHeight: "50vh", height: "100%", background: colorBgContainer }}>
-            <Suspense >
-              {children}
-            </Suspense>
+            {children}
           </div>
         </Content>
         {/* <Footer style={{ textAlign: 'center', background: colorBgContainer, }}>Ant Design ©2023 Created by Ant UED</Footer> */}
