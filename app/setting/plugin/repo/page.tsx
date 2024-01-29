@@ -5,7 +5,7 @@ import React from "react";
 import { Button } from "antd";
 import { IconDownloader } from "@/app/components/icons";
 import { useSubmitMessage } from "@/app/utils";
-import { PluginIcon } from "../PluginIcon";
+import { CardIcon, IMAGE_BASE_PATH } from "../../../components/CardIcon";
 
 
 export default function PluginRepoPage() {
@@ -21,7 +21,7 @@ export default function PluginRepoPage() {
                 return {
                     title: record.name,
                     description: record.desc,
-                    cover: <PluginIcon src={`/static/img/plugins/${record.icon}`} />,
+                    cover: <CardIcon src={`${IMAGE_BASE_PATH}/static/img/plugins/${record.icon}`} name={record.name} />,
                     extra: record.installed ? undefined : (resource) => {
                         const { refresh } = resource.useList();
                         return <Button type="text" size="small" icon={<IconDownloader />}
@@ -31,7 +31,6 @@ export default function PluginRepoPage() {
                                 new PluginRepo().install(record.key)
                                     .then(() => installMessage.success())
                                     .catch((e) => installMessage.error(e))
-
                                     .finally(() => refresh())
                             }}
                         />

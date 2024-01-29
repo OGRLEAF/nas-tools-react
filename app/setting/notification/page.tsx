@@ -7,6 +7,9 @@ import React, { useContext, useMemo } from "react";
 import { TagCheckboxGroup } from "@/app/components/TagCheckbox";
 import { ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
 import { Cards, CardsForm } from "@/app/components/CardsForm";
+import { CardIcon } from "@/app/components/CardIcon";
+
+const BASE_PATH = process.env.BASE_PATH
 
 export interface NotifiClientProps {
     cover: React.ReactNode,
@@ -17,17 +20,13 @@ export interface NotifiClientProps {
 
 const notifyClientConfigs: Record<NotifiClientConfig['type'], NotifiClientProps> = {
     "wechat": {
-        cover: <div style={{ height: 100, borderRadius: "8px 8px 0px 0px", width: "100%", backgroundColor: "#00D20B" }}>
-            <img style={{ height: 100, width: 100, borderRadius: 50, objectFit: "contain" }} src={`/static/img/message/wechat.png`} />
-        </div>,
+        cover: <CardIcon src={`${BASE_PATH}/static/img/message/wechat.png`} name={"wechat"} />,
         title: "微信",
         icon: <WechatOutlined />,
         configForm: WechatForm
     },
     "slack": {
-        cover: <div style={{ height: 100, borderRadius: "8px 8px 0px 0px", width: "100%", backgroundColor: "#00D20B" }}>
-            <img style={{ height: 100, width: 100, borderRadius: 50, objectFit: "contain" }} src={`/static/img/message/slack.png`} />
-        </div>,
+        cover: <CardIcon src={`${BASE_PATH}/static/img/message/slack.png`} name={"slack"} />,
         title: "Slack",
         icon: <SlackOutlined />,
         configForm: () => <></>

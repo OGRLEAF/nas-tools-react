@@ -1,43 +1,32 @@
 "use client"
-import CardnForm from "@/app/components/CardnForm";
-import { ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
-import { CardsForm, CardProps, Cards, TestButton } from "@/app/components/CardsForm";
-import { NastoolServerConfig } from "@/app/utils/api/api";
-import { APIArrayResourceBase } from "@/app/utils/api/api_base";
+import { CardIcon } from "@/app/components/CardIcon";
+import { CardsForm, Cards, TestButton } from "@/app/components/CardsForm";
 import { MediaServer, MediaServerConfig, MediaServerResource } from "@/app/utils/api/mediaserver";
-import { Button, Divider, Form, Input, Space, Tag } from "antd";
+import { Button, Form, Input, Space } from "antd";
 import React, { useMemo } from "react";
+
+const BASE_PATH = process.env.BASE_PATH
 
 export interface MediaServerProps {
     cover: React.ReactNode,
     title: string,
-    icon: React.ReactNode,
     configForm: () => React.JSX.Element,
 }
 
 const mediaserverConfigs: Record<MediaServerConfig['options']['type'], MediaServerProps> = {
     "jellyfin": {
-        cover: <div style={{ height: 100, borderRadius: "8px 8px 0px 0px", width: "100%", backgroundColor: "#3872C2" }}>
-            <img style={{ height: 80, borderRadius: 40, margin: "10px 0 0 10px", objectFit: "contain" }} src={`/static/img/mediaserver/jellyfin.jpg`} />
-        </div>,
+        cover: <CardIcon src={`${BASE_PATH}/static/img/mediaserver/jellyfin.png`} name={"jellyfin"} />,
         title: "Jellyfin",
-        icon: <img style={{ height: 15, width: 15, objectFit: "contain" }} src={`/static/img/mediaserver/jellyfin.png`} />,
         configForm: JellyfinConfig
     },
     "emby": {
-        cover: <div style={{ height: 100, borderRadius: "8px 8px 0px 0px", width: "100%", backgroundColor: "#3872C2" }}>
-            <img style={{ height: 80, borderRadius: 40, margin: "10px 0 0 10px", objectFit: "contain" }} src={`/static/img/mediaserver/emby.png`} />
-        </div>,
+        cover: <CardIcon src={`${BASE_PATH}/static/img/mediaserver/emby.png`} name={"emby"} />,
         title: "Emby",
-        icon: <img style={{ height: 15, width: 15, objectFit: "contain" }} src={`/static/img/mediaserver/emby.png`} />,
         configForm: JellyfinConfig
     },
     "plex": {
-        cover: <div style={{ height: 100, borderRadius: "8px 8px 0px 0px", width: "100%", backgroundColor: "#3872C2" }}>
-            <img style={{ height: 80, borderRadius: 40, margin: "10px 0 0 10px", objectFit: "contain" }} src={`/static/img/mediaserver/plex.png`} />
-        </div>,
+        cover: <CardIcon src={`${BASE_PATH}/static/img/mediaserver/plex.png`} name={"plex"} />,
         title: "Plex",
-        icon: <img style={{ height: 15, width: 15, objectFit: "contain" }} src={`/static/img/mediaserver/plex.png`} />,
         configForm: PlexConfig
     },
 }

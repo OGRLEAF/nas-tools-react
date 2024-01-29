@@ -1,5 +1,5 @@
 "use client"
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { Button, Col, Form, Input, InputNumber, Row, Space, Switch, Tag, theme } from "antd";
 import { TVRssInfo, RssState, TVSubscription } from "@/app/utils/api/subscription/subscribe";
 import { MediaSearchGroup, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
@@ -13,6 +13,7 @@ import { RetweetOutlined } from "@ant-design/icons"
 import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
 import { TMDB } from "@/app/utils/api/media/tmdb";
 import { ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
+import Image from "next/image";
 
 
 const defaultConfig: TVRssInfo = {
@@ -73,7 +74,9 @@ export default function SubscribeTV() {
         formRender={SubscribeTVForm} layout={"horizontal"}    >
         <ListItemCardList
             cardProps={(record: TVRssInfo) => ({
-                cover: <img src={record.image} />,
+                cover: <div style={{ position: "relative", width: "100%", height: 175, }}>
+                    <Image alt={`${record.name}`} fill style={{ objectFit: "cover", overflow: "hidden" }} sizes={"100vw"} priority={false} src={record.image} />
+                </div>,
                 title: record.name,
                 description: StatusTag[record.state]
             })}
@@ -104,12 +107,12 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
         }
     }
     const [form] = useForm();
-    const onSelect = (value: MediaWork) => {
+    const onSelect = useCallback((value: MediaWork) => {
         form.setFieldsValue({
             name: value.title,
             year: value.metadata?.date?.release,
         })
-    }
+    }, [form])
     useEffect(() => {
         const mediaWork = new TMDB().fromSeries(series.slice(SeriesKeyType.TMDBID));
         mediaWork?.get().then((work) => setDetail(work))
@@ -134,7 +137,7 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
             }
         }
 
-    }, [season])
+    }, [season, initialConfig.season])
 
     const ctx = useContext(CardnFormContext);
     const [loading, setLoading] = useState(false);

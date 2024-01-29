@@ -8,8 +8,9 @@ import { TagCheckboxGroup } from "@/app/components/TagCheckbox";
 import { values } from "lodash";
 import { IconCubes, IconEdit } from "@/app/components/icons";
 import Link from "next/link";
-import { PluginIcon } from "./PluginIcon";
+import { CardIcon } from "../../components/CardIcon";
 
+const BASE_PATH = process.env.BASE_PATH
 
 export default function PluginPage() {
     return <CardsForm<PluginResource>
@@ -24,7 +25,7 @@ export default function PluginPage() {
                 return {
                     "title": record.name,
                     "description": record.desc,
-                    "cover": <PluginIcon src={`/static/img/plugins/${record.icon}`} />
+                    "cover": <CardIcon name={record.name} src={`${BASE_PATH}/static/img/plugins/${record.icon}`} />
                 }
             }}
         />

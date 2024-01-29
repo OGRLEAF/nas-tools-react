@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { API, NASTOOL } from "./api";
 import { useSubmitMessage } from "..";
 import { get } from "lodash";
@@ -48,7 +48,7 @@ export function useDataResource<T, Options = never>(res: APIDataResourceBase<T, 
     const [options, setOptions] = useState<Options>()
     const [data, setData] = useState<T>()
     const useData = () => {
-        const refresh = (async () => {
+        const refresh = useCallback(async () => {
             if (useMessage) message.fetch.loading()
             try {
                 setData(await self.dataHook(options))
@@ -56,10 +56,10 @@ export function useDataResource<T, Options = never>(res: APIDataResourceBase<T, 
             } catch (e: any) {
                 if (useMessage) message.fetch.error(e)
             }
-        })
+        }, [])
         useEffect(() => {
             refresh();
-        }, [options])
+        }, [refresh])
         return { data, setData, refresh }
     }
 
@@ -133,7 +133,7 @@ export function useResource<Res extends ResourceType>(cls: APIArrayResourceBase<
         const [options, setOptions] = useState<ListOptionType<T> | undefined>(option?.initialOptions)
         const [list, setList] = useState<ItemType<T>[]>()
         const [total, setTotal] = useState<number>(0);
-        const refresh = (async () => {
+        const _refresh = useCallback(()=>(async () => {
             setLoading(true)
             if (useMessage) message.fetch.loading()
             try {
@@ -146,10 +146,12 @@ export function useResource<Res extends ResourceType>(cls: APIArrayResourceBase<
             } finally {
                 setLoading(false)
             }
-        })
+        }), [options])
+
+        const refresh = useMemo(()=>_refresh(), [_refresh])
         useEffect(() => {
-            refresh();
-        }, [options])
+            refresh()
+        }, [refresh])
         return {
             refresh,
             list, setList,

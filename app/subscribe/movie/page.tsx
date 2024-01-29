@@ -1,5 +1,5 @@
 "use client"
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 
 import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
 import TinyTMDBSearch, { MediaDetailCard, MediaSearchGroup, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
@@ -13,6 +13,7 @@ import { RetweetOutlined } from "@ant-design/icons"
 import { useForm } from "antd/es/form/Form";
 import { ListItemCard, ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
 import { TMDB } from "@/app/utils/api/media/tmdb";
+import Image from "next/image";
 
 const defaultConfig: MovieRssInfo = {
     image: "",
@@ -71,7 +72,7 @@ export default function SubscribeMovie() {
         layout="horizontal"
     >
         <ListItemCardList cardProps={(record: MovieRssInfo) => ({
-            cover: <img style={{ maxHeight: 175, objectFit: "cover" }} src={record.image} />,
+            cover: <Image alt={record.name} style={{ maxHeight: 175, objectFit: "cover" }} src={record.image} />,
             title: record.name,
             description: StatusTag[record.state]
         })}
@@ -103,18 +104,18 @@ const SubscribeMovieForm = ({ record: config }: { record?: MovieRssInfo }) => {
         }
     }
     const [form] = useForm();
-    const onSelect = (value: MediaWork) => {
+    const onSelect = useMemo(()=>((value: MediaWork) => {
         setDetail(value)
         form.setFieldsValue({
             name: value.title,
             year: value.metadata?.date?.release,
         })
-    }
+    }), [form])
 
     useEffect(() => {
         const mediaWork = new TMDB().fromSeries(series);
         mediaWork?.get().then((work) => { if (work) onSelect(work) })
-    }, [series])
+    }, [series, onSelect])
 
     const ctx = useContext(CardnFormContext);
 

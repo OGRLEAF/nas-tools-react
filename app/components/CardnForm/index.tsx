@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState, createContext } from "react";
+import React, { useEffect, useState, createContext, useMemo } from "react";
 import { PlusOutlined } from "@ant-design/icons"
 import { IconDatabase } from "@/app/components/icons";
 import { Section } from "../Section";
@@ -60,10 +60,10 @@ export const CardnFormContext = createContext<CardnFormContextType<any>>({
 
 export default function CardnForm<T>(options: CardnFormProps<T>) {
     const [list, setList] = useState<T[]>([])
-    const updateList = () => {
+    const updateList = useMemo(()=>(() => {
         const result = options.onFetch();
         result.then((result) => setList(result));
-    }
+    }), [options])
     useEffect(() => { updateList() }, [updateList]);
 
     const [openCreateDrawer, setOpenCreateDrawer] = useState(false)

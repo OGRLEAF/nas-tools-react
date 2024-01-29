@@ -1,12 +1,12 @@
-import React, { CSSProperties, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { API, NastoolMediaSearchResult, NastoolMediaSearchResultItem, NastoolMediaType, NastoolServerConfig } from "../../utils/api/api";
-import { AutoComplete, Form, Input, Radio, Space, theme, Image, Typography, Empty, Row, Col, Select, Skeleton, Button, Flex, Spin, SelectProps } from "antd";
+import React, { CSSProperties, useContext, useEffect, useMemo, useState } from "react";
+import { NastoolServerConfig } from "../../utils/api/api";
+import { AutoComplete, Input, Space, theme, Typography, Empty, Select, Flex, Spin, SelectProps } from "antd";
 import { TMDB } from "../../utils/api/media/tmdb";
-import { MediaIdentifyContext, MediaWork, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "../../utils/api/types";
+import { MediaWork, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "../../utils/api/types";
 import { SearchContext, SearchContextType, useSearch } from "./SearchContext";
 import { ServerConfig } from "@/app/utils/api/serverConfig";
 import { StateMap, StateTag } from "../StateTag";
-import Link from "next/link";
+import Image from "next/image"
 import { asyncEffect } from "@/app/utils";
 
 type CardSize = "normal" | "small" | "tiny";
@@ -75,6 +75,26 @@ const stateTagMap: StateMap<MediaWorkType> = {
     },
 }
 
+
+function CoverImage(options: { alt: string, src: string, maxHeight?: number }) {
+    const { alt, src } = options;
+    const [size, setSize] = useState<{ height: number, width: number }>({ height: 0, width: 0 })
+    const maxHeight = options.maxHeight ?? 250;
+    return <Image alt={alt} {...size} quality={100} src={src} priority={true} sizes={`${maxHeight  * 3}px`}
+        style={{ objectFit: "contain", textAlign: "start", objectPosition: "top left", aspectRatio: "auto" }}
+        onLoad={(evt) => {
+            const { naturalHeight, naturalWidth } = evt.target as any;
+            if (naturalHeight > maxHeight) {
+                const ratio = naturalWidth / naturalHeight;
+                setSize({ height: maxHeight, width: maxHeight * ratio })
+            } else {
+                setSize({ height: naturalHeight, width: naturalWidth });
+            }
+        }}
+
+    />
+}
+
 export function MediaDetailCard({
     mediaDetail,
     size,
@@ -87,7 +107,7 @@ export function MediaDetailCard({
     const style = cardStyleMap[_size];
     if (mediaDetail) {
         const metadata = mediaDetail.metadata
-        const coverImage = metadata?.image?.cover ? <img height={style.height} src={metadata.image.cover} style={{ aspectRatio: "auto" }} /> : <></>
+        const coverImage = metadata?.image?.cover && <CoverImage maxHeight={style.height} alt={metadata.title} src={metadata?.image?.cover} />
         return <Flex
             align="start"
             vertical={(layout ?? "horizontal") == "vertical"}

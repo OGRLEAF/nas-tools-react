@@ -98,7 +98,7 @@ export default function ScraperSetting() {
         const [form] = Form.useForm()
         useEffect(() => {
             form.setFieldsValue(scraperConfig)
-        }, [scraperConfig])
+        }, [scraperConfig, form])
         const onFinish = async (values: ScraperFormData) => {
             const updateValues: ScraperConfig = values.scraperConfig;
             await new Scraper().config.update(updateValues);

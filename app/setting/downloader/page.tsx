@@ -1,4 +1,5 @@
 "use client"
+import { CardIcon } from "@/app/components/CardIcon"
 import { Cards, CardsForm, TestButton, CollapsableList } from "@/app/components/CardsForm"
 import { DownloadClientSelect, MediaWorkCategoryUnionSelect, SyncModeSelect } from "@/app/components/NTSelects"
 import { PathSelector } from "@/app/components/PathSelector"
@@ -8,7 +9,9 @@ import { MediaWorkType, SyncMode } from "@/app/utils/api/types"
 import { PlusOutlined, DeleteOutlined, RetweetOutlined } from "@ant-design/icons"
 import { Button, CheckboxOptionType, Col, Descriptions, Divider, Flex, Form, Input, InputNumber, Radio, Row, Select, Space, Switch, Tag, theme } from "antd"
 import { useForm } from "antd/es/form/Form"
-import React, { useMemo } from "react"
+import React, { useMemo, } from "react"
+import Image from "next/image"
+const BASE_PATH = process.env.BASE_PATH
 
 export interface DownloadClientProps {
     cover: React.ReactNode,
@@ -19,11 +22,9 @@ export interface DownloadClientProps {
 
 const downloadClientConfigs: Record<DownloadClientConfig['type'], DownloadClientProps> = {
     "qbittorrent": {
-        cover: <div style={{ height: 100, borderRadius: "8px 8px 0px 0px", width: "100%", backgroundColor: "#3872C2" }}>
-            <img style={{ height: 90, padding: "10px 0 0 10px", objectFit: "contain" }} src={`/static/img/downloader/qbittorrent.png`} />
-        </div>,
+        cover: <CardIcon src={`${BASE_PATH}/static/img/downloader/qbittorrent.png`} name={"qbittorrent"} />,
         title: "Qbittorrent",
-        icon: <img style={{ height: 15, width: 15, objectFit: "contain" }} src={`/static/img/downloader/qbittorrent.png`} />,
+        icon: <Image alt="qbittorrent" height={15} width={15} style={{ objectFit: "contain" }} src={`${BASE_PATH}/static/img/downloader/qbittorrent.png`} />,
         configForm: QbittorentForm
     },
 }

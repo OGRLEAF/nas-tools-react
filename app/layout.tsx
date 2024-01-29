@@ -9,7 +9,7 @@ import zhCN from 'antd/locale/zh_CN';
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'NASTOOLL',
+  title: 'NASTOOL Lite',
   description: 'NASTOOL Lite',
 }
 
