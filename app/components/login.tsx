@@ -1,6 +1,6 @@
 "use client"
-import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { Button, Modal, Form, Input, Checkbox } from 'antd';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Button, Modal, Form, Input, Checkbox, Alert, Space, FormInstance } from 'antd';
 import { NASTOOL, NastoolConfig, API, NastoolLoginConfig } from '../utils/api/api';
 import { resolve } from 'path';
 import { APIContext } from '../utils/api/api_base';
@@ -27,49 +27,61 @@ const deferred = new Deferred<NastoolLoginConfig>();
 
 const LoginModal = () => {
     const [nastoolConfig, setNastoolConfig] = useState<NastoolConfig>();
-    const [loginConfig, setLoginConfig] = useState<NastoolLoginConfig>();
     const apiContext = useContext(APIContext);
     const [modal, contextHolder] = Modal.useModal();
+    const [tryRestore, setTryRestore] = useState(false)
     useEffect(() => {
         const https = window.location.protocol == "https:"
-        setNastoolConfig(
-            {
-                https,
-                host: window.location.hostname,
-                port: Number(window.location.port) || (https ? 443 : 80),
+        const nastoolConfig = {
+            https,
+            host: window.location.hostname,
+            port: Number(window.location.port) || (https ? 443 : 80),
+        }
+        const nastool = new NASTOOL(nastoolConfig);
+        nastool.restoreLogin()
+            .then((value) => {
+                if (value) apiContext.setAPI(nastool)
+                setTryRestore(true)
             })
     }, [])
 
-    useEffect(() => {
+    const login = useCallback(async (loginConfig: NastoolLoginConfig) => {
+        const https = window.location.protocol == "https:"
+        const nastoolConfig = {
+            https,
+            host: window.location.hostname,
+            port: Number(window.location.port) || (https ? 443 : 80),
+        }
         if (nastoolConfig && loginConfig) {
             console.log("Login", nastoolConfig, loginConfig)
             const nastool = new NASTOOL(nastoolConfig);
-            nastool.login(loginConfig)
-                .then((value) => {
-                    if (value) {
-                        apiContext.setAPI(nastool)
-                    }
-                })
+            if (await nastool.login(loginConfig)) {
+                return nastool
+            } else {
+                throw new Error("登陆失败")
+            }
         }
-    }, [nastoolConfig, loginConfig])
+    }, [nastoolConfig])
+
     let t = { v: 1 };
     let onFinish: ((values: any) => void) = (values) => { console.log("unregistried.", values, t.v) };
     const onFinishFailed = (errorInfo: any) => {
         console.log('Failed:', errorInfo);
     };
 
+    const [message, setMessage] = useState<string | undefined>()
     const [form] = Form.useForm();
 
-    const LoginForm = <Form
+    const LoginForm = ({ form, message }: { message?: string, form: FormInstance<any> }) => <><Form
         form={form}
         name="basic"
         labelCol={{ span: 8 }}
         wrapperCol={{ span: 16 }}
-        style={{ maxWidth: 600 }}
         initialValues={{ remember: true }}
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
         autoComplete="off"
+        size="middle"
     >
         <Form.Item<FieldType>
             label="用户名"
@@ -94,27 +106,42 @@ const LoginModal = () => {
         >
             <Checkbox>Remember me</Checkbox>
         </Form.Item>
+        {message && <Alert banner showIcon onClose={() => setMessage(undefined)} message={message}></Alert>}
     </Form>
 
+    </>
+
     useEffect(() => {
-        if (apiContext.API.loginState == false) {
-            const { destroy } = modal.confirm({
-                content: LoginForm,
-                onOk: () => {
-                    return form.validateFields()
-                        .then((values) => {
-                            const loginConfig = {
-                                username: values.username,
-                                password: values.password
+        if (apiContext.API.loginState == false && tryRestore == true) {
+            const { destroy, update } = modal.confirm({
+                content: <LoginForm form={form} />,
+                title: "登录",
+                okText: "登录",
+                onOk: (close) => {
+                    (async () => {
+                        const values = await form.validateFields();
+                        const loginConfig = {
+                            username: values.username,
+                            password: values.password
+                        };
+                        try {
+                            const api = await login(loginConfig)
+                            if (api) {
+                                apiContext.setAPI(api);
+                                close();
                             }
-                            setLoginConfig(loginConfig)
-                            return true
-                        })
+                            console.log(api)
+                        } catch (e) {
+                            console.log(e)
+                            setMessage(String(e))
+                            update({ content: <LoginForm form={form} message={String(e)} /> })
+                        }
+                    })()
                 }
             })
             return () => destroy()
         }
-    }, [apiContext.API, form])
+    }, [apiContext.API, form, tryRestore])
 
     return <div>
         {contextHolder}

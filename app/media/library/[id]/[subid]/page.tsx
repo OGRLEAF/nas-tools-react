@@ -8,6 +8,7 @@ import {
 import { Space, Image, Typography, Card, List, Tag, Divider, Button, Collapse, theme } from "antd";
 import Icon, { ToTopOutlined, ExportOutlined } from "@ant-design/icons"
 import Link from "next/link";
+import { useAPIContext } from "@/app/utils/api/api_base";
 const { Title, Paragraph } = Typography
 
 const SteamTag = ({
@@ -111,14 +112,17 @@ export default function MediaView({
     params
 }: { params: { id: string, subid: string } }) {
     const [series, setSeries] = useState<NastoolLibrarySeries>()
+    const [loading, setLoading] = useState(false)
+    const { API } = useAPIContext();
     useEffect(() => {
-        if (params.subid)
-            API.getNastoolInstance()
-                .then(async (nt) => {
-                    const series = await nt.getLibrarySeriesItem(params.subid)
-                    setSeries(series)
-                })
+        setLoading(true);
+        (async () => {
+            const series = await API.getLibrarySeriesItem(params.subid)
+            setSeries(series)
+        })()
+            .finally(() => setLoading(false))
     }, [params.subid])
+
     const { token } = theme.useToken();
     const panelStyle: React.CSSProperties = {
         marginBottom: 24,
