@@ -3,6 +3,7 @@ import { Space, TreeSelect, TreeSelectProps, theme } from "antd"
 import { API, NastoolFileListItem } from "@/app/utils/api/api";
 import PathManager from "../utils/pathManager";
 import { DefaultOptionType } from "antd/es/select";
+import { useAPIContext } from "../utils/api/api_base";
 
 export interface PathSelectorProps {
     value?: string,
@@ -19,26 +20,28 @@ export function PathSelector({ value, onChange, style }: PathSelectorProps) {
     const [treeData, setTreeData] = useState<Omit<DefaultOptionType, 'label'>[]>([]);
 
     const pathManagerContext = new PathManager("/") // useContext(PathManagerContext);
-
+    const { API } = useAPIContext();
     useEffect(() => {
         if (value == undefined) {
 
         }
         setLoadingState(true);
-        const nastool = API.getNastoolInstance();
-        nastool.then(async (nastool) => {
+        const nastool = API;
+        if (nastool.loginState) {
             const basePath = pathManagerContext.getDeepestRelativePath();
-            const fileList = await nastool.getFileList(pathManagerContext.getBasePath, pathManagerContext.getDeepestRelativePath());
-            setTreeData(fileList.directories.map(dir => ({
-                id: basePath + "/" + dir.name,
-                pId: basePath,
-                title: <Space>{dir.name}<span style={{ color: token.colorTextDescription }}>/</span></Space>,
-                isLeaf: !dir.is_empty,
-                value: "/" + dir.name,
-                key: "/" + dir.name
-            })))
-            setLoadingState(false);
-        })
+            nastool.getFileList(pathManagerContext.getBasePath, pathManagerContext.getDeepestRelativePath())
+                .then(fileList => {
+                    setTreeData(fileList.directories.map(dir => ({
+                        id: basePath + "/" + dir.name,
+                        pId: basePath,
+                        title: <Space>{dir.name}<span style={{ color: token.colorTextDescription }}>/</span></Space>,
+                        isLeaf: !dir.is_empty,
+                        value: "/" + dir.name,
+                        key: "/" + dir.name
+                    })))
+                    setLoadingState(false);
+                })
+        }
     }, [value]);
 
     const { token } = theme.useToken();
@@ -46,29 +49,29 @@ export function PathSelector({ value, onChange, style }: PathSelectorProps) {
 
         pathManagerContext.setPath(id);
         // console.log(id, pathManagerContext.deepestPath)
-        const nastool = API.getNastoolInstance();
-        await nastool.then(async (nastool) => {
+        if (API.loginState) {
             const basePath = pathManagerContext.getDeepestRelativePath();
-            const fileList = await nastool.getFileList(pathManagerContext.getBasePath, pathManagerContext.getDeepestRelativePath());
-
-            const treedata = [
-                ...treeData,
-                ...fileList.directories.map(dir => {
-                    const parent = '/' + basePath
-                    const key = `${parent}/${dir.name}`;
-                    return {
-                        id: key,
-                        pId: parent,
-                        title: <Space>{dir.name}<span style={{ color: token.colorTextDescription }}>{parent}</span></Space>,
-                        isLeaf: !dir.is_empty,
-                        value: key,
-                        key: key,
-                    }
-                })]
-            // console.log(treeData)
-            setTreeData(treedata)
-            setLoadingState(false);
-        })
+            (async () => {
+                const fileList = await API.getFileList(pathManagerContext.getBasePath, pathManagerContext.getDeepestRelativePath());
+                const treedata = [
+                    ...treeData,
+                    ...fileList.directories.map(dir => {
+                        const parent = '/' + basePath
+                        const key = `${parent}/${dir.name}`;
+                        return {
+                            id: key,
+                            pId: parent,
+                            title: <Space>{dir.name}<span style={{ color: token.colorTextDescription }}>{parent}</span></Space>,
+                            isLeaf: !dir.is_empty,
+                            value: key,
+                            key: key,
+                        }
+                    })]
+                // console.log(treeData)
+                setTreeData(treedata)
+                setLoadingState(false);
+            })()
+        }
         // console.log(pathManagerContext.getDeepestRelativePath())
     }
 

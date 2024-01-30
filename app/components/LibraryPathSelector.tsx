@@ -4,7 +4,7 @@ import { Organize } from "../utils/api/import";
 import { Select, Space } from "antd";
 import { PathSelector } from "./PathSelector";
 import { DownloadClient, DownloadClientResource } from "../utils/api/download";
-import { useResource } from "../utils/api/api_base";
+import { useAPIContext, useResource } from "../utils/api/api_base";
 
 
 const normalize = (p: string) => p += p.endsWith("/") ? "" : "/"
@@ -209,11 +209,14 @@ export const LibraryPathSelect = (options: FormItemProp<string>) => {
         options.onChange?.(value);
     }
     const ctx = useContext(UnionPathSelectContext);
+    const { API } = useAPIContext();
     useEffect(() => {
-        const orgn = new Organize();
-        orgn.getLibrariesPath()
-            .then(libraries => { setLibrariesPath(libraries) })
-    }, [options.value])
+        if (API.loginState) {
+            const orgn = new Organize(API);
+            orgn.getLibrariesPath()
+                .then(libraries => { setLibrariesPath(libraries) })
+        }
+    }, [options.value, API])
     const libraryPathOptions = useMemo(() => [{
         label: '动漫',
         options: librariesPath?.anime_path?.map((path) => ({ label: path, value: path })) ?? [],
@@ -243,7 +246,7 @@ export const LibraryPathSelect = (options: FormItemProp<string>) => {
 }
 
 export const DownloadPathSelect = (options: { remote?: boolean } & FormItemProp<string>) => {
-    const { useList } = useResource<DownloadClientResource>(new DownloadClient())
+    const { useList } = useResource<DownloadClientResource>(DownloadClient)
     const { list: clients, refresh: refreshClients } = useList();
     const [path, setPath] = useState<string | undefined>(options.value)
     const remote = options.remote ?? true;

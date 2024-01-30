@@ -1,4 +1,4 @@
-import { NastoolServerConfig } from "./api";
+import { NASTOOL, NastoolServerConfig } from "./api";
 import { APIBase, APIArrayResourceBase, APIDataResourceBase, ResourceType } from "./api_base";
 import { ServerConfig } from "./serverConfig";
 
@@ -15,9 +15,6 @@ export interface IndexerResource extends ResourceType {
 }
 
 export class Indexers extends APIArrayResourceBase<IndexerResource> {
-    constructor() {
-        super();
-    }
 
     async list<IndexerSite>() {
         const result = await (await this.API).post<{ indexers: IndexerSite[] }>("site/indexers", { auth: true });
@@ -36,9 +33,9 @@ export class Indexers extends APIArrayResourceBase<IndexerResource> {
 
 export class IndexerEnabledSites extends APIDataResourceBase<IndexerSite['id'][]>{
     private setting: ServerConfig;
-    constructor() {
-        super();
-        this.setting = new ServerConfig()
+    constructor(API:NASTOOL) {
+        super(API);
+        this.setting = new ServerConfig(API)
     }
     async list() {
         const setting = this.setting.get();

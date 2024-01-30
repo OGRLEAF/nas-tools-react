@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { DBMediaType } from "../api";
+import { DBMediaType, NASTOOL } from "../api";
 import { APIBase } from "../api_base";
 import { MediaIdentifyContext, MediaWork, MediaWorkEpisode, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "../types"
 
@@ -39,8 +39,8 @@ export class TMDB extends APIBase {
     static share: Record<string, MediaWork> = {}
     protected static instance: TMDB;
     private static _cache: Record<string, TMDBMediaWork> = {};
-    constructor() {
-        super();
+    constructor(API?:NASTOOL) {
+        super(API);
         if (TMDB.instance) {
             return TMDB.instance;
         }

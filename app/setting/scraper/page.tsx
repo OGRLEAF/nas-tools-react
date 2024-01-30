@@ -6,6 +6,7 @@ import { Scraper, ScraperConfig, ScraperConfigKey, nfoAvaliableTypeMovie, nfoAva
 import { ServerConfig } from "@/app/utils/api/serverConfig";
 import { NastoolServerConfig } from "@/app/utils/api/api";
 import { useSubmitMessage } from "@/app/utils";
+import { useAPIContext } from "@/app/utils/api/api_base";
 
 type Unify<T extends ScraperConfigKey | ScraperConfig> = T['scraper_nfo']['movie'] | T['scraper_nfo']['tv'] | T['scraper_pic']['movie'] | T['scraper_pic']['tv']
 type UnifiedKey = Unify<ScraperConfigKey>
@@ -79,11 +80,12 @@ const scraperOptions = {
 export default function ScraperSetting() {
     const [scraperConfig, setScraperConfig] = useState<ScraperConfig>();
     const [scraperEnable, setScraperEnable] = useState(false);
+    const {API} = useAPIContext()
     const refresh = async () => {
-        const scraperApi = new Scraper();
+        const scraperApi = new Scraper(API);
         const scraperConfig = await scraperApi.config.get();
         setScraperConfig(scraperConfig)
-        const config = new ServerConfig();
+        const config = new ServerConfig(API);
         const enableScraper = (await config.get()).media.nfo_poster;
         setScraperEnable(enableScraper)
     }
@@ -101,8 +103,8 @@ export default function ScraperSetting() {
         }, [scraperConfig, form])
         const onFinish = async (values: ScraperFormData) => {
             const updateValues: ScraperConfig = values.scraperConfig;
-            await new Scraper().config.update(updateValues);
-            new ServerConfig().update({ media: { nfo_poster: values.enable } } as NastoolServerConfig)
+            await new Scraper(API).config.update(updateValues);
+            new ServerConfig(API).update({ media: { nfo_poster: values.enable } } as NastoolServerConfig)
         }
 
         return <Form form={form} layout="vertical" initialValues={initialValues} onFinish={(values) => handle(onFinish(values))}>

@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Section } from "@/app/components/Section"
 import { API, NastoolServerConfig } from '@/app/utils/api/api'
 import SettingSystem from './system'
@@ -11,19 +11,22 @@ import SettingLaboratory from "./laboratory"
 import SettingCard from "./SettingCard"
 
 import { Space } from 'antd'
+import { useAPIContext } from '@/app/utils/api/api_base'
 
 export default function SettingBasic() {
     const [serverConfig, setServerConfig] = useState<NastoolServerConfig>()
-    const onRefresh = () => {
-        API.getNastoolInstance()
-            .then(async (nt) => {
-                const config = await nt.getServerConfig();
-                setServerConfig(config);
-            })
-    }
+    const { API: nastool } = useAPIContext();
+    const onRefresh = useCallback(() => {
+        if (nastool.loginState) {
+            nastool.getServerConfig()
+                .then((config) => {
+                    setServerConfig(config)
+                })
+        }
+    }, [nastool])
     useEffect(() => {
-        onRefresh();
-    }, [])
+        onRefresh()
+    }, [nastool])
     return <>
         <Section title="基础设置" onRefresh={onRefresh}>
             <Space direction="vertical" style={{ width: "100%" }}>

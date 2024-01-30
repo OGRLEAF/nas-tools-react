@@ -1,13 +1,10 @@
-import { ImportMode, NastoolMediaType, TaskType } from "./api";
+import { ImportMode, NASTOOL, NastoolMediaType, TaskType } from "./api";
 import { APIArrayResourceBase, APIBase, ResourceType } from "./api_base";
 import { MediaWorkSeason, MediaWorkType, SeriesKey, SyncMode } from "./types";
 
 type optionalEpisode = undefined | number
 
 export class Organize extends APIBase {
-    constructor() {
-        super();
-    }
 
     public async importTV({ path, files, importMode, season, episodes, target_path, dryrun = true }:
         { path: string; files: string[]; importMode: ImportMode; season: MediaWorkSeason; episodes?: optionalEpisode[]; target_path?: string; dryrun?: boolean; }): Promise<void> {
@@ -88,8 +85,8 @@ export interface OrgnizeHistoryResource extends ResourceType {
 export class OrganizeHistory extends APIArrayResourceBase<OrgnizeHistoryResource> {
     private total: Promise<number>;
     private totalResolve?: (value: number | PromiseLike<number>) => void
-    constructor() {
-        super();
+    constructor(API:NASTOOL) {
+        super(API);
         this.total = new Promise((resolve, reject) => {
             this.totalResolve = resolve;
         })

@@ -5,24 +5,20 @@ import { MediaWorkType } from "../types";
 export type MediaWorkCategoryType = string;
 
 
-export class MediaWorkCategory extends APIDataResourceBase<MediaWorkCategoryType[]> {
-    private type: MediaWorkType
-    constructor(type: MediaWorkType) {
-        super();
-        this.type = type;
-    }
-    public async get() {
+export class MediaWorkCategory extends APIDataResourceBase<MediaWorkCategoryType[], { type: MediaWorkType }> {
+
+    public async get(type: MediaWorkType) {
         const { category } = await (await this.API).post<{ category: MediaWorkCategoryType[] }>("media/category/list",
             {
                 auth: true,
                 data: {
-                    type: this.type
+                    type: type
                 }
             })
         return category;
     }
 
-    public dataHook(options?: undefined): Promise<MediaWorkCategoryType[]> {
-        return this.get();
+    public dataHook(options?: { type: MediaWorkType; } | undefined): Promise<string[]> {
+        return this.get(options?.type ?? MediaWorkType.UNKNOWN)
     }
 }

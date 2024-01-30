@@ -16,9 +16,9 @@ export default function IndexersSetting() {
 }
 
 function BuiltinIndexerSetting() {
-    const { useList } = useResource<IndexerResource>(new Indexers())
+    const { useList } = useResource<IndexerResource>(Indexers)
     const { list: sites } = useList();
-    const { useData, update, messageContext } = useDataResource(new IndexerEnabledSites(), { useMessage: true });
+    const { useData, update, messageContext } = useDataResource(IndexerEnabledSites, { useMessage: true });
     const { data: enabledSites, setData: setEnabledSites, } = useData();
     return <>
         {messageContext}

@@ -1,5 +1,5 @@
 'use client'
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useContext, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   BarChartOutlined,
@@ -27,6 +27,8 @@ import HeaderSearch from '../headerSearch';
 import { ServerConfig } from '@/app/utils/api/serverConfig';
 import Link from 'next/link';
 import { Next13ProgressBar } from 'next13-progressbar';
+import { APIContext } from '@/app/utils/api/api_base';
+import { NASTOOL } from '@/app/utils/api/api';
 
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -48,9 +50,11 @@ function getItem(
   } as MenuItem;
 }
 
+
+
 const mediaFileMenuItem = getItem("文件管理", '/media/file', <IconFolderTreeSolid />);
-const getMenuItems = async () => {
-  const mediaPageDefaultUrl = await new ServerConfig().get()
+const getMenuItems = async (API:NASTOOL) => {
+  const mediaPageDefaultUrl = await new ServerConfig(API).get()
     .then(res => {
       const default_path = res.media.media_default_path;
       return "/media/file" + default_path;
@@ -118,12 +122,16 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
     });
   }
 
+  const apiContext = useContext(APIContext)
+  const [API, setAPI] = useState<NASTOOL>(apiContext.API);
+
   useEffect(() => {
-    getMenuItems().then((menu) => {
+    if(API.loginState)
+    getMenuItems(API).then((menu) => {
       setMenu(menu);
       updateMenuKey();
     })
-  }, [])
+  }, [API])
 
 
   const [collapsed, setCollapsed] = useState(false);
@@ -142,52 +150,47 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <Layout hasSider style={{ zoom: pageScale }}>
-      <Sider
-        style={{
-          overflow: 'auto',
-          height: '100vh',
-          position: "sticky",
-          left: 0,
-          top: 0,
-          bottom: 0,
-        }}
-        collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
-        <div className="demo-logo-vertical" style={{ height: 40 }} >
-          <LoginModal></LoginModal>
-        </div>
-        {selectedPath ?
-          <Menu theme="dark" mode="inline" items={menu}
-            selectedKeys={selectedPath?.selectedKey} defaultOpenKeys={selectedPath?.openKey}
-          />
-          : <></>
-        }
-
-        <span style={{ color: "white" }}>
-          openKey:{selectedPath?.openKey}<br />
-          selectedKey:{selectedPath?.selectedKey}<br />
-          {pathName}<br />
-
-        </span>
-      </Sider>
-      <Layout>
-        <Header
+      <APIContext.Provider value={{ API, setAPI }}>
+        <Sider
           style={{
-            padding: '16px 0px',
-            background: colorBgContainer,
-            position: 'sticky',
+            overflow: 'auto',
+            height: '100vh',
+            position: "sticky",
+            left: 0,
             top: 0,
-            zIndex: 1
-          }} >
-          <Next13ProgressBar height="3px" color={colorPrimary} options={{ showSpinner: true }} showOnShallow />
-          <HeaderSearch />
-        </Header>
-        <Content style={{ margin: '0px 0px', overflow: 'initial' }}>
-          <div style={{ padding: "0px 16px 16px 16px", minHeight: "50vh", height: "100%", background: colorBgContainer }}>
-            {children}
+            bottom: 0,
+          }}
+          collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
+          <div className="demo-logo-vertical" style={{ height: 40 }} >
+            <LoginModal></LoginModal>
           </div>
-        </Content>
-        {/* <Footer style={{ textAlign: 'center', background: colorBgContainer, }}>Ant Design ©2023 Created by Ant UED</Footer> */}
-      </Layout>
+          {selectedPath ?
+            <Menu theme="dark" mode="inline" items={menu}
+              selectedKeys={selectedPath?.selectedKey} defaultOpenKeys={selectedPath?.openKey}
+            />
+            : <></>
+          }
+        </Sider>
+        <Layout>
+          <Header
+            style={{
+              padding: '16px 0px',
+              background: colorBgContainer,
+              position: 'sticky',
+              top: 0,
+              zIndex: 1
+            }} >
+            <Next13ProgressBar height="3px" color={colorPrimary} options={{ showSpinner: true }} showOnShallow />
+            <HeaderSearch />
+          </Header>
+          <Content style={{ margin: '0px 0px', overflow: 'initial' }}>
+            <div style={{ padding: "0px 16px 16px 16px", minHeight: "50vh", height: "100%", background: colorBgContainer }}>
+              {API.loginState ? children :<></>}
+            </div>
+          </Content>
+          {/* <Footer style={{ textAlign: 'center', background: colorBgContainer, }}>Ant Design ©2023 Created by Ant UED</Footer> */}
+        </Layout>
+      </APIContext.Provider>
     </Layout>
   );
 };

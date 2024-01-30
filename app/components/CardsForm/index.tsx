@@ -1,15 +1,16 @@
 "use client"
-import { APIArrayResourceBase, AddItemType, ItemType, ListOptionType, ResourceType, UpdateItemType, useResource } from "@/app/utils/api/api_base";
+import { APIArrayResourceBase, AddItemType, ItemType, ListOptionType, ResourceType, UpdateItemType, useAPIContext, useResource } from "@/app/utils/api/api_base";
 import React, { useEffect, useState, createContext, useContext, MouseEventHandler, useMemo, CSSProperties, forwardRef, useImperativeHandle, ForwardedRef } from "react";
 import { Section } from "../Section";
 import { Alert, Button, ButtonProps, Card, Checkbox, Collapse, CollapseProps, ConfigProvider, Drawer, Modal, Popover, PopoverProps, Space, SpaceProps, theme } from "antd";
 import { PlusOutlined, CloseOutlined, CheckOutlined, RetweetOutlined, ExclamationOutlined, EditOutlined } from "@ant-design/icons"
 import { once } from "lodash";
+import { NASTOOL } from "@/app/utils/api/api";
 
 type ResourceInstance<Res extends ResourceType> = ReturnType<typeof useResource<Res>>;
 
 export interface CardsFormProps<Res extends ResourceType> {
-    resource: new () => APIArrayResourceBase<Res>,
+    resource: new (API: NASTOOL) => APIArrayResourceBase<Res>,
     title: React.ReactNode,
     layout?: "vertical" | "horizontal",
     children?: React.ReactNode,
@@ -64,7 +65,7 @@ export function useCardsFormContext<Res extends ResourceType>() {
 }
 
 export function CardsForm<Res extends ResourceType>(props: CardsFormProps<Res>) {
-    const resource = useResource<Res>(new props.resource(), { initialOptions: props.initialOptions, useMessage: true })
+    const resource = useResource<Res>(props.resource, { initialOptions: props.initialOptions, useMessage: true })
     const { useList, add, update, messageContext } = resource;
     const { refresh } = useList();
     const FormComponent = props.formComponent;

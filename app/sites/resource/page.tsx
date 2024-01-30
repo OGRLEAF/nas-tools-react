@@ -2,8 +2,9 @@
 import { API, NastoolIndexer, } from "@/app/utils/api/api";
 import React, { useEffect, useState } from "react";
 import { Card, Space } from "antd"
-import { usePathname} from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useAPIContext } from "@/app/utils/api/api_base";
 
 const IndexerCard = ({ indexer }: { indexer: NastoolIndexer }) => {
     const pathname = usePathname();
@@ -18,13 +19,12 @@ const IndexerCard = ({ indexer }: { indexer: NastoolIndexer }) => {
 
 export default function SitesResourceIndexers() {
     const [indexers, setIndexers] = useState<NastoolIndexer[]>([])
+    const { API } = useAPIContext();
     useEffect(() => {
-        API.getNastoolInstance()
-            .then(async (nt) => {
-                const indexers = await nt.getIndexers();
-                console.log(indexers)
-                setIndexers(indexers)
-            })
+        (async () => {
+            const indexers = await API.getIndexers();
+            setIndexers(indexers)
+        })()
     }, [])
 
     return <Space wrap>

@@ -714,8 +714,16 @@ export class NASTOOL {
         return false;
     }
 
+    public get loginState() {
+        return this.token != null;
+    }
+
     public async init() {
         // this.message = new NastoolMessage(`ws${this.config.https ? 's' : ''}://${this.config.host}:${this.config.port}/message?apikey=${this.serverConfig?.security.api_key}`);
+
+    }
+
+    public async waitLogin() {
 
     }
 

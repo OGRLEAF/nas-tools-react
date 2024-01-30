@@ -1,4 +1,4 @@
-import React, { CSSProperties, useContext, useEffect, useMemo, useState } from "react";
+import React, { CSSProperties, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { NastoolServerConfig } from "../../utils/api/api";
 import { AutoComplete, Input, Space, theme, Typography, Empty, Select, Flex, Spin, SelectProps } from "antd";
 import { TMDB } from "../../utils/api/media/tmdb";
@@ -8,6 +8,7 @@ import { ServerConfig } from "@/app/utils/api/serverConfig";
 import { StateMap, StateTag } from "../StateTag";
 import Image from "next/image"
 import { asyncEffect } from "@/app/utils";
+import { useAPIContext } from "@/app/utils/api/api_base";
 
 type CardSize = "normal" | "small" | "tiny";
 interface DetailCardStyle {
@@ -80,7 +81,7 @@ function CoverImage(options: { alt: string, src: string, maxHeight?: number }) {
     const { alt, src } = options;
     const [size, setSize] = useState<{ height: number, width: number }>({ height: 0, width: 0 })
     const maxHeight = options.maxHeight ?? 250;
-    return <Image alt={alt} {...size} quality={100} src={src} priority={true} sizes={`${maxHeight  * 3}px`}
+    return <Image alt={alt} {...size} quality={100} src={src} priority={true} sizes={`${maxHeight * 3}px`}
         style={{ objectFit: "contain", textAlign: "start", objectPosition: "top left", aspectRatio: "auto" }}
         onLoad={(evt) => {
             const { naturalHeight, naturalWidth } = evt.target as any;
@@ -100,51 +101,56 @@ export function MediaDetailCard({
     size,
     action,
     layout,
+    loading,
     postImageStyle
-}: { mediaDetail?: MediaWork, size?: CardSize, action?: React.JSX.Element, layout?: "vertical" | "horizonal", onTitleClick?: (mediaDetail: MediaWork) => void, postImageStyle?: CSSProperties }) {
+}: { mediaDetail?: MediaWork, size?: CardSize, action?: React.JSX.Element, loading?: boolean, layout?: "vertical" | "horizonal", onTitleClick?: (mediaDetail: MediaWork) => void, postImageStyle?: CSSProperties }) {
     const { token } = theme.useToken()
     const _size = size ? size : "normal";
     const style = cardStyleMap[_size];
-    if (mediaDetail) {
-        const metadata = mediaDetail.metadata
-        const coverImage = metadata?.image?.cover && <CoverImage maxHeight={style.height} alt={metadata.title} src={metadata?.image?.cover} />
-        return <Flex
-            align="start"
-            vertical={(layout ?? "horizontal") == "vertical"}
-            gap={12}
-            style={{
-                marginBottom: 0,
-                position: "relative",
-                // maxWidth: style.maxWidth
-                width: "100%",
-            }}>
-            {coverImage}
-            <div style={{ height: style.height, width: "100%", maxWidth: style.maxWidth }}>
-                <div style={{ paddingTop: 0, width: "100%", height: "100%", display: "flex", overflowY: "auto", alignItems: "start", flexDirection: "column" }}>
-                    <div style={{ position: "sticky", top: 0, backgroundColor: "#ffffffa1", color: token.colorTextBase, fontSize: "1.6rem", margin: 0, padding: "0px 0px 4px 0px", ...style.title }}>
-                        <Space>
-                            <span style={{ fontSize: "1.25rem", fontWeight: "bold" }}>{mediaDetail.title}</span>
-                            <span style={{ fontSize: "1rem" }}> {metadata?.date?.release}</span>
-                            <StateTag stateMap={stateTagMap} value={mediaDetail.series.t ?? MediaWorkType.UNKNOWN} />
-                        </Space>
-                    </div>
-                    <div style={{ padding: "0px 4px" }}>
-                        <Typography.Link style={{ color: token.colorTextDescription }} href={metadata?.links?.tmdb} target="_blank">
-                            {metadata?.links?.tmdb}
-                        </Typography.Link>
-                        <span style={{ color: token.colorTextDescription, display: "block", wordWrap: "break-word", whiteSpace: "pre-wrap" }}>
-                            {metadata?.description.replaceAll("\n\n", "\n").replaceAll("\n\n", "\n")}
-                        </span>
-                    </div>
 
-                    <div style={{ alignSelf: "end", position: "sticky", bottom: 0, right: 4 }}>{action}</div>
+    const content = useMemo(() => {
+        if (mediaDetail) {
+            const metadata = mediaDetail.metadata
+            const coverImage = metadata?.image?.cover && <CoverImage maxHeight={style.height} alt={metadata.title} src={metadata?.image?.cover} />
+            return <Flex
+                align="start"
+                vertical={(layout ?? "horizontal") == "vertical"}
+                gap={12}
+                style={{
+                    marginBottom: 0,
+                    position: "relative",
+                    // maxWidth: style.maxWidth
+                    width: "100%",
+                }}>
+                {coverImage}
+                <div style={{ height: style.height, width: "100%", maxWidth: style.maxWidth }}>
+                    <div style={{ paddingTop: 0, width: "100%", height: "100%", display: "flex", overflowY: "auto", alignItems: "start", flexDirection: "column" }}>
+                        <div style={{ position: "sticky", top: 0, backgroundColor: "#ffffffa1", color: token.colorTextBase, fontSize: "1.6rem", margin: 0, padding: "0px 0px 4px 0px", ...style.title }}>
+                            <Space>
+                                <span style={{ fontSize: "1.25rem", fontWeight: "bold" }}>{mediaDetail.title}</span>
+                                <span style={{ fontSize: "1rem" }}> {metadata?.date?.release}</span>
+                                <StateTag stateMap={stateTagMap} value={mediaDetail.series.t ?? MediaWorkType.UNKNOWN} />
+                            </Space>
+                        </div>
+                        <div style={{ padding: "0px 4px" }}>
+                            <Typography.Link style={{ color: token.colorTextDescription }} href={metadata?.links?.tmdb} target="_blank">
+                                {metadata?.links?.tmdb}
+                            </Typography.Link>
+                            <span style={{ color: token.colorTextDescription, display: "block", wordWrap: "break-word", whiteSpace: "pre-wrap" }}>
+                                {metadata?.description.replaceAll("\n\n", "\n").replaceAll("\n\n", "\n")}
+                            </span>
+                        </div>
+
+                        <div style={{ alignSelf: "end", position: "sticky", bottom: 0, right: 4 }}>{action}</div>
+                    </div>
                 </div>
-            </div>
-        </Flex >
+            </Flex >
 
-    } else {
-        return <Empty />
-    }
+        } else {
+            return <Empty />
+        }
+    }, [mediaDetail])
+    return content;
 }
 
 export default function TinyTMDBSearch({
@@ -226,15 +232,16 @@ export default function TinyTMDBSearch({
     }
 
     const [searchSource, setSearchSource] = useState(false)
+    const { API } = useAPIContext();
     useEffect(() => {
-        new ServerConfig().get()
+        new ServerConfig(API).get()
             .then(config => {
                 setSearchSource(config.laboratory.use_douban_titles)
             })
     }, [])
     const updateSearchSource = (value: boolean) => {
         setSearchSource(value)
-        new ServerConfig().update({
+        new ServerConfig(API).update({
             laboratory: {
                 use_douban_titles: value
             }
@@ -293,23 +300,29 @@ export function MediaSearchGroup({ value, onChange, children, ctx, filter }: Med
     const [seasons, setSeasons] = useState<MediaWorkSeason[]>([])
     const [loading, setLoading] = useState(false)
 
-    const onTMDBSelected = async (value: MediaWork) => {
+    const onTMDBSelected = useCallback(async (value: MediaWork) => {
         setSeasons([])
         setLoading(true)
         const work = new TMDB().work(String(value.key), value.type)
         const mediaWork = await work.get();
         if (mediaWork) setSeries(new SeriesKey(mediaWork.series).tmdbId(mediaWork.key))
         setLoading(false)
-    }
-    useEffect(asyncEffect(async () => {
+    }, [value])
+
+    const fetchMediaWork = useCallback(async () => {
         if (series.i != undefined) {
+            setLoading(true)
             const media = new TMDB().fromSeries(series.slice(SeriesKeyType.TMDBID));
             const mediaWork = await media?.get();
             if (mediaWork && media) {
                 setSelected(mediaWork);
             }
+            setLoading(false)
         }
-    }), [series.i])
+    }, [series])
+    useEffect(()=>{
+        fetchMediaWork()
+    }, [fetchMediaWork])
 
 
     useEffect(() => {

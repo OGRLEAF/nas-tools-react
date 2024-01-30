@@ -14,6 +14,7 @@ import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
 import { TMDB } from "@/app/utils/api/media/tmdb";
 import { ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
 import Image from "next/image";
+import { useAPIContext } from "@/app/utils/api/api_base";
 
 
 const defaultConfig: TVRssInfo = {
@@ -54,18 +55,18 @@ export default function SubscribeTV() {
         [RssState.SEARCHING]: <Tag color={token.colorSuccessActive}>搜索中</Tag>,
         [RssState.FINISH]: <Tag>已完成</Tag>,
     })
-
+    const { API } = useAPIContext();
     return <CardnForm title="电视剧订阅"
-        onFetch={() => new TVSubscription().list()}
+        onFetch={() => new TVSubscription(API).list()}
         onDelete={async (record) => {
-            if (record.rssid != undefined) new TVSubscription().delete(record.rssid);
+            if (record.rssid != undefined) new TVSubscription(API).delete(record.rssid);
             return true;
         }}
         extraActions={[{
             icon: <RetweetOutlined />,
             key: "refresh",
             async onClick(record) {
-                if (record.rssid != undefined) new TVSubscription().refresh(record.rssid);
+                if (record.rssid != undefined) new TVSubscription(API).refresh(record.rssid);
             },
         }
         ]}
@@ -140,11 +141,12 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
     }, [season, initialConfig.season])
 
     const ctx = useContext(CardnFormContext);
+    const { API } = useAPIContext()
     const [loading, setLoading] = useState(false);
     const onFinish = (value: TVRssInfo) => {
         setLoading(true)
         ctx.loading(value.name);
-        new TVSubscription().update({
+        new TVSubscription(API).update({
             ...initialConfig,
             ...value,
             type: DBMediaType.TV,

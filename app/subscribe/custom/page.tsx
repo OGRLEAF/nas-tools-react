@@ -292,7 +292,7 @@ const CustomRssCard = ({ config, }: { config: RssTaskConfig }) => {
 
 
 function RssParserSelect({ value, onChange }: { value?: string, onChange?: (value: string) => void }) {
-    const { useList } = useResource<RssParserResource>(new RssParsers());
+    const { useList } = useResource<RssParserResource>(RssParsers);
     const { list, } = useList();
     const parserOptions = list?.map((parser) => ({
         label: parser.name,
@@ -320,7 +320,7 @@ function RssPreviewList({ id }: { id: RssTaskConfig['id'] }) {
 }
 
 const RssPreviewTable = forwardRef(function RssPreviewTable({ id }: { id: RssTaskConfig['id'] }, ref: ForwardedRef<{ refresh: () => void }>) {
-    const { useList, messageContext, message, updateMany } = useResource<RssPreviewResource>(new RssPreview(), { initialOptions: { id } })
+    const { useList, messageContext, message, updateMany } = useResource<RssPreviewResource>(RssPreview, { initialOptions: { id } })
     const { list, loading, refresh } = useList();
     const [selected, setSelected] = useState<RssPreviewItem[]>([])
 

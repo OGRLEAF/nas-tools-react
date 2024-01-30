@@ -144,9 +144,6 @@ export interface NastoolRespWithData<T> extends NastoolResponse<T> {
 
 export class Subscription extends APIBase {
     private filterRules: NastoolFilterruleBasic[] = [];
-    constructor() {
-        super();
-    }
     public async getSiteList() {
         const rssSites = (await this.API).getSiteList({ rss: true });
         return rssSites
@@ -194,10 +191,6 @@ export class Subscription extends APIBase {
 }
 
 export class TVSubscription extends Subscription {
-    constructor() {
-        super();
-    }
-
     public async list() {
         const list = await (await this.API).post<{ result: TvRssList }>("subscribe/tv/list", {
             auth: true
@@ -229,9 +222,7 @@ export class TVSubscription extends Subscription {
 
 
 export class MovieSubscription extends Subscription {
-    constructor() {
-        super();
-    }
+
     public async list() {
         const list = await (await this.API).post<{ result: MovieRssList }>("subscribe/movie/list", {
             auth: true

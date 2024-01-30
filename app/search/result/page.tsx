@@ -249,7 +249,7 @@ function DownloadModalEntry(options: DownloadModalProps) {
 }
 
 export default function SearchResultPage() {
-    const { useData } = useDataResource(new TorrentSearchResult())
+    const { useData } = useDataResource(TorrentSearchResult)
     const { data } = useData();
 
     return <Section title="搜索结果">

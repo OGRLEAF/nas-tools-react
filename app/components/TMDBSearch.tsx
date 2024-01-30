@@ -1,7 +1,8 @@
 import { Input, Space, List, theme, Button, Image, Select, Row, Col } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { API, NastoolMediaSearchResult, NastoolMediaSearchResultItem } from "../utils/api/api";
 import { VerticalAlignBottomOutlined, SearchOutlined } from '@ant-design/icons';
+import { useAPIContext } from "../utils/api/api_base";
 const { Search } = Input;
 
 const SelectAction = ({ children, item, onSelected }: { children?: React.ReactNode, item: NastoolMediaSearchResultItem, onSelected: (value: string) => void }) => {
@@ -21,21 +22,23 @@ export function TMDBSearchList({ keyword, onSelected }:
     const [loadingState, setLoadingState] = useState(false);
     const [searchValue, setSearchValue] = useState(keyword)
     const [mediaSearchResult, setMediaSearchResult] = useState<NastoolMediaSearchResult>({ result: [] })
-    useEffect(() => {
-        API.getNastoolInstance()
-            .then(async (nt) => {
-                setLoadingState(true);
-                if (searchValue) {
-                    const result = await nt.mediaSearch(searchValue);
-                    console.log(result);
-                    setMediaSearchResult({
-                        result: result
-                    })
-                }
-                setLoadingState(false);
-            })
-    }, [searchValue])
+    const {API} = useAPIContext();
 
+    const search = useCallback(async ()=> {
+            setLoadingState(true);
+            if (searchValue) {
+                const result = await API.mediaSearch(searchValue);
+                console.log(result);
+                setMediaSearchResult({
+                    result: result
+                })
+            }
+            setLoadingState(false);
+
+    }, [API, searchValue])
+    useEffect(() => {
+        search()
+    }, [search])
 
     return <List
         dataSource={mediaSearchResult.result}

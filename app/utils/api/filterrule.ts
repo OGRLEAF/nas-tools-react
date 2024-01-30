@@ -19,10 +19,7 @@ export interface FilterRuleGroupConfig {
     rules: FilterRuleConfig[]
 }
 
-export class FilterRule extends APIBase {
-    constructor() {
-        super();
-    }
+export class FilterRuleGroup extends APIBase {
 
     public async list(): Promise<FilterRuleGroupConfig[]> {
         const result = await (await this.API).post<{ ruleGroups: FilterRuleGroupConfig[], initRules: [] }>("filterrule/list", { auth: true })

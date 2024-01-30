@@ -1,4 +1,4 @@
-import { NastoolServerConfig } from "./api";
+import { NASTOOL, NastoolServerConfig } from "./api";
 import { APIArrayResourceBase, ResourceType } from "./api_base";
 import { ServerConfig } from "./serverConfig";
 
@@ -33,8 +33,14 @@ export interface MediaServerResource extends ResourceType {
 }
 
 export class MediaServer extends APIArrayResourceBase<MediaServerResource> {
+    serverConfig: ServerConfig;
+    constructor(API: NASTOOL) {
+        super(API);
+        this.serverConfig = new ServerConfig(this.API)
+    }
+
     public async list(): Promise<MediaServerConfig[]> {
-        const serverConfig = await new ServerConfig().get();
+        const serverConfig = await this.serverConfig.get();
         const { jellyfin, plex, emby } = serverConfig;
         return [{
             host: jellyfin.host,
@@ -72,7 +78,7 @@ export class MediaServer extends APIArrayResourceBase<MediaServerResource> {
     }
     public async update(config: MediaServerConfig) {
         if (config.options.type == "jellyfin") {
-            await new ServerConfig().update({
+            await this.serverConfig.update({
                 jellyfin: {
                     host: config.host,
                     api_key: config.options.api_key,
@@ -82,7 +88,7 @@ export class MediaServer extends APIArrayResourceBase<MediaServerResource> {
             } as NastoolServerConfig)
         }
         else if (config.options.type == "emby") {
-            await new ServerConfig().update({
+            await this.serverConfig.update({
                 emby: {
                     host: config.host,
                     api_key: config.options.api_key,
@@ -93,7 +99,7 @@ export class MediaServer extends APIArrayResourceBase<MediaServerResource> {
         } else if (config.options.type == "plex") {
             const { host, options, pathMap, playhost } = config;
             const { servername, username, password, token } = options;
-            await new ServerConfig().update({
+            await this.serverConfig.update({
                 plex: {
                     host: host,
                     servername: servername,

@@ -37,9 +37,6 @@ export interface SitesResouce extends ResourceType {
 }
 
 export class Sites extends APIArrayResourceBase<SitesResouce> {
-    constructor() {
-        super();
-    }
 
     public async list({ rss, brush, statistic, }: {
         rss?: boolean,

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Row, Col, Statistic, Card, Table, Space } from 'antd'
 import { API, NastoolSiteInfo } from "@/app/utils/api/api";
 import { bytes_to_human } from "@/app/utils/"
+import { useAPIContext } from "@/app/utils/api/api_base";
 
 // function bytes_to_human(value: number) {
 //     const units = ["B", "KB", "MB", "GB", "TB", "PB"]
@@ -19,27 +20,26 @@ export default function StatisticPage() {
         seeding: 0,
         seeding_size: 0
     })
+    const { API } = useAPIContext();
     useEffect(() => {
-        setLoading(true)
-        API.getNastoolInstance()
-            .then(async (nt) => {
-                const sitesStatistics = await nt.getSitesStatistics()
-                setSitesStat(sitesStatistics);
-                const siteStatisSum = {
-                    uploaded: 0,
-                    downloaded: 0,
-                    seeding: 0,
-                    seeding_size: 0
-                }
-                sitesStatistics.forEach((site) => {
-                    siteStatisSum.uploaded += site.upload;
-                    siteStatisSum.downloaded += site.download;
-                    siteStatisSum.seeding += site.seeding;
-                    siteStatisSum.seeding_size += site.seeding_size;
-                })
-                setSitesStatSum(siteStatisSum)
-                setLoading(false)
+        (async () => {
+            const sitesStatistics = await API.getSitesStatistics()
+            setSitesStat(sitesStatistics);
+            const siteStatisSum = {
+                uploaded: 0,
+                downloaded: 0,
+                seeding: 0,
+                seeding_size: 0
+            }
+            sitesStatistics.forEach((site) => {
+                siteStatisSum.uploaded += site.upload;
+                siteStatisSum.downloaded += site.download;
+                siteStatisSum.seeding += site.seeding;
+                siteStatisSum.seeding_size += site.seeding_size;
             })
+            setSitesStatSum(siteStatisSum)
+            setLoading(false)
+        })()
     }, [])
     const SizeStatistic = ({ title, value, loading }: { title: string, value: number, loading: boolean }) => {
         const [num, unit] = bytes_to_human(value);

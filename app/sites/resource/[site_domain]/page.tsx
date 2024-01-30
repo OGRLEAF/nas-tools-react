@@ -11,6 +11,7 @@ import { Download } from "@/app/utils/api/download";
 import { DualArrowTag } from "@/app/components/DualArrowTag";
 import Search from "antd/es/input/Search";
 import Link from "next/link";
+import { useAPIContext } from "@/app/utils/api/api_base";
 
 export default function SiteResource({
     params
@@ -19,14 +20,14 @@ export default function SiteResource({
     const [keyword, setKeyword] = useState<string>()
     const [loading, setLoading] = useState(true);
     const [resourceList, setResourceList] = useState<NastoolSiteResourceItem[]>([])
+    const { API } = useAPIContext();
     useEffect(() => {
-        setLoading(true)
-        API.getNastoolInstance()
-            .then(async nt => {
-                const resources = await nt.getSiteResource(params.site_domain, page, keyword?.length ? keyword : undefined)
-                setResourceList(resources)
-                setLoading(false)
-            })
+        (async () => {
+            setLoading(true)
+            const resources = await API.getSiteResource(params.site_domain, page, keyword?.length ? keyword : undefined)
+            setResourceList(resources)
+            setLoading(false)
+        })()
     }, [page, keyword])
     const { token } = theme.useToken()
     return <Section

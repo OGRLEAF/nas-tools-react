@@ -2,7 +2,7 @@
 import { Section, SectionContext } from "@/app/components/Section";
 import { API, NastoolFileListItem } from "@/app/utils/api/api";
 import { Col, Row, List, Typography, Space, Segmented, Button, theme, Table, Cascader, Input, Form, Select, Tooltip, Flex } from "antd";
-import React, { Reducer, memo, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import React, { Reducer, memo, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { ColumnsType } from "antd/es/table";
 import { ReloadOutlined } from "@ant-design/icons"
 import FileMoreAction from "@/app/components/fileMoreAction";
@@ -13,6 +13,7 @@ import { useParams, usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { bytes_to_human } from "@/app/utils";
 import { IdentifyHistory } from "@/app/components/mediaImport/mediaImportContext";
+import { useAPIContext } from "@/app/utils/api/api_base";
 
 type SortKey = "name" | "mtime"
 type SortDirection = "dec" | "inc"
@@ -235,32 +236,28 @@ const MediaFileExplorer = () => {
     const [fileList, setFileList] = useState<NastoolFileListItem[]>([])
     const pathManagerContext = usePathManager();
     const router = useRouter()
+    const { API } = useAPIContext();
 
-    const onRefresh = () => {
+    const onRefresh = useCallback(async () => {
         setLoadingState(true);
-        const nastool = API.getNastoolInstance();
-        nastool.then(async (nastool) => {
-            try {
-                const fileList = await nastool.getFileList(pathManagerContext.getBasePath,
-                    pathManagerContext.getDeepestRelativePath().replaceAll("＃", "#"));
-                if (fileList.fallback_to != undefined) {
-                    router.replace("/media/file" + fileList.fallback_to)
-                } else {
-                    setDirList(fileList.directories)
-                    setFileList(fileList.files)
-                    setLoadingState(false);
-                }
-                // console.log("refresh: ", fileList, pathManagerContext.deepestPath)
-
-            } catch (e) {
-
+        try {
+            const fileList = await API.getFileList(pathManagerContext.getBasePath,
+                pathManagerContext.getDeepestRelativePath().replaceAll("＃", "#"));
+            if (fileList.fallback_to != undefined) {
+                router.replace("/media/file" + fileList.fallback_to)
+            } else {
+                setDirList(fileList.directories)
+                setFileList(fileList.files)
+                setLoadingState(false);
             }
-        })
-    }
+        } catch (e) {
+
+        }
+    }, [API])
 
     useEffect(() => {
         onRefresh();
-    }, []);
+    }, [onRefresh]);
 
     useEffect(() => {
         router.push("/media/file"

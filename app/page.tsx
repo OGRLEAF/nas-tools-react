@@ -1,37 +1,38 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { App, Button, Card, Space, Image, ConfigProvider } from 'antd';
 import { EyeOutlined, EllipsisOutlined, LinkOutlined } from '@ant-design/icons';
 import { API, NastoolMediaBrief, NastoolMediaLibrary, NastoolMediaLibraryItem } from './utils/api/api';
 import { Section } from './components/Section';
 import { useRouter } from 'next/navigation';
 import zhCN from 'antd/locale/zh_CN';
+import { APIContext } from './utils/api/api_base';
 
 const { Meta } = Card;
 
 type CardCoverType = "post" | "still"
 
 const Home = () => {
-
-
   const [libraryBrief, setLibraryBrief] = useState<NastoolMediaBrief>({
     libraries: [],
     resumes: [],
     latest: []
   })
   const router = useRouter();
+
+  const apiContext = useContext(APIContext);
   useEffect(() => {
-    const nastool = API.getNastoolInstance();
-    nastool.then(async (nastool) => {
-
-      const brief = await nastool.getMediaBrief();
-      console.log("got", brief)
-      setLibraryBrief(brief);
-    })
-
-    return () => { console.log("clean", nastool) }
-  }, []);
+    if (apiContext.API.loginState) {
+      const nastool = apiContext.API;
+      nastool.getMediaBrief()
+        .then(brief => {
+          console.log("got", brief)
+          setLibraryBrief(brief);
+        })
+      return () => { console.log("clean", nastool) }
+    }
+  }, [apiContext.API]);
 
   const libraryCard = (library: NastoolMediaLibrary | NastoolMediaLibraryItem, coverType: CardCoverType = "post") => {
     const cardStyle = ({

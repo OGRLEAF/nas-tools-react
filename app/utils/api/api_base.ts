@@ -1,15 +1,34 @@
 "use client"
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { API, NASTOOL } from "./api";
+import { useCallback, useEffect, useMemo, useState, createContext, useContext } from "react";
+import { API, NASTOOL, NastoolConfig } from "./api";
 import { useSubmitMessage } from "..";
 import { get } from "lodash";
 import { Modal } from "antd";
 
-export class APIBase {
-    protected API: Promise<NASTOOL>
-    constructor() {
-        this.API = API.getNastoolInstance();
+export interface APIContext {
+    API: NASTOOL,
+    setAPI: (API: NASTOOL) => void
+}
 
+const defaultConfig: NastoolConfig = {
+    https: false,
+    host: "",
+    port: 0
+}
+
+export const APIContext = createContext<APIContext>({
+    API: new NASTOOL(defaultConfig),
+    setAPI: () => { }
+})
+
+export const useAPIContext = () => useContext<APIContext>(APIContext);
+
+export class APIBase {
+    private static GLOBAL_API: NASTOOL;
+    public readonly API: NASTOOL
+    constructor(API?: NASTOOL) {
+        this.API = API ?? APIBase.GLOBAL_API;
+        APIBase.GLOBAL_API = this.API;
     }
 
 }
@@ -23,7 +42,8 @@ export interface APIArrayResourceOption<Options = never> extends APIResourceOpti
     initialOptions?: Options,
 }
 
-export interface APIDataResourceOption extends APIResourceOption {
+export interface APIDataResourceOption<Options = never> extends APIResourceOption {
+    initialOptions?: Options,
 }
 export class APIDataResourceBase<T, Options = never> extends APIBase {
 
@@ -40,15 +60,17 @@ export class APIDataResourceBase<T, Options = never> extends APIBase {
 
 }
 
-export function useDataResource<T, Options = never>(res: APIDataResourceBase<T, Options>, option?: APIDataResourceOption) {
-    let self = res;
+export function useDataResource<T, Options = never>(cls: new (API: NASTOOL) => APIDataResourceBase<T, Options>, option?: APIDataResourceOption<Options>) {
+    const { API } = useAPIContext();
+    const self = useMemo(() => new cls(API), [API])
     const message = useSubmitMessage(String(self));
     const useMessage = option?.useMessage ?? false
 
-    const [options, setOptions] = useState<Options>()
+    const [options, setOptions] = useState<Options | undefined>(option?.initialOptions)
     const [data, setData] = useState<T>()
     const useData = () => {
         const refresh = useCallback(async () => {
+            if (self.API.loginState == false) return
             if (useMessage) message.fetch.loading()
             try {
                 setData(await self.dataHook(options))
@@ -56,11 +78,11 @@ export function useDataResource<T, Options = never>(res: APIDataResourceBase<T, 
             } catch (e: any) {
                 if (useMessage) message.fetch.error(e)
             }
-        }, [])
+        }, [self])
         useEffect(() => {
             refresh();
         }, [refresh])
-        return { data, setData, refresh }
+        return { data, setData, refresh, setOptions }
     }
 
     const update = async (value?: T) => {
@@ -124,8 +146,9 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
 }
 
 
-export function useResource<Res extends ResourceType>(cls: APIArrayResourceBase<Res>, option?: APIArrayResourceOption<ListOptionType<Res>>) {
-    const self = cls
+export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) => APIArrayResourceBase<Res>, option?: APIArrayResourceOption<ListOptionType<Res>>) {
+    const { API } = useAPIContext();
+    const self = useMemo(() => new cls(API), [API])
     type GetRes<T> = T extends APIArrayResourceBase<infer T> ? T : Res;
     type T = GetRes<typeof cls>
     function useList() {
@@ -133,8 +156,9 @@ export function useResource<Res extends ResourceType>(cls: APIArrayResourceBase<
         const [options, setOptions] = useState<ListOptionType<T> | undefined>(option?.initialOptions)
         const [list, setList] = useState<ItemType<T>[]>()
         const [total, setTotal] = useState<number>(0);
-        const _refresh = useCallback(()=>(async () => {
-            setLoading(true)
+        const _refresh = useCallback(() => (async () => {
+            if (self.API.loginState)
+                setLoading(true)
             if (useMessage) message.fetch.loading()
             try {
                 const list = await self.listHook(options)
@@ -146,9 +170,9 @@ export function useResource<Res extends ResourceType>(cls: APIArrayResourceBase<
             } finally {
                 setLoading(false)
             }
-        }), [options])
+        }), [options, self])
 
-        const refresh = useMemo(()=>_refresh(), [_refresh])
+        const refresh = useMemo(() => _refresh(), [_refresh])
         useEffect(() => {
             refresh()
         }, [refresh])
@@ -204,8 +228,8 @@ export function useResource<Res extends ResourceType>(cls: APIArrayResourceBase<
             await self.validateHook?.(value) ?? [false, "Validation method not implemented"],
             validateMessage);
 
-    const delMany = cls.deleteManyHook ?
-        attachMessage<typeof cls.deleteManyHook, ItemType<T>[], DeleteOptionType<T>>(
+    const delMany = self.deleteManyHook ?
+        attachMessage<typeof self.deleteManyHook, ItemType<T>[], DeleteOptionType<T>>(
             async (value: ItemType<T>[], options) => {
                 return await self.deleteManyHook?.(value, options) ?? false
             },
@@ -213,8 +237,8 @@ export function useResource<Res extends ResourceType>(cls: APIArrayResourceBase<
             true
         ) : undefined;
 
-    const updateMany = cls.updateManyHook ?
-        attachMessage<typeof cls.updateManyHook, ItemType<T>[], UpdateOptionType<T>>(
+    const updateMany = self.updateManyHook ?
+        attachMessage<typeof self.updateManyHook, ItemType<T>[], UpdateOptionType<T>>(
             async (value: ItemType<T>[], options) => {
                 return await self.updateManyHook?.(value, options)
             },

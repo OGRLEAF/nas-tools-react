@@ -9,7 +9,7 @@ import { MediaWorkCategory, MediaWorkCategoryType } from "../utils/api/media/cat
 import { DownloadClient, DownloadClientConfig, DownloadClientResource, DownloadConfigResource, DownloadConfigs } from "../utils/api/download"
 import { Organize } from "../utils/api/import"
 import { normalize } from "path"
-import { useDataResource, useResource } from "../utils/api/api_base"
+import { useAPIContext, useDataResource, useResource } from "../utils/api/api_base"
 
 interface FormItemProp<T> {
     value?: T,
@@ -18,7 +18,7 @@ interface FormItemProp<T> {
 }
 
 export const DownloadSettingSelect = (options: { default?: { label: string, value: any } } & FormItemProp<string>) => {
-    const { useList } = useResource<DownloadConfigResource>(new DownloadConfigs())
+    const { useList } = useResource<DownloadConfigResource>(DownloadConfigs)
     const { list } = useList();
     const selectOptions = useMemo(() => [
         (options.default ?? {
@@ -32,7 +32,7 @@ export const DownloadSettingSelect = (options: { default?: { label: string, valu
 
 export const DownloadClientSelect = (options: & FormItemProp<string>) => {
 
-    const { useList } = useResource<DownloadClientResource>(new DownloadClient());
+    const { useList } = useResource<DownloadClientResource>(DownloadClient);
     const { list } = useList();
     const downloadClientOptions = list?.map((client) => ({
         label: client.name,
@@ -43,10 +43,10 @@ export const DownloadClientSelect = (options: & FormItemProp<string>) => {
 
 export const FilterRuleSelect = (options: FormItemProp<string>) => {
     const [filterRules, setFilterRules] = useState<NastoolFilterruleBasic[]>([]);
+    const { API } = useAPIContext()
     useEffect(() => {
         (async () => {
-            const nastool = API.getNastoolInstance();
-            (await nastool).getFilterRules()
+            await API.getFilterRules()
                 .then(res => {
                     setFilterRules(res)
                 })
@@ -89,10 +89,11 @@ export const PixSelect = (options: FormItemProp<string>) => {
 }
 
 export const SiteSelect = (options: FormItemProp<string[]>) => {
+    const { API } = useAPIContext()
     const [selectOptions, setSelectOptions] = useState<{ value: NastoolSiteProfile['name'], label: NastoolSiteProfile['name'] }[]>([]);
     useEffect(() => {
         (async () => {
-            const sites = await new Sites().list();
+            const sites = await new Sites(API).list();
             setSelectOptions(
                 [
                     ...sites.map((item) => ({ label: item.name, value: item.name }))
@@ -104,9 +105,10 @@ export const SiteSelect = (options: FormItemProp<string[]>) => {
 
 export const IndexerSelect = (options: FormItemProp<string[]>) => {
     const [selectOptions, setSelectOptions] = useState<{ value: NastoolIndexer['name'], label: NastoolIndexer['name'] }[]>([]);
+    const { API } = useAPIContext()
     useEffect(() => {
         (async () => {
-            const sites = await new Sites().indexers();
+            const sites = await new Sites(API).indexers();
             setSelectOptions(
                 [
                     ...sites.map((item) => ({ label: item.name, value: item.name }))
@@ -155,7 +157,7 @@ interface MediaWorkCategorySelectProp extends FormItemProp<MediaWorkCategoryType
     type: MediaWorkType
 }
 export const MediaWorkCategorySelect = (options: MediaWorkCategorySelectProp) => {
-    const { useData, } = useDataResource(new MediaWorkCategory(options.type));
+    const { useData, } = useDataResource(MediaWorkCategory, { initialOptions: { type: options.type } });
     const { refresh, data } = useData();
     useEffect(() => {
         refresh();

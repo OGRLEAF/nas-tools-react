@@ -2,15 +2,23 @@
 import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
 import { IconAdd, IconDelete, IconEdit } from "@/app/components/icons";
 import { asyncEffect, bytes_to_human } from "@/app/utils";
-import { FilterRule, FilterRuleGroupConfig, FilterRuleConfig } from "@/app/utils/api/filterrule";
+import { FilterRuleGroup, FilterRuleGroupConfig, FilterRuleConfig } from "@/app/utils/api/filterrule";
 import { Button, Card, Checkbox, Col, ConfigProvider, Drawer, Form, Input, InputNumber, List, Modal, Radio, Row, Select, Slider, Space, Tag } from "antd";
 import { PlusOutlined, MinusCircleOutlined, CloseCircleOutlined } from "@ant-design/icons"
 import { useForm } from "antd/es/form/Form";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { TabCards } from "@/app/components/CardnForm/TabCards";
 import CheckableTag from "antd/es/tag/CheckableTag";
 import { idText } from "typescript";
+import { useAPIContext } from "@/app/utils/api/api_base";
 
+
+function useFilterRule() {
+    const { API } = useAPIContext()
+    if (API.loginState) {
+        return new FilterRuleGroup(API)
+    }
+}
 
 const IconText = ({ icon, text }: { icon: React.FC; text: string }) => (
     <Space>
@@ -23,6 +31,7 @@ const IconText = ({ icon, text }: { icon: React.FC; text: string }) => (
 const FilterRuleCard = ({ config }: { config: FilterRuleConfig }) => {
     const [openDrawer, setOpenDrawer] = useState(false);
     const cardnFormContext = useContext(CardnFormContext)
+    const filterRule = useFilterRule()
     const deleteRule = () => {
         Modal.confirm({
             title: `确认删除规则${config.name}?`,
@@ -31,7 +40,7 @@ const FilterRuleCard = ({ config }: { config: FilterRuleConfig }) => {
                 <span>排除：{config.exclude}</span>
             </Space>,
             onOk: async () => {
-                await new FilterRule().rule.delete(config.id);
+                await filterRule?.rule.delete(config.id);
                 cardnFormContext.success("删除成功");
                 cardnFormContext.refresh();
             }
@@ -58,10 +67,11 @@ const FilterRuleCard = ({ config }: { config: FilterRuleConfig }) => {
 
 
 export default function FilterRulePage() {
+    const filterRule = useFilterRule()
     return <CardnForm<FilterRuleGroupConfig>
         title="过滤规则"
-        onFetch={(): Promise<FilterRuleGroupConfig[]> => new FilterRule().list()}
-        onDelete={async (record) => { (await new FilterRule().delete(record.id)); return true }}
+        onFetch={async (): Promise<FilterRuleGroupConfig[]> => await (filterRule?.list() ?? [])}
+        onDelete={async (record) => { (await filterRule?.delete(record.id)); return true }}
         layout="vertical"
         formRender={
             function ({ record }: { record?: FilterRuleGroupConfig | undefined; }): React.JSX.Element {
@@ -95,9 +105,10 @@ const defaultRuleConfig: FilterRuleConfig = {
 function FilterRuleList({ filterRuleGroup }: { filterRuleGroup: FilterRuleGroupConfig }) {
     const [isDefault, setDefault] = useState(filterRuleGroup.default)
     const ctx = useContext(CardnFormContext);
+    const filterRule = useFilterRule()
     const execDefault = async () => {
         ctx.loading("默认")
-        const msg = await new FilterRule().setDfault(filterRuleGroup.id)
+        const msg = await filterRule?.setDfault(filterRuleGroup.id)
         ctx.success(JSON.stringify(msg));
         ctx.refresh();
     }
@@ -149,10 +160,11 @@ interface FilterRuleGroupFormData {
 
 function FilterRuleGroupEditForm(options: { initialValue?: FilterRuleGroupFormData }) {
     const ctx = useContext(CardnFormContext);
+    const filterRule = useFilterRule()
     const onUpdate = async (values: FilterRuleGroupFormData) => {
         console.log(values)
         ctx.loading(values.name)
-        await new FilterRule().add({ name: values.name, default: values.default })
+        await filterRule?.add({ name: values.name, default: values.default })
             .then((res) => {
                 ctx.success(JSON.stringify(res))
                 ctx.refresh();
@@ -226,10 +238,12 @@ function FilterRuleEditForm(options: { initialValue: FilterRuleConfig }) {
         </>}
     </Form.List>
     const ctx = useContext(CardnFormContext)
+
+    const filterRule = useFilterRule()
     return <Form form={form} initialValues={formData} layout="vertical"
         onFinish={async (values: FilterRuleFormData) => {
             ctx.loading("更新")
-            const result = await new FilterRule().rule.update({
+            const result = await filterRule?.rule.update({
                 id: initialValue.id,
                 group: initialValue.group,
                 name: values.name,
