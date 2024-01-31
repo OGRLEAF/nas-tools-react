@@ -1,8 +1,9 @@
-import React, { useState, useEffect, CSSProperties } from "react";
+import React, { useState, useEffect, CSSProperties, useCallback } from "react";
 import { Form, Input, Switch, Radio, Button, Empty, Space, Spin, AutoComplete } from "antd"
 import { API, DBMediaType, NastoolMediaDetail, NastoolMediaType, SearchTaskConfig, TaskType } from "../utils/api/api";
 import { MediaDetailCard } from "./MediaDetailCard"
 import { useForm } from "antd/es/form/Form";
+import { useAPIContext } from "../utils/api/api_base";
 export interface SearchProps {
     keyword?: string,
     mediaId?: string,
@@ -28,39 +29,43 @@ export default function SearchTask({
     const [loading, setLoading] = useState(false);
     const [mediaDetail, setMediaDetail] = useState<NastoolMediaDetail>();
     const [titleOptions, setTitleOptions] = useState<{ value: string }[]>(search?.keyword ? [{ value: search.keyword }] : []);
+
+    const { API } = useAPIContext();
+
+    const updateDetail = useCallback(async () => {
+
+        if (search?.mediaId && search?.mediaType) {
+            const searchMediaType = ({
+                [NastoolMediaType.ANI]: DBMediaType.TV,
+                [NastoolMediaType.TV]: DBMediaType.TV,
+                [NastoolMediaType.MOVIE]: DBMediaType.MOVIE,
+                [NastoolMediaType.UNKNOWN]: undefined,
+            })[search.mediaType]
+
+            const mediaDetail = await API.getMediaDetail(search.mediaId, searchMediaType)
+
+            setMediaDetail(mediaDetail)
+            setTitleOptions([
+                { value: mediaDetail.title },
+                // ...titleOptions
+            ])
+            setSearchConfig({
+                ...searchTaskConfig,
+
+                tmdbid: search.mediaId,
+                media_type: search.mediaType,
+                keyword: mediaDetail.title,
+            })
+
+        }
+    }, [API])
     useEffect(() => {
         setLoading(true)
-        API.getNastoolInstance()
-            .then(async nt => {
-                if (search?.mediaId && search?.mediaType) {
-                    const searchMediaType = ({
-                        [NastoolMediaType.ANI]: DBMediaType.TV,
-                        [NastoolMediaType.TV]: DBMediaType.TV,
-                        [NastoolMediaType.MOVIE]: DBMediaType.MOVIE,
-                        [NastoolMediaType.UNKNOWN]: undefined,
-                    })[search.mediaType]
-
-                    const mediaDetail = await nt.getMediaDetail(search.mediaId, searchMediaType)
-
-                    setMediaDetail(mediaDetail)
-                    setTitleOptions([
-                        { value: mediaDetail.title },
-                        // ...titleOptions
-                    ])
-                    setSearchConfig({
-                        ...searchTaskConfig,
-                        
-                        tmdbid: search.mediaId,
-                        media_type: search.mediaType,
-                        keyword: mediaDetail.title,
-                    })
-
-                }
-            })
+        updateDetail()
             .finally(() => {
                 setLoading(false)
             })
-    }, [search?.mediaId])
+    }, [updateDetail])
 
     useEffect(() => {
         form.setFieldsValue(searchTaskConfig)
@@ -68,12 +73,11 @@ export default function SearchTask({
         // console.log("search task config", searchTaskConfig)
     }, [searchTaskConfig])
 
-    const onFinish = (value: SearchTaskConfig) => {
+    const onFinish = useCallback((value: SearchTaskConfig) => {
         // console.log(value)
         setSearchConfig(value)
-        API.getNastoolInstance()
-            .then((nt) => nt.createTask(TaskType.SEARCH, JSON.stringify(value)))
-    }
+        API.createTask(TaskType.SEARCH, JSON.stringify(value))
+    }, [API])
 
     return <Space direction="vertical" size={32} style={{ width: "100%", ...style }}>
         {/* {search ? (

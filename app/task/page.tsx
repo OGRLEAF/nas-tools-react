@@ -3,6 +3,7 @@ import React, { ReactNode, useEffect, useState } from "react";
 import { API, Task, Subtask, TaskStatus } from "../utils/api/api";
 import { Section } from "../components/Section";
 import { Collapse, Timeline, Space, Typography, Tag, theme, List, Alert, AlertProps } from "antd";
+import { useAPIContext } from "../utils/api/api_base";
 
 const SearchTaskBrief = ({ task }: { task: Subtask }) => {
 
@@ -64,14 +65,14 @@ export default function TaskPage() {
         border: "solid #ccc 1px"
     }
 
+    const { API } = useAPIContext();
     useEffect(() => {
-        API.getNastoolInstance()
-            .then(async nt => {
-                const list = await nt.getTaskList()
-                console.log(list)
-                setTasks(list)
-            })
-    }, [])
+        (async nt => {
+            const list = await nt.getTaskList()
+            console.log(list)
+            setTasks(list)
+        })(API)
+    }, [API])
     return <Section title="任务">
         <Collapse
             bordered={false}

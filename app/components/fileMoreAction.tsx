@@ -89,13 +89,6 @@ export default function FileMoreAction({ file, relFiles }:
 
     }), [file])
 
-
-    const onApplyTMDBId = async (tmdbid: string) => {
-        const nastool = API.getNastoolInstance()
-
-        console.log(tmdbid);
-    }
-
     const filePrefix = path.parse(file.name).name
 
     const relFilesByPrefix = relFiles?.filter((file) => file.name.startsWith(filePrefix)) || [];
@@ -106,7 +99,7 @@ export default function FileMoreAction({ file, relFiles }:
             {metadata?.title}
             <Button size="small" type="link" >#{mediaWorkInfo?.key}</Button>
         </Space>
-        <TMDBSearchEntry onApply={onApplyTMDBId} initialSearchValue={file.name} />
+        {/* <TMDBSearchEntry onApply={onApplyTMDBId} initialSearchValue={file.name} /> */}
     </Space>
 
     const TvExtraInfo = <>
