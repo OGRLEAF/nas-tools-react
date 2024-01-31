@@ -10,6 +10,7 @@ import { ServerConfig } from "@/app/utils/api/serverConfig";
 import { StateMap, StateTag } from "../StateTag";
 import VirtualList, { ListRef } from "rc-virtual-list"
 import _ from "lodash";
+import { useAPIContext } from "@/app/utils/api/api_base";
 
 const LogLevelStateTag: StateMap<Log['level']> = {
     INFO: {
@@ -42,14 +43,14 @@ export default function LogPanel() {
     const [msgs, setMsgs] = useState<Log[]>([]);
     const [msgApi, setMsgApi] = useState<ServerLog>();
     const [autoRefresh, setAutoRefresh] = useState(false);
-
+    const { API } = useAPIContext();
+    
     const onMessage = (msgs: Log[]) => {
         setMsgs(msgs);
         list.current?.scrollTo({ index: msgs.length - 1 })
     }
     const connectMessage = async () => {
-        const nt = await API.getNastoolInstance()
-        const serverEvent = await nt.getServerEvent()
+        const serverEvent = API.getServerEvent()
         if (serverEvent) {
             const socket = new ServerLog(serverEvent);
             setMsgApi(socket)
