@@ -75,8 +75,8 @@ const LoginModal = () => {
     const LoginForm = ({ form, message }: { message?: string, form: FormInstance<any> }) => <><Form
         form={form}
         name="basic"
-        labelCol={{ span: 8 }}
-        wrapperCol={{ span: 16 }}
+        labelCol={{ span: 5, offset: 0 }}
+        wrapperCol={{ span: 20 }}
         initialValues={{ remember: true }}
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
@@ -102,7 +102,7 @@ const LoginModal = () => {
         <Form.Item<FieldType>
             name="remember"
             valuePropName="checked"
-            wrapperCol={{ offset: 8, span: 16 }}
+            wrapperCol={{ offset: 4, span: 16 }}
         >
             <Checkbox>Remember me</Checkbox>
         </Form.Item>
