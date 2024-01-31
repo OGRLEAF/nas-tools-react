@@ -23,7 +23,7 @@ export class ServerEvent {
     private msgs: Message[] = []
     public onMessage: (msgs: Message[]) => void = () => { };
     constructor(token: string) {
-        this.sock = io("wss://nastool-dev.service.home/test", {
+        this.sock = io("/test", {
             // path: "/ui/proxy/socket.io/",
             extraHeaders: {
                 Authorization: token

@@ -7,18 +7,18 @@ import Markdown from "marked-react";
 import { useForm } from "antd/es/form/Form";
 import { ServerMessage, Message } from "@/app/utils/api/message/ServerMessage";
 import { ServerConfig } from "@/app/utils/api/serverConfig";
+import { useAPIContext } from "@/app/utils/api/api_base";
 
 export default function MessagePanel() {
     const [msgs, setMsgs] = useState<Message[]>([]);
     const [msgApi, setMsgApi] = useState<ServerMessage>();
     const [autoRefresh, setAutoRefresh] = useState(false);
-
+    const { API } = useAPIContext();
     const onMessage = (msgs: Message[]) => {
         setMsgs(msgs);
     }
     const connectMessage = async () => {
-        const nt = await API.getNastoolInstance()
-        const serverEvent = await nt.getServerEvent()
+        const serverEvent = API.getServerEvent()
         if (serverEvent) {
             const socket = new ServerMessage(serverEvent);
             setMsgApi(socket)
