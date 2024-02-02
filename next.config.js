@@ -6,11 +6,12 @@ const nextConfig = {
     env: {
         BASE_PATH: process.env.BASE_PATH
     },
+    
     rewrites: () => {
         return [
             {
                 source: '/proxy/:path*',
-                destination: 'http://127.0.0.1:3001/:path*'
+                destination: 'http://127.0.0.1:3001/:path*',
             },
             {
                 source: '/static/:path*',

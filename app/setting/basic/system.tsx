@@ -100,20 +100,30 @@ export default function SettingSystem(options: { config?: NastoolServerConfig })
                 </Form.Item>
             </Col>
             <Col span={6}>
-                <Form.Item label="代理服务器" name={["app", "proxies", "https"]}>
-                    <Input />
-                </Form.Item>
-            </Col>
-            <Col span={6}>
                 <Form.Item label="外网访问地址" name={["app", "domain"]}>
                     <Input />
                 </Form.Item>
             </Col>
         </Row>
 
-        <Form.Item label="User-Agnet" name={["app", "user_agent"]}>
-            <Input />
-        </Form.Item>
+
+        <Row gutter={24}>
+            <Col span={6}>
+                <Form.Item label="代理服务器(HTTPS)" name={["app", "proxies", "https"]}>
+                    <Input />
+                </Form.Item>
+            </Col>
+            <Col span={6} >
+                <Form.Item label="代理服务器(HTTP)" name={["app", "proxies", "http"]}>
+                    <Input />
+                </Form.Item>
+            </Col>
+            <Col span={12}>
+                <Form.Item label="User-Agent" name={["app", "user_agent"]}>
+                    <Input />
+                </Form.Item>
+            </Col>
+        </Row>
         {/* </Form> */}
     </>
 }
