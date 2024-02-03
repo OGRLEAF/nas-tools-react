@@ -10,8 +10,9 @@ const nextConfig = {
     rewrites: () => {
         return [
             {
-                source: '/proxy/:path*',
-                destination: 'http://127.0.0.1:3001/:path*',
+                source: '/api/:path*',
+                destination: 'http://127.0.0.1:3001/api/:path*',
+                basePath: false
             },
             {
                 source: '/static/:path*',

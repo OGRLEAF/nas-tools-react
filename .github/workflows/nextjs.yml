@@ -74,4 +74,4 @@ jobs:
       - name: Create release
         run: |
           tar -czvf server.tar.gz ./.next/standalone
-          gh release create -t "NASTOOL Lite" "$(date +%Y%m%d%H%M%S)" --generate-notes --latest ./server.tar.gz
+          gh release create  "v1.0.0-alpha+build20240203" --generate-notes --latest ./server.tar.gz
