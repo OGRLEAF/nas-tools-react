@@ -92,7 +92,7 @@ export function CardsForm<Res extends ResourceType>(props: CardsFormProps<Res>) 
             }} />
             else return undefined
         }
-    }, [editingRecord, openEditing])
+    }, [editingRecord, openEditing, FormComponent, add, update])
     const CardsFormContext = createCardFormContext<Res>()
     return <Section title={props.title}
         onRefresh={() => refresh()}
@@ -215,7 +215,7 @@ export function Cards<Res extends ResourceType>({ cardProps, spaceProps, cardSel
             list ? list.map((record, indexAsKey) =>
                 <ListItemCard<Res> key={cardSelection ? record[cardSelection.key] : indexAsKey} record={record} cardProps={cardProps(record)} />) : <></>
         }
-    </Space >, [list])
+    </Space >, [list, cardProps, cardSelection, spaceProps])
     return <SelectionContext.Provider value={cardSelection ?? false}>
         <Checkbox.Group<ItemType<Res>>
             value={cardSelection ? cardSelection.selected : undefined}

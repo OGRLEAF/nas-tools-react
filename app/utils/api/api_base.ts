@@ -62,7 +62,7 @@ export class APIDataResourceBase<T, Options = never> extends APIBase {
 
 export function useDataResource<T, Options = never>(cls: new (API: NASTOOL) => APIDataResourceBase<T, Options>, option?: APIDataResourceOption<Options>) {
     const { API } = useAPIContext();
-    const self = useMemo(() => new cls(API), [API])
+    const self = useMemo(() => new cls(API), [API, cls])
     const message = useSubmitMessage(String(self));
     const useMessage = option?.useMessage ?? false
 
@@ -78,7 +78,7 @@ export function useDataResource<T, Options = never>(cls: new (API: NASTOOL) => A
             } catch (e: any) {
                 if (useMessage) message.fetch.error(e)
             }
-        }, [self])
+        }, [cls])
         useEffect(() => {
             refresh();
         }, [refresh])
@@ -170,7 +170,7 @@ export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) =>
             } finally {
                 setLoading(false)
             }
-        }), [options, self])
+        }), [options])
 
         const refresh = useMemo(() => _refresh(), [_refresh])
         useEffect(() => {

@@ -193,7 +193,7 @@ export const EmptyPathSelect = (options: FormItemProp<string>) => {
     const ctx = useContext(UnionPathSelectContext);
     useEffect(() => {
         ctx.setGroupedPaths("auto", [""])
-    }, [options.value])
+    }, [options.value, ctx])
     return <Select disabled
         style={{
             width: options.width ? options.width - 150 : undefined
@@ -236,7 +236,7 @@ export const LibraryPathSelect = (options: FormItemProp<string>) => {
             const allPaths = [...anime_path, ...tv_path, ...movie_path];
             ctx.setGroupedPaths("library", allPaths)
         }
-    }, [librariesPath])
+    }, [librariesPath, ctx])
 
     return <Select value={path} onChange={handlePathChange} options={libraryPathOptions}
         style={{
