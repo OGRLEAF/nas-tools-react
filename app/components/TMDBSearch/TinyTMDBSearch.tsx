@@ -333,8 +333,8 @@ export function MediaSearchGroup({ value, onChange, children, filter }: MediaSea
 
 
     useEffect(() => {
-        if (onChange) {
-            onChange(new SeriesKey(series))
+        if (onChange && value) {
+            if (!value.equal(series)) onChange(new SeriesKey(series))
         }
     }, [series])
 

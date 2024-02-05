@@ -89,6 +89,7 @@ export default function SubscribeTV() {
 const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
     const initialConfig = config || defaultConfig;
     const [detail, setDetail] = useState<MediaWork>();
+    const [autoFill, setAutoFill] = useState(false);
     const [series, setSeries] = useState(new SeriesKey().type(MediaWorkType.TV).tmdbId(initialConfig.mediaid).season(initialConfig.season))
     const detailFromConfig = {
         series: series,
@@ -123,22 +124,31 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
         if (detail) onSelect(detail)
     }, [detail])
 
-    const season = Form.useWatch("season", form);
+    const seasonInForm = Form.useWatch("season", form);
     useEffect(() => {
-        if (season != undefined) {
-            console.log(season, initialConfig.season, season != initialConfig.season)
-            if (season != initialConfig.season) {
-                const seasonKey = series.season(season);
-                const media = new TMDB().fromSeries(seasonKey.slice(SeriesKeyType.TMDBID));
+        const newSeries = new SeriesKey(series).season(seasonInForm);
+        console.log("seasonInform changed", seasonInForm, newSeries)
+        if (!newSeries.equal(series)) {
+            setSeries(newSeries);
+            setAutoFill(true);
+        }
+    }, [seasonInForm, series])
+    useEffect(() => {
+        // if (seasonInForm != undefined && seasonInForm != initialConfig.season) {
+        //     console.log(seasonInForm, initialConfig.season, seasonInForm != initialConfig.season)
+        //     const seasonKey = series.season(seasonInForm);
+        //     console.log(seasonKey)
+        console.log("Try update total ep", autoFill, series.s)
+        if (autoFill) {
+            if (series.end == SeriesKeyType.SEASON) {
+                const media = new TMDB().fromSeries(series.slice(SeriesKeyType.SEASON));
                 media?.get_children()
                     .then((list) => {
-                        console.log("season changed", season, list)
+                        form.setFieldValue('total_ep', list.length);
                     })
-
             }
         }
-
-    }, [season, initialConfig.season])
+    }, [series, series.s, autoFill])
 
     const ctx = useContext(CardnFormContext);
     const { API } = useAPIContext()
@@ -168,7 +178,11 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
 
     return <Space direction="vertical" style={{ width: "100%" }}>
         <MediaSearchGroup value={series} filter={{ type: [MediaWorkType.TV, MediaWorkType.ANI] }}
-            onChange={(series) => setSeries(series)}>
+            onChange={(series) => {
+                console.log("update series")
+                setSeries(new SeriesKey(series));
+                setAutoFill(true);
+            }}>
             <MediaSearchWork />
         </MediaSearchGroup>
         <Form

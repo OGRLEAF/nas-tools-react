@@ -371,8 +371,8 @@ export const MediaSeasonInput = ({ series, value, onChange, style }: { series: S
     const [seasonOptions, setSeasonOptions] = useState<SelectProps['options']>([])
     const [loading, setLoading] = useState(false)
     useEffect(asyncEffect(async () => {
-        setLoading(true)
         if (series.i) {
+            setLoading(true)
             const media = new TMDB().fromSeries(series.slice(SeriesKeyType.TMDBID));
             const mediaWork = await media?.get();
             if (mediaWork && media) {
@@ -393,7 +393,7 @@ export const MediaSeasonInput = ({ series, value, onChange, style }: { series: S
         }
     }), [series.i])
 
-    return <Select value={value} disabled={loading} loading={loading} style={style}
+    return <Select value={value} disabled={loading || (series.i == undefined)} loading={loading} style={style}
         options={seasonOptions}
         onSelect={(value: number) => {
             if (onChange) onChange(value)
