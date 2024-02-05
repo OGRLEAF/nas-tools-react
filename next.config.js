@@ -1,4 +1,7 @@
 /** @type {import('next').NextConfig} */
+
+const backendApiHost = process.env.API_HOST
+
 const nextConfig = {
     basePath: process.env.BASE_PATH,
     reactStrictMode: false,
@@ -11,16 +14,16 @@ const nextConfig = {
         return [
             {
                 source: '/api/:path*',
-                destination: 'http://127.0.0.1:3001/api/:path*',
+                destination: `${backendApiHost}/api/:path*`,
                 basePath: false
             },
             {
                 source: '/static/:path*',
-                destination: 'http://127.0.0.1:3001/static/:path*'
+                destination: `${backendApiHost}/static/:path*`
             },
             {
                 source: '/imgx',
-                destination: 'http://127.0.0.1:3001/imgx',
+                destination: `${backendApiHost}/imgx`,
                 basePath: false
             }
         ]
