@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext, useReducer } from "react";
+import React, { useState, useEffect, createContext, useContext, useReducer, useMemo } from "react";
 import { Space, TreeSelect, TreeSelectProps, theme } from "antd"
 import { API, NastoolFileListItem } from "@/app/utils/api/api";
 import PathManager from "../utils/pathManager";
@@ -19,12 +19,9 @@ export function PathSelector({ value, onChange, style }: PathSelectorProps) {
     const [loadingState, setLoadingState] = useState(true)
     const [treeData, setTreeData] = useState<Omit<DefaultOptionType, 'label'>[]>([]);
 
-    const pathManagerContext = new PathManager("/") // useContext(PathManagerContext);
+    const [pathManagerContext] = useState(new PathManager("/")) // useContext(PathManagerContext);
     const { API } = useAPIContext();
     useEffect(() => {
-        if (value == undefined) {
-
-        }
         setLoadingState(true);
         const nastool = API;
         if (nastool.loginState) {
@@ -42,7 +39,7 @@ export function PathSelector({ value, onChange, style }: PathSelectorProps) {
                     setLoadingState(false);
                 })
         }
-    }, [value]);
+    }, [API]);
 
     const { token } = theme.useToken();
     const onLoadData: TreeSelectProps['loadData'] = async ({ id }) => {

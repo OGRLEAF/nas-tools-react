@@ -1,4 +1,4 @@
-import React, { useEffect, useState, createContext, useContext, useMemo } from "react";
+import React, { useEffect, useState, createContext, useContext, useMemo, useCallback } from "react";
 import { NastoolServerConfig } from "../utils/api/api";
 import { Organize } from "../utils/api/import";
 import { Select, Space } from "antd";
@@ -139,26 +139,28 @@ export const UnionPathsSelectGroup = (options: WrapperProps) => {
             }
         }
     }, [groupedPaths, options.value])
-    const outputPathTypeOptions: { label: string, value: string }[] = []
-    options.items?.forEach(({ type, label }) => {
-        outputPathTypeOptions.push({ label, value: type })
-    })
+    const outputPathTypeOptions: { label: string, value: string }[] = useMemo(() => (
+        options.items?.map(({ type, label }) => ({ label, value: type })) || []
+    ), [options.items])
 
-    const handlePathTypeChange = (value: string) => {
+
+    const handlePathTypeChange = useCallback((value: string) => {
         setPathType(value);
         if (options.onChange) options.onChange(undefined)
-    };
-    const handlePathChange = (value: string) => {
+    }, [options.onChange]);
+    const handlePathChange = useCallback((value: string) => {
         setPath(value);
         if (options.onChange) options.onChange(value)
-    }
+    }, [options.onChange])
 
-    const unionPathSelectContext = {
+    const unionPathSelectContext = useMemo(() => ({
         groupedPaths,
         setGroupedPaths: (key: string, value: string[]) => { setGroupedPaths({ ...groupedPaths, ...{ [key]: [...value] } }) },
-    }
+    }), [groupedPaths]);
 
-    const childrenMap = Object.fromEntries(options.items?.map((value) => [value.type, value.render({ value: path, onChange: handlePathChange })]) ?? [])
+    const childrenMap = useMemo(() => {
+        return Object.fromEntries(options.items?.map((value) => [value.type, value.render({ value: path, onChange: handlePathChange })]) ?? [])
+    }, [path, handlePathChange])
 
     const allChildren = Object.values(childrenMap)
 
@@ -236,7 +238,7 @@ export const LibraryPathSelect = (options: FormItemProp<string>) => {
             const allPaths = [...anime_path, ...tv_path, ...movie_path];
             ctx.setGroupedPaths("library", allPaths)
         }
-    }, [librariesPath, ctx])
+    }, [librariesPath,])
 
     return <Select value={path} onChange={handlePathChange} options={libraryPathOptions}
         style={{
