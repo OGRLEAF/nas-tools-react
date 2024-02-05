@@ -104,7 +104,7 @@ const LoginModal = () => {
             valuePropName="checked"
             wrapperCol={{ offset: 4, span: 16 }}
         >
-            <Checkbox>Remember me</Checkbox>
+            <Checkbox>保持登录</Checkbox>
         </Form.Item>
         {message && <Alert banner showIcon onClose={() => setMessage(undefined)} message={message}></Alert>}
     </Form>
@@ -122,7 +122,8 @@ const LoginModal = () => {
                         const values = await form.validateFields();
                         const loginConfig = {
                             username: values.username,
-                            password: values.password
+                            password: values.password,
+                            remember: values.remember
                         };
                         try {
                             const api = await login(loginConfig)

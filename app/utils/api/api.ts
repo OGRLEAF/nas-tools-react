@@ -117,7 +117,8 @@ export interface NastoolConfig {
 
 export interface NastoolLoginConfig {
     username: string,
-    password: string
+    password: string,
+    remember: boolean
 }
 
 interface NastoolPersistedConfig {
@@ -738,10 +739,10 @@ export class NASTOOL {
         return this.message
     }
 
-    public async login({ username, password }: NastoolLoginConfig): Promise<boolean> {
+    public async login({ username, password, remember }: NastoolLoginConfig): Promise<boolean> {
         const loginResp: NastoolLoginResData | undefined = await this.post<NastoolLoginResData>("user/login", { data: { username, password } });
         if (loginResp) {
-            this.storage.setItem('db:nastool-login-cache', loginResp);
+            if(remember) this.storage.setItem('db:nastool-login-cache', loginResp);
             this.token = loginResp.token;
         }
 
@@ -1144,7 +1145,7 @@ export class API {
                 } else {
                     if (this.onNastoolLoginRequired) {
                         const { username, password } = await this.onNastoolLoginRequired();
-                        const loginOk = await nastool_instance.login({ username: username, password: password })
+                        const loginOk = await nastool_instance.login({ username: username, password: password, remember: false })
                         if (loginOk) {
                             this.nastool_instance = nastool_instance;
                         } else {
