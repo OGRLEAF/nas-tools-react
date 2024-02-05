@@ -294,20 +294,27 @@ export interface MediaSearchProps {
     ctx?: SearchContextType
 }
 
-export function MediaSearchGroup({ value, onChange, children, ctx, filter }: MediaSearchProps) {
+export function MediaSearchGroup({ value, onChange, children, filter }: MediaSearchProps) {
     const [searchContext] = useSearch(value);
     const { setSelected, selected, series, setSeries } = searchContext;
     const [seasons, setSeasons] = useState<MediaWorkSeason[]>([])
     const [loading, setLoading] = useState(false)
 
+    useEffect(() => {
+        if (value) {
+            if (!value.equal(series)) setSeries(value)
+        }
+    }, [value])
+
     const onTMDBSelected = useCallback(async (value: MediaWork) => {
+        console.log("onTMDBSelected")
         setSeasons([])
         setLoading(true)
         const work = new TMDB().work(String(value.key), value.type)
         const mediaWork = await work.get();
         if (mediaWork) setSeries(new SeriesKey(mediaWork.series).tmdbId(mediaWork.key))
         setLoading(false)
-    }, [value])
+    }, [])
 
     const fetchMediaWork = useCallback(async () => {
         if (series.i != undefined) {
@@ -320,13 +327,15 @@ export function MediaSearchGroup({ value, onChange, children, ctx, filter }: Med
             setLoading(false)
         }
     }, [series])
-    useEffect(()=>{
+    useEffect(() => {
         fetchMediaWork()
     }, [fetchMediaWork])
 
 
     useEffect(() => {
-        if (onChange) onChange(new SeriesKey(series))
+        if (onChange) {
+            onChange(new SeriesKey(series))
+        }
     }, [series])
 
     return <Space direction="vertical" style={{ width: "100%" }}>

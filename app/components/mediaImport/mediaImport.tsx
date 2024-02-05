@@ -72,9 +72,7 @@ export default function MediaImportWrapper({ initialValue }: { initialValue?: Me
             open={mediaImportContext.isImportWorkspaceOpen}
             onClose={() => { mediaImportDispatch({ type: "close_workspace" }) }}
             height={850}
-            extra={
-                <MediaImportFilter />
-            }
+
         >
             <MediaImport />
         </Drawer>
@@ -121,6 +119,12 @@ const MediaImport = () => {
 
 
     const series = Form.useWatch("series", form) as SeriesKey;
+    useEffect(() => {
+        console.log('outter', search.series)
+        form.setFieldValue('series', new SeriesKey(search.series))
+
+    }, [search.series])
+
     return <Row gutter={16} style={{ height: "100%" }}>
         <Col span={7}>
             <Form form={form}
@@ -135,18 +139,18 @@ const MediaImport = () => {
                 }}
                 onFinish={onFinish}>
                 <Space direction="vertical" style={{ width: "100%" }}>
-                    <SearchContext.Provider value={search}>
-                        <Form.Item name="series" noStyle>
-                            {/* <MediaSearch /> */}
-                            <MediaSearchGroup >
-                                <MediaSearchWork />
-                                <br />
-                                <MediaSearchSeason />
-                                <br />
-                            </MediaSearchGroup>
-                        </Form.Item>
-                    </SearchContext.Provider>
+
+                    <Form.Item name="series" noStyle>
+                        <MediaSearchGroup>
+                            <MediaSearchWork />
+                            <br />
+                            <MediaSearchSeason />
+                            <br />
+                        </MediaSearchGroup>
+                    </Form.Item>
+
                     {series?.t == MediaWorkType.TV || series?.t == MediaWorkType.ANI ? <>
+                        <span>{series.t} {series.i} {series.s}</span>
                         <SearchContext.Provider value={search}>
                             <Form.Item name="episodes">
                                 <EpisodeInput fileNames={selectedFiles.map((file) => file.name)} />
@@ -166,6 +170,7 @@ const MediaImport = () => {
             </SearchContext.Provider>
         </Col>
     </Row >
+
 }
 
 const EpisodeInput = (options: { value?: number[], onChange?: (value: (number)[]) => void, fileNames: MediaImportFileKey[] },) => {
@@ -226,14 +231,18 @@ const EpisodeInput = (options: { value?: number[], onChange?: (value: (number)[]
 
 const EpisodeInputFromTMDB = (options: { onChange: (value: number[]) => void }) => {
     const [episodeOptions, setEpisodeOptions] = useState<SelectProps['options']>([]);
-    const selectContext = useContext(SearchContext);
-    const { series } = selectContext;
+    // const selectContext = useContext(SearchContext);
+    // const { series } = selectContext;
     const [loading, setLoading] = useState(false);
     const [value, setValue] = useState<number[]>([])
+
+    const form = Form.useFormInstance();
+    const series: SeriesKey | undefined = Form.useWatch('series', form)
+
     useEffect(asyncEffect(async () => {
         setLoading(true)
-        console.log(series)
-        if (series.end == SeriesKeyType.SEASON) {
+        console.log('EpisodeInputFromTMDB', series)
+        if (series && series.end == SeriesKeyType.SEASON) {
             const season = new TMDB().fromSeries(series.slice(SeriesKeyType.SEASON));
             if (season) {
                 const episodes = await season.get_children();
@@ -253,7 +262,7 @@ const EpisodeInputFromTMDB = (options: { onChange: (value: number[]) => void }) 
         options.onChange(values);
     }
     return <Select
-        placeholder={episodeOptions?.length ? `从共${episodeOptions?.length}集中选择` : "选择前置信息"}
+        placeholder={episodeOptions?.length ? `从共${episodeOptions?.length}集中选择` : `选择前置信息 ${series?.i} ${series?.e}`}
         tokenSeparators={[',']}
         disabled={loading || (episodeOptions?.length == 0)}
         loading={loading}

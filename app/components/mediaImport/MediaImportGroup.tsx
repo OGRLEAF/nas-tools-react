@@ -78,7 +78,12 @@ export function TvMediaImportGroup(props: MediaImportGroupProps) {
 
     const { setSeries, setKeyword } = useContext(SearchContext);
     const selectButton = <Button type="primary" size="small" onClick={() => { if (work?.title) setKeyword(work?.title) }}>搜索</Button>
-    const searchButton = <Button size="small" onClick={() => { if (work) setSeries(work.series) }}>选择</Button>
+    const searchButton = <Button size="small" onClick={() => {
+        if (work) {
+            console.log(work)
+            setSeries(new SeriesKey(work.series))
+        }
+    }}>选择</Button>
     return <Table
         title={() => {
             return <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
