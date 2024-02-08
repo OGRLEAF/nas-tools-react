@@ -31,9 +31,11 @@ export class Indexers extends APIArrayResourceBase<IndexerResource> {
 
 }
 
+
+
 export class IndexerEnabledSites extends APIDataResourceBase<IndexerSite['id'][]>{
     private setting: ServerConfig;
-    constructor(API:NASTOOL) {
+    constructor(API: NASTOOL) {
         super(API);
         this.setting = new ServerConfig(API)
     }
@@ -53,6 +55,45 @@ export class IndexerEnabledSites extends APIDataResourceBase<IndexerSite['id'][]
                 indexer_sites: value
             }
         } as NastoolServerConfig)
+        return true
+    }
+}
+
+export interface IndexerOptionsData {
+    type: "Indexer" | "Prowlarr" | "Jackett",
+}
+
+export interface BuiltinIndexerOptions extends IndexerOptionsData {
+    type: "Indexer",
+    sites_config: Record<IndexerSite['id'], {
+        id: IndexerSite['id'],
+        enabled: boolean
+    }>
+}
+
+
+export class IndexerOptions extends APIDataResourceBase<IndexerOptionsData>{
+    private setting: ServerConfig;
+    constructor(API: NASTOOL) {
+        super(API);
+        this.setting = new ServerConfig(API)
+    }
+    async list() {
+        const indexerOptions = await this.API.get<BuiltinIndexerOptions>("indexer/options", { auth: true })
+        return indexerOptions;
+    }
+
+    async update(value: IndexerOptionsData) {
+        const result = await this.API.post("indexer/options", { auth: true, data: { options: value }, json: true })
+
+    }
+
+    public async dataHook() {
+        return this.list()
+    }
+
+    public async updateHook(value: IndexerOptionsData): Promise<boolean> {
+        this.update(value)
         return true
     }
 }

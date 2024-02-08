@@ -89,7 +89,8 @@ type NastoolApi =
     "plugin/list" |
     "plugin/status" |
     "plugin/uninstall" |
-    "plugin/config/update"
+    "plugin/config/update" |
+    "indexer/options"
 
 
 export interface NastoolResponse<T> {

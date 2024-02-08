@@ -2,7 +2,7 @@
 import { Section } from "@/app/components/Section";
 import { TagCheckboxGroup, TagCheckboxGroupProps } from "@/app/components/TagCheckbox";
 import { useDataResource, useResource } from "@/app/utils/api/api_base";
-import { IndexerEnabledSites, IndexerResource, IndexerSite, Indexers } from "@/app/utils/api/indexer";
+import { BuiltinIndexerOptions, IndexerEnabledSites, IndexerOptions, IndexerResource, IndexerSite, Indexers } from "@/app/utils/api/indexer";
 import { Button, Space } from "antd";
 import _ from "lodash";
 import React, { useState } from "react";
@@ -18,15 +18,29 @@ export default function IndexersSetting() {
 function BuiltinIndexerSetting() {
     const { useList } = useResource<IndexerResource>(Indexers)
     const { list: sites } = useList();
-    const { useData, update, messageContext } = useDataResource(IndexerEnabledSites, { useMessage: true });
-    const { data: enabledSites, setData: setEnabledSites, } = useData();
-    return <>
-        {messageContext}
-        {sites ? <IndexerSitesSelector options={sites} value={enabledSites ?? []}
-            onChange={((value) => { setEnabledSites(value) })} /> : <></>}
-        <br />
-        <Button type="primary" onClick={() => { update() }}>保存</Button>
-    </>
+    const { useData, update, messageContext } = useDataResource(IndexerOptions, { useMessage: true });
+    const { data: indexerOptions, setData: setIndexerOptions, } = useData();
+
+    if (indexerOptions?.type == "Indexer") {
+        const builtinIndexerOptions = (indexerOptions as BuiltinIndexerOptions)
+        const sitesConfig = builtinIndexerOptions.sites_config
+        const enabledSites = sites?.filter(v => v.enabled).map(v => sitesConfig[v.id].id);
+        return <>
+            {messageContext}
+            {sites ? <IndexerSitesSelector options={sites} value={enabledSites ?? []}
+                onChange={((value) => {
+                    console.log(value)
+                    enabledSites?.forEach((v)=>builtinIndexerOptions.sites_config[v].enabled = false)
+                    value.forEach((v)=>builtinIndexerOptions.sites_config[v].enabled = true)
+                    setIndexerOptions({
+                        ...builtinIndexerOptions,
+                    })
+                })} /> : <></>}
+            <br />
+            <Button type="primary" onClick={() => { update() }}>保存</Button>
+        </>
+    }
+    return <>{messageContext}</>
 }
 
 function IndexerSitesSelector({ options: list, value, onChange }: { options: IndexerSite[], value: IndexerSite['id'][], onChange?: (value: IndexerSite['id'][]) => void }) {
