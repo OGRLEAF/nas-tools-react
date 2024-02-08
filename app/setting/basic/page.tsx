@@ -12,6 +12,7 @@ import SettingCard from "./SettingCard"
 
 import { Space } from 'antd'
 import { useAPIContext } from '@/app/utils/api/api_base'
+import VersionTag from '@/app/components/VersionTag'
 
 export default function SettingBasic() {
     const [serverConfig, setServerConfig] = useState<NastoolServerConfig>()
@@ -35,6 +36,7 @@ export default function SettingBasic() {
                 <SettingCard name="服务" settingForm={SettingService} config={serverConfig} />
                 <SettingCard name="安全" settingForm={SettingSecurity} config={serverConfig} />
                 <SettingCard name="实验室" settingForm={SettingLaboratory} config={serverConfig} />
+                <VersionTag />
             </Space>
         </Section>
     </>

@@ -1,15 +1,22 @@
 /** @type {import('next').NextConfig} */
-
+const { readFileSync } = require("fs")
 const backendApiHost = process.env.API_HOST
+
+const version = readFileSync("./VERSION", "utf8");
+const buildTime = new Date().toISOString();
+
 
 const nextConfig = {
     basePath: process.env.BASE_PATH,
     reactStrictMode: false,
     output: 'standalone',
     env: {
-        BASE_PATH: process.env.BASE_PATH
+        BASE_PATH: process.env.BASE_PATH,
+        NEXT_PUBLIC_PACKAGE_VERSION: version,
+        NEXT_PUBLIC_BUILD_TIME: buildTime,
+        NEXT_PUBLIC_API_HOST: backendApiHost
     },
-    
+
     rewrites: () => {
         return [
             {
@@ -42,7 +49,7 @@ const nextConfig = {
                 port: '',
             },
         ],
-    }
+    },
 }
 
 module.exports = nextConfig
