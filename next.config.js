@@ -25,6 +25,11 @@ const nextConfig = {
                 basePath: false
             },
             {
+                source: '/socket.io/:path*',
+                destination: `${backendApiHost}/socket.io/:path*/`,
+                basePath: false
+            },
+            {
                 source: '/static/:path*',
                 destination: `${backendApiHost}/static/:path*`
             },
