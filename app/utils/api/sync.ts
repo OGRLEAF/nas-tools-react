@@ -41,10 +41,6 @@ export interface DirectorySynResource extends ResourceType {
 
 
 export class DirectorySync extends APIArrayResourceBase<DirectorySynResource> {
-    constructor() {
-        super();
-    }
-
     public async list() {
         const result = await (await this.API).post<{ result: Record<string, SyncDirectoryConfig> }>("sync/directory/list", { auth: true });
         const dirList = Object.values(result.result).map((conf: any) => {
@@ -75,6 +71,7 @@ export class DirectorySync extends APIArrayResourceBase<DirectorySynResource> {
         return result;
     }
 
+
     public async deleteHook(value: SyncDirectoryConfig, options?: any): Promise<boolean> {
         await this.delete(value.id);
         return true;
@@ -85,7 +82,7 @@ export class DirectorySync extends APIArrayResourceBase<DirectorySynResource> {
         return true
     }
 
-    public listHook(options?: any): Promise<SyncDirectoryConfig[]> {
-        return this.list()
+    public async listHook(options?: any): Promise<SyncDirectoryConfig[]> {
+        return await this.list()
     }
 }

@@ -195,7 +195,7 @@ export const EmptyPathSelect = (options: FormItemProp<string>) => {
     const ctx = useContext(UnionPathSelectContext);
     useEffect(() => {
         ctx.setGroupedPaths("auto", [""])
-    }, [options.value, ctx])
+    }, [options.value])
     return <Select disabled
         style={{
             width: options.width ? options.width - 150 : undefined

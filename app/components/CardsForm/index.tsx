@@ -296,7 +296,7 @@ export function CollapsableList<Res extends ResourceType>(options:
     const { useList } = ctx.resource;
     const { list } = useList();
     const { confirm } = Modal;
-    const items: CollapseProps['items'] = list?.map((record: ItemType<Res>, index) => {
+    const items: CollapseProps['items'] = useMemo(() => list?.map((record: ItemType<Res>, index) => {
         const props = cardProps(record);
         const actions = []
         if (!props.readonly) {
@@ -331,7 +331,7 @@ export function CollapsableList<Res extends ResourceType>(options:
             extra: <Space>{actions}</Space>,
             style: options.panelStyle
         }
-    })
+    }), [list])
 
     return <ConfigProvider theme={{
         components: {
