@@ -191,11 +191,11 @@ interface FormItemProp<T> {
     width?: number,
 }
 
-export const EmptyPathSelect = (options: FormItemProp<string>) => {
+export const EmptyPathSelect = (options: { emptyValue?: string | null } & FormItemProp<string>) => {
     const ctx = useContext(UnionPathSelectContext);
     useEffect(() => {
-        ctx.setGroupedPaths("auto", [""])
-    }, [options.value])
+        ctx.setGroupedPaths("auto", [options.emptyValue ?? ""])
+    }, [options.value, options.emptyValue])
     return <Select disabled
         style={{
             width: options.width ? options.width - 150 : undefined

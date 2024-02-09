@@ -58,7 +58,6 @@ export class DirectorySync extends APIArrayResourceBase<DirectorySynResource> {
             auth: true,
             json: true
         })
-        console.log(result)
         return result;
     }
     public async delete(sid: number) {
@@ -75,6 +74,11 @@ export class DirectorySync extends APIArrayResourceBase<DirectorySynResource> {
     public async deleteHook(value: SyncDirectoryConfig, options?: any): Promise<boolean> {
         await this.delete(value.id);
         return true;
+    }
+
+    public async addHook(value: any): Promise<boolean> {
+        await this.update(value)
+        return true
     }
 
     public async updateHook(value: SyncDirectoryConfig): Promise<boolean> {

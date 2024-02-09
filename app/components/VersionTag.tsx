@@ -11,7 +11,6 @@ const getServerVersion = async () => {
 }
 
 export default function VersionTag() {
-    console.log("rerender")
     const [version, setVersion] = useState<string>()
     useEffect(() => {
         getServerVersion().then((value) => setVersion(value.data.version))
