@@ -9,13 +9,15 @@ const getServerVersion = async () => {
     const result = await fetch(`/api/v1/system/version`, { cache: 'force-cache' });
     return result.json()
 }
+const versionPromise = getServerVersion().then((value) => value.data.version).catch((e)=>`<Error ${String(e)}>`)
 
 export default function VersionTag() {
-    const [version, setVersion] = useState<string>()
-    useEffect(() => {
-        getServerVersion().then((value) => setVersion(value.data.version))
-        .catch(()=>setVersion("<Error>"))
-    }, [])
+    // const [version, setVersion] = useState<string>()
+    // useEffect(() => {
+    //     getServerVersion().then((value) => setVersion(value.data.version))
+    //     .catch(()=>setVersion("<Error>"))
+    // }, [])
+    const version = use(versionPromise)
     return <Card>
         <div>Web Page: v{NEXT_PUBLIC_PACKAGE_VERSION} build at {NEXT_PUBLIC_BUILD_TIME}</div>
         <div>Server: {version}</div>
