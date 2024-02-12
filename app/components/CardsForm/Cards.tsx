@@ -65,7 +65,7 @@ export function Cards<Res extends ResourceType>({ cardProps, spaceProps, selecti
         {list ? list.map((record, indexAsKey) => <ListItemCard<Res> key={selection ? record[selection.key] : indexAsKey} record={record} cardProps={cardProps(record)} />) : <></>}
     </Space>, [list, cardProps, selection, spaceProps]);
 
-    useEffect(() => { if (list) selection?.setRecords?.(list) }, [list])
+    useEffect(() => { if (list) selection?.setRecords?.(list) }, [list, selection])
 
     return selection ? <SelectionContext.Provider value={{ ...selection, records: list }}>
         <Checkbox.Group<ItemType<Res>>
@@ -80,8 +80,7 @@ export function Cards<Res extends ResourceType>({ cardProps, spaceProps, selecti
 }
 
 
-export function BatchActions<Res extends ResourceType>({ selection }: { selection?: CardsSelectionContext<Res> }) {
-    if (!selection) return <></>;
+export function BatchActions<Res extends ResourceType>({ selection }: { selection: CardsSelectionContext<Res> }) {
 
     const selected = useMemo(() => selection.selected, [selection.selected]);
     const total = useMemo(() => selection.records?.length ?? 0, [selection.records]);
