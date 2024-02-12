@@ -90,7 +90,11 @@ type NastoolApi =
     "plugin/status" |
     "plugin/uninstall" |
     "plugin/config/update" |
-    "indexer/options"
+    "indexer/options" |
+    "brushtask/list" | 
+    "brushtask/update" |
+    "brushtask/delete" |
+    "brushtask/torrents"
 
 
 export interface NastoolResponse<T> {
@@ -743,7 +747,7 @@ export class NASTOOL {
     public async login({ username, password, remember }: NastoolLoginConfig): Promise<boolean> {
         const loginResp: NastoolLoginResData | undefined = await this.post<NastoolLoginResData>("user/login", { data: { username, password } });
         if (loginResp) {
-            if(remember) this.storage.setItem('db:nastool-login-cache', loginResp);
+            if (remember) this.storage.setItem('db:nastool-login-cache', loginResp);
             this.token = loginResp.token;
         }
 
