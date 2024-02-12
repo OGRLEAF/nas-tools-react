@@ -2,10 +2,11 @@
 import { APIArrayResourceBase, AddItemType, ItemType, ListOptionType, ResourceType, UpdateItemType, useAPIContext, useResource } from "@/app/utils/api/api_base";
 import React, { useEffect, useState, createContext, useContext, MouseEventHandler, useMemo, CSSProperties, forwardRef, useImperativeHandle, ForwardedRef } from "react";
 import { Section } from "../Section";
-import { Alert, Button, ButtonProps, Card, Checkbox, Collapse, CollapseProps, ConfigProvider, Drawer, Modal, Popover, PopoverProps, Space, SpaceProps, theme } from "antd";
+import { Alert, Button, ButtonProps, Card, Checkbox, Collapse, CollapseProps, ConfigProvider, Drawer, Modal, Popover, PopoverProps, Space, theme } from "antd";
 import { PlusOutlined, CloseOutlined, CheckOutlined, RetweetOutlined, ExclamationOutlined, EditOutlined } from "@ant-design/icons"
 import { once } from "lodash";
 import { NASTOOL } from "@/app/utils/api/api";
+import { useSelectionContext } from "./Cards";
 
 type ResourceInstance<Res extends ResourceType> = ReturnType<typeof useResource<Res>>;
 
@@ -185,53 +186,7 @@ export const TestButton = forwardRef(function TestButton<Res extends ResourceTyp
     }
 })
 
-interface CardsSelectionPropsObject<Res extends ResourceType> {
-    key: keyof ItemType<Res>,
-    selected?: ItemType<Res>[this['key']][],
-    onChange: (selectedKeys: ItemType<Res>[this['key']][], selected: ItemType<Res>[]) => void
-}
-
-type CardsSelectionProps<Res extends ResourceType> = CardsSelectionPropsObject<Res> | false
-
-export interface CardsProps<Res extends ResourceType> {
-    cardProps: (record: ItemType<Res>) => CardProps<Res>,
-    spaceProps?: SpaceProps,
-    cardSelection?: CardsSelectionProps<Res>
-}
-
-type CardsSelectionContext<Res extends ResourceType> = CardsSelectionProps<Res>;
-
-const SelectionContext = createContext<CardsSelectionContext<any>>(false)
-
-const useSelectionContext = <Res extends ResourceType>() => useContext<CardsSelectionContext<Res>>(SelectionContext)
-
-export function Cards<Res extends ResourceType>({ cardProps, spaceProps, cardSelection }: CardsProps<Res>) {
-    const ctx = useCardsFormContext<Res>();
-    const { resource } = ctx;
-    const { useList } = resource;
-    const { list } = useList();
-    const cards = useMemo(() => <Space {...spaceProps}>
-        {
-            list ? list.map((record, indexAsKey) =>
-                <ListItemCard<Res> key={cardSelection ? record[cardSelection.key] : indexAsKey} record={record} cardProps={cardProps(record)} />) : <></>
-        }
-    </Space >, [list, cardProps, cardSelection, spaceProps])
-    return <SelectionContext.Provider value={cardSelection ?? false}>
-        <Checkbox.Group<ItemType<Res>>
-            value={cardSelection ? cardSelection.selected : undefined}
-            onChange={cardSelection ? (values) => {
-                const selected = list?.filter((value) => (values.indexOf(value[cardSelection.key]) > -1)) ?? [];
-                const selectedKeys = selected?.map(v => v[cardSelection.key])
-                cardSelection.onChange(selectedKeys, selected)
-            } : undefined}>
-            {cards}
-        </Checkbox.Group>
-    </SelectionContext.Provider>
-
-}
-
-
-function ListItemCard<Res extends ResourceType>({ record, cardProps, }: { record: ItemType<Res>, cardProps: CardProps<Res> }) {
+export function ListItemCard<Res extends ResourceType>({ record, cardProps, }: { record: ItemType<Res>, cardProps: CardProps<Res> }) {
     const ctx = useCardsFormContext<Res>();
     const selectContext = useSelectionContext<Res>()
     const props = cardProps;

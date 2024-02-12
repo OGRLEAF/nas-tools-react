@@ -1,5 +1,6 @@
 "use client"
-import { Cards, CardsForm } from "@/app/components/CardsForm";
+import { CardsForm } from "@/app/components/CardsForm";
+import { Cards } from "@/app/components/CardsForm/Cards";
 import { Plugin, PluginFormFieldDetails, PluginFormFieldSelectGroup, PluginFormFieldSwitch, PluginFormFieldText, PluginFormFieldTextArea, PluginFormItem, PluginFormItemDiv, PluginProfile, PluginResource } from "@/app/utils/api/plugin";
 import { Button, Divider, Flex, Form, Input, SelectProps, Space, Switch, Tooltip } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons"

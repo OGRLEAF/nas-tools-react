@@ -88,19 +88,23 @@ export const PixSelect = (options: FormItemProp<string>) => {
     return <Select value={options.value} onChange={options.onChange} options={pixOptions} />
 }
 
-export const SiteSelect = (options: FormItemProp<string[]>) => {
+export const SiteSelect = (options: FormItemProp<string[]>
+    & { mode?: "multiple" | "single", siteKey?: "name" | "id" }
+) => {
+    const key = options.siteKey ?? "name"
     const { API } = useAPIContext()
-    const [selectOptions, setSelectOptions] = useState<{ value: NastoolSiteProfile['name'], label: NastoolSiteProfile['name'] }[]>([]);
+    const [selectOptions, setSelectOptions] = useState<{ value: NastoolSiteProfile[typeof key], label: NastoolSiteProfile['name'] }[]>([]);
+
     useEffect(() => {
         (async () => {
             const sites = await new Sites(API).list();
             setSelectOptions(
                 [
-                    ...sites.map((item) => ({ label: item.name, value: item.name }))
+                    ...sites.map((item) => ({ label: item.name, value: item[key] }))
                 ])
         })()
     }, []);
-    return <Select mode="multiple" options={selectOptions} value={options.value} onChange={options.onChange} />
+    return <Select mode={options.mode == "multiple" ? "multiple" : undefined} options={selectOptions} value={options.value} onChange={options.onChange} />
 }
 
 export const IndexerSelect = (options: FormItemProp<string[]>) => {

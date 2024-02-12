@@ -6,7 +6,8 @@ import { RetweetOutlined, WechatOutlined, SlackOutlined } from "@ant-design/icon
 import React, { useContext, useMemo } from "react";
 import { TagCheckboxGroup } from "@/app/components/TagCheckbox";
 import { ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
-import { Cards, CardsForm } from "@/app/components/CardsForm";
+import { CardsForm } from "@/app/components/CardsForm";
+import { Cards } from "@/app/components/CardsForm/Cards";
 import { CardIcon } from "@/app/components/CardIcon";
 
 const BASE_PATH = process.env.BASE_PATH

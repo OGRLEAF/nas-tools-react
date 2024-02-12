@@ -10,20 +10,21 @@ export default function TagsSelect({
     onChange?: (value: string) => void,
     sep: string
 }) {
-    const initialTags = value.split(sep)
     const [tags, setTags] = useState<string[]>([]);
     const onSelectChange = (value: string[]) => {
-        console.log(value)
+        // console.log(value)
         setTags(value)
     }
     useEffect(() => {
-        if (onChange) onChange((tags|| []).join(sep));
+        if (onChange) onChange((tags || []).join(sep));
     }, [tags])
     useEffect(() => {
-        // console.log('value=', value)
-        setTags(value?.split(sep) || [])
-    }, [])
+        // console.log('value=', value, value?.split(sep))
+        if (value && (value.length > 0)) {
+            setTags(value?.split(sep) || [])
+        }
+    }, [value])
     return <>
-        <Select mode="tags" value={initialTags || tags} tokenSeparators={[sep]} onChange={onSelectChange} />
+        <Select mode="tags" value={tags} tokenSeparators={[sep]} onChange={onSelectChange} />
     </>
 }

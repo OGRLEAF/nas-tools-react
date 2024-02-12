@@ -1,5 +1,6 @@
 "use client"
-import { Cards, CardsForm } from "@/app/components/CardsForm";
+import { CardsForm } from "@/app/components/CardsForm";
+import { Cards } from "@/app/components/CardsForm/Cards";
 import { PluginRepo, PluginRepoResource } from "@/app/utils/api/plugin";
 import React from "react";
 import { Button } from "antd";

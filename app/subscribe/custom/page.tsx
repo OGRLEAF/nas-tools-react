@@ -1,6 +1,6 @@
 "use client"
 
-import { Button, Space, Descriptions, Tag, Form, Input, Row, Col, Switch, Select, Radio, Checkbox, Divider, Collapse, Table, Flex, Dropdown } from "antd";
+import { Button, Space, Descriptions, Tag, Form, Input, Row, Col, Switch, Select, Radio, Checkbox, Divider, Collapse, Table, Dropdown } from "antd";
 import { ForwardedRef, forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { PlusOutlined, DeleteOutlined, DownOutlined, CheckOutlined, CloseOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons"
 import { Rss, RssParserResource, RssParsers, RssPreview, RssPreviewItem, RssPreviewResource, RssResource, RssTaskConfig, RssUse } from "@/app/utils/api/subscription/rss";
@@ -8,57 +8,40 @@ import _ from "lodash";
 import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 import { useForm } from "antd/es/form/Form";
 import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
-import { Cards, CardsForm } from "@/app/components/CardsForm";
+import { CardsForm } from "@/app/components/CardsForm";
+import { BatchActions, Cards, useSelection } from "@/app/components/CardsForm/Cards";
 import { IconDownloader, IconPause, IconPlay, IconRefresh } from "@/app/components/icons";
 import RssParserPage from "./parser/page";
-import { RssConfig } from "@/app/utils/api/subscription/subscribe";
-import { ColumnProps, ColumnsType } from "antd/lib/table";
-import { faRefresh } from "@fortawesome/free-solid-svg-icons";
+import { ColumnsType } from "antd/lib/table";
 import Link from "next/link";
 import { useResource } from "@/app/utils/api/api_base";
 
 
 export default function SubscribeMoviePage() {
-    const [selected, setSelected] = useState<RssTaskConfig[]>([]);
+    const selection = useSelection<RssResource>({ key: "id" });
+    const { selected } = selection;
     return <>
         <CardsForm<RssResource>
             title="自定义订阅"
             resource={Rss}
             formComponent={CustomRssForm}
             extra={(resource) => {
-                const { list, refresh } = resource.useList()
                 return [
                     <Divider key="divider" type="vertical" />,
-                    <Button key="select_all">
-                        <Checkbox
-                            indeterminate={selected.length > 0 && (selected.length < (list?.length ?? 0))}
-                            checked={selected.length == list?.length}
-                            onClick={() => {
-                                if (selected.length == 0 && list != undefined) { setSelected([...list]) }
-                                else setSelected([])
-                            }}
-                        >
-                            全选 {selected.length}/{list?.length}
-                        </Checkbox>
-                    </Button>,
+                    <BatchActions key="batch_action" selection={selection} />,
                     <Button key="enable_btn" icon={<IconPlay />}
                         onClick={async () => {
-                            await resource.updateMany?.(selected.map(v => ({ ...v, state: true })));
+                            selected && await resource.updateMany?.(selected?.map(v => ({ ...v, state: true })));
                         }}>开启</Button>,
                     <Button key="disable_btn" icon={<IconPause />}
                         onClick={async () => {
-                            await resource.updateMany?.(selected.map(v => ({ ...v, state: false })));
-                            refresh()
+                            selected && await resource.updateMany?.(selected?.map(v => ({ ...v, state: false })));
                         }}>停止</Button>
                 ]
             }}
         >
             <Cards<RssResource>
-                cardSelection={{
-                    key: "id",
-                    selected: selected.map(v => v.id),
-                    onChange: (selectedKeys, selected) => { setSelected(selected) }
-                }}
+                selection={selection}
                 spaceProps={{ direction: "vertical" }}
                 cardProps={(record) => ({
                     title: <Space size="small" align="center">

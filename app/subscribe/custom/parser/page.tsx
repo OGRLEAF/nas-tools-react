@@ -1,5 +1,6 @@
 "use client"
-import { Cards, CardsForm, useCardsFormContext } from "@/app/components/CardsForm";
+import { CardsForm, useCardsFormContext } from "@/app/components/CardsForm";
+import { Cards } from "@/app/components/CardsForm/Cards";
 import { RssParsers, RssParserResource, RssParserConfig } from "@/app/utils/api/subscription/rss";
 import { Button, Col, Flex, Form, Input, Modal, Row, Select, theme } from "antd";
 import CodeMirror from "@uiw/react-codemirror"

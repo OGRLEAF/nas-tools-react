@@ -1,6 +1,7 @@
 "use client"
 import { CardIcon } from "@/app/components/CardIcon"
-import { Cards, CardsForm, TestButton, CollapsableList } from "@/app/components/CardsForm"
+import { CardsForm, TestButton, CollapsableList } from "@/app/components/CardsForm"
+import { Cards } from "@/app/components/CardsForm/Cards"
 import { DownloadClientSelect, MediaWorkCategoryUnionSelect, SyncModeSelect } from "@/app/components/NTSelects"
 import { PathSelector } from "@/app/components/PathSelector"
 import { DownloadClient, DownloadClientConfig, DownloadClientResource, DownloadClientType, DownloadConfig, DownloadConfigResource, DownloadConfigs } from "@/app/utils/api/download"

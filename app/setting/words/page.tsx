@@ -1,5 +1,6 @@
 "use client"
-import { CardProps, Cards, CardsForm, CollapsableList, useCardsFormContext } from "@/app/components/CardsForm";
+import { CardProps, CardsForm, CollapsableList, useCardsFormContext } from "@/app/components/CardsForm";
+import { Cards } from "@/app/components/CardsForm/Cards";
 import TinyTMDBSearch, { MediaSearchGroup, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { useSubmitMessage } from "@/app/utils";
 import { ResourceType } from "@/app/utils/api/api_base";

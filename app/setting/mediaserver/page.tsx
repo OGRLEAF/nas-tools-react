@@ -1,6 +1,7 @@
 "use client"
 import { CardIcon } from "@/app/components/CardIcon";
-import { CardsForm, Cards, TestButton } from "@/app/components/CardsForm";
+import { CardsForm, TestButton } from "@/app/components/CardsForm";
+import { Cards } from "@/app/components/CardsForm/Cards";
 import { MediaServer, MediaServerConfig, MediaServerResource } from "@/app/utils/api/mediaserver";
 import { Button, Form, Input, Space } from "antd";
 import React, { useMemo } from "react";
