@@ -2,11 +2,10 @@
 import { APIArrayResourceBase, AddItemType, ItemType, ListOptionType, ResourceType, UpdateItemType, useAPIContext, useResource } from "@/app/utils/api/api_base";
 import React, { useEffect, useState, createContext, useContext, MouseEventHandler, useMemo, CSSProperties, forwardRef, useImperativeHandle, ForwardedRef } from "react";
 import { Section } from "../Section";
-import { Alert, Button, ButtonProps, Card, Checkbox, Collapse, CollapseProps, ConfigProvider, Drawer, Modal, Popover, PopoverProps, Space, theme } from "antd";
+import { Alert, Button, ButtonProps, Collapse, CollapseProps, ConfigProvider, Drawer, Modal, Popover, PopoverProps, Space, theme } from "antd";
 import { PlusOutlined, CloseOutlined, CheckOutlined, RetweetOutlined, ExclamationOutlined, EditOutlined } from "@ant-design/icons"
 import { once } from "lodash";
 import { NASTOOL } from "@/app/utils/api/api";
-import { useSelectionContext } from "./Cards";
 
 type ResourceInstance<Res extends ResourceType> = ReturnType<typeof useResource<Res>>;
 
@@ -185,63 +184,6 @@ export const TestButton = forwardRef(function TestButton<Res extends ResourceTyp
         return undefined
     }
 })
-
-export function ListItemCard<Res extends ResourceType>({ record, cardProps, }: { record: ItemType<Res>, cardProps: CardProps<Res> }) {
-    const ctx = useCardsFormContext<Res>();
-    const selectContext = useSelectionContext<Res>()
-    const props = cardProps;
-    const coverCard = props.cover != undefined;
-    const { confirm } = Modal;
-    const actions = []
-
-    if (ctx.resource.del) {
-        const onDelete: MouseEventHandler<HTMLElement> = (evt) => {
-            evt.stopPropagation();
-            confirm({
-                title: `确认删除${ctx.options.title}?`,
-                content: <>{props.title}</>,
-                onOk: () => { ctx.resource.del?.(record) }
-            })
-        }
-        actions.push(<Button key="delete_button" danger icon={<CloseOutlined />} onClick={onDelete} type="text"></Button>)
-    }
-
-
-
-    const cardTitle = selectContext ?
-        <Checkbox value={record[selectContext.key]} key={record[selectContext.key]}
-            onClick={(evt) => { evt.stopPropagation() }}
-        >{props.title}</Checkbox>
-        : props.title
-
-    if (cardProps.extra) {
-        actions.push(cardProps.extra(ctx.resource))
-    }
-    return <>
-        <Card
-            hoverable
-            cover={props.cover}
-            onClick={(evt) => {
-                evt.stopPropagation();
-                if (ctx.resource.update) {
-                    ctx.openEditor(record, { title: <>{ctx.options.title} / {props.title}</> })
-                }
-            }}
-
-            title={coverCard ? undefined : cardTitle}
-            extra={coverCard ? undefined : actions}
-            actions={!coverCard ? undefined : actions}
-            style={{
-                width: coverCard ? "320px" : undefined
-            }}
-        >
-            <Card.Meta
-                title={props.cover ? cardTitle : undefined}
-                description={props.description}
-            ></Card.Meta>
-        </Card>
-    </>
-}
 
 export function CollapsableList<Res extends ResourceType>(options:
     { panelStyle?: CSSProperties, style?: CSSProperties, bordered?: boolean, contentPadding?: number } &
