@@ -27,7 +27,7 @@ export default function SettingBasic() {
     }, [nastool])
     useEffect(() => {
         onRefresh()
-    }, [nastool])
+    }, [onRefresh])
     return <>
         <Section title="基础设置" onRefresh={onRefresh}>
             <Space direction="vertical" style={{ width: "100%" }}>

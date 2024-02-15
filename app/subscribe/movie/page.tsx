@@ -4,7 +4,7 @@ import React, { useContext, useEffect, useMemo, useState } from "react";
 import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
 import TinyTMDBSearch, { MediaDetailCard, MediaSearchGroup, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { ResTypeSelect, PixSelect, FilterRuleSelect, DownloadSettingSelect, SiteSelect, IndexerSelect } from "@/app/components/NTSelects";
-import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
+import { DownloadPathSelect, EmptyPathSelect, StringPathInput, UnionPathsSelectGroup } from "@/app/components/LibraryPathSelector";
 import { DBMediaType } from "@/app/utils/api/api";
 import { MovieRssInfo, MovieSubscription, RssState, Subscription } from "@/app/utils/api/subscription/subscribe";
 import { MediaWork, SeriesKey, MediaWorkType } from "@/app/utils/api/types";
@@ -104,7 +104,7 @@ const SubscribeMovieForm = ({ record: config }: { record?: MovieRssInfo }) => {
         }
     }
     const [form] = useForm();
-    const onSelect = useMemo(()=>((value: MediaWork) => {
+    const onSelect = useMemo(() => ((value: MediaWork) => {
         setDetail(value)
         form.setFieldsValue({
             name: value.title,
@@ -221,7 +221,11 @@ const SubscribeMovieForm = ({ record: config }: { record?: MovieRssInfo }) => {
                 </Col>
                 <Col span={16}>
                     <Form.Item label="保存路径" name="save_path">
-                        <UnionPathsSelect />
+                        <UnionPathsSelectGroup fallback="customize">
+                            <EmptyPathSelect key="auto" label="自动" />
+                            <DownloadPathSelect key="download" label="下载器目录" />
+                            <StringPathInput key="customize" label="自定义目录" />
+                        </UnionPathsSelectGroup>
                     </Form.Item>
                 </Col>
             </Row>

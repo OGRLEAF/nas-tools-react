@@ -2,7 +2,7 @@ import React from 'react'
 import { Form, Input, Row, Col, Select, InputNumber, Switch } from 'antd'
 import TagsSelect from "@/app/components/TagsSelect"
 import { PathSelector } from '@/app/components/PathSelector';
-import { DownloadPathSelect, LibraryPathSelect, UnionPathsSelectGroup } from '@/app/components/LibraryPathSelector';
+import { DownloadPathSelect, LibraryPathSelect, PathTreeSelect, UnionPathsSelectGroup } from '@/app/components/LibraryPathSelector';
 
 const tmdbMatchModeOption = [
     {
@@ -192,8 +192,8 @@ export default function SettingMedia() {
                 <Form.Item label="文件管理默认路径" name={["media", "media_default_path"]}>
                     <UnionPathsSelectGroup fallback="customize">
                         <LibraryPathSelect key="library" label="媒体库目录" />
-                        <DownloadPathSelect key="download" />
-                        <PathSelector key="customize" />
+                        <DownloadPathSelect key="download" label="下载目录" />
+                        <PathTreeSelect key="customize" label="自定义目录" />
                     </UnionPathsSelectGroup>
                 </Form.Item>
             </Col>

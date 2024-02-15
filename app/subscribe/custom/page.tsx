@@ -7,7 +7,7 @@ import { Rss, RssParserResource, RssParsers, RssPreview, RssPreviewItem, RssPrev
 import _ from "lodash";
 import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 import { useForm } from "antd/es/form/Form";
-import { DownloadPathSelect, EmptyPathSelect, LibraryPathSelect, StringPathInput, UnionPathsSelect, UnionPathsSelectGroup } from "@/app/components/LibraryPathSelector";
+import { DownloadPathSelect, EmptyPathSelect, LibraryPathSelect, StringPathInput, UnionPathsSelectGroup } from "@/app/components/LibraryPathSelector";
 import { CardsForm } from "@/app/components/CardsForm";
 import { BatchActions, Cards, useSelection } from "@/app/components/CardsForm/Cards";
 import { IconDownloader, IconPause, IconPlay, IconRefresh } from "@/app/components/icons";
@@ -81,10 +81,9 @@ const CustomRssDownloadForm = () => {
             <Col span={24}>
                 <Form.Item label="保存路径" name="save_path">
                     <UnionPathsSelectGroup fallback="customize">
-                        <EmptyPathSelect key="auto" label="自动"/>
-                        <LibraryPathSelect key="library" label="媒体库目录" />
+                        <EmptyPathSelect key="auto" label="自动" />
                         <DownloadPathSelect key="download" label="下载器目录" />
-                        <StringPathInput key="customize" label="自定义目录"/>
+                        <StringPathInput key="customize" label="自定义目录" />
                     </UnionPathsSelectGroup>
                 </Form.Item>
             </Col>
@@ -124,7 +123,11 @@ const CustomRssSubscribeForm = () => {
             </Col>
             <Col span={14}>
                 <Form.Item label="保存路径" name="save_path">
-                    <UnionPathsSelect />
+                    <UnionPathsSelectGroup fallback="customize">
+                        <EmptyPathSelect key="auto" label="自动" />
+                        <DownloadPathSelect key="download" label="下载器目录" />
+                        <StringPathInput key="customize" label="自定义目录" />
+                    </UnionPathsSelectGroup>
                 </Form.Item>
             </Col>
             <Col span={2}>

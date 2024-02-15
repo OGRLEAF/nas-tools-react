@@ -9,7 +9,7 @@ import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useForm } from "antd/es/form/Form";
 import { DownloadSettingSelect } from "@/app/components/NTSelects";
-import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
+import { DownloadPathSelect, EmptyPathSelect, StringPathInput, UnionPathsSelectGroup } from "@/app/components/LibraryPathSelector";
 import { useSubmitMessage } from "@/app/utils";
 import { TagCheckboxGroup } from "@/app/components/TagCheckbox";
 import { CollapseProps } from "antd/lib";
@@ -217,7 +217,11 @@ function DownloadModalEntry(options: DownloadModalProps) {
             <DownloadSettingSelect style={{ width: 150 }} />
         </Form.Item>
         <Form.Item name="path" label="下载路径" style={{ marginBottom: 4 }}>
-            <UnionPathsSelect style={{ width: "100%" }} library={false} />
+            <UnionPathsSelectGroup fallback="customize">
+                <EmptyPathSelect key="auto" label="自动" />
+                <DownloadPathSelect key="download" label="下载器目录" />
+                <StringPathInput key="customize" label="自定义目录" />
+            </UnionPathsSelectGroup>
         </Form.Item>
 
     </Form>

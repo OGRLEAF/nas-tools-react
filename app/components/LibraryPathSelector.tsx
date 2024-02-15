@@ -34,93 +34,6 @@ const UnionPathSelectDispathContext = createContext<UnionPathSelectDispathContex
 
 type PathSelectType = "auto" | "library" | "download" | "customize"
 
-interface Props {
-    value?: string,
-    onChange?: (value: string | undefined) => void,
-    style?: React.CSSProperties,
-    leftEmpty?: string,
-    allowLeftEmpty?: boolean,
-    width?: number,
-    auto?: boolean,
-    library?: boolean,
-    download?: boolean,
-    customize?: boolean,
-}
-
-export const UnionPathsSelect = (options: Props) => {
-    console.warn("UnionPathsSelect deprecated.")
-    const [groupedPaths, setGroupedPaths] = useState<GroupedPathsType>({ "download": [], "library": [] });
-    const [pathType, setPathType] = useState<PathSelectType>("auto");
-    const [path, setPath] = useState<string | undefined>(options.value)
-    useEffect(() => setPath(options.value), [options.value])
-    useEffect(() => {
-        for (let [k, v] of Object.entries(groupedPaths)) {
-            const idx = v.map(normalize).indexOf(normalize(options.value ?? ""));
-            if (idx > -1) {
-                setPathType(k as GroupedSelectType);
-            }
-        }
-    }, [groupedPaths, options.value])
-    const outputPathTypeOptions = []
-    if (options.allowLeftEmpty === false) {
-    } else {
-        outputPathTypeOptions.push({
-            label: options.leftEmpty || "自动",
-            value: "auto"
-        },)
-    }
-    const useLibrary = options.library ?? true;
-    const useDownload = options.download ?? true;
-    const useCustomize = options.customize ?? true;
-    if (useLibrary) outputPathTypeOptions.push({ label: "媒体库", value: "library" },)
-    if (useDownload) outputPathTypeOptions.push({ label: "下载目录", value: "download" },)
-    if (useCustomize) outputPathTypeOptions.push({ label: "自定义目录", value: "customize" },)
-
-    const handlePathTypeChange = (value: PathSelectType) => {
-        setPathType(value);
-        if (value == "auto") {
-            if (options.onChange) options.onChange(undefined)
-        }
-    };
-    const handlePathChange = (value: string) => {
-        if (value != "auto") {
-            setPath(value);
-            if (options.onChange) options.onChange(value)
-        }
-    }
-
-    const unionPathSelectContext = {
-        groupedPaths,
-        setGroupedPaths: (key: string, value: string[]) => { setGroupedPaths({ ...groupedPaths, ...{ [key]: [...value] } }) },
-    }
-
-    const libraryPathSelect = useLibrary ? <LibraryPathSelect width={options.width} value={path} onChange={handlePathChange} /> : <></>
-    const downlaodPathSelect = useDownload ? <DownloadPathSelect width={options.width} value={path} onChange={handlePathChange} /> : <></>
-
-    return <div>
-        <UnionPathSelectContext.Provider value={unionPathSelectContext}>
-            <div style={{ display: "none" }} >{libraryPathSelect}{downlaodPathSelect}</div>
-        </UnionPathSelectContext.Provider>
-        <Space.Compact style={{ width: "100%", ...options.style }}>
-            <Select
-                value={pathType}
-                defaultValue="auto"
-                style={{ width: 150 }}
-                onChange={handlePathTypeChange}
-                options={outputPathTypeOptions}
-            />
-
-            {
-                pathType == "customize" ? <PathSelector value={path} onChange={handlePathChange} style={{ width: options.width ? options.width - 150 : undefined }} /> :
-                    pathType == "library" ? libraryPathSelect :
-                        pathType == "download" ? downlaodPathSelect : <></>
-
-            }
-
-        </Space.Compact >
-    </div>
-}
-
 interface UnionPathSelectProps extends FormItemProp<string> {
     label?: string
 }
@@ -384,6 +297,36 @@ export const DownloadPathSelect = (options: { remote?: boolean } & UnionPathSele
         }
     }, [allPaths, registerComponent, registered, remote, options.label])
     return <>{node}</>
+}
+
+export function PathTreeSelect(options: UnionPathSelectProps) {
+    const { value: ctxValue } = useContext(UnionPathSelectContext)
+    const [value, setValue] = useState<string | undefined>(options.value || ctxValue);
+    const { registerComponent, updateComponent, onChange } = useContext(UnionPathSelectDispathContext);
+
+    const onPathSelectorUpdate = useCallback((value: string) => {
+        setValue(value);
+        options.onChange?.(value);
+        onChange?.("customize", value);
+    }, [onChange, options])
+
+    const node = useMemo(() => <>
+        <PathSelector value={value} onChange={onPathSelectorUpdate} />
+    </>, [onPathSelectorUpdate, value]);
+    const [registered, setRegistered] = useState(false);
+
+    useEffect(() => {
+        if (registered) updateComponent({ type: "customize", node })
+    }, [node, updateComponent, registered])
+
+    useEffect(() => {
+        if (!registered) {
+            registerComponent("customize", [], options.label || "自定义目录")
+            setRegistered(true);
+        }
+    }, [options.label, registerComponent, registered])
+
+    return <>{node}</>;
 }
 
 export const StringPathInput = (options: UnionPathSelectProps) => {

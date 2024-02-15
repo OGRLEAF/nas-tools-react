@@ -21,6 +21,8 @@ export function PathSelector({ value, onChange, style }: PathSelectorProps) {
 
     const [pathManagerContext] = useState(new PathManager("/")) // useContext(PathManagerContext);
     const { API } = useAPIContext();
+    const { token } = theme.useToken();
+    
     useEffect(() => {
         setLoadingState(true);
         const nastool = API;
@@ -39,9 +41,9 @@ export function PathSelector({ value, onChange, style }: PathSelectorProps) {
                     setLoadingState(false);
                 })
         }
-    }, [API]);
+    }, [API, pathManagerContext, token.colorTextDescription]);
 
-    const { token } = theme.useToken();
+
     const onLoadData: TreeSelectProps['loadData'] = async ({ id }) => {
 
         pathManagerContext.setPath(id);

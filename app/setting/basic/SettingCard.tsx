@@ -7,13 +7,6 @@ import { useSubmitMessage } from '@/app/utils';
 import { ServerConfig } from '@/app/utils/api/serverConfig';
 
 
-const SubmitButton = () => {
-    return (
-        <Form.Item noStyle>
-            <Button htmlType="submit" type='primary'>保存</Button>
-        </Form.Item>)
-}
-
 export default function SettingCard(
     { settingForm, name, config }:
         {
@@ -33,21 +26,28 @@ export default function SettingCard(
             }).catch(res => error(res))
     }
 
-    const [form] = Form.useForm();
-    useEffect(() => {
-        form.setFieldsValue(config)
-    }, [config])
+    // const [form] = Form.useForm();
+    // useEffect(() => {
+    //     form.setFieldsValue(config)
+    // }, [config, form])
+
+
+    // const SubmitButton = <Button htmlType="submit" type='primary' onClick={() => { form.submit() }}>保存</Button>
 
     return <Spin spinning={config == undefined}>
-        <Form form={form}
-            initialValues={config}
-            layout='vertical'
-            onFinish={onFinished} >
-            {contextHolder}
-            <Card title={name}
-                extra={<SubmitButton />}>
-                <SettingForm config={config} />
-            </Card>
-        </Form>
+        <Card title={name} >
+            {
+                config && <Form
+                    initialValues={config}
+                    layout='vertical'
+                    onFinish={onFinished} >
+                    {contextHolder}
+                    <SettingForm config={config} />
+                    <Form.Item noStyle>
+                        <Button htmlType="submit" type='primary'>保存</Button>
+                    </Form.Item>
+                </Form>
+            }
+        </Card>
     </Spin>
 }

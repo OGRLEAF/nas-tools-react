@@ -5,7 +5,7 @@ import { TVRssInfo, RssState, TVSubscription } from "@/app/utils/api/subscriptio
 import { MediaSearchGroup, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { MediaWork, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
 import { DBMediaType } from "@/app/utils/api/api";
-import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
+import { DownloadPathSelect, EmptyPathSelect, StringPathInput, UnionPathsSelectGroup } from "@/app/components/LibraryPathSelector";
 import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 import { useForm } from "antd/es/form/Form";
 import { MediaSeasonInput } from "@/app/components/mediaImport/mediaImport";
@@ -279,7 +279,11 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
                 </Col>
                 <Col span={16}>
                     <Form.Item label="保存路径" name="save_path">
-                        <UnionPathsSelect />
+                        <UnionPathsSelectGroup fallback="customize">
+                            <EmptyPathSelect key="auto" label="自动" />
+                            <DownloadPathSelect key="download" label="下载器目录" />
+                            <StringPathInput key="customize" label="自定义目录" />
+                        </UnionPathsSelectGroup>
                     </Form.Item>
                 </Col>
             </Row>
