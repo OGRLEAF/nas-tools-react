@@ -190,26 +190,11 @@ export default function SettingMedia() {
             </Col>
             <Col span={6}>
                 <Form.Item label="文件管理默认路径" name={["media", "media_default_path"]}>
-                    <UnionPathsSelectGroup
-                        fallback="customize"
-                        items={[
-                            {
-                                type: "library",
-                                label: "媒体库",
-                                render: (props) => <LibraryPathSelect key="library" value={props.value} onChange={props.onChange} />
-                            },
-                            {
-                                type: "download",
-                                label: "下载目录",
-                                render: (props) => <DownloadPathSelect key="download" remote={false} value={props.value} onChange={props.onChange} />
-                            },
-                            {
-                                type: "customize",
-                                label: "自定义目录",
-                                render: (props) => <PathSelector key="customize" value={props.value} onChange={props.onChange} />
-                            }
-                        ]}
-                    />
+                    <UnionPathsSelectGroup fallback="customize">
+                        <LibraryPathSelect key="library" label="媒体库目录" />
+                        <DownloadPathSelect key="download" />
+                        <PathSelector key="customize" />
+                    </UnionPathsSelectGroup>
                 </Form.Item>
             </Col>
         </Row>

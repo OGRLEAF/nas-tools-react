@@ -148,7 +148,7 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
 
 export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) => APIArrayResourceBase<Res>, option?: APIArrayResourceOption<ListOptionType<Res>>) {
     const { API } = useAPIContext();
-    const self = useMemo(() => new cls(API), [API])
+    const self = useMemo(() => new cls(API), [API, cls])
     type GetRes<T> = T extends APIArrayResourceBase<infer T> ? T : Res;
     type T = GetRes<typeof cls>
     function useList() {
@@ -176,6 +176,7 @@ export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) =>
         useEffect(() => {
             refresh()
         }, [refresh])
+
         return {
             refresh,
             list, setList,

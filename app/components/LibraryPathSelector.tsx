@@ -1,23 +1,35 @@
 import React, { useEffect, useState, createContext, useContext, useMemo, useCallback } from "react";
 import { NastoolServerConfig } from "../utils/api/api";
 import { Organize } from "../utils/api/import";
-import { Select, Space } from "antd";
+import { Input, Select, Space } from "antd";
 import { PathSelector } from "./PathSelector";
 import { DownloadClient, DownloadClientResource } from "../utils/api/download";
 import { useAPIContext, useResource } from "../utils/api/api_base";
+import { debounce } from "lodash";
 
 
 const normalize = (p: string) => p += p.endsWith("/") ? "" : "/"
 
-export type GroupedSelectType = "auto" | "library" | "download"
+export type GroupedSelectType = "auto" | "library" | "download" | "customize"
 export type GroupedPathsType = Record<string, string[]>
+
 type UnionPathSelectContextType = {
-    groupedPaths: GroupedPathsType,
-    setGroupedPaths: (key: GroupedSelectType, value: GroupedPathsType[GroupedSelectType]) => void;
+    pathType?: string,
+    value?: string,
+    // setGroupedPaths: (key: GroupedSelectType, value: GroupedPathsType[GroupedSelectType]) => void;
 }
-const UnionPathSelectContext = createContext<UnionPathSelectContextType>({
-    groupedPaths: {},
-    setGroupedPaths: () => { },
+
+type UnionPathSelectDispathContextType = {
+    // groupedPaths: GroupedPathsType,
+    onChange?: (type: GroupedSelectType, value: string) => void;
+    registerComponent: (type: GroupedSelectType, predefined: string[], label?: string) => void;
+    updateComponent: ((options: { type: GroupedSelectType, predefined?: string[], node?: React.ReactNode, label?: string }) => void);
+
+}
+const UnionPathSelectContext = createContext<UnionPathSelectContextType>({})
+const UnionPathSelectDispathContext = createContext<UnionPathSelectDispathContextType>({
+    registerComponent: () => { console.log("default") },
+    updateComponent: () => { console.log("default") }
 })
 
 type PathSelectType = "auto" | "library" | "download" | "customize"
@@ -36,6 +48,7 @@ interface Props {
 }
 
 export const UnionPathsSelect = (options: Props) => {
+    console.warn("UnionPathsSelect deprecated.")
     const [groupedPaths, setGroupedPaths] = useState<GroupedPathsType>({ "download": [], "library": [] });
     const [pathType, setPathType] = useState<PathSelectType>("auto");
     const [path, setPath] = useState<string | undefined>(options.value)
@@ -108,6 +121,10 @@ export const UnionPathsSelect = (options: Props) => {
     </div>
 }
 
+interface UnionPathSelectProps extends FormItemProp<string> {
+    label?: string
+}
+
 interface WrapperProps {
     value?: string,
     onChange?: (value: string | undefined) => void,
@@ -117,62 +134,97 @@ interface WrapperProps {
     width?: number,
     auto?: boolean,
     fallback?: string,
+    children?: React.ReactNode,
     items?: {
         type: string,
         label: string,
-        render: (props: FormItemProp<string>) => React.ReactNode
+        render: (props: UnionPathSelectProps) => React.ReactNode
     }[]
 }
 
-
 export const UnionPathsSelectGroup = (options: WrapperProps) => {
-    const allowLeftEmpty = options.allowLeftEmpty ?? true;
-    const [groupedPaths, setGroupedPaths] = useState<Record<string, string[]>>({});
+    const { children } = options;
+    const [components, setComponents] = useState<Record<string, { predefined: string[], label?: string, node: React.ReactNode }>>({})
+
     const [pathType, setPathType] = useState<string>(options.fallback ?? "auto");
     const [path, setPath] = useState<string | undefined>(options.value)
-    useEffect(() => setPath(options.value), [options.value])
-    useEffect(() => {
-        for (let [k, v] of Object.entries(groupedPaths)) {
-            const idx = v.map(normalize).indexOf(normalize(options.value ?? ""));
-            if (idx > -1) {
-                setPathType(k as GroupedSelectType);
-            }
-        }
-    }, [groupedPaths, options.value])
+    const [initalValue,] = useState(options.value)
+
+
     const outputPathTypeOptions: { label: string, value: string }[] = useMemo(() => (
-        options.items?.map(({ type, label }) => ({ label, value: type })) || []
-    ), [options.items])
+        Object.entries(components).map(([type, comp]) => ({ label: comp.label ?? type, value: type })) || []
+    ), [components])
 
 
     const handlePathTypeChange = useCallback((value: string) => {
+        console.log('handlePAthTypeChange', components, value, components[value])
         setPathType(value);
-        if (options.onChange) options.onChange(undefined)
-    }, [options.onChange]);
-    const handlePathChange = useCallback((value: string) => {
+        // if (options.onChange) options.onChange(undefined)
+    }, [components]);
+
+
+    const registerComponent = useCallback((_type: GroupedSelectType, _predefined: string[], label?: string) => {
+        console.log(_type, _predefined)
+        setComponents((components) => {
+            return ({
+                ...components,
+                [_type]: {
+                    predefined: _predefined,
+                    node: null,
+                    label: label
+                }
+            })
+        })
+
+        console.log("update path type..")
+        const idx = _predefined.map(normalize).indexOf(normalize(initalValue ?? ""));
+        if (idx > -1) {
+            setPathType(_type as GroupedSelectType);
+            console.log("update path type", _type, idx)
+        }
+    }, [initalValue])
+
+    const updateComponent = useCallback((options: { type: GroupedSelectType, predefined?: string[], node?: React.ReactNode, label?: string }) => {
+        const { type: currentType, predefined, node, label } = options;
+        if (currentType == pathType) {
+            console.log(currentType, predefined, node)
+            setComponents((components) => {
+                const comp = components[currentType];
+                if (comp)
+                    return ({
+                        ...components,
+                        [currentType]: {
+                            predefined: predefined ?? comp.predefined,
+                            node: node ?? comp.node,
+                            label: label ?? comp.label
+                        }
+                    })
+                else return components
+            })
+        }
+
+    }, [pathType])
+
+    const ctxOnChange = useCallback((type: GroupedSelectType, value: string) => {
+        console.log(type, value)
         setPath(value);
-        if (options.onChange) options.onChange(value)
-    }, [options.onChange])
+    }, [])
 
-    const unionPathSelectContext = useMemo(() => ({
-        groupedPaths,
-        setGroupedPaths: (key: string, value: string[]) => { setGroupedPaths({ ...groupedPaths, ...{ [key]: [...value] } }) },
-    }), [groupedPaths]);
-
-    const childrenMap = useMemo(() => {
-        return Object.fromEntries(options.items?.map((value) => [value.type, value.render({ value: path, onChange: handlePathChange })]) ?? [])
-    }, [path, handlePathChange])
-
-    const allChildren = Object.values(childrenMap)
-
-    const CompactWrapper = ({ children }: { children: React.ReactNode }) => {
-        return childrenMap[pathType] ? <Space.Compact style={{ width: "100%", ...options.style }}>{children}</Space.Compact>
-            : <Space style={{ width: "100%", ...options.style }}>{children}</Space>
-    }
+    useEffect(() => {
+        if (options.onChange) options.onChange(path)
+    }, [options, path])
     return <>
-        <UnionPathSelectContext.Provider value={unionPathSelectContext}>
-            <div style={{ display: "none" }} >{allChildren}</div>
-        </UnionPathSelectContext.Provider>
-        <CompactWrapper>
+
+        <UnionPathSelectContext.Provider value={{ value: path, pathType: pathType }}>
+            <UnionPathSelectDispathContext.Provider value={{
+                registerComponent,
+                updateComponent,
+                onChange: ctxOnChange
+            }}>
+                <div style={{ display: "none" }} >{children}</div>
+            </UnionPathSelectDispathContext.Provider>
+        </UnionPathSelectContext.Provider >
+        <Space.Compact style={{ width: "100%", ...options.style }}>
             <Select
                 value={pathType}
                 defaultValue="auto"
@@ -180,8 +232,9 @@ export const UnionPathsSelectGroup = (options: WrapperProps) => {
                 onChange={handlePathTypeChange}
                 options={outputPathTypeOptions}
             />
-            {childrenMap[pathType]}
-        </CompactWrapper >
+            {components[pathType]?.node ?? null}
+        </Space.Compact>
+
     </>
 }
 
@@ -191,26 +244,41 @@ interface FormItemProp<T> {
     width?: number,
 }
 
-export const EmptyPathSelect = (options: { emptyValue?: string | null } & FormItemProp<string>) => {
-    const ctx = useContext(UnionPathSelectContext);
-    useEffect(() => {
-        ctx.setGroupedPaths("auto", [options.emptyValue ?? ""])
-    }, [options.value, options.emptyValue])
-    return <Select disabled
+export const EmptyPathSelect = (options: { emptyValue?: string | null } & UnionPathSelectProps) => {
+    const { registerComponent, onChange } = useContext(UnionPathSelectDispathContext);
+    const { pathType } = useContext(UnionPathSelectContext)
+    const node = useMemo(() => <Select disabled
         style={{
             width: options.width ? options.width - 150 : undefined
         }}
-    />
+    />, [options.width])
+
+    useEffect(() => {
+        if (pathType == "auto") onChange?.("auto", "")
+    }, [onChange, pathType])
+    useEffect(() => {
+        if (options.emptyValue === undefined) {
+            registerComponent("auto", [""], options.label)
+        }
+    }, [options.value, options.emptyValue, registerComponent, options.label])
+    return node
 }
 
-export const LibraryPathSelect = (options: FormItemProp<string>) => {
+export const LibraryPathSelect = (options: UnionPathSelectProps) => {
+    const { registerComponent, updateComponent, onChange } = useContext(UnionPathSelectDispathContext);
     const [librariesPath, setLibrariesPath] = useState<NastoolServerConfig['media']>();
-    const [path, setPath] = useState<string | undefined>(options.value)
-    const handlePathChange = (value: string) => {
+    const { value: ctxValue } = useContext(UnionPathSelectContext);
+    const [path, setPath] = useState<string | undefined>(options.value || ctxValue)
+    // useEffect(() => {
+    //     setPath(options.value || ctxValue)
+    // }, [options.value, ctxValue])
+
+    const handlePathChange = useCallback((value: string) => {
         setPath(value);
         options.onChange?.(value);
-    }
-    const ctx = useContext(UnionPathSelectContext);
+        onChange?.('library', value)
+    }, [options, onChange])
+
     const { API } = useAPIContext();
     useEffect(() => {
         if (API.loginState) {
@@ -218,7 +286,7 @@ export const LibraryPathSelect = (options: FormItemProp<string>) => {
             orgn.getLibrariesPath()
                 .then(libraries => { setLibrariesPath(libraries) })
         }
-    }, [options.value, API])
+    }, [API])
     const libraryPathOptions = useMemo(() => [{
         label: '动漫',
         options: librariesPath?.anime_path?.map((path) => ({ label: path, value: path })) ?? [],
@@ -232,27 +300,46 @@ export const LibraryPathSelect = (options: FormItemProp<string>) => {
         options: librariesPath?.movie_path?.map((path) => ({ label: path, value: path })) ?? [],
     },], [librariesPath])
 
-    useEffect(() => {
-        if (librariesPath) {
-            const { anime_path, tv_path, movie_path } = librariesPath;
-            const allPaths = [...anime_path, ...tv_path, ...movie_path];
-            ctx.setGroupedPaths("library", allPaths)
-        }
-    }, [librariesPath,])
-
-    return <Select value={path} onChange={handlePathChange} options={libraryPathOptions}
+    const node = useMemo(() => <Select value={path} onChange={handlePathChange} options={libraryPathOptions}
         style={{
             width: options.width ? options.width - 150 : undefined
         }}
-    />
+    />, [handlePathChange, libraryPathOptions, options.width, path])
+
+    const [registered, setRegistered] = useState(false);
+
+    useEffect(() => {
+        if (registered) {
+            updateComponent({ type: "library", node: node })
+        }
+    }, [node, registered, updateComponent])
+
+    useEffect(() => {
+        if (librariesPath && !registered) {
+            const { anime_path, tv_path, movie_path } = librariesPath;
+            const allPaths = [...anime_path, ...tv_path, ...movie_path];
+            registerComponent("library", allPaths, options.label)
+            setRegistered(true)
+        }
+    }, [registerComponent, registered, librariesPath, options.label])
+
+    return <>{node}</>
 }
 
-export const DownloadPathSelect = (options: { remote?: boolean } & FormItemProp<string>) => {
+export const DownloadPathSelect = (options: { remote?: boolean } & UnionPathSelectProps) => {
+    const { registerComponent, updateComponent, onChange } = useContext(UnionPathSelectDispathContext);
+    const { value: ctxValue } = useContext(UnionPathSelectContext)
     const { useList } = useResource<DownloadClientResource>(DownloadClient)
-    const { list: clients, refresh: refreshClients } = useList();
-    const [path, setPath] = useState<string | undefined>(options.value)
+    const { list: clients, } = useList();
+
+    const [path, setPath] = useState<string | undefined>(options.value || ctxValue);
+
+    // useEffect(() => {
+    //     console.log("value update", ctxValue)
+    //     setPath(options.value || ctxValue)
+    // }, [options.value, ctxValue])
+
     const remote = options.remote ?? true;
-    const ctx = useContext(UnionPathSelectContext);
     const downloaderPathMap = useMemo(() => {
         return clients?.filter((cli) => (cli.download_dir.length > 0)).map((cli) => ({
             label: cli.name,
@@ -261,19 +348,77 @@ export const DownloadPathSelect = (options: { remote?: boolean } & FormItemProp<
                 return { label: path, value: path, key: `${cli.name}-${save_path}` }
             }),
         }))
-    }, [clients])
+    }, [clients, remote])
 
     const allPaths = useMemo(() => {
         return clients?.map(cli => cli.download_dir).reduce((prev, curr) => prev.concat(curr)) ?? []
-    }, [downloaderPathMap])
+    }, [clients])
 
-    useEffect(() => {
-        ctx.setGroupedPaths("download", allPaths.map(({ save_path, container_path }) => remote ? save_path : container_path));
-    }, [allPaths])
-
-    return <Select value={path} options={downloaderPathMap} onChange={(value) => { setPath(value); options.onChange?.(value) }}
+    const node = useMemo(() => <><Select value={path} options={downloaderPathMap}
+        onChange={(value) => {
+            setPath(value);
+            options.onChange?.(value);
+            onChange?.("download", value)
+        }}
         style={{
             width: options.width ? options.width - 150 : undefined
         }}
     />
+    </>, [downloaderPathMap, options, onChange, path])
+
+    const [registered, setRegistered] = useState(false);
+
+    useEffect(() => {
+        if (registered) {
+            updateComponent({ type: "download", node: node })
+        }
+    }, [node, registered, updateComponent])
+
+    useEffect(() => {
+        if (allPaths.length && !registered) {
+            registerComponent("download",
+                allPaths.map(({ save_path, container_path }) => remote ? save_path : container_path),
+                options.label
+            );
+            setRegistered(true)
+        }
+    }, [allPaths, registerComponent, registered, remote, options.label])
+    return <>{node}</>
+}
+
+export const StringPathInput = (options: UnionPathSelectProps) => {
+    const { value: ctxValue } = useContext(UnionPathSelectContext)
+    const [value, setValue] = useState<string | undefined>(options.value || ctxValue);
+    const { registerComponent, updateComponent, onChange } = useContext(UnionPathSelectDispathContext);
+
+    // useEffect(() => {
+    //     console.log("value update", ctxValue)
+    //     setValue(options.value || ctxValue)
+    // }, [options.value, ctxValue])
+
+    useEffect(() => {
+        if (value) {
+            options.onChange?.(value)
+            onChange?.("customize", value)
+        }
+    }, [value, options, onChange])
+
+    const node = useMemo(() => <Input value={value} onChange={(evt) => setValue(evt.currentTarget.value)} />, [value])
+
+    const [registered, setRegistered] = useState(false);
+    useEffect(() => {
+        if (registered) {
+            updateComponent({ "type": "customize", node })
+        }
+    }, [value, node, updateComponent, registered])
+
+
+    useEffect(() => {
+        if (!registered) {
+            registerComponent("customize", [], options.label)
+            setRegistered(true)
+        }
+    }, [registerComponent, options.label, registered])
+
+    return node
 }

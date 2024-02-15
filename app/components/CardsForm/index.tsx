@@ -228,7 +228,7 @@ export function CollapsableList<Res extends ResourceType>(options:
             extra: <Space>{actions}</Space>,
             style: options.panelStyle
         }
-    }), [list])
+    }), [list, cardProps, confirm, ctx, options.panelStyle])
 
     return <ConfigProvider theme={{
         components: {
