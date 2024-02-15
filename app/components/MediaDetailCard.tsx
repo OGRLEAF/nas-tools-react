@@ -29,7 +29,9 @@ export function MediaDetailCard({
                 >
                     <Image
                         style={{ width: 200, objectFit: "contain", }}
-                        src={mediaDetail.image} />
+                        src={mediaDetail.image}
+                        alt={mediaDetail.title}
+                        />
                     <Typography style={{ paddingTop: 15, }}>
                         <div style={{ maxHeight: 150, overflowY: "auto" }}>
                             <Typography.Text style={{ color: token.colorTextLightSolid, }}>

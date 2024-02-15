@@ -148,7 +148,7 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
                     })
             }
         }
-    }, [series, series.s, autoFill])
+    }, [series, series.s, autoFill, form])
 
     const ctx = useContext(CardnFormContext);
     const { API } = useAPIContext()

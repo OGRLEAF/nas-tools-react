@@ -78,7 +78,7 @@ export function useDataResource<T, Options = never>(cls: new (API: NASTOOL) => A
             } catch (e: any) {
                 if (useMessage) message.fetch.error(e)
             }
-        }, [cls])
+        }, [])
         useEffect(() => {
             refresh();
         }, [refresh])
