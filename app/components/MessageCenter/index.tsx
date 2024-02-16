@@ -10,12 +10,6 @@ export default function MessageCenter() {
     const {
         token: { colorBgContainer },
     } = theme.useToken();
-    const renderTabBar: TabsProps['renderTabBar'] = (props, DefaultTabBar) => (
-        <StickyBox offsetTop={0} offsetBottom={20} style={{ zIndex: 1 }}>
-            <DefaultTabBar {...props} style={{ background: colorBgContainer }} />
-        </StickyBox>
-    );
-    const [open, setOpen] = useState(false)
     return <Tabs
         // renderTabBar={renderTabBar}
         style={{ height: "100%", overflowY: "auto", position: "relative" }}
@@ -49,7 +43,7 @@ export function MessageCenterEntry() {
             style={{ margin: "0 15px" }}
             shape="circle"
             icon={
-                <Badge count={1} size="small">
+                <Badge count={0} size="small">
                     <UserOutlined />
                 </Badge>
             }

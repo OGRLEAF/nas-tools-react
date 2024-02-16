@@ -3,7 +3,7 @@ import { Section } from "@/app/components/Section";
 import { blue, green, cyan, yellow } from '@ant-design/colors';
 import { Button, Divider, Input, Popconfirm, Progress, Space, Table, Tag, Tooltip, message } from "antd";
 import { PlusOutlined } from "@ant-design/icons"
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Download, DownloadClient, DownloadClientResource, TorrentInfo, TorrentState, TorrentVagueState } from "@/app/utils/api/download";
 import { ColumnsType } from "antd/es/table";
@@ -106,12 +106,12 @@ export default function DownloadedPage() {
     const [loading, setLoading] = useState(false)
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
-    const updateTorrents = (newTorrents: TorrentInfo[]) => {
+    const updateTorrents = useCallback((newTorrents: TorrentInfo[]) => {
         newTorrents.forEach((t) => {
             torrents[t.hash] = t;
         })
         setTorrents({ ...torrents })
-    }
+    }, [torrents])
     const getTorrents = async (pagination = false) => {
         setLoading(true);
         const downloadApi = new Download();
@@ -154,12 +154,12 @@ export default function DownloadedPage() {
 
 
     const [refreshInterval, setRefreshInterval] = useState(3);
-    const intervalRefresh = async () => {
+    const intervalRefresh = useCallback(async () => {
         if (torrents != _EMPTY_LIST) {
             const result = await new Download().list({ state: TorrentVagueState.ACTIVE })
             updateTorrents(result);
         }
-    }
+    }, [torrents, updateTorrents])
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -168,11 +168,11 @@ export default function DownloadedPage() {
         return () => {
             clearInterval(timer);
         }
-    }, [filterdList])
+    }, [filterdList, intervalRefresh, refreshInterval])
 
 
     const [messageApi, contextHolder] = message.useMessage();
-    const columns: ColumnsType<TorrentInfo> = [
+    const columns: ColumnsType<TorrentInfo> = useMemo(() => [
         {
             title: <Space size="large">
                 <span>名称</span>
@@ -277,14 +277,14 @@ export default function DownloadedPage() {
             },
             width: 100,
         }
-    ]
+    ], [categories, downloaderPathMap])
 
     return <Section title="下载任务"
         onRefresh={() => { refreshClients(); getTorrents(false) }}
         extra={
             <Space>
                 <Button icon={<PlusOutlined />}
-                    onClick={() => setState(state + 1)}
+                    onClick={() => setState((state) => state + 1)}
                     type="primary">添加下载任务</Button>
             </Space>
         }>

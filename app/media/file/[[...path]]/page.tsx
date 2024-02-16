@@ -84,11 +84,10 @@ const DirectoryList = ({ dirList, loading, }:
     </Row>
 
     return (
-        <Space direction="vertical" style={{ width: "100%" }}>
-
+        <Flex vertical gap={12}>
             <List
-                style={{ maxHeight: "calc(100vh - 220px)", overflowY: "auto" }}
-                footer={footer}
+                style={{ height: "calc(100vh - 250px)", overflowY: "auto" }}
+                // footer={footer}
                 size="small"
                 bordered
                 loading={loading}
@@ -105,7 +104,9 @@ const DirectoryList = ({ dirList, loading, }:
                         </List.Item>
                     )
                 }}
-            /></Space>)
+            />
+            {footer}
+        </Flex>)
 }
 
 const FileFilter = () => {

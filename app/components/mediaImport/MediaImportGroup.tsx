@@ -1,7 +1,7 @@
 import { asyncEffect } from "@/app/utils";
 import { TMDB } from "@/app/utils/api/media/tmdb";
 import { MediaWork, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { CloseOutlined } from "@ant-design/icons"
 import { MediaDetailCard } from "../TMDBSearch/TinyTMDBSearch";
 import { Button, Card, Checkbox, Divider, Flex, Form, Popover, Radio, Space, Tag, Tooltip, theme } from "antd";
@@ -11,7 +11,7 @@ import { SearchContext } from "../TMDBSearch/SearchContext";
 import { IconEllipsisLoading } from "../icons";
 import _, { values } from "lodash";
 import { ImportMode } from "@/app/utils/api/api";
-import { UnionPathsSelect } from "../LibraryPathSelector";
+import { DownloadPathSelect, LibraryPathSelect, PathTreeSelect, UnionPathsSelectGroup } from "../LibraryPathSelector";
 // import { useImportListContext } from "./mediaImportList";
 import { StateMap, StateTag } from "../StateTag";
 import { ImportTask, ImportTaskConfig } from "@/app/utils/api/import";
@@ -190,7 +190,9 @@ interface ImportFormValues {
 }
 
 function TvImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: MediaImportFile[], }) {
-    const mergedSeriesKey = files.length > 0 ? files.map(file => file.indentifyHistory.last())?.reduce((prev, curr) => prev.merge(curr)) : new SeriesKey();
+    const mergedSeriesKey = useMemo(() => {
+        return files.length > 0 ? files.map(file => file.indentifyHistory.last())?.reduce((prev, curr) => prev.merge(curr)) : new SeriesKey();
+    }, [files])
     const [mediaWork, setMediaWork] = useState<MediaWork>();
     useEffect(() => {
         new TMDB().fromSeries(mergedSeriesKey.slice(SeriesKeyType.TMDBID))?.get()
@@ -235,7 +237,10 @@ function TvImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Med
             onFinish={submitImport}
         >
             <Form.Item name="target_path" >
-                <UnionPathsSelect width={400} />
+                <UnionPathsSelectGroup fallback="customize">
+                    <LibraryPathSelect key="library" label="媒体库目录" />
+                    <PathTreeSelect key="customize" label="自定义目录" />
+                </UnionPathsSelectGroup>
             </Form.Item>
             <Form.Item name="type">
                 <Radio.Group>
@@ -252,7 +257,9 @@ function TvImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Med
 }
 
 function MovieImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: MediaImportFile[], }) {
-    const mergedSeriesKey = files.length > 0 ? files.map(file => file.indentifyHistory.last())?.reduce((prev, curr) => prev.merge(curr)) : new SeriesKey();
+    const mergedSeriesKey = useMemo(() => {
+        return files.length > 0 ? files.map(file => file.indentifyHistory.last())?.reduce((prev, curr) => prev.merge(curr)) : new SeriesKey();
+    }, [files])
     const [mediaWork, setMediaWork] = useState<MediaWork>();
     useEffect(() => {
         new TMDB().fromSeries(mergedSeriesKey.slice(SeriesKeyType.TMDBID))?.get()
@@ -285,7 +292,10 @@ function MovieImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: 
             }}
         >
             <Form.Item name="target_path" >
-                <UnionPathsSelect width={400} />
+                <UnionPathsSelectGroup fallback="customize">
+                    <LibraryPathSelect key="library" label="媒体库目录" />
+                    <PathTreeSelect key="customize" label="自定义目录" />
+                </UnionPathsSelectGroup>
             </Form.Item>
             <Form.Item name="type">
                 <Radio.Group>

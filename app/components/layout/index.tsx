@@ -1,26 +1,20 @@
 'use client'
-import React, { Suspense, useContext, useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import {
-  BarChartOutlined,
   FileDoneOutlined,
   ClusterOutlined,
-  FileOutlined,
   PieChartOutlined,
-  TeamOutlined,
   UserOutlined,
   SearchOutlined,
-  CompassOutlined,
   HomeOutlined,
   SettingOutlined,
   ToolOutlined,
-  BuildOutlined,
-  VerticalAlignBottomOutlined,
   BellOutlined
 } from '@ant-design/icons';
 import { IconBookBookMark, IconCalendarDaysSolid, IconCubes, IconCustomSolid, IconDatabase, IconDownloader, IconFilmSolid, IconFilter, IconFolderTreeSolid, IconFont, IconHistory, IconIndexer, IconLink, IconLoading, IconMediaServer, IconMediaSolid, IconRefresh, IconRssSolid, IconTvSolid } from '../icons';
 import type { MenuProps } from 'antd';
-import { Breadcrumb, Divider, Layout, Menu, theme } from 'antd';
+import { Layout, Menu, theme } from 'antd';
 
 import LoginModal from '../login';
 import HeaderSearch from '../headerSearch';
@@ -53,7 +47,7 @@ function getItem(
 
 
 const mediaFileMenuItem = getItem("文件管理", '/media/file', <IconFolderTreeSolid />);
-const getMenuItems = async (API:NASTOOL) => {
+const getMenuItems = async (API: NASTOOL) => {
   const mediaPageDefaultUrl = await new ServerConfig(API).get()
     .then(res => {
       const default_path = res.media.media_default_path;
@@ -112,7 +106,7 @@ const getMenuItems = async (API:NASTOOL) => {
 const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const pathName = usePathname();
-  const updateMenuKey = () => {
+  const updateMenuKey = useCallback(() => {
     const pathKeys = pathName.split("/")
     const subKey = pathKeys.slice(0, 3).join("/");
     const mainKey = pathKeys.slice(0, 2).join("/")
@@ -120,18 +114,18 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
       selectedKey: [subKey],
       openKey: [mainKey]
     });
-  }
+  }, [pathName])
 
   const apiContext = useContext(APIContext)
   const [API, setAPI] = useState<NASTOOL>(apiContext.API);
 
   useEffect(() => {
-    if(API.loginState)
-    getMenuItems(API).then((menu) => {
-      setMenu(menu);
-      updateMenuKey();
-    })
-  }, [API])
+    if (API.loginState)
+      getMenuItems(API).then((menu) => {
+        setMenu(menu);
+        updateMenuKey();
+      })
+  }, [API, updateMenuKey])
 
 
   const [collapsed, setCollapsed] = useState(false);
@@ -141,7 +135,7 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     updateMenuKey();
-  }, [pathName])
+  }, [updateMenuKey])
 
   const [pageScale, setPageScale] = useState(1);
   useEffect(() => {
@@ -185,7 +179,7 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
           </Header>
           <Content style={{ margin: '0px 0px', overflow: 'initial' }}>
             <div style={{ padding: "0px 16px 16px 16px", minHeight: "50vh", height: "100%", background: colorBgContainer }}>
-              {API.loginState ? children :<></>}
+              {API.loginState ? children : <></>}
             </div>
           </Content>
           {/* <Footer style={{ textAlign: 'center', background: colorBgContainer, }}>Ant Design ©2023 Created by Ant UED</Footer> */}

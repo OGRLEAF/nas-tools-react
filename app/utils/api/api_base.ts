@@ -156,7 +156,7 @@ export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) =>
         const [options, setOptions] = useState<ListOptionType<T> | undefined>(option?.initialOptions)
         const [list, setList] = useState<ItemType<T>[]>()
         const [total, setTotal] = useState<number>(0);
-        const _refresh = useCallback(async () => {
+        const refresh = useCallback(async () => {
             if (self.API.loginState)
                 setLoading(true)
             if (useMessage) message.fetch.loading()
@@ -172,7 +172,7 @@ export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) =>
             }
         }, [options])
 
-        const refresh = useMemo(() => _refresh, [_refresh])
+
         useEffect(() => {
             refresh()
         }, [refresh])

@@ -25,15 +25,6 @@ export default function SettingCard(
                 success(String(res));
             }).catch(res => error(res))
     }
-
-    // const [form] = Form.useForm();
-    // useEffect(() => {
-    //     form.setFieldsValue(config)
-    // }, [config, form])
-
-
-    // const SubmitButton = <Button htmlType="submit" type='primary' onClick={() => { form.submit() }}>保存</Button>
-
     return <Spin spinning={config == undefined}>
         <Card title={name} >
             {
@@ -43,8 +34,8 @@ export default function SettingCard(
                     onFinish={onFinished} >
                     {contextHolder}
                     <SettingForm config={config} />
-                    <Form.Item noStyle>
-                        <Button htmlType="submit" type='primary'>保存</Button>
+                    <Form.Item noStyle >
+                        <Button htmlType="submit" type='primary' style={{ float: "right" }}>保存</Button>
                     </Form.Item>
                 </Form>
             }

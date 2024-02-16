@@ -184,12 +184,12 @@ function DownloadClientConfigForm({ record, onChange }: { record?: DownloadClien
                         </Row>
                         <Row gutter={16} >
 
-                            <Col span={8}>
+                            <Col span={12}>
                                 <Form.Item name={[field.name, "save_path"]} label="下载器内路径" >
                                     <Input />
                                 </Form.Item>
                             </Col>
-                            <Col span={16}>
+                            <Col span={12}>
                                 <Form.Item name={[field.name, "container_path"]} label="本地路径" >
                                     <PathSelector />
                                 </Form.Item>

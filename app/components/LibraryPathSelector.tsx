@@ -5,7 +5,6 @@ import { Input, Select, Space } from "antd";
 import { PathSelector } from "./PathSelector";
 import { DownloadClient, DownloadClientResource } from "../utils/api/download";
 import { useAPIContext, useResource } from "../utils/api/api_base";
-import { debounce } from "lodash";
 
 
 const normalize = (p: string) => p += p.endsWith("/") ? "" : "/"
@@ -32,8 +31,6 @@ const UnionPathSelectDispathContext = createContext<UnionPathSelectDispathContex
     updateComponent: () => { console.log("default") }
 })
 
-type PathSelectType = "auto" | "library" | "download" | "customize"
-
 interface UnionPathSelectProps extends FormItemProp<string> {
     label?: string
 }
@@ -42,17 +39,9 @@ interface WrapperProps {
     value?: string,
     onChange?: (value: string | undefined) => void,
     style?: React.CSSProperties,
-    leftEmpty?: string,
-    allowLeftEmpty?: boolean,
     width?: number,
-    auto?: boolean,
     fallback?: string,
     children?: React.ReactNode,
-    items?: {
-        type: string,
-        label: string,
-        render: (props: UnionPathSelectProps) => React.ReactNode
-    }[]
 }
 
 export const UnionPathsSelectGroup = (options: WrapperProps) => {
@@ -70,10 +59,8 @@ export const UnionPathsSelectGroup = (options: WrapperProps) => {
 
 
     const handlePathTypeChange = useCallback((value: string) => {
-        console.log('handlePAthTypeChange', components, value, components[value])
         setPathType(value);
-        // if (options.onChange) options.onChange(undefined)
-    }, [components]);
+    }, []);
 
 
     const registerComponent = useCallback((_type: GroupedSelectType, _predefined: string[], label?: string) => {
@@ -89,11 +76,9 @@ export const UnionPathsSelectGroup = (options: WrapperProps) => {
             })
         })
 
-        console.log("update path type..")
         const idx = _predefined.map(normalize).indexOf(normalize(initalValue ?? ""));
         if (idx > -1) {
             setPathType(_type as GroupedSelectType);
-            console.log("update path type", _type, idx)
         }
     }, [initalValue])
 
