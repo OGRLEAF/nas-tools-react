@@ -1,7 +1,7 @@
 "use client"
 import CardnForm, { CardProps, CardnFormContext } from "@/app/components/CardnForm";
 import { SyncModeSelect } from "@/app/components/NTSelects";
-import { DownloadPathSelect, EmptyPathSelect, LibraryPathSelect, UnionPathsSelect, UnionPathsSelectGroup } from "@/app/components/LibraryPathSelector";
+import { DownloadPathSelect, EmptyPathSelect, LibraryPathSelect, PathTreeSelect, UnionPathsSelectGroup } from "@/app/components/LibraryPathSelector";
 import { DirectorySynResource, DirectorySync, SyncDirectoryConfig, SyncDirectoryUpdateConfig, } from "@/app/utils/api/sync";
 import { SyncMode } from "@/app/utils/api/types"
 import { Button, Col, Descriptions, Form, Row, Space, Switch, Tag, message, theme } from "antd";
@@ -77,70 +77,30 @@ const SyncDirectoryForm = ({ record, onChange }: { record?: SyncDirectoryConfig,
         <Row gutter={16}>
             <Col span={24}>
                 <Form.Item label="源目录" name="from">
-                    <UnionPathsSelectGroup
-                        allowLeftEmpty={false}
-                        fallback="customize"
-                        items={[
-                            {
-                                type: "download",
-                                label: "下载目录",
-                                render: (props) => <DownloadPathSelect key="download" remote={false} value={props.value} onChange={props.onChange} />
-                            },
-                            {
-                                type: "customize",
-                                label: "自定义目录",
-                                render: (props) => <PathSelector key="customize" value={props.value} onChange={props.onChange} />
-                            }
-                        ]}
-                    />
+                    <UnionPathsSelectGroup fallback="customize">
+                        <DownloadPathSelect key="download" label="下载目录" remote={false}/>
+                        <PathTreeSelect key="customize" label="自定义目录" />
+                    </UnionPathsSelectGroup>
                 </Form.Item>
             </Col>
         </Row>
         <Row gutter={16}>
             <Col span={24}>
                 <Form.Item label="目的目录" name="to" >
-                    <UnionPathsSelectGroup
-                        allowLeftEmpty={false}
-                        fallback="customize"
-                        items={[{
-                            type: "library",
-                            label: "媒体库",
-                            render: (props) => <LibraryPathSelect key="library" value={props.value} onChange={props.onChange} />
-                        },
-                        {
-                            type: "customize",
-                            label: "自定义目录",
-                            render: (props) => <PathSelector key="customize" value={props.value} onChange={props.onChange} />
-                        }
-                        ]}
-                    />
+                    <UnionPathsSelectGroup fallback="customize">
+                        <LibraryPathSelect key="library" label="媒体库目录" />
+                        <PathTreeSelect key="customize" label="自定义目录" />
+                    </UnionPathsSelectGroup>
                 </Form.Item>
             </Col>
         </Row>
         <Row gutter={16}>
             <Col span={24}>
                 <Form.Item label="未识别目录" name="unknown" >
-                    <UnionPathsSelectGroup
-                        allowLeftEmpty={true}
-                        fallback="customize"
-                        items={[
-                            {
-                                type: "auto",
-                                label: "不适用",
-                                render: (props) => <EmptyPathSelect key="auto" {...props} />
-                            },
-                            {
-                                type: "library",
-                                label: "媒体库",
-                                render: (props) => <LibraryPathSelect key="library" value={props.value} onChange={props.onChange} />
-                            },
-                            {
-                                type: "customize",
-                                label: "自定义目录",
-                                render: (props) => <PathSelector key="customize" value={props.value} onChange={props.onChange} />
-                            }
-                        ]}
-                    />
+                    <UnionPathsSelectGroup fallback="customize">
+                        <LibraryPathSelect key="library" label="媒体库目录" />
+                        <PathTreeSelect key="customize" label="自定义目录" />
+                    </UnionPathsSelectGroup>
                 </Form.Item>
             </Col>
         </Row>
