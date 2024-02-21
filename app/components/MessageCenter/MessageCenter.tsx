@@ -72,7 +72,7 @@ export default function MessagePanel() {
         }, [isLasted])
         return <Card
             ref={messagesEndRef}
-            bordered={false} bodyStyle={{ paddingBottom: 0, padding: "24px 16px 8px 16px", borderRadius: "none" }}
+            bordered={false} styles={{ body: { paddingBottom: 0, padding: "24px 16px 8px 16px", borderRadius: "none" } }}
         >
             <Card.Meta
                 style={{ width: "100%", overflowX: "auto" }}
