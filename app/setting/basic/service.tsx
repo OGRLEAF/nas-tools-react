@@ -1,5 +1,6 @@
 "use client"
-import { Col, Form, InputNumber, Row, Switch } from "antd";
+import { CronInput } from "@/app/components/CronInput";
+import { Col, Form, Input, InputNumber, Row, Switch } from "antd";
 import React from "react";
 
 export default function SettingService() {
@@ -16,13 +17,15 @@ export default function SettingService() {
                 </Form.Item>
             </Col>
             <Col span={6}>
-                <Form.Item label="媒体库同步周期" name={["pt", "mediasync_interval"]}>
+                <Form.Item label="媒体库同步周期" name={["media", "mediasync_interval"]}>
                     <InputNumber style={{ width: "100%" }} addonAfter="小时" />
                 </Form.Item>
             </Col>
             <Col span={6}>
                 <Form.Item label="站点数据刷新时间" name={["pt", "ptrefresh_date_cron"]}>
-                    <InputNumber style={{ width: "100%" }} addonAfter="小时" />
+                    {/* <InputNumber style={{ width: "100%" }} addonAfter="小时" /> */}
+                    <Input />
+                    {/* <CronInput /> */}
                 </Form.Item>
             </Col>
         </Row>

@@ -2,16 +2,14 @@
 import { CardsForm } from "@/app/components/CardsForm";
 import { BatchActions, Cards, useSelection } from "@/app/components/CardsForm/Cards";
 import { DualArrowTag } from "@/app/components/DualArrowTag";
-import { DownloadPathSelect, EmptyPathSelect, LibraryPathSelect, UnionPathsSelectGroup } from "@/app/components/LibraryPathSelector";
+import { DownloadPathSelect, EmptyPathSelect, StringPathInput, UnionPathsSelectGroup } from "@/app/components/LibraryPathSelector";
 import { DownloadClientSelect, SiteSelect } from "@/app/components/NTSelects";
-import { PathSelector } from "@/app/components/PathSelector";
 import { StateTag } from "@/app/components/StateTag";
 import TagsSelect from "@/app/components/TagsSelect";
-import { IconDownloader, IconPause, IconPlay, IconRefresh } from "@/app/components/icons";
+import { IconPause, IconPlay } from "@/app/components/icons";
 import { bytes_to_human } from "@/app/utils";
 import { useResource } from "@/app/utils/api/api_base";
 import { BrushTask, BrushTaskConfig, BrushTaskProfile, BrushTaskResourceType, BrushTaskTorrent, BrushTaskTorrentType, BrushTaskTorrents, FreeType, TaskState } from "@/app/utils/api/brushtask";
-import { RssTaskConfig } from "@/app/utils/api/subscription/rss";
 import { Button, Collapse, Descriptions, Divider, Flex, Form, Input, InputNumber, Select, Space, Switch, Tag } from "antd";
 import { ColumnsType } from "antd/es/table";
 import { SelectProps, Table } from "antd/lib";
@@ -142,26 +140,11 @@ function TaskConfigForm({ record, onChange }: { record?: BrushTaskProfile, onCha
             <Input />
         </Form.Item>
         <Form.Item name="savepath" label="保存目录">
-            <UnionPathsSelectGroup
-                fallback="customize"
-                items={[
-                    {
-                        type: "auto",
-                        label: "自动",
-                        render: (props) => <EmptyPathSelect key="auto" emptyValue={undefined} />
-                    },
-                    {
-                        type: "download",
-                        label: "下载目录",
-                        render: (props) => <DownloadPathSelect key="download" remote={false} value={props.value} onChange={props.onChange} />
-                    },
-                    {
-                        type: "customize",
-                        label: "自定义目录",
-                        render: (props) => <PathSelector key="customize" value={props.value} onChange={props.onChange} />
-                    }
-                ]}
-            />
+            <UnionPathsSelectGroup fallback="customize">
+                <EmptyPathSelect key="auto" label="自动" />
+                <DownloadPathSelect key="download" label="下载器目录" />
+                <StringPathInput key="customize" label="自定义目录" />
+            </UnionPathsSelectGroup>
         </Form.Item>
         <Space>
             <Form.Item name="sendmessage" valuePropName="checked" label="消息推送">
@@ -344,7 +327,7 @@ const columns: ColumnsType<BrushTaskTorrent> = [
         title: "状态",
         dataIndex: "torrent_hash",
         render: (value: string) => {
-            return value == "0" ? <Tag color="yellow">已删除</Tag>:<Tag color="green">正常</Tag>
+            return value == "0" ? <Tag color="yellow">已删除</Tag> : <Tag color="green">正常</Tag>
         }
     },
 ]

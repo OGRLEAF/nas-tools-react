@@ -265,7 +265,7 @@ const MediaFileExplorer = () => {
             + pathManagerContext.getBasePath
             + pathManagerContext.getDeepestRelativePath())
 
-    }, [pathManagerContext])
+    }, [pathManagerContext, router])
 
     // const enterDir = (dirName: string) => {
     //     pathManagerDispath({ type: "append_path", path: dirName })

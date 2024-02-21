@@ -161,16 +161,6 @@ export default function SettingMedia() {
                 </Form.Item>
             </Col>
             <OpenAISetting provider={provider} />
-            {/* <Col span={4}>
-                <Form.Item label="OpenAI API URL" name={["openai", "api_url"]}>
-                    <Input />
-                </Form.Item>
-            </Col>
-            <Col span={6}>
-                <Form.Item label="OpenAI API Key" name={["openai", "api_key"]}>
-                    <Input />
-                </Form.Item>
-            </Col> */}
         </Row>
         <Row gutter={[24, 0]}>
             <Col span={6}>

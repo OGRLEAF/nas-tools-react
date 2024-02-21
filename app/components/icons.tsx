@@ -1,7 +1,7 @@
 "use client"
 import React, { CSSProperties } from 'react'
 import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome'
-import { IconDefinition, faFilm, faPlay, faTv, faRss, faExternalLink, faCalendarDays, faPenToSquare, faPhotoFilm, faFolderTree, faLink, faHistory, faDatabase, faBookBookmark, faArrowsRotate, faEllipsis, faCloudArrowDown, faSpinner, faEdit, faPause, faFilter, faDeleteLeft, faTrash, faPlus, faSearchLocation, faCopy, faFont, faCubes } from '@fortawesome/free-solid-svg-icons'
+import { IconDefinition, faFilm, faPlay, faTv, faRss, faExternalLink, faCalendarDays, faPenToSquare, faPhotoFilm, faFolderTree, faLink, faHistory, faDatabase, faBookBookmark, faArrowsRotate, faEllipsis, faCloudArrowDown, faSpinner, faEdit, faPause, faFilter, faDeleteLeft, faTrash, faPlus, faSearchLocation, faCopy, faFont, faCubes, faStarOfLife } from '@fortawesome/free-solid-svg-icons'
 import Icon from '@ant-design/icons'
 
 const FromFontAwesome = (faIcon: IconDefinition, options?: { fade?: boolean, }) => {
@@ -42,3 +42,4 @@ export const IconMediaServer = FromFontAwesome(faPhotoFilm)
 export const IconCopy = FromFontAwesome(faCopy)
 export const IconFont = FromFontAwesome(faFont)
 export const IconCubes = FromFontAwesome(faCubes)
+export const IconCronExpr = FromFontAwesome(faStarOfLife)
