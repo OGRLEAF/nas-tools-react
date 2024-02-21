@@ -123,7 +123,7 @@ const MediaImport = () => {
         console.log('outter', search.series)
         form.setFieldValue('series', new SeriesKey(search.series))
 
-    }, [search.series])
+    }, [form, search.series])
 
     return <Row gutter={16} style={{ height: "100%" }}>
         <Col span={7}>
@@ -139,16 +139,17 @@ const MediaImport = () => {
                 }}
                 onFinish={onFinish}>
                 <Space direction="vertical" style={{ width: "100%" }}>
+                    <SearchContext.Provider value={search}>
+                        <Form.Item name="series" noStyle>
 
-                    <Form.Item name="series" noStyle>
-                        <MediaSearchGroup>
-                            <MediaSearchWork />
-                            <br />
-                            <MediaSearchSeason />
-                            <br />
-                        </MediaSearchGroup>
-                    </Form.Item>
-
+                            <MediaSearchGroup>
+                                <MediaSearchWork />
+                                <br />
+                                <MediaSearchSeason />
+                                <br />
+                            </MediaSearchGroup>
+                        </Form.Item>
+                    </SearchContext.Provider>
                     {series?.t == MediaWorkType.TV || series?.t == MediaWorkType.ANI ? <>
                         <span>{series.t} {series.i} {series.s}</span>
                         <SearchContext.Provider value={search}>

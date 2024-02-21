@@ -254,7 +254,7 @@ const MediaFileExplorer = () => {
         } catch (e) {
 
         }
-    }, [API])
+    }, [API, pathManagerContext, router])
 
     useEffect(() => {
         onRefresh();
@@ -272,33 +272,37 @@ const MediaFileExplorer = () => {
     // }
     const [selectedFiles, setSelectedFiles] = useState<NastoolFileListItem[]>([]);
 
+    const importFiles = useMemo(() => selectedFiles.map((item) => ({
+        name: item.name,
+        path: pathManagerContext.deepestPath,
+        rel: [],
+        indentifyHistory: new IdentifyHistory(),
+        selected: false
+    })), [pathManagerContext.deepestPath, selectedFiles])
+
     return <MediaImportProvider>
         <MediaImport />
         <Section title="文件管理" onRefresh={onRefresh} style={{ height: "100%" }}>
-            <SectionContext.Consumer>
-                {(sectionContext) => {
-                    return <Space direction="vertical">
-                        <Flex justify="space-between">
-                            <PathManagerBar />
-                            <MediaImportEntry flush={true}
-                                appendFiles={
-                                    selectedFiles.map((item) => ({ name: item.name, path: pathManagerContext.deepestPath, rel: [], indentifyHistory: new IdentifyHistory(), selected: false }))
-                                } />
-                        </Flex>
-                        <Row gutter={16} style={{ overflow: "hidden" }}>
-                            <Col span={6}>
-                                <DirectoryList dirList={dirList} loading={loadingState} />
-                            </Col>
-                            <Col span={18}>
-                                <FileList fileList={fileList}
-                                    loading={loadingState}
-                                    selected={selectedFiles}
-                                    onSelectedChange={(files) => setSelectedFiles(files)} />
-                            </Col>
-                        </Row>
-                    </Space>
-                }}
-            </SectionContext.Consumer>
+            <Space direction="vertical">
+                <Flex justify="space-between">
+                    <PathManagerBar />
+                    <MediaImportEntry
+                        flush={true}
+                        appendFiles={importFiles}
+                    />
+                </Flex>
+                <Row gutter={16} style={{ overflow: "hidden" }}>
+                    <Col span={6}>
+                        <DirectoryList dirList={dirList} loading={loadingState} />
+                    </Col>
+                    <Col span={18}>
+                        <FileList fileList={fileList}
+                            loading={loadingState}
+                            selected={selectedFiles}
+                            onSelectedChange={(files) => setSelectedFiles(files)} />
+                    </Col>
+                </Row>
+            </Space>
         </Section>
     </MediaImportProvider>
 }

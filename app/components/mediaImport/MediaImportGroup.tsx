@@ -1,7 +1,7 @@
 import { asyncEffect } from "@/app/utils";
 import { TMDB } from "@/app/utils/api/media/tmdb";
 import { MediaWork, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { CloseOutlined } from "@ant-design/icons"
 import { MediaDetailCard } from "../TMDBSearch/TinyTMDBSearch";
 import { Button, Card, Checkbox, Divider, Flex, Form, Popover, Radio, Space, Tag, Tooltip, theme } from "antd";
@@ -11,7 +11,7 @@ import { SearchContext } from "../TMDBSearch/SearchContext";
 import { IconEllipsisLoading } from "../icons";
 import _, { values } from "lodash";
 import { ImportMode } from "@/app/utils/api/api";
-import { DownloadPathSelect, LibraryPathSelect, PathTreeSelect, UnionPathsSelectGroup } from "../LibraryPathSelector";
+import { DownloadPathSelect, EmptyPathSelect, LibraryPathSelect, PathTreeSelect, UnionPathsSelectGroup } from "../LibraryPathSelector";
 // import { useImportListContext } from "./mediaImportList";
 import { StateMap, StateTag } from "../StateTag";
 import { ImportTask, ImportTaskConfig } from "@/app/utils/api/import";
@@ -237,9 +237,10 @@ function TvImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Med
             onFinish={submitImport}
         >
             <Form.Item name="target_path" >
-                <UnionPathsSelectGroup fallback="customize">
-                    <LibraryPathSelect key="library" label="媒体库目录" />
-                    <PathTreeSelect key="customize" label="自定义目录" />
+                <UnionPathsSelectGroup fallback="customize" width={400}>
+                    <EmptyPathSelect key="auto" label="自动" />
+                    <LibraryPathSelect key="library" label="媒体库目录" width={400} />
+                    <PathTreeSelect key="customize" label="自定义目录" width={400} />
                 </UnionPathsSelectGroup>
             </Form.Item>
             <Form.Item name="type">
@@ -293,6 +294,7 @@ function MovieImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: 
         >
             <Form.Item name="target_path" >
                 <UnionPathsSelectGroup fallback="customize">
+                    <EmptyPathSelect key="auto" label="自动" />
                     <LibraryPathSelect key="library" label="媒体库目录" />
                     <PathTreeSelect key="customize" label="自定义目录" />
                 </UnionPathsSelectGroup>
@@ -321,13 +323,14 @@ function ImportListItemAction({ fileKey }: { fileKey: MediaImportFileKey }) {
 
 function TableIdentifyColumn(options: { value: number | string | undefined, file: MediaImportFile, displayKey: SeriesKeyType }) {
     const [work, setWork] = useState<MediaWork>();
-    const { value, file, displayKey: key } = options;
+    const { file, displayKey: key } = options;
     const [lastest, old] = file.indentifyHistory.lastDiffs();
     const changed = (lastest != undefined && old != undefined) ? lastest.compare(old) < key : false
     const finalValue = lastest?.get(key);
     const [loading, setLoading] = useState(false);
     const [localSeries, setLocalSeries] = useState<SeriesKey>();
-    useEffect(asyncEffect(async () => {
+
+    const getWorkFromSeriesKey = useCallback(async () => {
         setLoading(true)
         const seriesKey = file.indentifyHistory.last();
         if (seriesKey !== undefined) {
@@ -340,9 +343,13 @@ function TableIdentifyColumn(options: { value: number | string | undefined, file
 
         }
         setLoading(false)
-    }), [file, file.indentifyHistory, lastest])
+    }, [file.indentifyHistory, key])
 
-    const { setKeyword, setSeries, series } = useContext(SearchContext);
+    useEffect(() => {
+        getWorkFromSeriesKey()
+    }, [getWorkFromSeriesKey])
+
+    const { setKeyword, setSeries } = useContext(SearchContext);
     const onTitleTagClick = (value: string) => {
         setKeyword(value);
     }
@@ -361,11 +368,9 @@ function TableIdentifyColumn(options: { value: number | string | undefined, file
                     <Button size="small" onClick={onSelect}
                     >选择</Button>
                 </Space>
-                :
-                <></>
+                : null
             }
-        />
-            : <></>}
+        /> : null}
     </Space>
     return <Tag color={changed ? 'pink' : 'cyan'}>
         <Tooltip title={JSON.stringify([localSeries, key, lastest?.t, old?.t, old ? lastest?.compare(old) : "", changed])}>

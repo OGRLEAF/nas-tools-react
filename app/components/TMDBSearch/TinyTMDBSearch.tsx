@@ -103,7 +103,7 @@ export function MediaDetailCard({
     layout,
     loading,
     postImageStyle
-}: { mediaDetail?: MediaWork, size?: CardSize, action?: React.JSX.Element, loading?: boolean, layout?: "vertical" | "horizonal", onTitleClick?: (mediaDetail: MediaWork) => void, postImageStyle?: CSSProperties }) {
+}: { mediaDetail?: MediaWork, size?: CardSize, action?: React.ReactNode, loading?: boolean, layout?: "vertical" | "horizonal", onTitleClick?: (mediaDetail: MediaWork) => void, postImageStyle?: CSSProperties }) {
     const { token } = theme.useToken()
     const _size = size ? size : "normal";
     const style = cardStyleMap[_size];
@@ -296,6 +296,7 @@ export interface MediaSearchProps {
 
 export function MediaSearchGroup({ value, onChange, children, filter }: MediaSearchProps) {
     const [searchContext] = useSearch(value);
+    // const [searchContext] = useContext(SearchContext)
     const { setSelected, selected, series, setSeries } = searchContext;
     const [seasons, setSeasons] = useState<MediaWorkSeason[]>([])
     const [loading, setLoading] = useState(false)

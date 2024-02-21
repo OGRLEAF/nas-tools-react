@@ -33,6 +33,7 @@ export const useSearch = (initialSeries?:SeriesKey) => {
         setSeries,
     }]
 }
+
 export const SearchContextProvider = ({ children }: { children: React.ReactNode }) => {
     const [search] = useSearch();
     return <SearchContext.Provider value={search}>
