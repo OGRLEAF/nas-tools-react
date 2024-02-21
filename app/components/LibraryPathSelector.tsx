@@ -25,6 +25,13 @@ type UnionPathSelectDispathContextType = {
     updateComponent: ((options: { type: GroupedSelectType, predefined?: string[], node?: React.ReactNode, label?: string }) => void);
 
 }
+
+type UnionPathSelectStyleContextType = {
+    width?: React.CSSProperties['width']
+}
+
+const UnionPathSelectStyleContext = createContext<UnionPathSelectStyleContextType>({})
+
 const UnionPathSelectContext = createContext<UnionPathSelectContextType>({})
 const UnionPathSelectDispathContext = createContext<UnionPathSelectDispathContextType>({
     registerComponent: () => { console.log("default") },
@@ -64,7 +71,7 @@ export const UnionPathsSelectGroup = (options: WrapperProps) => {
 
 
     const registerComponent = useCallback((_type: GroupedSelectType, _predefined: string[], label?: string) => {
-        console.log(_type, _predefined)
+        console.debug(_type, _predefined)
         setComponents((components) => {
             return ({
                 ...components,
@@ -85,7 +92,7 @@ export const UnionPathsSelectGroup = (options: WrapperProps) => {
     const updateComponent = useCallback((options: { type: GroupedSelectType, predefined?: string[], node?: React.ReactNode, label?: string }) => {
         const { type: currentType, predefined, node, label } = options;
         if (currentType == pathType) {
-            console.log(currentType, predefined, node)
+            console.debug(currentType, predefined, node)
             setComponents((components) => {
                 const comp = components[currentType];
                 if (comp)
@@ -104,24 +111,27 @@ export const UnionPathsSelectGroup = (options: WrapperProps) => {
     }, [pathType])
 
     const ctxOnChange = useCallback((type: GroupedSelectType, value: string) => {
-        console.log(type, value)
         setPath(value);
     }, [])
 
     useEffect(() => {
         if (options.onChange) options.onChange(path)
     }, [options, path])
-    return <>
 
-        <UnionPathSelectContext.Provider value={{ value: path, pathType: pathType }}>
-            <UnionPathSelectDispathContext.Provider value={{
-                registerComponent,
-                updateComponent,
-                onChange: ctxOnChange
-            }}>
-                <div style={{ display: "none" }} >{children}</div>
-            </UnionPathSelectDispathContext.Provider>
-        </UnionPathSelectContext.Provider >
+    const fullWidth = useMemo(() => options.width ?? 450, [options.width]);
+
+    return <>
+        <UnionPathSelectStyleContext.Provider value={{ width: fullWidth }}>
+            <UnionPathSelectContext.Provider value={{ value: path, pathType: pathType }}>
+                <UnionPathSelectDispathContext.Provider value={{
+                    registerComponent,
+                    updateComponent,
+                    onChange: ctxOnChange
+                }}>
+                    <div style={{ display: "none" }} >{children}</div>
+                </UnionPathSelectDispathContext.Provider>
+            </UnionPathSelectContext.Provider>
+        </UnionPathSelectStyleContext.Provider>
         <Space.Compact style={{ width: "100%", ...options.style }}>
             <Select
                 value={pathType}
@@ -200,7 +210,7 @@ export const LibraryPathSelect = (options: UnionPathSelectProps) => {
 
     const node = useMemo(() => <Select value={path} onChange={handlePathChange} options={libraryPathOptions}
         style={{
-            width: options.width ? options.width - 150 : undefined
+            width: options.width && (options.width - 150)
         }}
     />, [handlePathChange, libraryPathOptions, options.width, path])
 
@@ -252,17 +262,16 @@ export const DownloadPathSelect = (options: { remote?: boolean } & UnionPathSele
         return clients?.map(cli => cli.download_dir).reduce((prev, curr) => prev.concat(curr)) ?? []
     }, [clients])
 
-    const node = useMemo(() => <><Select value={path} options={downloaderPathMap}
+    const node = useMemo(() => <Select value={path} options={downloaderPathMap}
         onChange={(value) => {
             setPath(value);
             options.onChange?.(value);
             onChange?.("download", value)
         }}
         style={{
-            width: options.width ? options.width - 150 : undefined
+            width: options.width && (options.width - 150)
         }}
-    />
-    </>, [downloaderPathMap, options, onChange, path])
+    />, [downloaderPathMap, options, onChange, path])
 
     const [registered, setRegistered] = useState(false);
 
@@ -296,8 +305,9 @@ export function PathTreeSelect(options: UnionPathSelectProps) {
     }, [onChange, options])
 
     const node = useMemo(() => <>
-        <PathSelector value={value} onChange={onPathSelectorUpdate} />
-    </>, [onPathSelectorUpdate, value]);
+        <PathSelector value={value} onChange={onPathSelectorUpdate}
+            style={{ width: options.width && (options.width - 150) }} />
+    </>, [onPathSelectorUpdate, options.width, value]);
     const [registered, setRegistered] = useState(false);
 
     useEffect(() => {
@@ -331,7 +341,9 @@ export const StringPathInput = (options: UnionPathSelectProps) => {
         }
     }, [value, options, onChange])
 
-    const node = useMemo(() => <Input value={value} onChange={(evt) => setValue(evt.currentTarget.value)} />, [value])
+    const node = useMemo(() => <Input value={value} onChange={(evt) => setValue(evt.currentTarget.value)}
+        style={{ width: options.width && (options.width - 150) }}
+    />, [options.width, value])
 
     const [registered, setRegistered] = useState(false);
     useEffect(() => {
