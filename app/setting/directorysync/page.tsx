@@ -78,7 +78,7 @@ const SyncDirectoryForm = ({ record, onChange }: { record?: SyncDirectoryConfig,
             <Col span={24}>
                 <Form.Item label="源目录" name="from">
                     <UnionPathsSelectGroup fallback="customize">
-                        <DownloadPathSelect key="download" label="下载目录" remote={false}/>
+                        <DownloadPathSelect key="download" label="下载目录" remote/>
                         <PathTreeSelect key="customize" label="自定义目录" />
                     </UnionPathsSelectGroup>
                 </Form.Item>

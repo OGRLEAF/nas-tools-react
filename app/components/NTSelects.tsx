@@ -26,7 +26,7 @@ export const DownloadSettingSelect = (options: { default?: { label: string, valu
             value: 0
         }),
         ...list?.map((config) => ({ label: config.name, value: config.id })) ?? []
-    ], [list])
+    ], [list, options.default])
     return <Select style={{ ...options.style }} options={selectOptions} value={options.value} onChange={options.onChange} />
 }
 
@@ -51,7 +51,7 @@ export const FilterRuleSelect = (options: FormItemProp<string>) => {
                     setFilterRules(res)
                 })
         })()
-    }, [])
+    }, [API])
     const filterRuleOption = [
         {
             label: "默认",
@@ -103,7 +103,7 @@ export const SiteSelect = (options: FormItemProp<string[]>
                     ...sites.map((item) => ({ label: item.name, value: item[key] }))
                 ])
         })()
-    }, []);
+    }, [API, key]);
     return <Select mode={options.mode == "multiple" ? "multiple" : undefined} options={selectOptions} value={options.value} onChange={options.onChange} />
 }
 
@@ -118,7 +118,7 @@ export const IndexerSelect = (options: FormItemProp<string[]>) => {
                     ...sites.map((item) => ({ label: item.name, value: item.name }))
                 ])
         })()
-    }, []);
+    }, [API]);
     return <Select mode="multiple" options={selectOptions} value={options.value} onChange={options.onChange} />
 }
 
@@ -165,7 +165,7 @@ export const MediaWorkCategorySelect = (options: MediaWorkCategorySelectProp) =>
     const { refresh, data } = useData();
     useEffect(() => {
         refresh();
-    }, [options.type])
+    }, [options.type, refresh])
     const categoryOptions = [{ value: "", label: "全部" }, ...(data?.map((v) => ({ value: v, label: v })) ?? [])];
     return <Select options={categoryOptions} value={options.value} onChange={options.onChange} ></Select>
 }
@@ -176,7 +176,7 @@ export const MediaWorkCategoryUnionSelect = (options: FormItemProp<[MediaWorkTyp
     const [selectedCat, setSelectedCat] = useState<MediaWorkCategoryType>(category)
     useEffect(() => {
         options.onChange?.([selectedType, selectedCat])
-    }, [selectedCat, selectedType])
+    }, [options, selectedCat, selectedType])
     useEffect(() => {
         setSelectedCat("")
     }, [selectedType])

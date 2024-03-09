@@ -44,7 +44,7 @@ export default function LogPanel() {
     const [msgApi, setMsgApi] = useState<ServerLog>();
     const [autoRefresh, setAutoRefresh] = useState(false);
     const { API } = useAPIContext();
-    
+
     const onMessage = (msgs: Log[]) => {
         setMsgs(msgs);
         list.current?.scrollTo({ index: msgs.length - 1 })
@@ -99,14 +99,15 @@ export default function LogPanel() {
             }
         }
     }, [logContent.current])
-    return <div ref={logContent} style={{ height: "100%", overflowY: "scroll"}} >
+    return <div ref={logContent} style={{ height: "100%", overflowY: "scroll" }} >
 
         <ConfigProvider theme={{
             token: {
                 borderRadiusLG: 0,
                 boxShadowTertiary: "none"
             }
-        }}><List>
+        }}>
+            <List>
                 <VirtualList
                     ref={list}
                     data={msgs}
@@ -115,7 +116,7 @@ export default function LogPanel() {
                     itemKey="timestamp"
                 >
                     {(msg, index) => {
-                        return <List.Item style={{ padding: "12px 4px 12px 4px" }}>
+                        return <List.Item key={msg.time} style={{ padding: "12px 4px 12px 4px" }}>
                             <MessageCard msg={msg} />
                         </List.Item>
                     }}

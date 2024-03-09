@@ -6,12 +6,13 @@ import { DownloadOutlined } from "@ant-design/icons"
 import { bytes_to_human, useSubmitMessage } from "@/app/utils/"
 import { Section } from "@/app/components/Section";
 import { DownloadSettingSelect } from "@/app/components/NTSelects";
-import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
+// import { UnionPathsSelect } from "@/app/components/LibraryPathSelector";
 import { Download } from "@/app/utils/api/download";
 import { DualArrowTag } from "@/app/components/DualArrowTag";
 import Search from "antd/es/input/Search";
 import Link from "next/link";
 import { useAPIContext } from "@/app/utils/api/api_base";
+import { DownloadPathSelect, EmptyPathSelect, LibraryPathSelect, PathTreeSelect, UnionPathsSelectGroup } from "@/app/components/LibraryPathSelector";
 
 export default function SiteResource({
     params
@@ -98,7 +99,11 @@ function DownloadModalEntry(options: { item: NastoolSiteResourceItem }) {
             <DownloadSettingSelect style={{ width: 150 }} />
         </Form.Item>
         <Form.Item name="path" label="下载路径" style={{ marginBottom: 4 }}>
-            <UnionPathsSelect style={{ width: "100%" }} library={false} />
+            <UnionPathsSelectGroup fallback="customize">
+                <EmptyPathSelect key="auto" label="自动" />
+                <DownloadPathSelect key="download" label="下载目录" />
+                <PathTreeSelect key="customize" label="自定义目录" />
+            </UnionPathsSelectGroup>
         </Form.Item>
 
     </Form>
