@@ -100,6 +100,7 @@ const SyncDirectoryForm = ({ record, onChange }: { record?: SyncDirectoryConfig,
                     <UnionPathsSelectGroup fallback="customize">
                         <LibraryPathSelect key="library" label="媒体库目录" />
                         <PathTreeSelect key="customize" label="自定义目录" />
+                        <EmptyPathSelect key="disable" label="不使用"/>
                     </UnionPathsSelectGroup>
                 </Form.Item>
             </Col>
