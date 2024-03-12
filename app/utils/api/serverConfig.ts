@@ -1,5 +1,7 @@
-import { NastoolServerConfig } from "./api";
+import { NastoolServerConfig, NastoolServerConfigUpdate } from "./api";
 import { APIDataResourceBase } from "./api_base";
+
+
 
 export class ServerConfig extends APIDataResourceBase<NastoolServerConfig> {
     private _serverConfig: NastoolServerConfig | undefined = undefined
@@ -10,12 +12,18 @@ export class ServerConfig extends APIDataResourceBase<NastoolServerConfig> {
     }
 
     public dataHook(options?: undefined): Promise<NastoolServerConfig> {
-        return this.get();    
+        return this.get(true);
     }
 
-    public async update(config: NastoolServerConfig) {
-        if (await (await this.API).updateServerConfig(config)) {
+    public async update(config: NastoolServerConfigUpdate) {
+        if (await this.API.updateServerConfig(config)) {
             return this.get(true);
         }
+    }
+
+
+    public async updateHook(value: NastoolServerConfigUpdate): Promise<boolean> {
+        this.update(value);
+        return true
     }
 }

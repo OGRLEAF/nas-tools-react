@@ -53,7 +53,7 @@ export class APIDataResourceBase<T, Options = never> extends APIBase {
         throw new Error("Not implemented")
     };
 
-    public updateHook(value: T): Promise<boolean> {
+    public updateHook(value: any): Promise<boolean> {
         throw new Error("Not implemented")
     }
 

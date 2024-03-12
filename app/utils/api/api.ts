@@ -4,6 +4,7 @@ import { objectToFormData } from "./api_utils"
 import { NastoolMessage } from "../api/message";
 import { MediaWorkType } from "./types";
 import { ServerEvent } from "./message/ServerEvent";
+import { DeepPartial } from "..";
 type NastoolApi =
     "user/login" |
     "config/info" |
@@ -205,6 +206,8 @@ export type NastoolServerConfig = {
         indexer_sites: string[]
     }
 }
+
+export type NastoolServerConfigUpdate = DeepPartial<NastoolServerConfig>
 
 export type NastoolMediaSearchResultItem = {
     id: string,
@@ -772,7 +775,7 @@ export class NASTOOL {
         return config;
     }
 
-    public async updateServerConfig(config: NastoolServerConfig) {
+    public async updateServerConfig(config: NastoolServerConfigUpdate) {
         const flatten = (obj: any, roots: any = [], sep = '.'): Record<string, any> => Object.keys(obj).reduce((memo, prop) => Object.assign({}, memo, Object.prototype.toString.call(obj[prop]) === '[object Object]' ? flatten(obj[prop], roots.concat([prop]), sep) : { [roots.concat([prop]).join(sep)]: obj[prop] }), {})
         const flattenConfig = flatten(config);
         console.log(flattenConfig)
