@@ -11,6 +11,7 @@ import { StateMap, StateTag } from "../StateTag";
 import VirtualList, { ListRef } from "rc-virtual-list"
 import _ from "lodash";
 import { useAPIContext } from "@/app/utils/api/api_base";
+import { useServerEvent, useSocketio } from "@/app/utils/api/message/ServerEvent";
 
 const LogLevelStateTag: StateMap<Log['level']> = {
     INFO: {
@@ -40,65 +41,26 @@ const MessageCard = ({ msg }: { msg: Log, }) => {
 }
 
 export default function LogPanel() {
-    const [msgs, setMsgs] = useState<Log[]>([]);
-    const [msgApi, setMsgApi] = useState<ServerLog>();
-    const [autoRefresh, setAutoRefresh] = useState(false);
-    const { API } = useAPIContext();
-
-    const onMessage = (msgs: Log[]) => {
-        setMsgs(msgs);
-        list.current?.scrollTo({ index: msgs.length - 1 })
-    }
-    const connectMessage = async () => {
-        const serverEvent = API.getServerEvent()
-        if (serverEvent) {
-            const socket = new ServerLog(serverEvent);
-            setMsgApi(socket)
-        }
-
-    }
+    const socketio = useSocketio('/log')
+    const { msg, msgs, emit } = useServerEvent<Log>(socketio, 'log')
     useEffect(() => {
-        connectMessage();
-    }, [])
-
-    useEffect(() => {
-        if (msgApi) {
-            msgApi.onMessage = onMessage;
-            msgApi.refresh();
-        }
-    }, [msgApi])
-
-    useEffect(() => {
-        if (autoRefresh) {
-            const timer = setInterval(() => {
-                if (msgApi) {
-                    msgApi.refresh();
-                }
-            }, 5000)
-            return () => {
-                console.log("Timer cleared")
-                clearInterval(timer);
-            }
-        }
-    }, [autoRefresh, msgApi])
-
-    useEffect(() => {
-        setAutoRefresh(false)
-    }, [])
-
-
-
+        emit({ size: 20 }, 'pull_log')
+    }, [emit])
 
     const logContent = useRef<HTMLDivElement>(null);
     const list = useRef<ListRef>(null);
     const [listHeight, setListHeight] = useState(0);
+
+    useEffect(() => {
+        list.current?.scrollTo({ index: msgs.length - 1 })
+    }, [msgs.length])
     useEffect(() => {
         if (logContent.current) {
             if (logContent.current?.clientHeight > 0) {
                 setListHeight(logContent.current.clientHeight)
             }
         }
-    }, [logContent.current])
+    }, [])
     return <div ref={logContent} style={{ height: "100%", overflowY: "scroll" }} >
 
         <ConfigProvider theme={{
