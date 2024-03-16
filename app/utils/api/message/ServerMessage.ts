@@ -1,23 +1,23 @@
 import { io, Socket } from "socket.io-client"
 import { ServerEvent } from "./ServerEvent"
 import { API } from "../api"
-
+import { Message as MessagBase } from "./ServerEvent"
 enum MessageType {
     SEND = 0,
     RECV = 1
 }
 
-export interface Message {
+export interface Message  {
     level: string,
     title: string,
     content: string,
-    time: string,
+    time: number,
     index: number,
     timestamp: number,
     type: MessageType
 }
 
-export interface MessageGroup<MsgType> {
+export interface MessageGroup<MsgType> extends MessagBase{
     lst_time: string,
     messages: MsgType[]
 }
