@@ -1,9 +1,6 @@
 import axios from "axios";
 import ClientStorage from "../storage"
 import { objectToFormData } from "./api_utils"
-import { NastoolMessage } from "../api/message";
-import { MediaWorkType } from "./types";
-import { ServerEvent } from "./message/ServerEvent";
 import { DeepPartial } from "..";
 type NastoolApi =
     "user/login" |
@@ -684,7 +681,6 @@ export class NASTOOL {
     private token: string | null = null;
     private serverConfig: NastoolServerConfig | null = null;
     private storage: ClientStorage<NastoolLoginResData>;
-    public message: ServerEvent | null = null;
     public hook: {
         onLoginRequired?: () => (Promise<NastoolLoginConfig>)
     } = {};
@@ -734,17 +730,6 @@ export class NASTOOL {
 
     public async waitLogin() {
 
-    }
-
-    public getServerEvent() {
-        if (this.message == undefined) {
-            if (this.token) {
-                this.message = new ServerEvent(this.token)
-
-            }
-
-        }
-        return this.message
     }
 
     public async login({ username, password, remember }: NastoolLoginConfig): Promise<boolean> {
