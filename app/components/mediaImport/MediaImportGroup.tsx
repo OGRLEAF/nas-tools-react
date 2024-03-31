@@ -35,21 +35,17 @@ const tvImportColumns: ColumnsType<MediaImportFile> = [{
 },
 {
     title: "季",
-    dataIndex: ["identifyContext", "season"],
-    // width: 50,
     render: (value, record) => {
         // const [changed, finalValue] = isOverriden(value, record.overridenIdentify?.season);
-        return <TableIdentifyColumn value={value} file={record} displayKey={SeriesKeyType.SEASON} />
+        return <TableIdentifyColumn value={record.indentifyHistory.last().s} file={record} displayKey={SeriesKeyType.SEASON} />
     },
     // width: 250,
     shouldCellUpdate: (record, prevRecord) => !_.isEqual(record, prevRecord)  //checkIdentityChange(record, prevRecord, "season")
 },
 {
     title: "集",
-    dataIndex: ["identifyContext", "episode"],
-    // width: 50
     render: (value, record) => {
-        return <TableIdentifyColumn value={value} file={record} displayKey={SeriesKeyType.EPISODE} />
+        return <TableIdentifyColumn value={record.indentifyHistory.last().e} file={record} displayKey={SeriesKeyType.EPISODE} />
     },
     // width: 250,
     shouldCellUpdate: (record, prevRecord) => !_.isEqual(record, prevRecord) // checkIdentityChange(record, prevRecord, "episode")
@@ -69,13 +65,14 @@ const tvImportColumns: ColumnsType<MediaImportFile> = [{
 export function TvMediaImportGroup(props: MediaImportGroupProps) {
     const [work, setWork] = useState<MediaWork>();
     const mediaImportDispatch = useMediaImportDispatch();
-    useEffect(asyncEffect(async () => {
+    const loadMediaWork = useCallback(async () => {
         const series = new SeriesKey(props.seriesKey).slice(SeriesKeyType.TMDBID)
         const target = new TMDB().fromSeries(series);
         setWork(await target?.get())
-    }), [])
-    const [localSelectedFile, setLocalSelectedFile] = useState<Set<MediaImportFileKey>>(new Set());
-
+    }, [props.seriesKey])
+    useEffect(() => {
+        loadMediaWork()
+    }, [loadMediaWork])
     const { setSeries, setKeyword } = useContext(SearchContext);
     const selectButton = <Button type="primary" size="small" onClick={() => { if (work?.title) setKeyword(work?.title) }}>搜索</Button>
     const searchButton = <Button size="small" onClick={() => {
@@ -143,11 +140,16 @@ const movieImportColumns: ColumnsType<MediaImportFile> = [
 
 export function MovieMediaImportGroup(props: MediaImportGroupProps) {
     const [work, setWork] = useState<MediaWork>();
-    useEffect(asyncEffect(async () => {
+    const loadMediaWork = useCallback(async () => {
         const series = new SeriesKey(props.seriesKey).slice(SeriesKeyType.TMDBID)
         const target = new TMDB().fromSeries(series);
         setWork(await target?.get())
-    }), [])
+    }, [props.seriesKey])
+
+    useEffect(() => {
+        loadMediaWork()
+    }, [loadMediaWork])
+
     const { setSeries, setKeyword } = useContext(SearchContext);
     const selectButton = <Button type="primary" size="small" onClick={() => { if (work?.title) setKeyword(work?.title) }}>搜索</Button>
     const searchButton = <Button size="small" onClick={() => { if (work) setSeries(work.series) }}>选择</Button>

@@ -53,6 +53,7 @@ type NastoolApi =
     "filterrule/group/default" |
     "task/list" |
     "task/create" |
+    "taskflow/create" |
     "sync/directory/list" |
     "sync/directory/update" |
     "sync/directory/delete" |
@@ -89,7 +90,7 @@ type NastoolApi =
     "plugin/uninstall" |
     "plugin/config/update" |
     "indexer/options" |
-    "brushtask/list" | 
+    "brushtask/list" |
     "brushtask/update" |
     "brushtask/delete" |
     "brushtask/torrents"
@@ -979,7 +980,17 @@ export class NASTOOL {
             auth: true, data: {
                 task_type: taskType,
                 task_config: taskConfig
-            }
+            },
+        })
+    }
+
+    public async launchTaskflow(taskflow_profile: string, input: object) {
+        return await this.post<any>("taskflow/create", {
+            auth: true, data: {
+                profile_name: taskflow_profile,
+                input: input
+            },
+            json: true
         })
     }
 

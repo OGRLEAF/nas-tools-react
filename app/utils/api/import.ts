@@ -46,7 +46,7 @@ export interface ImportTaskConfig {
 export class ImportTask extends APIBase {
     public async import(config: ImportTaskConfig) {
         console.log(config)
-        const result = await (await this.API).createTask(TaskType.IMPORT, JSON.stringify(config));
+        const result = await (this.API).launchTaskflow("import_taskflow", config);
         return result;
     }
 }
