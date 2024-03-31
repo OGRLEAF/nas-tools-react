@@ -4,36 +4,45 @@ import { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { Subscription, TVSubscription } from "@/app/utils/api/subscription/subscribe";
 import { TMDB } from "@/app/utils/api/media/tmdb";
 import { MediaWork, MediaWorkEpisode, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
-import { Calendar, CalendarProps, Card, Popover, Space } from "antd";
+import { Calendar, CalendarProps, Card, Popover, Space, Spin } from "antd";
 import { Dayjs } from "dayjs";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useAPIContext } from "@/app/utils/api/api_base";
 
 export default function SubscribeCalendar() {
     const [tvEpisodes, setTvEpisodes] = useState<MediaWorkEpisode[]>([]);
-    const fetchEpisodes = async () => {
-        const subscribe = new TVSubscription();
-        const tvSubs = await subscribe.list();
-        const subsSeries = Object.values(tvSubs).map((sub) => {
-            return new SeriesKey().type(MediaWorkType.TV).tmdbId(sub.mediaid).season(sub.season);
-        })
-        const tmdb = new TMDB();
-        const tvEpisodes: MediaWorkEpisode[] = [];
-        subsSeries.forEach(async (key) => {
-            if (key.end == SeriesKeyType.SEASON) {
-                const mediaWork = tmdb.fromSeries(key)
-                if (mediaWork) {
-                    const episodes = await mediaWork.get_children();
-                    tvEpisodes.push(...episodes)
+    const { API } = useAPIContext();
+    const fetchEpisodes = useCallback(async () => {
+        if (API) {
+            const subscribe = new TVSubscription(API);
+            const tvSubs = await subscribe.list();
+            const subsSeries = Object.values(tvSubs).map((sub) => {
+                return new SeriesKey().type(MediaWorkType.TV).tmdbId(sub.mediaid).season(sub.season);
+            })
+            const tmdb = new TMDB();
+
+            const fetchedEpisodes = subsSeries.map(async (key) => {
+                if (key.end == SeriesKeyType.SEASON) {
+                    const mediaWork = tmdb.fromSeries(key)
+                    if (mediaWork) {
+                        const episodes = await mediaWork.get_children();
+                        return episodes
+                    } else {
+                        return []
+                    }
                 }
-            }
-        });
-        setTvEpisodes(tvEpisodes)
-    }
+            });
+            Promise.all(fetchedEpisodes)
+                .then((episodes) => {
+                    const tvEpisodes: MediaWorkEpisode[] = [];
+                    episodes.forEach((episodes) => {
+                        if (episodes) tvEpisodes.push(...episodes)
+                    })
+                    setTvEpisodes(tvEpisodes)
+                })
+        }
 
-    useEffect(() => {
-        fetchEpisodes();
-    }, [])
-
+    }, [API])
     const episodesGroupByDate = useMemo(() => {
         const dateMap = new Map<string, MediaWork[]>()
         tvEpisodes.forEach((tv) => {
@@ -47,21 +56,27 @@ export default function SubscribeCalendar() {
         })
         return dateMap;
     }, [tvEpisodes])
-    const dateCellRender = (current: Dayjs) => {
+    const dateCellRender = useCallback((current: Dayjs) => {
         const dateFormat = current.format("YYYY-MM-DD");
         const episodes = episodesGroupByDate.get(dateFormat);
         if (episodes) return <>
             {episodes.map((ep, idx) => <CalendarCard key={idx} mediaWork={ep} />)}
         </>
-    }
+    }, [episodesGroupByDate])
 
-    const cellRender: CalendarProps<Dayjs>['cellRender'] = (current, info) => {
+    const cellRender = useCallback((current: Dayjs, info: { type: string; originNode: any; }) => {
         if (info.type === 'date') return dateCellRender(current);
         return info.originNode;
-    };
+    }, [dateCellRender])
 
-    return <Section title="订阅日历">
-        <Calendar cellRender={cellRender} />
+    useEffect(() => {
+        fetchEpisodes()
+    }, [fetchEpisodes])
+
+    return <Section title="订阅日历" onRefresh={fetchEpisodes}>
+        <Spin spinning={episodesGroupByDate.size == 0}>
+            <Calendar cellRender={cellRender} />
+        </Spin>
     </Section>
 }
 
@@ -79,14 +94,12 @@ const CalendarCard = (options: { mediaWork: MediaWork }) => {
     return <>
         <Popover content={
             <MediaDetailCard size="tiny" mediaDetail={options.mediaWork} />
-        }
-            placement="left"
-        >
+        } >
             <Card size="small"
                 bordered={false}
 
                 // headStyle={{ fontSize: "1em", padding: "4 " }}
-                bodyStyle={{ padding: "4px 8px" }}
+                styles={{ body: { padding: "4px 8px" } }}
             >
                 {topMediaWork?.metadata?.title}  <>S{series.s}E{series.e}  {metadata?.title} </>
             </Card>
@@ -94,6 +107,6 @@ const CalendarCard = (options: { mediaWork: MediaWork }) => {
             {/* {topMediaWork?.metadata?.title}
             季{series.s} 集{series.e}
             {metadata?.title} */}
-        </Popover>
+        </Popover >
     </>
 }
