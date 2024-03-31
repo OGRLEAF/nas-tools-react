@@ -78,7 +78,10 @@ export default function SubscribeTV() {
                 cover: <div style={{ position: "relative", width: "100%", height: 175, }}>
                     <Image alt={`${record.name}`} fill style={{ objectFit: "cover", overflow: "hidden" }} sizes={"100vw"} priority={false} src={record.image} />
                 </div>,
-                title: record.name,
+                title: <Space>
+                    {record.name}
+                    <Tag color="green" bordered={false}>季{record.season}</Tag>
+                </Space>,
                 description: StatusTag[record.state]
             })}
         />
@@ -118,11 +121,11 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
     useEffect(() => {
         const mediaWork = new TMDB().fromSeries(series.slice(SeriesKeyType.TMDBID));
         mediaWork?.get().then((work) => setDetail(work))
-    }, [series.t])
+    }, [series, series.t])
 
     useEffect(() => {
         if (detail) onSelect(detail)
-    }, [detail])
+    }, [detail, onSelect])
 
     const seasonInForm = Form.useWatch("season", form);
     useEffect(() => {
@@ -133,18 +136,21 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
             setAutoFill(true);
         }
     }, [seasonInForm, series])
+
+    const [fillingTotalEp, setFillingTotalEp] = useState(false);
     useEffect(() => {
-        // if (seasonInForm != undefined && seasonInForm != initialConfig.season) {
-        //     console.log(seasonInForm, initialConfig.season, seasonInForm != initialConfig.season)
-        //     const seasonKey = series.season(seasonInForm);
-        //     console.log(seasonKey)
         console.log("Try update total ep", autoFill, series.s)
         if (autoFill) {
             if (series.end == SeriesKeyType.SEASON) {
                 const media = new TMDB().fromSeries(series.slice(SeriesKeyType.SEASON));
+                setFillingTotalEp(true)
                 media?.get_children()
                     .then((list) => {
+
                         form.setFieldValue('total_ep', list.length);
+                    })
+                    .finally(() => {
+                        setFillingTotalEp(false)
                     })
             }
         }
@@ -211,7 +217,7 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
                 </Col>
                 <Col span={8}>
                     <Form.Item label="总集数" name="total_ep">
-                        <InputNumber style={{ width: "100%" }} />
+                        <InputNumber disabled={fillingTotalEp} style={{ width: "100%" }} />
                     </Form.Item>
                 </Col>
                 <Col span={8}>
@@ -290,7 +296,7 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
             <Row>
                 <Col span={24}>
                     <Form.Item label="订阅站点" name="rss_sites">
-                        <SiteSelect />
+                        <SiteSelect mode="multiple" />
                     </Form.Item>
                 </Col>
             </Row>
