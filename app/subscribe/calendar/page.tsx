@@ -4,7 +4,7 @@ import { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { Subscription, TVSubscription } from "@/app/utils/api/subscription/subscribe";
 import { TMDB } from "@/app/utils/api/media/tmdb";
 import { MediaWork, MediaWorkEpisode, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
-import { Calendar, CalendarProps, Card, Popover, Space, Spin } from "antd";
+import { Calendar, CalendarProps, Card, Popover, Space, Spin, theme } from "antd";
 import { Dayjs } from "dayjs";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAPIContext } from "@/app/utils/api/api_base";
@@ -60,7 +60,9 @@ export default function SubscribeCalendar() {
         const dateFormat = current.format("YYYY-MM-DD");
         const episodes = episodesGroupByDate.get(dateFormat);
         if (episodes) return <>
-            {episodes.map((ep, idx) => <CalendarCard key={idx} mediaWork={ep} />)}
+            {
+                episodes.map((ep, idx) => <CalendarCard key={idx} mediaWork={ep} />)
+            }
         </>
     }, [episodesGroupByDate])
 
@@ -91,22 +93,30 @@ const CalendarCard = (options: { mediaWork: MediaWork }) => {
                 setTopMediaWork(topMediaWork)
             })
     })
+    const { token } = theme.useToken();
     return <>
-        <Popover content={
-            <MediaDetailCard size="tiny" mediaDetail={options.mediaWork} />
-        } >
-            <Card size="small"
-                bordered={false}
 
-                // headStyle={{ fontSize: "1em", padding: "4 " }}
-                styles={{ body: { padding: "4px 8px" } }}
-            >
-                {topMediaWork?.metadata?.title}  <>S{series.s}E{series.e}  {metadata?.title} </>
-            </Card>
+        <div
+            style={{
+                padding: "0px 8px 0px 8px",
+                marginBottom: 2,
+                borderLeft: `solid 4px ${token.colorPrimaryBorder}`,
+                backgroundColor: token.colorPrimaryBg,
+                display: "inline-flex",
+                justifyContent: "space-between",
+                width: "100%",
 
-            {/* {topMediaWork?.metadata?.title}
-            季{series.s} 集{series.e}
-            {metadata?.title} */}
-        </Popover >
+            }}
+        >
+            <span>
+                <Popover content={
+                    <MediaDetailCard size="tiny" mediaDetail={options.mediaWork} />
+                } >
+                    {topMediaWork?.metadata?.title}
+                </Popover >
+            </span>
+            <span>S{series.s}E{series.e}  {metadata?.title}</span>
+        </div>
+
     </>
 }
