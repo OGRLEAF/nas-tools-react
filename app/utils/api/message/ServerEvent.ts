@@ -72,6 +72,7 @@ export function useSocketio(namespace = "/test") {
     return sockio;
 }
 
+
 export function useServerEvent<DataType extends Message>(sockio: Socket | undefined, eventName: string) {
     const [msgs, setMsgs] = useState<DataType[]>([]);
     const msg = useMemo(() => msgs[0], [msgs])
