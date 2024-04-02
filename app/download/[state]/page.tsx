@@ -107,12 +107,14 @@ export default function DownloadedPage() {
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
     const updateTorrents = useCallback((newTorrents: TorrentInfo[]) => {
-        newTorrents.forEach((t) => {
-            torrents[t.hash] = t;
+        setTorrents((torrents) => {
+            newTorrents.forEach((t) => {
+                torrents[t.hash] = t;
+            })
+            return { ...torrents }
         })
-        setTorrents({ ...torrents })
-    }, [torrents])
-    const getTorrents = async (pagination = false) => {
+    }, [])
+    const getTorrents = useCallback(async (pagination = false) => {
         setLoading(true);
         const downloadApi = new Download();
         if (pagination) {
@@ -129,11 +131,11 @@ export default function DownloadedPage() {
         }
 
         setLoading(false)
-    }
+    }, [page, pageSize, updateTorrents]);
 
     useEffect(() => {
         getTorrents();
-    }, [])
+    }, [getTorrents])
     const { useList } = useResource<DownloadClientResource>(DownloadClient);
     const { list: clients, refresh: refreshClients } = useList();
     const downloaderPathMap = useMemo(() => {
