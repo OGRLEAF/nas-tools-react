@@ -1,9 +1,9 @@
 "use client"
 import { Section } from "@/app/components/Section";
 import { blue, green, cyan, yellow } from '@ant-design/colors';
-import { Button, Divider, Input, Popconfirm, Progress, Space, Table, Tag, Tooltip, message } from "antd";
+import { Button, Divider, Input, Popconfirm, Progress, Space, Table, Tag, Tooltip, message, Drawer, Form } from "antd";
 import { PlusOutlined } from "@ant-design/icons"
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Download, DownloadClient, DownloadClientResource, TorrentInfo, TorrentState, TorrentVagueState } from "@/app/utils/api/download";
 import { ColumnsType } from "antd/es/table";
@@ -13,6 +13,7 @@ import { IconPause, IconPlay } from "@/app/components/icons";
 import { bytes_to_human } from "@/app/utils";
 import { StateMap, StateTag } from "@/app/components/StateTag";
 import { useResource } from "@/app/utils/api/api_base";
+import { DownloadFormAction, DownloadSettingForm, TorrentDownloadForm } from "@/app/components/TorrentDownloadForm";
 
 const torrentStateMap: StateMap<TorrentState> = {
     [TorrentState.DOWNLOADING]: {
@@ -93,13 +94,6 @@ const torrentPrivateTag: StateMap<number> = {
 const _EMPTY_LIST = {};
 
 export default function DownloadedPage() {
-    const [param, setParam] = useState<string>()
-    const [state, setState] = useState(0);
-    const pathParam = useParams();
-    useEffect(() => {
-        setParam(pathParam.state as string)
-    }, [pathParam])
-
     const [torrents, setTorrents] = useState<Record<string, TorrentInfo>>(_EMPTY_LIST);
     const [totalTorrents, setTotalTorrents] = useState(20);
     const [categories, setCategories] = useState<string[]>([]);
@@ -285,9 +279,7 @@ export default function DownloadedPage() {
         onRefresh={() => { refreshClients(); getTorrents(false) }}
         extra={
             <Space>
-                <Button icon={<PlusOutlined />}
-                    onClick={() => setState((state) => state + 1)}
-                    type="primary">添加下载任务</Button>
+                <AddDownloadTask />
             </Space>
         }>
         {contextHolder}
@@ -314,6 +306,44 @@ export default function DownloadedPage() {
     </Section>
 }
 
+
+function AddDownloadTask() {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<DownloadFormAction>(null);
+    const [url, setUrl] = useState<string>()
+    return <>
+        <Popconfirm title={"下载"}
+            open={open}
+            description={
+                <div style={{ minWidth: 400 }}>
+                    <TorrentDownloadForm layout="horizontal" ref={ref} />
+                    <br />
+                    <Input placeholder="URL" onChange={(event) => {
+                        setUrl(event.currentTarget.value)
+                    }} />
+                </div>
+            }
+            onCancel={() => {
+                setOpen(false)
+            }}
+            onConfirm={() => {
+                const downloadSetting = ref.current?.getSetting();
+                if (downloadSetting && url) {
+                    new Download().downloadUrls({
+                        urls: [url],
+                        ...downloadSetting
+                    })
+                        .then(() => {
+                            setOpen(false)
+                        })
+                }
+
+            }}
+        >    <Button icon={<PlusOutlined />} onClick={() => setOpen(true)} type="primary">添加下载任务</Button>
+
+        </Popconfirm>
+    </>
+}
 function FileButton({ path, children }: { path?: string, children: React.ReactNode }) {
     const router = useRouter();
     return <Tooltip title={path}>

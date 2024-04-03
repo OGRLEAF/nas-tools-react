@@ -91,7 +91,26 @@ export class Download extends APIArrayResourceBase<DownloadResource> {
     public async submit(task: DownloadTaskProfile) {
         const result = await (await this.API).post("download/item", {
             auth: true,
-            data: { ...task }
+            data: {
+                ...task,
+            }
+        })
+        return result;
+    }
+
+    public async downloadUrls(task: {
+        urls: string[],
+        path?: string | undefined,
+        setting: number
+    }) {
+        const result = await this.API.post("download/torrent", {
+            auth: true,
+            data: {
+                urls: task.urls,
+                dl_dir: task.path,
+                dl_setting: task.setting
+            },
+            json: true
         })
         return result;
     }

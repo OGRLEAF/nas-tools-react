@@ -41,6 +41,7 @@ type NastoolApi =
     "download/remove" |
     "download/search" |
     "download/item" |
+    "download/torrent" |
     "download/client/add" |
     "library/mediaserver/library" |
     "library/mediaserver/library/item" |
