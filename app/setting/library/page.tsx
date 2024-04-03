@@ -20,14 +20,6 @@ interface LibraryPathConfig {
 }
 
 
-const columns: ColumnsType<{ title: string, value: string }[]> = [{
-    title: "目录",
-    dataIndex: "title",
-    width: 750,
-    render: (name: string, item) => <>{name}</>,
-    defaultSortOrder: "descend",
-}]
-
 const LibraryPathForm = (options: { onCreate: (value: string) => void }) => {
     return <Form initialValues={{ path: undefined }}
         onFinish={((value) => {

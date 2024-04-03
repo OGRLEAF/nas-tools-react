@@ -13,7 +13,7 @@ import { TMDB } from "@/app/utils/api/media/tmdb";
 const TMDBInfo = ({ record }: { record: TMDBCacheItem }) => {
     const { token } = theme.useToken();
     return <Space align="start" size={14}>
-        <Image src={`https://image.tmdb.org/t/p/w500${record.poster_path}`} width={80} />
+        <Image src={`https://image.tmdb.org/t/p/w500${record.poster_path}`} width={80} alt="TMDB Poster"/>
         <Space direction="vertical" style={{ paddingTop: 14 }}>
             <div style={{ color: token.colorTextLabel }}>
                 {record.title} ({record.year})
@@ -42,7 +42,7 @@ const FilterForm = ({ keyword, onFinish }: { keyword?: string, onFinish: (value:
     useEffect(() => {
         // console.log("Set->", keyword)
         form.setFieldValue("keyword", keyword)
-    }, [keyword])
+    }, [form, keyword])
     return <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Form initialValues={{ keyword: "" }}
             onFinish={onFinishFilterForm}
@@ -122,7 +122,9 @@ export default function TMDBCache() {
         },
         {
             title: "类型",
-            dataIndex: [1, "media_type"],
+            render: (value, record) => {
+                return record[1].media_type
+            }
         },
         {
             title: ({ filters }) => (<Space>

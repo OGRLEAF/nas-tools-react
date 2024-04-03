@@ -28,7 +28,7 @@ type FilterType = {
     series?: Set<string>
 }
 
-function SearchResult({ result }: { result: SearchResult }) {
+function SearchResultPannel({ result }: { result: SearchResult }) {
     const mediaWork: MediaWork = {
         series: new SeriesKey().type(result.type).tmdbId(result.tmdbid),
         type: result.type,
@@ -257,6 +257,6 @@ export default function SearchResultPage() {
     const { data } = useData();
 
     return <Section title="搜索结果">
-        {data != undefined ? <SearchResult result={data} /> : <></>}
+        {data != undefined ? <SearchResultPannel result={data} /> : <></>}
     </Section>
 }
