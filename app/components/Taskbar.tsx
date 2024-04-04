@@ -7,6 +7,6 @@ export default function Taskbar() {
         console.log(msg)
     }, [msg])
     return <>
-        Taskbar
+        Taskbar {msgs.length}
     </>
 }

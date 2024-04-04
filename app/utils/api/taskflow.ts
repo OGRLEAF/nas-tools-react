@@ -33,7 +33,7 @@ export interface TaskflowResource {
 export class Taskflow extends APIArrayResourceBase<TaskflowResource> {
     async list() {
         const result = await this.API.get<{tasks: TaskflowInfo[]}>(`taskflow/list`, { auth: true })
-        return result.tasks
+        return result.tasks.sort((a, b) => b.start_time - a.start_time)
     }
 
     async listHook(options?: unknown): Promise<TaskflowInfo[]> {

@@ -1,9 +1,10 @@
 "use client"
 import React, { ReactNode, useEffect, useState } from "react";
 import { Section } from "../components/Section";
-import { Collapse, Timeline, Space, Typography, Tag, theme, List, Alert, AlertProps, Button } from "antd";
+import { Collapse, Timeline, Space, Typography, Tag, theme, List, Alert, AlertProps, Button, Empty } from "antd";
 import { useAPIContext, useResource } from "../utils/api/api_base";
 import { Taskflow, TaskflowResource, TaskflowInfo, Task, TaskState } from "../utils/api/taskflow";
+import { useServerEvent } from "../utils/api/message/ServerEvent";
 
 const TaskCardStatus = ({ state, children: children }: { state: TaskState, children?: ReactNode }) => {
     const defaultAlterts: Record<string, { message: string, type: AlertProps["type"] }> = ({
@@ -40,14 +41,12 @@ const timeLineStateColor: Record<string, string> = {
     "finished": "green",
     "exited": "red",
     "timeout": "red",
-    "running": "green",
+    "running": "blue",
     "unknown": "grey"
 }
 const TaskCard = ({ taskflow }: { taskflow: TaskflowInfo }) => {
     const subtasks = taskflow.tasks.map((item) => {
         const [taskMeta, taskState] = item;
-        console.log(taskMeta, taskState)
-
         return {
             // label: item.type,
             children: <Space direction="vertical" style={{ width: "100%" }}>
@@ -68,40 +67,50 @@ const TaskCard = ({ taskflow }: { taskflow: TaskflowInfo }) => {
             color: timeLineStateColor[taskState?.status ?? "unknown"]
         }
     })
-    return <>
+    return <Space direction="vertical">
+        <span>{new Date(taskflow.start_time * 1000).toLocaleString()}</span>
         <Timeline items={subtasks} />
-    </>
+    </Space>
 }
 
 export default function TaskflowPage() {
     const { useList } = useResource<TaskflowResource>(Taskflow);
-    const { list: tasks } = useList();
+    const { list: tasks, refresh } = useList();
     const { token } = theme.useToken();
     const panelStyle: React.CSSProperties = {
         marginBottom: 24,
+        paddingLeft: 12,
         borderRadius: token.borderRadiusLG,
-        border: "solid #ccc 1px"
+        border: "solid #ccc 1px",
+        backgroundColor: token.colorBgContainer,
     }
-
+    const { msg, msgs, } = useServerEvent('task_event')
+    useEffect(() => {
+        if (msg) {
+            if (msg.type === "task_event") {
+                refresh();
+            }
+        }
+    }, [msg, refresh])
     const { API } = useAPIContext();
-    return <Section title="任务">
-        <Button onClick={() => {
-            API.launchTaskflow("example_flow", { count: 1 })
-        }}>运行测试</Button>
-        {tasks?.length}
-        <br />
-        <Collapse
-            bordered={false}
-            style={{ background: token.colorBgContainer }}
-            defaultActiveKey={[tasks?.[0]?.start_time ?? "0"]}
-            items={tasks?.map((taskflow) => ({
-                key: taskflow.start_time,
-                label: "任务",
-                children: <div style={{ margin: "16px 0 0 16px" }}>
-                    <TaskCard taskflow={taskflow} />
-                </div>,
-                style: panelStyle
-            }))}
-        />
+    return <Section title="任务" onRefresh={() => { refresh() }} >
+        <Space direction="vertical" style={{ width: "100%" }}>
+            <Button onClick={() => {
+                API.launchTaskflow("example_flow", { count: 1 })
+            }}>运行测试  {tasks?.length}</Button>
+            {tasks?.length ?
+                <Collapse
+                    size="small"
+                    bordered={false}
+                    defaultActiveKey={[tasks[0].start_time ?? "0"]}
+                    items={tasks.map((taskflow) => ({
+                        key: taskflow.start_time,
+                        label: "任务",
+                        children: <TaskCard taskflow={taskflow} />,
+                        style: panelStyle
+                    }))}
+                /> : <Empty description="暂无任务" />
+            }
+        </Space>
     </Section>
 }

@@ -2,11 +2,6 @@ import { io, Socket } from "socket.io-client"
 import { useAPIContext } from "../api_base"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-enum MessageType {
-    SEND = 0,
-    RECV = 1
-}
-
 export interface Message {
 }
 
@@ -103,8 +98,15 @@ export function useSeverMessage<DataType extends Message>(sockio: Socket | undef
 }
 
 
+export interface ServerEventMsg<Payload = any> extends Message {
+    keys: (string|number)[],
+    data: Payload,
+    timestamp: number,
+    type: string
+}
 
-export function useServerEvent<DataType extends Message>(eventName: string) {
+
+export function useServerEvent<DataType extends ServerEventMsg>(eventName: string) {
     const sockio = useSocketio('/server_event')
     const [msgs, setMsgs] = useState<DataType[]>([]);
     const msg = useMemo(() => msgs[msgs.length - 1], [msgs])
