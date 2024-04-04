@@ -8,11 +8,11 @@ import { useForm } from "antd/es/form/Form";
 import { ServerMessage, Message } from "@/app/utils/api/message/ServerMessage";
 import { ServerConfig } from "@/app/utils/api/serverConfig";
 import { useAPIContext } from "@/app/utils/api/api_base";
-import { useServerEvent, useSocketio } from "@/app/utils/api/message/ServerEvent";
+import { useSeverMessage, useSocketio } from "@/app/utils/api/message/ServerEvent";
 
 export default function MessagePanel() {
     const socketio = useSocketio('/message')
-    const { msg, msgs, emit } = useServerEvent<Message>(socketio, 'message')
+    const { msg, msgs, emit } = useSeverMessage<Message>(socketio, 'message')
     const [form] = useForm();
     useEffect(() => {
         emit(null, 'pull_messages');

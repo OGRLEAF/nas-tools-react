@@ -73,7 +73,7 @@ export function useSocketio(namespace = "/test") {
 }
 
 
-export function useServerEvent<DataType extends Message>(sockio: Socket | undefined, eventName: string) {
+export function useSeverMessage<DataType extends Message>(sockio: Socket | undefined, eventName: string) {
     const [msgs, setMsgs] = useState<DataType[]>([]);
     const msg = useMemo(() => msgs[0], [msgs])
     useEffect(() => {
@@ -82,6 +82,40 @@ export function useServerEvent<DataType extends Message>(sockio: Socket | undefi
                 setMsgs((msgs) => [...msgs, data])
             }
             sockio.on(eventName, eventCallback);
+            return () => {
+                setMsgs([]);
+                sockio.removeListener(eventName, eventCallback)
+            }
+        }
+    }, [eventName, sockio])
+
+    const emit = useCallback((data: any, emitEventName?: string) => {
+        if (sockio) {
+            sockio.emit(emitEventName ?? eventName, data)
+        }
+    }, [eventName, sockio]);
+
+    return {
+        msg,
+        msgs,
+        emit
+    }
+}
+
+
+
+export function useServerEvent<DataType extends Message>(eventName: string) {
+    const sockio = useSocketio('/server_event')
+    const [msgs, setMsgs] = useState<DataType[]>([]);
+    const msg = useMemo(() => msgs[msgs.length - 1], [msgs])
+    useEffect(() => {
+        if (sockio) {
+            console.log('register socketio', `event.${eventName}`)
+            const eventCallback = (data: DataType) => {
+                setMsgs((msgs) => [...msgs, data])
+            }
+            sockio.on(`event.${eventName}`, eventCallback);
+
             return () => {
                 setMsgs([]);
                 sockio.removeListener(eventName, eventCallback)

@@ -129,7 +129,7 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
 
 
   const [collapsed, setCollapsed] = useState(false);
-  const { token: { colorBgContainer, colorPrimary }, } = theme.useToken();
+  const { token: { colorBgLayout, colorPrimary, colorBgBase }, } = theme.useToken();
 
   const [selectedPath, setSelectedPath] = useState<{ selectedKey: string[], openKey: string[] }>();
 
@@ -168,8 +168,9 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
         <Layout>
           <Header
             style={{
-              padding: '16px 0px',
-              background: colorBgContainer,
+              padding: '0px 0px',
+              boxSizing: "border-box",
+              background: colorBgBase,
               position: 'sticky',
               top: 0,
               zIndex: 1
@@ -178,7 +179,7 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
             <HeaderSearch />
           </Header>
           <Content style={{ margin: '0px 0px', overflow: 'initial' }}>
-            <div style={{ padding: "0px 16px 16px 16px", minHeight: "50vh", height: "100%", background: colorBgContainer }}>
+            <div style={{ padding: "0px 16px 16px 16px", minHeight: "50vh", height: "100%", background: colorBgLayout }}>
               {API.loginState ? children : <></>}
             </div>
           </Content>

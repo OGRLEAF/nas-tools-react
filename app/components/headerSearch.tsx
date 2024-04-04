@@ -3,7 +3,7 @@ import { ControlOutlined, UserOutlined } from "@ant-design/icons"
 import { useRouter } from 'next/navigation';
 import MessageCenter, { MessageCenterEntry } from './MessageCenter';
 import { useState } from 'react';
-
+import Taskbar from './Taskbar'
 const { Search } = Input;
 
 const suffix = (
@@ -19,30 +19,18 @@ const HeaderSearch = () => {
     const onSearch = (value: string) => {
         router.push("/search/" + value)
     }
-    const [open, setOpen] = useState(false)
     return (
-        <div style={{ padding: "0 0px 0 16px", width: "100%", }}>
-            <Flex justify="flex-end">
+        <Flex justify="space-between" style={{ width: "100%", boxSizing: "border-box", padding: '0px 5px 0 15px' }}>
+            <Taskbar />
+            <Flex justify="flex-end" align="center" >
                 <Search placeholder="搜索"
                     style={{ width: 500 }}
                     onSearch={onSearch}
-                    // suffix={suffix}
                     enterButton
                 />
                 <MessageCenterEntry />
             </Flex>
-            {/* <Row gutter={0}>
-                <Col span={23}>
-                    <Search placeholder="input search text"
-                        onSearch={onSearch}
-                        suffix={suffix}
-                        enterButton />
-                        </Col>
-                <Col span={1} style={{display: "flex", "justifyContent": "center"}}>
-                    <Button type="text" icon={<UserOutlined />}></Button>
-                </Col>
-            </Row> */}
-        </div >
+        </Flex >
     )
 }
 

@@ -52,7 +52,7 @@ type NastoolApi =
     "filterrule/rule/update" |
     "filterrule/rule/delete" |
     "filterrule/group/default" |
-    "task/list" |
+    "taskflow/list" |
     "task/create" |
     "taskflow/create" |
     "sync/directory/list" |
@@ -970,7 +970,7 @@ export class NASTOOL {
     }
 
     public async getTaskList() {
-        const result = await this.get<TaskListResult>("task/list", {
+        const result = await this.get<TaskListResult>("taskflow/list", {
             auth: true,
         })
         return result.tasks
