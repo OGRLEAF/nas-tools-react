@@ -22,7 +22,13 @@ export default function RootLayout({
   return (
     <html lang="zh">
       <body className={inter.className}>
-        <ConfigProvider locale={zhCN}>
+        <ConfigProvider locale={zhCN} theme={{
+          components: {
+            Layout: {
+              headerHeight: 56
+            }
+          }
+        }}>
           <App>
             <Suspense fallback={<LoadingPage />}>
               <DefaultLayout>{children}</DefaultLayout>
@@ -37,6 +43,6 @@ export default function RootLayout({
 
 function LoadingPage() {
   return <Spin size="large" spinning>
-    <div style={{height: "100vh", width: "100vw"}}></div>
-    </Spin>
+    <div style={{ height: "100vh", width: "100vw" }}></div>
+  </Spin>
 }
