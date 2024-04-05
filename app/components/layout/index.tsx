@@ -129,7 +129,7 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
 
 
   const [collapsed, setCollapsed] = useState(false);
-  const { token: { colorBgLayout, colorPrimary, colorBgBase }, } = theme.useToken();
+  const { token } = theme.useToken();
 
   const [selectedPath, setSelectedPath] = useState<{ selectedKey: string[], openKey: string[] }>();
 
@@ -170,19 +170,21 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
             style={{
               padding: '0px 0px',
               boxSizing: "border-box",
-              background: colorBgBase,
-              position: 'sticky',
+              backgroundColor: token.colorBgContainer,
+              boxShadow: token.boxShadowTertiary,
               top: 0,
               zIndex: 1
             }} >
-            <Next13ProgressBar height="3px" color={colorPrimary} options={{ showSpinner: true }} showOnShallow />
+            <Next13ProgressBar height="3px" color={token.colorPrimaryBorder} options={{ showSpinner: true }} showOnShallow />
             <HeaderSearch />
           </Header>
-          <Content style={{ margin: '0px 0px', overflow: 'initial' }}>
-            <div style={{ padding: "0px 16px 16px 16px", minHeight: "50vh", height: "100%", background: colorBgLayout }}>
-              {API.loginState ? children : <></>}
-            </div>
-          </Content>
+          <Layout>
+            <Content style={{ margin: '0px 0px', overflow: 'initial', backgroundColor: token.colorBgContainer }} >
+              <div style={{ padding: "0px 16px 16px 16px", minHeight: "50vh", height: "100%", }}>
+                {API.loginState ? children : <></>}
+              </div>
+            </Content>
+          </Layout>
           {/* <Footer style={{ textAlign: 'center', background: colorBgContainer, }}>Ant Design ©2023 Created by Ant UED</Footer> */}
         </Layout>
       </APIContext.Provider>
