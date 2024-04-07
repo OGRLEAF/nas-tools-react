@@ -146,6 +146,7 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
     <Layout hasSider style={{ zoom: pageScale }}>
       <APIContext.Provider value={{ API, setAPI }}>
         <Sider
+          theme="light"
           style={{
             overflow: 'auto',
             height: '100vh',
@@ -155,11 +156,20 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
             bottom: 0,
           }}
           collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
-          <div className="demo-logo-vertical" style={{ height: 40 }} >
+          <Header style={{
+            padding: '0px 0px',
+            boxSizing: "border-box",
+            backgroundColor: token.colorBgContainer,
+            boxShadow: token.boxShadowTertiary,
+            top: 0,
+            position: 'sticky',
+            zIndex: 2
+          }}>
             <LoginModal></LoginModal>
-          </div>
+            <span style={{ padding: 15, fontSize: token.fontSizeLG, fontWeight: "bold" }}>NASTOOL Lite</span>
+          </Header>
           {selectedPath ?
-            <Menu theme="dark" mode="inline" items={menu}
+            <Menu mode="vertical" items={menu}
               selectedKeys={selectedPath?.selectedKey} defaultOpenKeys={selectedPath?.openKey}
             />
             : <></>
@@ -173,13 +183,14 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
               backgroundColor: token.colorBgContainer,
               boxShadow: token.boxShadowTertiary,
               top: 0,
+              position: 'sticky',
               zIndex: 1
             }} >
             <Next13ProgressBar height="3px" color={token.colorPrimaryBorder} options={{ showSpinner: true }} showOnShallow />
             <HeaderSearch />
           </Header>
           <Layout>
-            <Content style={{ margin: '0px 0px', overflow: 'initial', backgroundColor: token.colorBgContainer }} >
+            <Content style={{ margin: '0px 0px', overflow: 'initial' }} >
               <div style={{ padding: "0px 16px 16px 16px", minHeight: "50vh", height: "100%", }}>
                 {API.loginState ? children : <></>}
               </div>
