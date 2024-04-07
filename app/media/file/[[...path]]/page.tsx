@@ -40,12 +40,7 @@ const sortOption: SortOption[] = [{
 
 const DirectoryList = ({ dirList, loading, }:
     { dirList: NastoolFileListItem[], loading: boolean }) => {
-    const { token: { colorTextTertiary }, } = theme.useToken();
-    // const FileBrowserFooter = () => {
-    //     return (<>
-    //         <span style={{ color: colorTextTertiary }}>共 {dirList.length} 个文件夹</span>
-    //     </>)
-    // }
+    const { token: { colorBgBase }, } = theme.useToken();
     const pathParams = useParams()
     const pathname = usePathname();
     const [sortConfig, setSortConfig] = useState<{ key: SortKey, dir: SortDirection }>()
@@ -60,33 +55,28 @@ const DirectoryList = ({ dirList, loading, }:
                 }
             })), [dirList, sortConfig, filterConfig])
 
-    const footer = <Row>
-        <Col span={8}>
-            <Cascader style={{ width: 130 }}
-                value={[sortConfig?.key || "name", sortConfig?.dir || "dec"]}
-                onChange={(value) => {
-                    setSortConfig({
-                        // ...sortConfig,
-                        key: value[0] as SortKey || sortConfig?.key || "name",
-                        dir: value[1] as SortDirection || sortConfig?.dir || "dec",
-                    })
-                }} options={sortOption} placeholder="排序" />
-        </Col>
-        <Col span={16}>
-            <Input
-                allowClear
-                value={filterConfig}
-                onChange={(evt) => {
-                    setFilterConfig(evt.target.value);
-                }}
-                placeholder="搜索" />
-        </Col>
-    </Row>
-
+    const footer = <Space.Compact>
+        <Cascader style={{ width: 130 }}
+            value={[sortConfig?.key || "name", sortConfig?.dir || "dec"]}
+            onChange={(value) => {
+                setSortConfig({
+                    // ...sortConfig,
+                    key: value[0] as SortKey || sortConfig?.key || "name",
+                    dir: value[1] as SortDirection || sortConfig?.dir || "dec",
+                })
+            }} options={sortOption} placeholder="排序" />
+        <Input
+            allowClear
+            value={filterConfig}
+            onChange={(evt) => {
+                setFilterConfig(evt.target.value);
+            }}
+            placeholder="搜索" />
+    </Space.Compact>
     return (
-        <Flex vertical gap={12}>
+        <Flex vertical gap={8}>
             <List
-                style={{ height: "calc(100vh - 250px)", overflowY: "auto" }}
+                style={{ height: "calc(100vh - 250px)", overflowY: "auto", backgroundColor: colorBgBase }}
                 // footer={footer}
                 size="small"
                 bordered
@@ -153,7 +143,7 @@ const FileList = ({ fileList, loading, selected, onSelectedChange, }: {
     selected: NastoolFileListItem[],
     onSelectedChange: (selected: NastoolFileListItem[]) => void
 }) => {
-    const { token: { colorTextTertiary }, } = theme.useToken();
+    const { token: { colorTextTertiary, colorBgBase }, } = theme.useToken();
     const pathManagerContext = usePathManager();
     const currentPath = pathManagerContext.deepestPath
     const fileExts = new Set<string>(fileList.map(item => item.name.split(".").pop()).filter((item) => item != undefined) as string[]);

@@ -10,11 +10,12 @@ import {
   HomeOutlined,
   SettingOutlined,
   ToolOutlined,
-  BellOutlined
+  BellOutlined,
+  BlockOutlined
 } from '@ant-design/icons';
 import { IconBookBookMark, IconCalendarDaysSolid, IconCubes, IconCustomSolid, IconDatabase, IconDownloader, IconFilmSolid, IconFilter, IconFolderTreeSolid, IconFont, IconHistory, IconIndexer, IconLink, IconLoading, IconMediaServer, IconMediaSolid, IconRefresh, IconRssSolid, IconTvSolid } from '../icons';
 import type { MenuProps } from 'antd';
-import { Layout, Menu, theme } from 'antd';
+import { Flex, Layout, Menu, theme } from 'antd';
 
 import LoginModal from '../login';
 import HeaderSearch from '../headerSearch';
@@ -166,7 +167,15 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
             zIndex: 2
           }}>
             <LoginModal></LoginModal>
-            <span style={{ padding: 15, fontSize: token.fontSizeLG, fontWeight: "bold" }}>NASTOOL Lite</span>
+
+            <Flex
+              style={{ height: "100%", width: "100%", fontSize: token.fontSizeLG, fontWeight: "bold", textWrap: "nowrap" }}
+              justify="center" align="center"
+            >
+              <BlockOutlined />
+              {collapsed ? <></> : <div>NASTOOL Lite</div>}
+            </Flex>
+
           </Header>
           {selectedPath ?
             <Menu mode="vertical" items={menu}
