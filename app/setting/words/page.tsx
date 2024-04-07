@@ -84,9 +84,10 @@ function WordsGroupTable() {
             {
                 title: "操作",
                 render: (record: WordConfigGroup) => <Space>
-                    {record.id > 0 ? <Button type="link" size="small" icon={<CloseOutlined />} danger onClick={() => {
-                        confirmDelete?.(record, "删除识别词组？", record.name)
-                    }} /> : <></>}
+                    {record.id > 0 ? <Button type="link" size="small" icon={<CloseOutlined />} danger
+                        onClick={() => {
+                            confirmDelete?.(record, "删除识别词组？", record.name)
+                        }} /> : <></>}
                 </Space>,
                 align: "center",
                 width: 100

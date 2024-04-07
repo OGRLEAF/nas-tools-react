@@ -172,13 +172,14 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
               style={{ height: "100%", width: "100%", padding: "0 25px", }}
               justify="space-around" align="center"
             >
-              <BlockOutlined />
-              {collapsed ? <></> : <span style={{ fontSize: token.fontSizeLG, fontWeight: "bold", textWrap: "nowrap" }}>NASTOOL Lite</span>}
+              {collapsed ? <> <BlockOutlined style={{ fontSize: '1.5rem' }} />
+              </> : <span style={{ fontSize: token.fontSizeLG, fontWeight: "bold", textWrap: "nowrap" }}>
+                <BlockOutlined /> NASTOOL Lite</span>}
             </Flex>
 
           </Header>
           {selectedPath ?
-            <Menu mode="vertical" items={menu}
+            <Menu mode="inline" items={menu}
               selectedKeys={selectedPath?.selectedKey} defaultOpenKeys={selectedPath?.openKey}
             />
             : <></>
