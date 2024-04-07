@@ -1,19 +1,17 @@
 "use client"
 import { Section } from "@/app/components/Section";
-import { blue, green, cyan, yellow } from '@ant-design/colors';
-import { Button, Divider, Input, Popconfirm, Progress, Space, Table, Tag, Tooltip, message, Drawer, Form } from "antd";
+import { Button, Divider, Input, Popconfirm, Progress, Space, Table, Tag, Tooltip, message, Alert, theme } from "antd";
 import { PlusOutlined } from "@ant-design/icons"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Download, DownloadClient, DownloadClientResource, TorrentInfo, TorrentState, TorrentVagueState } from "@/app/utils/api/download";
 import { ColumnsType } from "antd/es/table";
-import Link from "next/link";
-import { FolderOpenOutlined, CloseOutlined, CaretUpOutlined, CaretDownOutlined } from "@ant-design/icons"
+import { FolderOpenOutlined, CloseOutlined, CaretUpOutlined, CaretDownOutlined, ExportOutlined } from "@ant-design/icons"
 import { IconPause, IconPlay } from "@/app/components/icons";
-import { bytes_to_human } from "@/app/utils";
+import { bytes_to_human, copy_to_clipboard } from "@/app/utils";
 import { StateMap, StateTag } from "@/app/components/StateTag";
 import { useResource } from "@/app/utils/api/api_base";
-import { DownloadFormAction, DownloadSettingForm, TorrentDownloadForm } from "@/app/components/TorrentDownloadForm";
+import { DownloadFormAction, TorrentDownloadForm } from "@/app/components/TorrentDownloadForm";
 
 const torrentStateMap: StateMap<TorrentState> = {
     [TorrentState.DOWNLOADING]: {
@@ -185,7 +183,7 @@ export default function DownloadedPage() {
                 const [upSpeed, upSpeedUnit] = bytes_to_human(record.speed.upload)
                 return <Space align="center" size="small">
 
-                    <FileButton path={fileLink}>{value}</FileButton>
+                    {value}<FileButton localPath={fileLink} remotePath={record.save_path}></FileButton>
                     {
                         upSpeed > 0 || downSpeed > 0 ? <Tag bordered={false} color="blue">
                             {upSpeed > 0 ? <><CaretUpOutlined /><span>{upSpeed} {upSpeedUnit}/s</span></> : <></>}
@@ -308,54 +306,85 @@ export default function DownloadedPage() {
 
 
 function AddDownloadTask() {
-    const [open, setOpen] = useState(false);
     const ref = useRef<DownloadFormAction>(null);
     const [url, setUrl] = useState<string>()
+    const [submitState, setSubmitState] = useState<"idle" | "loading" | "success" | "error">("idle")
+    const [errorMsg, setErrorMsg] = useState<string>();
+    const confirm = useCallback(() => {
+        return new Promise(async (resolve, reject) => {
+            const downloadSetting = ref.current?.getSetting();
+            if (downloadSetting && url) {
+                setSubmitState("loading")
+                await new Download().downloadUrls({
+                    urls: [url],
+                    ...downloadSetting
+                })
+                    .then(() => {
+                        resolve(null)
+                        setSubmitState("success")
+                    })
+                    .catch(e => {
+                        reject(e)
+                        setSubmitState("error")
+                        setErrorMsg(e.message)
+                    })
+            } else {
+                reject("URL or Setting is empty")
+                setSubmitState("error")
+                setErrorMsg("URL or Setting is empty")
+            }
+        })
+    }, [url])
+
     return <>
         <Popconfirm title={"下载"}
-            open={open}
             description={
-                <div style={{ minWidth: 400 }}>
+                <Space direction="vertical" style={{ minWidth: 400 }}>
                     <TorrentDownloadForm layout="horizontal" ref={ref} />
-                    <br />
-                    <Input placeholder="URL" onChange={(event) => {
-                        setUrl(event.currentTarget.value)
-                    }} />
-                </div>
+                    <Input placeholder="URL"
+                        allowClear
+                        onChange={(event) => {
+                            setUrl(event.currentTarget.value)
+                        }} />
+                    {errorMsg && <Alert type="error" message={errorMsg} />}
+                </Space>
             }
-            onCancel={() => {
-                setOpen(false)
+            onOpenChange={() => {
+                setSubmitState("idle")
+                setErrorMsg(undefined)
             }}
-            onConfirm={() => {
-                const downloadSetting = ref.current?.getSetting();
-                if (downloadSetting && url) {
-                    new Download().downloadUrls({
-                        urls: [url],
-                        ...downloadSetting
-                    })
-                        .then(() => {
-                            setOpen(false)
-                        })
-                }
-
+            onConfirm={confirm}
+            okButtonProps={{
+                loading: (submitState == "loading")
             }}
-        >    <Button icon={<PlusOutlined />} onClick={() => setOpen(true)} type="primary">添加下载任务</Button>
-
+        >
+            <Button icon={<PlusOutlined />} type="primary">添加下载任务</Button>
         </Popconfirm>
     </>
 }
-function FileButton({ path, children }: { path?: string, children: React.ReactNode }) {
+function FileButton({ localPath: localPath, remotePath }: { localPath?: string, remotePath: string }) {
     const router = useRouter();
-    return <Tooltip title={path}>
-        <Button type="link"
+    const { token } = theme.useToken()
+    return <Tooltip title={localPath ?? remotePath}>
+        {localPath ? <Button type="link"
             style={{ padding: 0 }}
-            icon={<FolderOpenOutlined />}
+            icon={<FolderOpenOutlined></FolderOpenOutlined>}
             onClick={() => {
-                router.push("/media/file" + path)
-            }}
-            disabled={path == undefined}>{path ? children : <></>}</Button>
-        {path ? <></> : children}
-    </Tooltip>
+                if (localPath) {
+                    router.push("/media/file" + localPath)
+                }
+
+            }}>
+        </Button> :
+            <Button type="link"
+                style={{ padding: 0 }}
+                icon={<ExportOutlined style={{ fontSize: token.fontSizeIcon + 1, }}></ExportOutlined>}
+                onClick={() => {
+                    copy_to_clipboard(remotePath)
+                }}>
+            </Button>
+        }
+    </Tooltip >
 }
 
 interface ActionOptions {
