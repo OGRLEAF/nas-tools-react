@@ -169,11 +169,11 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
             <LoginModal></LoginModal>
 
             <Flex
-              style={{ height: "100%", width: "100%", fontSize: token.fontSizeLG, fontWeight: "bold", textWrap: "nowrap" }}
-              justify="center" align="center"
+              style={{ height: "100%", width: "100%", padding: "0 25px", }}
+              justify="space-around" align="center"
             >
               <BlockOutlined />
-              {collapsed ? <></> : <div>NASTOOL Lite</div>}
+              {collapsed ? <></> : <span style={{ fontSize: token.fontSizeLG, fontWeight: "bold", textWrap: "nowrap" }}>NASTOOL Lite</span>}
             </Flex>
 
           </Header>

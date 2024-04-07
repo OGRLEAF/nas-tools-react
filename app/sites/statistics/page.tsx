@@ -4,12 +4,8 @@ import { Row, Col, Statistic, Card, Table, Space } from 'antd'
 import { API, NastoolSiteInfo } from "@/app/utils/api/api";
 import { bytes_to_human } from "@/app/utils/"
 import { useAPIContext } from "@/app/utils/api/api_base";
+import { Section } from "@/app/components/Section";
 
-// function bytes_to_human(value: number) {
-//     const units = ["B", "KB", "MB", "GB", "TB", "PB"]
-//     const level = Math.min(Math.floor(Math.log2(value + 1e-6) / 10), 5);
-//     return [value / ((2 ** 10) ** (level)), units[level]]
-// }
 
 export default function StatisticPage() {
     const [sitesStat, setSitesStat] = useState<NastoolSiteInfo[]>([])
@@ -40,7 +36,7 @@ export default function StatisticPage() {
             setSitesStatSum(siteStatisSum)
             setLoading(false)
         })()
-    }, [])
+    }, [API])
     const SizeStatistic = ({ title, value, loading }: { title: string, value: number, loading: boolean }) => {
         const [num, unit] = bytes_to_human(value);
         return <Statistic loading={loading} title={title} precision={2} suffix={unit} value={num} />
@@ -49,7 +45,7 @@ export default function StatisticPage() {
         const [num, unit] = bytes_to_human(value);
         return `${num.toFixed(fixed)} ${unit}`
     }
-    return <>
+    return <Section title="数据统计">
 
         <Row gutter={16}>
             <Col span={6}>
@@ -97,5 +93,5 @@ export default function StatisticPage() {
             <Table.Column title="加入时间" dataIndex="join_at" />
             <Table.Column title="更新时间" dataIndex="update_at" />
         </Table>
-    </>
+    </Section>
 }

@@ -12,8 +12,10 @@ import { useAPIContext } from "@/app/utils/api/api_base";
 export default function SubscribeCalendar() {
     const [tvEpisodes, setTvEpisodes] = useState<MediaWorkEpisode[]>([]);
     const { API } = useAPIContext();
+    const [loading, setLoading] = useState(false)
     const fetchEpisodes = useCallback(async () => {
         if (API) {
+            setLoading(true)
             const subscribe = new TVSubscription(API);
             const tvSubs = await subscribe.list();
             const subsSeries = Object.values(tvSubs).map((sub) => {
@@ -39,6 +41,7 @@ export default function SubscribeCalendar() {
                         if (episodes) tvEpisodes.push(...episodes)
                     })
                     setTvEpisodes(tvEpisodes)
+                    setLoading(false)
                 })
         }
 
@@ -76,7 +79,7 @@ export default function SubscribeCalendar() {
     }, [fetchEpisodes])
 
     return <Section title="订阅日历" onRefresh={fetchEpisodes}>
-        <Spin spinning={episodesGroupByDate.size == 0}>
+        <Spin spinning={loading}>
             <Calendar cellRender={cellRender} />
         </Spin>
     </Section>
