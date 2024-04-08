@@ -11,11 +11,12 @@ import {
   SettingOutlined,
   ToolOutlined,
   BellOutlined,
-  BlockOutlined
+  BlockOutlined,
+  MenuOutlined
 } from '@ant-design/icons';
 import { IconBookBookMark, IconCalendarDaysSolid, IconCubes, IconCustomSolid, IconDatabase, IconDownloader, IconFilmSolid, IconFilter, IconFolderTreeSolid, IconFont, IconHistory, IconIndexer, IconLink, IconLoading, IconMediaServer, IconMediaSolid, IconRefresh, IconRssSolid, IconTvSolid } from '../icons';
 import type { MenuProps } from 'antd';
-import { Flex, Layout, Menu, theme } from 'antd';
+import { Button, Flex, Layout, Menu, theme } from 'antd';
 
 import LoginModal from '../login';
 import HeaderSearch from '../headerSearch';
@@ -146,17 +147,19 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <Layout hasSider style={{ zoom: pageScale }}>
       <APIContext.Provider value={{ API, setAPI }}>
+        <LoginModal></LoginModal>
         <Sider
           theme="light"
           style={{
-            overflow: 'auto',
+            overflow: "auto",
+            paddingBottom: token.Layout?.headerHeight,
             height: '100vh',
             position: "sticky",
             left: 0,
             top: 0,
             bottom: 0,
           }}
-          collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
+          collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
           <Header style={{
             padding: '0px 0px',
             boxSizing: "border-box",
@@ -166,10 +169,9 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
             position: 'sticky',
             zIndex: 2
           }}>
-            <LoginModal></LoginModal>
 
             <Flex
-              style={{ height: "100%", width: "100%", padding: "0 25px", }}
+              style={{ height: `100%`, width: "100%", padding: "0 25px", }}
               justify="space-around" align="center"
             >
               {collapsed ? <> <BlockOutlined style={{ fontSize: '1.5rem' }} />
@@ -178,17 +180,19 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
             </Flex>
 
           </Header>
-          {selectedPath ?
-            <Menu mode="inline" items={menu}
+          {selectedPath &&
+            <Menu mode="inline"
+              style={{ height: "100%", overflow: "auto" }}
+              items={menu}
               selectedKeys={selectedPath?.selectedKey} defaultOpenKeys={selectedPath?.openKey}
             />
-            : <></>
           }
         </Sider>
         <Layout>
           <Header
             style={{
               padding: '0px 0px',
+              paddingLeft: token.padding,
               boxSizing: "border-box",
               backgroundColor: token.colorBgContainer,
               boxShadow: token.boxShadowTertiary,
@@ -197,7 +201,12 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
               zIndex: 1
             }} >
             <Next13ProgressBar height="3px" color={token.colorPrimaryBorder} options={{ showSpinner: true }} showOnShallow />
-            <HeaderSearch />
+            <Flex align="center">
+              <Button icon={<MenuOutlined />} onClick={() => {
+                setCollapsed((collapsed) => !collapsed)
+              }} type="text" />
+              <HeaderSearch />
+            </Flex>
           </Header>
           <Layout>
             <Content style={{ margin: '0px 0px', overflow: 'initial' }} >
