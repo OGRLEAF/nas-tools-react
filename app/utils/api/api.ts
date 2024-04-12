@@ -171,6 +171,7 @@ export type NastoolServerConfig = {
         api_key: string
     },
     media: {
+        media_server: "jellyfin" | "emby" | "plex",
         anime_path: string[],
         movie_path: string[],
         tv_path: string[],

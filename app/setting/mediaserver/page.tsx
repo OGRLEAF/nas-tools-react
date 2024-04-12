@@ -3,7 +3,7 @@ import { CardIcon } from "@/app/components/CardIcon";
 import { CardsForm, TestButton } from "@/app/components/CardsForm";
 import { Cards } from "@/app/components/CardsForm/Cards";
 import { MediaServer, MediaServerConfig, MediaServerResource } from "@/app/utils/api/mediaserver";
-import { Button, Form, Input, Space } from "antd";
+import { Button, Form, Input, Space, Tag } from "antd";
 import React, { useMemo } from "react";
 
 const BASE_PATH = process.env.BASE_PATH
@@ -42,7 +42,10 @@ export default function MediaServerPage() {
             cardProps={(record: MediaServerConfig) => {
                 const config = mediaserverConfigs[record.options.type];
                 return ({
-                    title: config.title,
+                    title: <Space>
+                        <span>{config.title}</span>
+                        {record.active ? <Tag color="success">使用中</Tag> : <></>}
+                    </Space>,
                     cover: config.cover,
                     description: <></>
                 })
