@@ -53,7 +53,7 @@ const getMenuItems = async (API: NASTOOL) => {
   const mediaPageDefaultUrl = await new ServerConfig(API).get()
     .then(res => {
       const default_path = res.media.media_default_path;
-      return "/media/file" + default_path;
+      return "/media/file?path=" + default_path;
     })
     .catch(() => "/media/file")
   const items: MenuItem[] = [

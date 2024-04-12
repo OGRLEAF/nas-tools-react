@@ -122,7 +122,7 @@ export function MediaDetailCard({
                 <StateTag stateMap={stateTagMap} value={mediaDetail.series.t ?? MediaWorkType.UNKNOWN} />
             </Space>
             <div style={{ alignSelf: "end", position: "sticky", bottom: 0, right: 4 }}>{action}</div>
-        </Flex>, [action, mediaDetail, metadata?.date?.release, style.title, token.colorTextBase])
+        </Flex>, [action, mediaDetail, metadata?.date?.release, style.title, token.colorTextBase, token.padding])
 
     const textHeight = layout == "horizonal" ? style.height : undefined;
     return <Flex

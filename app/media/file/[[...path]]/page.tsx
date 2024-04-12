@@ -1,19 +1,21 @@
 'use client'
 import { Section, SectionContext } from "@/app/components/Section";
-import { API, NastoolFileListItem } from "@/app/utils/api/api";
-import { Col, Row, List, Typography, Space, Segmented, Button, theme, Table, Cascader, Input, Form, Select, Tooltip, Flex } from "antd";
-import React, { Reducer, memo, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { NastoolFileListItem } from "@/app/utils/api/api";
+import { Col, Row, List, Space, Segmented, Button, theme, Table, Cascader, Input, Form, Select, Tooltip, Flex } from "antd";
+import React, { memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ColumnsType } from "antd/es/table";
-import { ReloadOutlined } from "@ant-design/icons"
 import FileMoreAction from "@/app/components/fileMoreAction";
 import MediaImportEntry, { MediaImportProvider } from "@/app/components/mediaImport/mediaImportEntry";
 import MediaImport from "@/app/components/mediaImport/mediaImport";
-import { PathManagerBar, PathManagerProvider, usePathManager, usePathManagerDispatch } from "@/app/components/pathManager"
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { PathSearchManagerProvider, usePathManager, usePathManagerDispatch } from "@/app/components/pathManager"
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { bytes_to_human } from "@/app/utils";
 import { IdentifyHistory } from "@/app/components/mediaImport/mediaImportContext";
 import { useAPIContext } from "@/app/utils/api/api_base";
+import path from "path";
+import { FileLink } from "@/app/components/FileLink";
+import { on } from "events";
 
 type SortKey = "name" | "mtime"
 type SortDirection = "dec" | "inc"
@@ -38,10 +40,11 @@ const sortOption: SortOption[] = [{
     children: sortDirection
 }]
 
-const DirectoryList = ({ dirList, loading, }:
+const DirectoryList = ({ dirList, loading }:
     { dirList: NastoolFileListItem[], loading: boolean }) => {
     const { token: { colorBgBase }, } = theme.useToken();
-    const pathParams = useParams()
+    const searchParams = useSearchParams();
+    const pathParams = searchParams.get('path') ?? "/"
     const pathname = usePathname();
     const [sortConfig, setSortConfig] = useState<{ key: SortKey, dir: SortDirection }>()
     const [filterConfig, setFilterConfig] = useState<string>("");
@@ -73,23 +76,26 @@ const DirectoryList = ({ dirList, loading, }:
             }}
             placeholder="搜索" />
     </Space.Compact>
+    const sectionContext = useContext(SectionContext);
     return (
         <Flex vertical gap={8}>
             <List
-                style={{ height: "calc(100vh - 250px)", overflowY: "auto", backgroundColor: colorBgBase }}
+                style={{ height: sectionContext.contentHeight - 200, overflowY: "auto", backgroundColor: colorBgBase }}
                 // footer={footer}
                 size="small"
                 bordered
                 loading={loading}
                 dataSource={sortedDirList}
                 renderItem={(item) => {
-                    const paths = (pathParams.path as string[])//.map((value)=>value.replaceAll("%5B", "[").replaceAll("%5D", "]"))
+                    // const paths = (pathParams.path as string[])//.map((value)=>value.replaceAll("%5B", "[").replaceAll("%5D", "]"))
                     const cleanName = item.name.replaceAll("#", "＃")
-                    const link = `/media/file/${paths ? paths.join("/") : ""}/${encodeURI(cleanName)}`
+                    // const link = `/media/file/${paths ? paths.join("/") : ""}/${encodeURI(cleanName)}`
                     return (
                         <List.Item>
-                            <Tooltip title={`${link} ${pathname}`}>
-                                <Link href={link}>{item.name}</Link>
+                            <Tooltip title={`${pathname}`}>
+                                <FileLink targetPath={path.join(pathParams, cleanName)}>
+                                    {item.name}
+                                </FileLink>
                             </Tooltip>
                         </List.Item>
                     )
@@ -138,14 +144,12 @@ const FileFilter = () => {
 
 
 
-const FileList = ({ fileList, loading, selected, onSelectedChange, }: {
+const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChange, }: {
     fileList: NastoolFileListItem[], loading: boolean,
     selected: NastoolFileListItem[],
     onSelectedChange: (selected: NastoolFileListItem[]) => void
 }) => {
     const { token: { colorTextTertiary, colorBgBase }, } = theme.useToken();
-    const pathManagerContext = usePathManager();
-    const currentPath = pathManagerContext.deepestPath
     const fileExts = new Set<string>(fileList.map(item => item.name.split(".").pop()).filter((item) => item != undefined) as string[]);
 
     const columns: ColumnsType<NastoolFileListItem> = [
@@ -191,33 +195,58 @@ const FileList = ({ fileList, loading, selected, onSelectedChange, }: {
         }
     ]
     const sectionContext = useContext(SectionContext);
-    return <><Table
-        tableLayout="fixed"
-        rowSelection={{
-            type: "checkbox",
-            // columnWidth: 50,
-            onChange: (selectedRowKeys: React.Key[], selectedRows: NastoolFileListItem[]) => {
-                onSelectedChange(selectedRows)
-            },
-        }}
-        dataSource={fileList}
-        columns={columns}
-        loading={loading}
-        rowKey="name"
-        pagination={false}
-        bordered size="middle"
-        scroll={{ y: sectionContext.contentHeight - 80 }}
-        expandable={{
-            expandedRowRender: (record: NastoolFileListItem) =>
-                <FileMoreAction file={record} relFiles={fileList} />,
-            expandRowByClick: true,
-            fixed: "right",
-            showExpandColumn: false,
-            rowExpandable: () => true
-        }}
-    >
-    </Table>
-    </>
+    const [selected, setSelected] = useState((defaultSelected || []).map(v => v.name))
+    const [selectedFiles, setSelectedFiles] = useState<NastoolFileListItem[]>(defaultSelected)
+    const searchParam = useSearchParams();
+    useEffect(() => {
+        const from = searchParam.get("from")
+        if (from) {
+            const assumeFile = from.split("/").pop()
+            if (assumeFile) {
+                const fileItem = fileList.find((item) => item.name == assumeFile);
+                if (fileItem) {
+                    setSelected((keys) => [...keys, assumeFile]);
+                    setSelectedFiles((files) => [...files, fileItem])
+                }
+            }
+        }
+    }, [fileList, searchParam])
+
+    useEffect(() => {
+        onSelectedChange(selectedFiles)
+    }, [onSelectedChange, selectedFiles])
+
+    return <div>
+        <Table
+            tableLayout="fixed"
+            rowSelection={{
+                type: "checkbox",
+                selectedRowKeys: selected,
+                // columnWidth: 50,
+                onChange: (selectedRowKeys: React.Key[], selectedRows: NastoolFileListItem[]) => {
+                    setSelected(selectedRowKeys as string[])
+                    setSelectedFiles(selectedRows)
+                },
+            }}
+            dataSource={fileList}
+            columns={columns}
+            loading={loading}
+            rowKey="name"
+            pagination={false}
+            bordered size="middle"
+            scroll={{ y: sectionContext.contentHeight - 200 }}
+            expandable={{
+                expandedRowRender: (record: NastoolFileListItem) =>
+                    <FileMoreAction file={record} relFiles={fileList} />,
+                expandRowByClick: true,
+                fixed: "right",
+                showExpandColumn: false,
+                rowExpandable: () => true
+            }}
+        // footer={() => <>{sectionContext.contentHeight}</>}
+        >
+        </Table>
+    </div>
 }
 
 
@@ -225,17 +254,22 @@ const MediaFileExplorer = () => {
     const [loadingState, setLoadingState] = useState(true)
     const [dirList, setDirList] = useState<NastoolFileListItem[]>([])
     const [fileList, setFileList] = useState<NastoolFileListItem[]>([])
+    const [preSet, setPreSet] = useState<string[]>([])
     const pathManagerContext = usePathManager();
+    const pathManagerDispath = usePathManagerDispatch();
     const router = useRouter()
     const { API } = useAPIContext();
+    const [selectedFiles, setSelectedFiles] = useState<NastoolFileListItem[]>([]);
+
 
     const onRefresh = useCallback(async () => {
         setLoadingState(true);
         try {
+            const deepesetPath = pathManagerContext.getDeepestRelativePath();
             const fileList = await API.getFileList(pathManagerContext.getBasePath,
-                pathManagerContext.getDeepestRelativePath().replaceAll("＃", "#"));
+                deepesetPath.replaceAll("＃", "#"));
             if (fileList.fallback_to != undefined) {
-                router.replace("/media/file" + fileList.fallback_to)
+                router.replace(`/media/file?path=${fileList.fallback_to}&from=${deepesetPath}`)
             } else {
                 setDirList(fileList.directories)
                 setFileList(fileList.files)
@@ -250,17 +284,17 @@ const MediaFileExplorer = () => {
         onRefresh();
     }, [onRefresh]);
 
+    const searchParams = useSearchParams();
+    const pathParams = searchParams.get('path') ?? "/"
     useEffect(() => {
-        router.push("/media/file"
-            + pathManagerContext.getBasePath
-            + pathManagerContext.getDeepestRelativePath())
+        console.log("Router", pathManagerContext.deepestPath, pathParams)
+        if (path.normalize(pathParams) != path.normalize(pathManagerContext.deepestPath)) {
+            console.log("Redirect")
+            pathManagerDispath({ type: "set_path", path: pathParams })
+        }
+    }, [onRefresh, pathManagerContext, pathManagerDispath, pathParams, router])
 
-    }, [pathManagerContext, router])
 
-    // const enterDir = (dirName: string) => {
-    //     pathManagerDispath({ type: "append_path", path: dirName })
-    // }
-    const [selectedFiles, setSelectedFiles] = useState<NastoolFileListItem[]>([]);
 
     const importFiles = useMemo(() => selectedFiles.map((item) => ({
         name: item.name,
@@ -273,38 +307,63 @@ const MediaFileExplorer = () => {
     return <MediaImportProvider>
         <MediaImport />
         <Section title="文件管理" onRefresh={onRefresh} style={{ height: "100%" }}>
-            <Space direction="vertical">
-                <Flex justify="space-between">
-                    <PathManagerBar />
-                    <MediaImportEntry
-                        flush={true}
-                        appendFiles={importFiles}
-                    />
-                </Flex>
-                <Row gutter={16} style={{ overflow: "hidden" }}>
-                    <Col span={6}>
-                        <DirectoryList dirList={dirList} loading={loadingState} />
-                    </Col>
-                    <Col span={18}>
-                        <FileList fileList={fileList}
-                            loading={loadingState}
-                            selected={selectedFiles}
-                            onSelectedChange={(files) => setSelectedFiles(files)} />
-                    </Col>
-                </Row>
-            </Space>
+            <Flex justify="space-between">
+                <PathManagerBar />
+                <MediaImportEntry
+                    flush={true}
+                    appendFiles={importFiles}
+                />
+                {preSet}
+            </Flex>
+            <Row gutter={16} >
+                <Col span={6}>
+                    <DirectoryList dirList={dirList} loading={loadingState} />
+                </Col>
+                <Col span={18}>
+                    <FileList fileList={fileList}
+                        loading={loadingState}
+                        selected={selectedFiles}
+                        onSelectedChange={(files) => setSelectedFiles(files)} />
+                </Col>
+            </Row>
         </Section>
     </MediaImportProvider>
 }
 
 function MediaFile() {
-    // pathManager.setPath("mnt/S1/MainStorage/Media/Downloads/animations")
-    return <PathManagerProvider>
+    return <PathSearchManagerProvider>
         <MediaFileExplorer />
-    </PathManagerProvider>
+    </PathSearchManagerProvider>
 }
 
 export default memo(MediaFile, (prev, next) => {
     console.log('memo', prev, next)
     return false
 })
+
+
+function PathManagerBar() {
+    const pathManagerState = usePathManager();
+    const dispath = usePathManagerDispatch();
+    const segmentedPathTag = useMemo(() => pathManagerState.getPathArray().map(({ full, name }) => {
+        return {
+            label: <span key={full}>{name}</span>,
+            value: full
+        }
+    }), [pathManagerState])
+    const router = useRouter()
+    const onPathChange = (evt: any) => {
+        router.push(`/media/file?path=${evt}`)
+    }
+    const { token } = theme.useToken()
+
+    return <>
+        <Space>
+            <Segmented
+                options={segmentedPathTag}
+                value={pathManagerState.deepestPath}
+                onChange={onPathChange}
+            />
+        </Space>
+    </>
+}

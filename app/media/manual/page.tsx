@@ -1,5 +1,6 @@
 "use client"
 import { CardsForm, useCardsFormContext } from "@/app/components/CardsForm";
+import { FileLink } from "@/app/components/FileLink";
 import MediaImportWrapper from "@/app/components/mediaImport/mediaImport";
 import { IdentifyHistory } from "@/app/components/mediaImport/mediaImportContext";
 import MediaImportEntry, { MediaImportProvider } from "@/app/components/mediaImport/mediaImportEntry";
@@ -46,7 +47,7 @@ function ManualImportTable() {
             </span>),
             dataIndex: "name",
             render: (name, record) => {
-                return <Link href={`/media/file${encodeURI(record.path)}`}>{name}</Link>
+                return <FileLink targetPath={record.path}>{name}</FileLink>
             },
         },
         {

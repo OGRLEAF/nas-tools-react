@@ -3,7 +3,7 @@ import { Button, Segmented, Space, theme } from "antd"
 import PathManager from "../utils/pathManager"
 import CopyToClipboard from "@/app/components/copyToClipboard"
 import { CopyOutlined } from "@ant-design/icons"
-import { useParams, } from "next/navigation"
+import { useParams, useSearchParams, } from "next/navigation"
 export const PathManagerContext = createContext<PathManager>(new PathManager("/"));
 export const PathManagerDispatchContext = createContext(({ type }: { type: any, path: string }) => { });
 
@@ -26,38 +26,6 @@ export function usePathManagerDispatch() {
     return useContext(PathManagerDispatchContext)
 }
 
-export function PathManagerBar() {
-    const pathManagerState = usePathManager();
-    const dispath = usePathManagerDispatch();
-    const segmentedPathTag = useMemo(() => pathManagerState.getPathArray().map(({ full, name }) => {
-        return {
-            label: <span key={full}>{name}</span>,
-            value: full
-        }
-    }), [pathManagerState])
-    const onPathChange = (evt: any) => {
-        dispath({ type: "set_path", path: evt })
-
-    }
-    const enterDir = (dirName: string) => {
-        // setLoadingState(true);
-        dispath({ type: "append_path", path: dirName })
-    }
-    const { token } = theme.useToken()
-
-    return <>
-        <Space>
-            <Segmented
-                options={segmentedPathTag}
-                value={pathManagerState.deepestPath}
-                onChange={onPathChange}
-            />
-            <CopyToClipboard content={pathManagerState.deepestPath}>
-                <Button icon={<CopyOutlined color={token.colorIcon} />} />
-            </CopyToClipboard>
-        </Space>
-    </>
-}
 
 export const PathManagerProvider = ({ children }: { children: React.ReactNode, startPath?: string }) => {
     const pathParams = useParams();
@@ -67,6 +35,27 @@ export const PathManagerProvider = ({ children }: { children: React.ReactNode, s
     if (path) {
         const nextPath = path ? `/${path.map(decodeURIComponent).join("/")}` : "/";
         pathManager.setPath(nextPath)
+    }
+
+    const [pathManagerData, dispath] = useReducer(reducer, pathManager);
+    return (
+        <PathManagerContext.Provider value={pathManagerData}>
+            <PathManagerDispatchContext.Provider value={dispath}>
+                {children}
+            </PathManagerDispatchContext.Provider>
+        </PathManagerContext.Provider>
+    )
+}
+
+export const PathSearchManagerProvider = ({ children }: { children: React.ReactNode, startPath?: string }) => {
+    const searchParams = useSearchParams();
+    const path = searchParams.get("path");
+
+    const pathManager = new PathManager('/');
+
+    if (path) {
+        console.log(path)
+        pathManager.setPath(path)
     }
 
     const [pathManagerData, dispath] = useReducer(reducer, pathManager);

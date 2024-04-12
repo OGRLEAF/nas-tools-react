@@ -12,6 +12,7 @@ import { bytes_to_human, copy_to_clipboard } from "@/app/utils";
 import { StateMap, StateTag } from "@/app/components/StateTag";
 import { useResource } from "@/app/utils/api/api_base";
 import { DownloadFormAction, TorrentDownloadForm } from "@/app/components/TorrentDownloadForm";
+import { FileLink } from "@/app/components/FileLink";
 
 const torrentStateMap: StateMap<TorrentState> = {
     [TorrentState.DOWNLOADING]: {
@@ -363,19 +364,15 @@ function AddDownloadTask() {
     </>
 }
 function FileButton({ localPath: localPath, remotePath }: { localPath?: string, remotePath: string }) {
-    const router = useRouter();
     const { token } = theme.useToken()
     return <Tooltip title={localPath ?? remotePath}>
-        {localPath ? <Button type="link"
-            style={{ padding: 0 }}
-            icon={<FolderOpenOutlined></FolderOpenOutlined>}
-            onClick={() => {
-                if (localPath) {
-                    router.push("/media/file" + localPath)
-                }
-
-            }}>
-        </Button> :
+        {localPath ? <FileLink targetPath={localPath} >
+            <Button type="link"
+                style={{ padding: 0 }}
+                icon={<FolderOpenOutlined></FolderOpenOutlined>}
+            >
+            </Button>
+        </FileLink> :
             <Button type="link"
                 style={{ padding: 0 }}
                 icon={<ExportOutlined style={{ fontSize: token.fontSizeIcon + 1, }}></ExportOutlined>}
