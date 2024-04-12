@@ -51,7 +51,7 @@ const cardStyleMap: Record<CardSize, DetailCardStyle> = {
         textLimit: 75,
         maxWidth: 400,
         height: 175
-    }
+    },
 }
 const stateTagMap: StateMap<MediaWorkType> = {
     [MediaWorkType.TV]: {
@@ -108,49 +108,49 @@ export function MediaDetailCard({
     const _size = size ? size : "normal";
     const style = cardStyleMap[_size];
 
-    const content = useMemo(() => {
-        if (mediaDetail) {
-            const metadata = mediaDetail.metadata
-            const coverImage = metadata?.image?.cover && <CoverImage maxHeight={style.height} alt={metadata.title} src={metadata?.image?.cover} />
-            return <Flex
-                align="start"
-                vertical={(layout ?? "horizontal") == "vertical"}
-                gap={12}
-                style={{
-                    marginBottom: 0,
-                    position: "relative",
-                    // maxWidth: style.maxWidth
-                    width: "100%",
-                }}>
-                {coverImage}
-                <div style={{ height: style.height, width: "100%", maxWidth: style.maxWidth }}>
-                    <div style={{ paddingTop: 0, width: "100%", height: "100%", display: "flex", overflowY: "auto", alignItems: "start", flexDirection: "column" }}>
-                        <div style={{ position: "sticky", top: 0, backgroundColor: "#ffffffa1", color: token.colorTextBase, fontSize: "1.6rem", margin: 0, padding: "0px 0px 4px 0px", ...style.title }}>
-                            <Space>
-                                <span style={{ fontSize: "1.25rem", fontWeight: "bold" }}>{mediaDetail.title}</span>
-                                <span style={{ fontSize: "1rem" }}> {metadata?.date?.release}</span>
-                                <StateTag stateMap={stateTagMap} value={mediaDetail.series.t ?? MediaWorkType.UNKNOWN} />
-                            </Space>
-                        </div>
-                        <div style={{ padding: "0px 4px" }}>
-                            <Typography.Link style={{ color: token.colorTextDescription }} href={metadata?.links?.tmdb} target="_blank">
-                                {metadata?.links?.tmdb}
-                            </Typography.Link>
-                            <span style={{ color: token.colorTextDescription, display: "block", wordWrap: "break-word", whiteSpace: "pre-wrap" }}>
-                                {metadata?.description.replaceAll("\n\n", "\n").replaceAll("\n\n", "\n")}
-                            </span>
-                        </div>
+    const metadata = mediaDetail?.metadata
+    const coverImage = metadata?.image?.cover && <CoverImage maxHeight={style.height} alt={metadata.title} src={metadata?.image?.cover} />
 
-                        <div style={{ alignSelf: "end", position: "sticky", bottom: 0, right: 4 }}>{action}</div>
-                    </div>
+    const titleArea = useMemo(() => mediaDetail &&
+        <Flex style={{
+            position: "sticky", top: 0, color: token.colorTextBase,
+            fontSize: "1.6rem", margin: 0, padding: `0px ${token.padding}px 4px 5px`, ...style.title
+        }} justify="space-between" align="end">
+            <Space>
+                <span style={{ fontSize: "1.25rem", fontWeight: "bold" }}>{mediaDetail.title}</span>
+                <span style={{ fontSize: "1rem" }}> {metadata?.date?.release}</span>
+                <StateTag stateMap={stateTagMap} value={mediaDetail.series.t ?? MediaWorkType.UNKNOWN} />
+            </Space>
+            <div style={{ alignSelf: "end", position: "sticky", bottom: 0, right: 4 }}>{action}</div>
+        </Flex>, [action, mediaDetail, metadata?.date?.release, style.title, token.colorTextBase])
+
+    const textHeight = layout == "horizonal" ? style.height : undefined;
+    return <Flex
+        align="start"
+        vertical={(layout ?? "horizontal") == "vertical"}
+        gap={12}
+        style={{
+            marginBottom: 0,
+            position: "relative",
+            // maxWidth: style.maxWidth
+            width: "100%",
+        }}>
+        {coverImage}
+        <div style={{ height: textHeight, width: "100%", }}>
+            {titleArea}
+            <div style={{ paddingTop: 0, width: "100%", height: "100%", display: "flex", overflowY: "auto", alignItems: "start", flexDirection: "column" }}>
+                <div style={{ padding: "0px 4px" }}>
+                    <Typography.Link style={{ color: token.colorTextDescription }} href={metadata?.links?.tmdb} target="_blank">
+                        {metadata?.links?.tmdb}
+                    </Typography.Link>
+                    <span style={{ color: token.colorTextDescription, display: "block", wordWrap: "break-word", whiteSpace: "pre-wrap" }}>
+                        {metadata?.description.replaceAll("\n\n", "\n").replaceAll("\n\n", "\n")}
+                    </span>
                 </div>
-            </Flex >
 
-        } else {
-            return <Empty />
-        }
-    }, [mediaDetail])
-    return content;
+            </div>
+        </div>
+    </Flex >
 }
 
 export default function TinyTMDBSearch({
