@@ -167,10 +167,10 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
             render: (mtime, item) => {
                 const date = new Date(mtime * 1000);
                 return <span>
-                    {date.getFullYear()}/{date.getMonth()}/{date.getDate()} {date.getHours()}:{date.getMinutes()}
+                    {date.getFullYear()}/{date.getMonth() + 1}/{date.getDate()} {date.getHours()}:{date.getMinutes()}
                 </span>
             },
-            defaultSortOrder: "descend",
+            sorter: (a: NastoolFileListItem, b: NastoolFileListItem) => (a.mtime - b.mtime),
             width: 150
         },
         {
