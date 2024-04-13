@@ -2,7 +2,7 @@
 import { Section } from "@/app/components/Section";
 import { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { DownloadOutlined, ArrowUpOutlined, CaretUpOutlined, CaretDownOutlined } from "@ant-design/icons"
-import { TorrentSearchResult, SearchResult, Torrent } from "@/app/utils/api/search/torrentSearch";
+import { TorrentSearchResult, SearchResult, Torrent, TorrentGroup } from "@/app/utils/api/search/torrentSearch";
 import { MediaWork, SeriesKey } from "@/app/utils/api/types";
 import { Button, Col, Collapse, ConfigProvider, Divider, Form, Input, List, Modal, Row, Space, Tag as AntdTag, TagProps } from "antd";
 import React, { useMemo, useState } from "react";
@@ -47,49 +47,16 @@ function SearchResultPannel({ result }: { result: SearchResult }) {
     const { filter: avaliableFilter } = result;
     const [filter, setFilter] = useState<FilterType>()
 
-    const groupedTorernts = useMemo(() => result.torrent_dict
-        .filter(([k]) => filter?.series ? filter.series.size > 0 ? filter.series.has(k) : true : true)
-        .map(([key, data]) => {
-            const torrentList = Object.entries(data ?? {}).map(([k, v]) => {
-                const lists = Object.entries(v.group_torrents)
-                    .map(([key, value]): [string, Torrent[]] => [key, value.torrent_list.filter((torrent) => {
-                        if (filter?.keyword) {
-                            if (!torrent.torrent_name.includes(filter.keyword)) return false;
-                        }
-
-                        if (filter?.codec?.size) {
-                            if (!filter.codec.has(torrent.video_encode)) return false;
-                        }
-                        if (filter?.releasegroup?.size && torrent.releasegroup) {
-                            if (!filter.releasegroup.has(torrent.releasegroup)) return false;
-                        }
-                        if (filter?.site?.size) {
-                            if (!filter.site.has(torrent.site)) return false;
-                        }
-                        return true;
-                    })]
-                    )
-                    .filter((list) => list[1].length);
-                return {
-                    key: k,
-                    label: `${k}`,
-                    children: lists
-                }
-            });
-            const itemsWithContent = torrentList.filter(({ children }) => children.length);
-            if (itemsWithContent.length > 0)
-                return <Section key={key} title={key}>
-                    <Collapse defaultActiveKey={itemsWithContent[0].key} items={
-                        itemsWithContent.map(({ key, label, children }) => ({
-                            key, label,
-                            children: children.map(([key, list]) => <div key={key}>
-                                <TorrentsList list={list} />
-                                <Divider style={{ margin: 0 }} />
-                            </div>)
-                        }))
-                    } />
-                </Section >
-        }), [filter])
+    const groupedTorernts = useMemo(() => {
+        if (filter) {
+            const { series, } = filter;
+            return result.torrent_dict
+                .filter(([k]) => series ? series.size > 0 ? series.has(k) : true : true)
+                .map(([key, data]) => <FilteredTorrentList key={key} resultMap={data} title={key} filter={filter} />)
+        } else {
+            return result.torrent_dict.map(([key, data]) => <FilteredTorrentList key={key} resultMap={data} title={key} filter={{}} />)
+        }
+    }, [filter, result.torrent_dict])
 
     const filterFormItems: CollapseProps['items'] = [
         {
@@ -134,7 +101,7 @@ function SearchResultPannel({ result }: { result: SearchResult }) {
             <Col span={24}></Col>
         </Row >
         <Row gutter={20}>
-            <Col span={5}>
+            <Col span={4}>
                 <MediaDetailCard layout="vertical" size="tiny" mediaDetail={mediaWork} />
                 <br />
                 <Divider orientation="left" orientationMargin={0}>过滤</Divider>
@@ -152,7 +119,7 @@ function SearchResultPannel({ result }: { result: SearchResult }) {
                     </ConfigProvider>
                 </Form>
             </Col>
-            <Col span={19}>
+            <Col span={20}>
                 <ConfigProvider theme={{
                     components: {
                         Collapse: {
@@ -259,4 +226,54 @@ export default function SearchResultPage() {
     return <Section title="搜索结果">
         {data != undefined ? <SearchResultPannel result={data} /> : <></>}
     </Section>
+}
+
+
+
+function FilteredTorrentList({ title, filter, resultMap }: { title: string, filter: FilterType, resultMap: Record<string, TorrentGroup> }) {
+    const data = resultMap;
+    const { series, keyword, site, codec, releasegroup } = filter;
+    const torrentList = Object.entries(data ?? {}).map(([k, v]) => {
+        const lists = Object.entries(v.group_torrents)
+            .map(([key, value]): [string, Torrent[]] => [key, value.torrent_list.filter((torrent) => {
+                if (keyword) {
+                    if (!torrent.torrent_name.includes(keyword)) return false;
+                }
+
+                if (codec?.size) {
+                    if (!codec?.has(torrent.video_encode)) return false;
+                }
+                if (releasegroup?.size && torrent.releasegroup) {
+                    if (!releasegroup?.has(torrent.releasegroup)) return false;
+                }
+                if (site?.size) {
+                    if (!site?.has(torrent.site)) return false;
+                }
+                return true;
+            })]
+            ).filter((list) => list[1].length);
+        return {
+            key: k,
+            label: k,
+            children: lists
+        }
+    });
+    const itemsWithContent = torrentList.filter(({ children }) => children.length);
+    if (itemsWithContent.length > 0)
+        return <Section key={title} title={title}>
+            <Collapse defaultActiveKey={itemsWithContent[0].key}
+            items={
+                itemsWithContent.map(({ key, label, children }) => ({
+                    key, label,
+                    style: {
+                        
+                    },
+                    children: children.map(([key, list]) => <div key={key}>
+                        <TorrentsList list={list} />
+                        <Divider style={{ margin: 0 }} />
+                    </div>)
+                }))
+            } />
+        </Section >
+    return null
 }

@@ -10,7 +10,7 @@ import Image from "next/image"
 import { asyncEffect } from "@/app/utils";
 import { useAPIContext } from "@/app/utils/api/api_base";
 
-type CardSize = "normal" | "small" | "tiny";
+type CardSize = "poster" | "normal" | "small" | "tiny" | "card";
 interface DetailCardStyle {
     image?: CSSProperties,
     title?: CSSProperties,
@@ -21,10 +21,24 @@ interface DetailCardStyle {
 }
 
 const cardStyleMap: Record<CardSize, DetailCardStyle> = {
+    "poster": {
+        image: {
+            height: 175
+        },
+        title: {
+            fontSize: "1.4rem",
+        },
+        typography: {
+            width: 350,
+            height: 155,
+            margin: 0
+        },
+        textLimit: 75,
+        height: 175
+    },
     "normal": {
         textLimit: 999,
         height: 250
-
     },
     "small": {
         image: {
@@ -35,6 +49,22 @@ const cardStyleMap: Record<CardSize, DetailCardStyle> = {
         },
         textLimit: 150,
         height: 150
+    },
+    "card": {
+        image: {
+            height: 175
+        },
+        title: {
+            fontSize: "1.4rem",
+        },
+        typography: {
+            width: 350,
+            height: 155,
+            margin: 0
+        },
+        textLimit: 75,
+        maxWidth: 700,
+        height: 175
     },
     "tiny": {
         image: {
@@ -124,7 +154,7 @@ export function MediaDetailCard({
             <div style={{ alignSelf: "end", position: "sticky", bottom: 0, right: 4 }}>{action}</div>
         </Flex>, [action, mediaDetail, metadata?.date?.release, style.title, token.colorTextBase, token.padding])
 
-    const textHeight = layout == "horizonal" ? style.height : undefined;
+    const textHeight = layout == "vertical" ? undefined : style.height;
     return <Flex
         align="start"
         vertical={(layout ?? "horizontal") == "vertical"}
@@ -132,22 +162,19 @@ export function MediaDetailCard({
         style={{
             marginBottom: 0,
             position: "relative",
-            // maxWidth: style.maxWidth
+            maxWidth: style.maxWidth,
             width: "100%",
         }}>
         {coverImage}
-        <div style={{ height: textHeight, width: "100%", }}>
+        <div style={{ height: textHeight, width: "100%", overflow: "auto" }}>
             {titleArea}
-            <div style={{ paddingTop: 0, width: "100%", height: "100%", display: "flex", overflowY: "auto", alignItems: "start", flexDirection: "column" }}>
-                <div style={{ padding: "0px 4px" }}>
-                    <Typography.Link style={{ color: token.colorTextDescription }} href={metadata?.links?.tmdb} target="_blank">
-                        {metadata?.links?.tmdb}
-                    </Typography.Link>
-                    <span style={{ color: token.colorTextDescription, display: "block", wordWrap: "break-word", whiteSpace: "pre-wrap" }}>
-                        {metadata?.description.replaceAll("\n\n", "\n").replaceAll("\n\n", "\n")}
-                    </span>
-                </div>
-
+            <div style={{ padding: "0px 4px" }}>
+                <Typography.Link style={{ color: token.colorTextDescription }} href={metadata?.links?.tmdb} target="_blank">
+                    {metadata?.links?.tmdb}
+                </Typography.Link>
+                <span style={{ color: token.colorTextDescription, display: "block", wordWrap: "break-word", whiteSpace: "pre-wrap" }}>
+                    {metadata?.description.replaceAll("\n\n", "\n").replaceAll("\n\n", "\n")}
+                </span>
             </div>
         </div>
     </Flex >

@@ -169,6 +169,18 @@ export default function DownloadedPage() {
     const [messageApi, contextHolder] = message.useMessage();
     const columns: ColumnsType<TorrentInfo> = useMemo(() => [
         {
+            key: "external",
+            render: (_, record) => {
+                const containerPath = downloaderPathMap[record.save_path]
+
+                const fileLink = containerPath == undefined ? undefined
+                    : record.content_path.replace(record.save_path, containerPath)
+
+                return <FileButton localPath={fileLink} remotePath={record.content_path} />
+            },
+            width: 40
+        },
+        {
             title: <Space size="large">
                 <span>名称</span>
                 <Input size="small" placeholder="搜索" onChange={(evt) => { setNamePattern(evt.currentTarget.value) }} allowClear />
@@ -176,15 +188,10 @@ export default function DownloadedPage() {
             dataIndex: "name",
             key: "name",
             render: (value: string, record) => {
-                const containerPath = downloaderPathMap[record.save_path]
-                const fileLink = containerPath == undefined ? undefined
-                    : record.content_path.replace(record.save_path, containerPath)
-
                 const [downSpeed, downSpeedUnit] = bytes_to_human(record.speed.download)
                 const [upSpeed, upSpeedUnit] = bytes_to_human(record.speed.upload)
                 return <Space align="center" size="small">
-
-                    {value}<FileButton localPath={fileLink} remotePath={record.save_path}></FileButton>
+                    {value}
                     {
                         upSpeed > 0 || downSpeed > 0 ? <Tag bordered={false} color="blue">
                             {upSpeed > 0 ? <><CaretUpOutlined /><span>{upSpeed} {upSpeedUnit}/s</span></> : <></>}

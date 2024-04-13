@@ -86,7 +86,7 @@ export function TvMediaImportGroup(props: MediaImportGroupProps) {
             return <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
                 {work ? <MediaDetailCard
                     postImageStyle={{ width: 100 }}
-                    mediaDetail={work} size="small"
+                    mediaDetail={work} size="poster"
                     onTitleClick={(mediaWork) => { setSeries(mediaWork.series) }}
                     action={<Space>{selectButton}{searchButton}</Space>}
                 /> : <>{props.seriesKey.t}</>}
@@ -362,7 +362,7 @@ function TableIdentifyColumn(options: { value: number | string | undefined, file
         }
     }
     const popCard = <Space direction="vertical">
-        {work ? <MediaDetailCard mediaDetail={work} size="tiny"
+        {work ? <MediaDetailCard mediaDetail={work} size="card"
             action={work.series.end == SeriesKeyType.TMDBID ?
                 <Space>
                     <Button type="primary" size="small" onClick={() => { if (work?.title) onTitleTagClick(work?.title) }}
