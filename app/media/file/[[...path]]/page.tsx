@@ -9,13 +9,11 @@ import MediaImportEntry, { MediaImportProvider } from "@/app/components/mediaImp
 import MediaImport from "@/app/components/mediaImport/mediaImport";
 import { PathSearchManagerProvider, usePathManager, usePathManagerDispatch } from "@/app/components/pathManager"
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { bytes_to_human } from "@/app/utils";
 import { IdentifyHistory } from "@/app/components/mediaImport/mediaImportContext";
 import { useAPIContext } from "@/app/utils/api/api_base";
 import path from "path";
-import { FileLink } from "@/app/components/FileLink";
-import { on } from "events";
+import { FileLink, useFileRouter } from "@/app/components/FileLink";
 
 type SortKey = "name" | "mtime"
 type SortDirection = "dec" | "inc"
@@ -205,7 +203,7 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
             if (assumeFile) {
                 const fileItem = fileList.find((item) => item.name == assumeFile);
                 if (fileItem) {
-                    setSelected((keys) => [...keys, assumeFile]);
+                    setSelected((keys) => [assumeFile]);
                     setSelectedFiles((files) => [...files, fileItem])
                 }
             }
@@ -261,7 +259,7 @@ const MediaFileExplorer = () => {
     const { API } = useAPIContext();
     const [selectedFiles, setSelectedFiles] = useState<NastoolFileListItem[]>([]);
 
-
+    const { fallback } = useFileRouter();
     const onRefresh = useCallback(async () => {
         setLoadingState(true);
         try {
@@ -269,7 +267,7 @@ const MediaFileExplorer = () => {
             const fileList = await API.getFileList(pathManagerContext.getBasePath,
                 deepesetPath.replaceAll("＃", "#"));
             if (fileList.fallback_to != undefined) {
-                router.replace(`/media/file?path=${fileList.fallback_to}&from=${deepesetPath}`)
+                fallback(fileList.fallback_to, deepesetPath)
             } else {
                 setDirList(fileList.directories)
                 setFileList(fileList.files)
@@ -278,7 +276,7 @@ const MediaFileExplorer = () => {
         } catch (e) {
 
         }
-    }, [API, pathManagerContext, router])
+    }, [API, fallback, pathManagerContext])
 
     useEffect(() => {
         onRefresh();
@@ -287,14 +285,10 @@ const MediaFileExplorer = () => {
     const searchParams = useSearchParams();
     const pathParams = searchParams.get('path') ?? "/"
     useEffect(() => {
-        console.log("Router", pathManagerContext.deepestPath, pathParams)
         if (path.normalize(pathParams) != path.normalize(pathManagerContext.deepestPath)) {
-            console.log("Redirect")
             pathManagerDispath({ type: "set_path", path: pathParams })
         }
     }, [onRefresh, pathManagerContext, pathManagerDispath, pathParams, router])
-
-
 
     const importFiles = useMemo(() => selectedFiles.map((item) => ({
         name: item.name,
@@ -345,24 +339,46 @@ export default memo(MediaFile, (prev, next) => {
 function PathManagerBar() {
     const pathManagerState = usePathManager();
     const dispath = usePathManagerDispatch();
-    const segmentedPathTag = useMemo(() => pathManagerState.getPathArray().map(({ full, name }) => {
+    const [historyDeepPath, setHistoryDeepPath] = useState(pathManagerState.getPathArray());
+
+    useEffect(() => {
+        const latestPath = pathManagerState.getPathArray();
+
+        const shouldUpdate = latestPath.length <= historyDeepPath.length ? latestPath.map((part, index) => {
+            if (part.name == historyDeepPath[index].name) {
+                return false
+            }
+            return true
+        }).reduce((acc, cur) => (acc || cur)) : true
+        if (shouldUpdate) {
+            // console.log(shouldUpdate, latestPath, historyDeepPath)
+            setHistoryDeepPath((historyDeepPath) => {
+                if (shouldUpdate) {
+                    return latestPath
+                }
+                return historyDeepPath
+            })
+        }
+
+    }, [historyDeepPath, pathManagerState])
+
+    const segmentedPathTag = useMemo(() => historyDeepPath.map(({ full, name }) => {
         return {
             label: <span key={full}>{name}</span>,
             value: full
         }
-    }), [pathManagerState])
-    const router = useRouter()
-    const onPathChange = (evt: any) => {
-        router.push(`/media/file?path=${evt}`)
-    }
-    const { token } = theme.useToken()
+    }), [historyDeepPath])
 
+    const { push } = useFileRouter();
     return <>
         <Space>
             <Segmented
                 options={segmentedPathTag}
                 value={pathManagerState.deepestPath}
-                onChange={onPathChange}
+                onChange={(evt) => {
+                    push(evt)
+                }
+                }
             />
         </Space>
     </>

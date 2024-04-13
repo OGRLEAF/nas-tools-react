@@ -1,5 +1,6 @@
 import Link from "next/link";
-import React from "react";
+import { useRouter } from "next/navigation";
+import React, { useCallback } from "react";
 
 
 export function FileLink({ basePath, targetPath, children }:
@@ -12,4 +13,19 @@ export function FileLink({ basePath, targetPath, children }:
             }
         }
     }>{children}</Link>
+}
+
+export function useFileRouter(options?:
+    { basePath?: string, }) {
+    const router = useRouter();
+    const push = useCallback((targetPath: string) => {
+        router.push(`/media/file?${new URLSearchParams({ path: targetPath }).toString()}`)
+    }, [router])
+    const fallback = useCallback((to: string, from: string) => {
+        router.replace(`/media/file?${new URLSearchParams({ path: to, from }).toString()}`)
+    }, [router])
+    return {
+        push,
+        fallback,
+    }
 }
