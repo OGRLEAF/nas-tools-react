@@ -7,8 +7,8 @@ import { SearchContext, SearchContextType, useSearch } from "./SearchContext";
 import { ServerConfig } from "@/app/utils/api/serverConfig";
 import { StateMap, StateTag } from "../StateTag";
 import Image from "next/image"
-import { asyncEffect } from "@/app/utils";
 import { useAPIContext } from "@/app/utils/api/api_base";
+import _ from "lodash";
 
 type CardSize = "poster" | "normal" | "small" | "tiny" | "card";
 interface DetailCardStyle {
@@ -152,7 +152,8 @@ export function MediaDetailCard({
                 <StateTag stateMap={stateTagMap} value={mediaDetail.series.t ?? MediaWorkType.UNKNOWN} />
             </Space>
             <div style={{ alignSelf: "end", position: "sticky", bottom: 0, right: 4 }}>{action}</div>
-        </Flex>, [action, mediaDetail, metadata?.date?.release, style.title, token.colorTextBase, token.padding])
+        </Flex>,
+        [action, mediaDetail, metadata?.date?.release, style.title, token.colorTextBase, token.padding])
 
     const textHeight = layout == "vertical" ? undefined : style.height;
     return <Flex
@@ -407,7 +408,7 @@ export function MediaSearchSeason() {
 export const MediaSeasonInput = ({ series, value, onChange, style }: { series: SeriesKey, value?: number, onChange?: (value: number) => void, style?: CSSProperties }) => {
     const [seasonOptions, setSeasonOptions] = useState<SelectProps['options']>([])
     const [loading, setLoading] = useState(false)
-    useEffect(asyncEffect(async () => {
+    const updateSeason = useCallback(async (series: SeriesKey) => {
         setLoading(true)
         if (series.i) {
             const media = new TMDB().fromSeries(series.slice(SeriesKeyType.TMDBID));
@@ -428,7 +429,10 @@ export const MediaSeasonInput = ({ series, value, onChange, style }: { series: S
             }
             setLoading(false)
         }
-    }), [series.i])
+    }, [])
+    useEffect(() => {
+        updateSeason(series)  // Not sure if it works
+    }, [series, updateSeason])
 
     return <Select value={value} disabled={loading} loading={loading} style={style}
         options={seasonOptions}

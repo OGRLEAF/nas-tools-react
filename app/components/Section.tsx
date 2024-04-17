@@ -38,11 +38,11 @@ export const Section = ({ children, title, extra, onRefresh, interval: _interval
                 }
                 <div>
                     <Space>
-                        {onRefresh ? <Space.Compact>
-                            <Button type="primary" onClick={() => onRefresh?.()} icon={<RedoOutlined />} />
-                        </Space.Compact>
-                            : <></>}
-                        {extra ? extra : <></>}
+                        {onRefresh &&
+                            <Space.Compact>
+                                <Button type="primary" onClick={() => onRefresh?.()} icon={<RedoOutlined />} />
+                            </Space.Compact>}
+                        {extra ? extra : null}
                     </Space>
                 </div>
             </Flex>

@@ -97,9 +97,6 @@ function SearchResultPannel({ result }: { result: SearchResult }) {
         }
     ]
     return <Space direction="vertical" style={{ width: "100%" }}>
-        <Row >
-            <Col span={24}></Col>
-        </Row >
         <Row gutter={20}>
             <Col span={4}>
                 <MediaDetailCard layout="vertical" size="tiny" mediaDetail={mediaWork} />

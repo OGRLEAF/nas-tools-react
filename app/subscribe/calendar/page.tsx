@@ -113,7 +113,7 @@ const CalendarCard = (options: { mediaWork: MediaWork }) => {
         >
             <span>
                 <Popover content={
-                    <MediaDetailCard size="tiny" mediaDetail={options.mediaWork} />
+                    <MediaDetailCard size="card" mediaDetail={options.mediaWork} />
                 } >
                     {topMediaWork?.metadata?.title}
                 </Popover >

@@ -231,7 +231,7 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
             loading={loading}
             rowKey="name"
             pagination={false}
-            bordered size="middle"
+            bordered size="small"
             scroll={{ y: sectionContext.contentHeight - 200 }}
             expandable={{
                 expandedRowRender: (record: NastoolFileListItem) =>
@@ -252,7 +252,6 @@ const MediaFileExplorer = () => {
     const [loadingState, setLoadingState] = useState(true)
     const [dirList, setDirList] = useState<NastoolFileListItem[]>([])
     const [fileList, setFileList] = useState<NastoolFileListItem[]>([])
-    const [preSet, setPreSet] = useState<string[]>([])
     const pathManagerContext = usePathManager();
     const pathManagerDispath = usePathManagerDispatch();
     const router = useRouter()
@@ -307,7 +306,6 @@ const MediaFileExplorer = () => {
                     flush={true}
                     appendFiles={importFiles}
                 />
-                {preSet}
             </Flex>
             <Row gutter={16} >
                 <Col span={6}>

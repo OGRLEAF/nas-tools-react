@@ -4,7 +4,7 @@ import { useServerEvent } from '../utils/api/message/ServerEvent'
 export default function Taskbar() {
     const { msg, msgs, } = useServerEvent('task_event')
     useEffect(()=>{
-        console.log(msg)
+        // console.log(msg)
     }, [msg])
     return <>
         Taskbar {msgs.length}
