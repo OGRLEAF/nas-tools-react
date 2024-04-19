@@ -17,7 +17,10 @@ export interface TaskState {
     logs: TaskLog[]
 }
 
-export type Task = [TaskMeta, TaskState]
+export type Task = {
+    draft: TaskMeta,
+    instance: TaskState
+}
 
 export interface TaskflowInfo {
     id: string,
@@ -33,7 +36,7 @@ export interface TaskflowResource {
 export class Taskflow extends APIArrayResourceBase<TaskflowResource> {
     async list() {
         const result = await this.API.get<{tasks: TaskflowInfo[]}>(`taskflow/list`, { auth: true })
-        return result.tasks.sort((a, b) => b.start_time - a.start_time)
+        return result.tasks
     }
 
     async listHook(options?: unknown): Promise<TaskflowInfo[]> {

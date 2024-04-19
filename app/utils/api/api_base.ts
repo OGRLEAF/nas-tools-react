@@ -4,6 +4,7 @@ import { API, NASTOOL, NastoolConfig } from "./api";
 import { useSubmitMessage } from "..";
 import { get } from "lodash";
 import { Modal } from "antd";
+import { useServerEvent } from "./message/ServerEvent";
 
 export interface APIContext {
     API: NASTOOL,
@@ -184,6 +185,7 @@ export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) =>
             setOptions,
             total,
             loading,
+            api: self,
         }
     }
 
@@ -273,5 +275,77 @@ export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) =>
         update: update,
         api: self
 
+    }
+}
+
+type ResList<Res extends ResourceType> = ReturnType<ReturnType<typeof useResource<Res>>['useList']>;
+
+export function useEventDataPatch<Res extends ResourceType>(resourceList: ResList<Res>, eventName: string) {
+    const { list, setList } = resourceList;
+    const [pointer, setPointer] = useState<number>(0);
+    const { msg, msgs } = useServerEvent(eventName);
+    useEffect(() => {
+        const end = msgs.length - 1;
+        console.log(pointer,)
+        setList((list) => {
+            msgs.slice(pointer, -1)
+                .forEach((msg) => {
+                    const lastMsg = msg;
+                    setPointer((p: number) => p + 1)
+                    // console.log(lastMsg?.keys.map(key => key.toString()).join('.'), lastMsg?.data)
+
+                    const keys = Array.from(lastMsg.keys);
+                    const finalKey = keys.pop();
+                    if (list) {
+                        let tempTarget = list;
+                        for (let key of keys) {
+                            if (isPatchable(tempTarget, key)) {
+                                tempTarget = tempTarget[key as any]
+                                // console.log(key, tempTarget)
+                            }
+                        }
+                        if (tempTarget != undefined) {
+                            if ((finalKey != undefined) && isPatchable(tempTarget, finalKey)) {
+                                tempTarget[finalKey as any] = lastMsg.data
+                            }
+                        }
+                    } else {
+                        if (keys[0] == 0) {
+                            list = [lastMsg.data]
+                        }
+                    }
+                })
+            return list
+        })
+
+    }, [msgs, pointer, setList])
+}
+
+function isPatchable(target: any, key: string | number) {
+
+    if (Array.isArray(target)) {
+        if (typeof key === 'string') {
+            console.warn("Data patch failed: trying to patch a list with string-like key", key);
+            return false
+        } else if (typeof key === "number") {
+            if (key > target.length) {
+                console.warn("Data patch failed: trying to patch a list with out of range key", key, target.length);
+                return false
+            } else {
+                return true
+            }
+        } else {
+            console.warn("Data patch failed: trying to patch a list with unsupported key", key);
+            return false
+        }
+    } else if (typeof target === "object" && target != null) {
+        if (typeof key == "number") console.warn("Data patch failed: trying to patch a object with number-like key", key);
+        if (!(key in target)) {
+            console.warn("Key should exist, but not found in target object, its a bug.", key, JSON.stringify(target));
+        }
+        return true
+    } else {
+        console.warn("Data patch failed: target is not a list or object", key, JSON.stringify(target))
+        return false
     }
 }
