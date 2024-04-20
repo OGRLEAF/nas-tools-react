@@ -20,8 +20,8 @@ const HeaderSearch = () => {
         router.push("/search/" + value)
     }
     return (
-        <Flex justify="space-between" style={{ width: "100%", boxSizing: "border-box", padding: '0px 0px 0 15px' }}>
-            {/* <Taskbar /> */}
+        <Flex justify="space-between" align="center"  style={{ width: "100%", boxSizing: "border-box", padding: '0px 0px 0 15px' }}>
+            <Taskbar />
             <Flex justify="flex-end" align="center" >
                 <Search placeholder="搜索"
                     style={{ width: 500 }}
