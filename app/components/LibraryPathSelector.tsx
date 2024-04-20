@@ -259,7 +259,7 @@ export const DownloadPathSelect = (options: { remote?: boolean } & UnionPathSele
     }, [clients, remote])
 
     const allPaths = useMemo(() => {
-        return clients?.map(cli => cli.download_dir).reduce((prev, curr) => prev.concat(curr)) ?? []
+        return [...clients?.map(cli => cli.download_dir), []].reduce((prev, curr) => prev.concat(curr)) ?? []
     }, [clients])
 
     const node = useMemo(() => <Select value={path} options={downloaderPathMap}

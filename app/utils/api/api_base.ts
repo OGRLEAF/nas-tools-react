@@ -152,25 +152,29 @@ export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) =>
     const self = useMemo(() => new cls(API), [API, cls])
     type GetRes<T> = T extends APIArrayResourceBase<infer T> ? T : Res;
     type T = GetRes<typeof cls>
-    function useList() {
+    function useList(API: NASTOOL) {
         const [loading, setLoading] = useState<boolean>(false);
         const [options, setOptions] = useState<ListOptionType<T> | undefined>(option?.initialOptions)
-        const [list, setList] = useState<ItemType<T>[]>()
+        const [list, setList] = useState<ItemType<T>[]>([])
         const [total, setTotal] = useState<number>(0);
         const refresh = useCallback(async () => {
-            if (self.API.loginState)
+            if (self.API.loginState) {
                 setLoading(true)
-            if (useMessage) message.fetch.loading()
-            try {
-                const list = await self.listHook(options)
-                setList(list)
-                setTotal((await self.totalHook?.()) ?? list.length)
-                if (useMessage) message.fetch.success()
-            } catch (e: any) {
-                if (useMessage) message.fetch.error(e)
-            } finally {
-                setLoading(false)
+                if (useMessage) message.fetch.loading()
+                try {
+                    const list = await self.listHook(options)
+                    setList(list)
+                    setTotal((await self.totalHook?.()) ?? list.length)
+                    if (useMessage) message.fetch.success()
+                } catch (e: any) {
+                    if (useMessage) message.fetch.error(e)
+                } finally {
+                    setLoading(false)
+                }
+            } else {
+                console.log("Not login")
             }
+
         }, [options])
 
 
@@ -249,12 +253,9 @@ export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) =>
             true
         ) : undefined;
 
-
-
-
     return {
         useList: () => {
-            useListCache = useList();
+            useListCache = useList(API);
             return useListCache;
         },
         add, del, val,
@@ -278,7 +279,7 @@ export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) =>
     }
 }
 
-type ResList<Res extends ResourceType> = ReturnType<ReturnType<typeof useResource<Res>>['useList']>;
+export type ResList<Res extends ResourceType> = ReturnType<ReturnType<typeof useResource<Res>>['useList']>;
 
 export function useEventDataPatch<Res extends ResourceType>(resourceList: ResList<Res>, eventName: string) {
     const { setList } = resourceList;
@@ -299,7 +300,6 @@ export function useEventDataPatch<Res extends ResourceType>(resourceList: ResLis
 }
 
 function isPatchable(target: any, key: string | number) {
-
     if (Array.isArray(target)) {
         if (typeof key === 'string') {
             console.warn("Data patch failed: trying to patch a list with string-like key", key);
@@ -353,7 +353,6 @@ function patchDataNotSafe(keys: (number | string)[], list: any, final: any) {
 }
 
 function patchData(keys: (number | string)[], data: any, final: any): any {
-    // console.log(keys, data, final)
     const nextKey = keys.shift();
     if (nextKey == undefined) return final;
     if (isPatchable(data, nextKey)) {

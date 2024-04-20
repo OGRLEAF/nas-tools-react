@@ -25,6 +25,7 @@ import Link from 'next/link';
 import { Next13ProgressBar } from 'next13-progressbar';
 import { APIContext } from '@/app/utils/api/api_base';
 import { NASTOOL } from '@/app/utils/api/api';
+import { TaskflowContextProvider } from '../taskflow/TaskflowContext';
 
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -147,7 +148,9 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <Layout hasSider style={{ zoom: pageScale }}>
       <APIContext.Provider value={{ API, setAPI }}>
-        <LoginModal></LoginModal>
+
+
+
         <Sider
           theme="light"
           style={{
@@ -189,37 +192,50 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
           }
         </Sider>
         <Layout>
-          <Header
-            style={{
-              padding: '0px 0px',
-              paddingLeft: token.padding,
-              boxSizing: "border-box",
-              backgroundColor: token.colorBgContainer,
-              boxShadow: token.boxShadowTertiary,
-              top: 0,
-              position: 'sticky',
-              zIndex: 1
-            }} >
-            <Next13ProgressBar height="3px" color={token.colorPrimaryBorder} options={{ showSpinner: true }} showOnShallow />
-            <Flex align="center">
-              <Button icon={<MenuOutlined />} onClick={() => {
-                setCollapsed((collapsed) => !collapsed)
-              }} type="text" />
-              <HeaderSearch />
-            </Flex>
-          </Header>
-          <Layout>
-            <Content style={{ margin: '0px 0px', overflow: 'initial' }} >
-              <div style={{ padding: "0px 16px 16px 16px", minHeight: "50vh", height: "100%", }}>
-                {API.loginState ? children : <></>}
-              </div>
-            </Content>
-          </Layout>
+          <APILoadedSpace>
+            <TaskflowContextProvider>
+              <Header
+                style={{
+                  padding: '0px 0px',
+                  paddingLeft: token.padding,
+                  boxSizing: "border-box",
+                  backgroundColor: token.colorBgContainer,
+                  boxShadow: token.boxShadowTertiary,
+                  top: 0,
+                  position: 'sticky',
+                  zIndex: 1
+                }} >
+                <Next13ProgressBar height="3px" color={token.colorPrimaryBorder} options={{ showSpinner: true }} showOnShallow />
+                <Flex align="center">
+                  <Button icon={<MenuOutlined />} onClick={() => { setCollapsed((collapsed) => !collapsed) }} type="text" />
+                  <HeaderSearch />
+                </Flex>
+              </Header>
+              <Layout>
+                <Content style={{ margin: '0px 0px', overflow: 'initial' }} >
+                  <div style={{ padding: "0px 16px 16px 16px", minHeight: "50vh", height: "100%", }}>
+                    {API.loginState ? children : <></>}
+                  </div>
+                </Content>
+              </Layout>
+            </TaskflowContextProvider>
+          </APILoadedSpace>
           {/* <Footer style={{ textAlign: 'center', background: colorBgContainer, }}>Ant Design ©2023 Created by Ant UED</Footer> */}
         </Layout>
+
       </APIContext.Provider>
     </Layout>
   );
 };
+
+function APILoadedSpace({ children }: { children: React.ReactNode }) {
+  const apiContext = useContext(APIContext);
+  const { API } = apiContext;
+  if (API.loginState) {
+    return <>{children}</>
+  } else {
+    return <LoginModal></LoginModal>
+  }
+}
 
 export default DefaultLayout;

@@ -5,6 +5,7 @@ import { Collapse, Timeline, Space, Typography, Tag, theme, List, Alert, AlertPr
 import { useAPIContext, useEventDataPatch, useResource } from "../utils/api/api_base";
 import { Taskflow, TaskflowResource, TaskflowInfo, Task, TaskState } from "../utils/api/taskflow";
 import { useServerEvent } from "../utils/api/message/ServerEvent";
+import { useTaskflow, useTaskflowList } from "../components/taskflow/TaskflowContext";
 
 const TaskCardStatus = ({ state, children: children }: { state: TaskState, children?: ReactNode }) => {
     const defaultAlterts: Record<string, { message: string, type: AlertProps["type"] }> = ({
@@ -56,11 +57,9 @@ const TaskCard = ({ taskflow }: { taskflow: TaskflowInfo }) => {
                     {taskState ? <TaskCardStatus state={taskState}></TaskCardStatus> : <>未运行</>}
                 </Space>
                 {
-                    taskState && <>
-                        <List dataSource={taskState.logs} renderItem={(item) => (
-                            item ? <div>{item.msg}</div> : "error"
-                        )} />
-                    </>
+                    taskState && <List dataSource={taskState.logs} renderItem={(item) => (
+                        item ? <div>{item.msg}</div> : "error"
+                    )} />
                 }
             </Space>,
             color: timeLineStateColor[taskState?.status ?? "unknown"]
@@ -73,28 +72,20 @@ const TaskCard = ({ taskflow }: { taskflow: TaskflowInfo }) => {
 }
 
 export default function TaskflowPage() {
-    const { useList } = useResource<TaskflowResource>(Taskflow);
-    const listResoure = useList()
-    const { list: tasks, refresh, setList } = listResoure;
-    const { token } = theme.useToken();
-    const panelStyle: React.CSSProperties = {
-        marginBottom: 24,
-        paddingLeft: 12,
-        borderRadius: token.borderRadiusLG,
-        border: "solid #ccc 1px",
-        backgroundColor: token.colorBgContainer,
-    }
-    useEventDataPatch(listResoure, 'task_event')
-
+    const taskflowList = useTaskflowList();
     const { API } = useAPIContext();
+    const { list, refresh } = taskflowList;
     const sortedTasks = useMemo(() => {
-        return tasks && [...tasks].sort((a, b) => b.start_time - a.start_time)
-    }, [tasks])
+        if (list) {
+            return [...list].sort((a, b) => b.start_time - a.start_time)
+        }
+        return []
+    }, [list])
     return <Section title="任务" onRefresh={() => { refresh() }} >
         <Space direction="vertical" style={{ width: "100%" }}>
             <Button onClick={() => {
                 API.launchTaskflow("example_flow", { count: 1 })
-            }}>运行测试 {tasks?.length}</Button>
+            }}>运行测试 {sortedTasks.length}</Button>
             <Flex vertical gap={16}>
                 {
                     sortedTasks ? sortedTasks.map((taskflow) => <Card key={taskflow.id} title={taskflow.id}>
