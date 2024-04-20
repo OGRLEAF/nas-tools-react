@@ -115,7 +115,6 @@ export function useServerEvent<DataType extends ServerEventMsg>(eventName: strin
         if (sockio) {
             console.log('register socketio', `event.${eventName}`)
             const eventCallback = (data: DataType) => {
-                console.log(data.keys, data.data)
                 setMsgs((msgs) => [...msgs, data])
             }
             sockio.on(`event.${eventName}`, eventCallback);

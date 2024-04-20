@@ -1,7 +1,7 @@
 "use client"
 import React, { ReactNode, useEffect, useMemo, useState } from "react";
 import { Section } from "../components/Section";
-import { Collapse, Timeline, Space, Typography, Tag, theme, List, Alert, AlertProps, Button, Empty, Card } from "antd";
+import { Collapse, Timeline, Space, Typography, Tag, theme, List, Alert, AlertProps, Button, Empty, Card, Flex } from "antd";
 import { useAPIContext, useEventDataPatch, useResource } from "../utils/api/api_base";
 import { Taskflow, TaskflowResource, TaskflowInfo, Task, TaskState } from "../utils/api/taskflow";
 import { useServerEvent } from "../utils/api/message/ServerEvent";
@@ -87,18 +87,22 @@ export default function TaskflowPage() {
     useEventDataPatch(listResoure, 'task_event')
 
     const { API } = useAPIContext();
-    const sortedTasks = useMemo(() => tasks ? tasks.sort((a, b) => b.start_time - a.start_time) : [], [tasks])
+    const sortedTasks = useMemo(() => {
+        return tasks && [...tasks].sort((a, b) => b.start_time - a.start_time)
+    }, [tasks])
     return <Section title="任务" onRefresh={() => { refresh() }} >
         <Space direction="vertical" style={{ width: "100%" }}>
             <Button onClick={() => {
                 API.launchTaskflow("example_flow", { count: 1 })
             }}>运行测试 {tasks?.length}</Button>
-            {
-                sortedTasks ? sortedTasks.map((taskflow) => <Card key={taskflow.id} title={taskflow.id}>
-                    <TaskCard taskflow={taskflow} /> 
-                </Card>)
-                    : <Empty description="暂无任务" />
-            }
+            <Flex vertical gap={16}>
+                {
+                    sortedTasks ? sortedTasks.map((taskflow) => <Card key={taskflow.id} title={taskflow.id}>
+                        <TaskCard taskflow={taskflow} />
+                    </Card>)
+                        : <Empty description="暂无任务" />
+                }
+            </Flex>
         </Space>
     </Section>
 }

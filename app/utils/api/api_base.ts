@@ -281,41 +281,18 @@ export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) =>
 type ResList<Res extends ResourceType> = ReturnType<ReturnType<typeof useResource<Res>>['useList']>;
 
 export function useEventDataPatch<Res extends ResourceType>(resourceList: ResList<Res>, eventName: string) {
-    const { list, setList } = resourceList;
+    const { setList } = resourceList;
     const [pointer, setPointer] = useState<number>(0);
-    const { msg, msgs } = useServerEvent(eventName);
+    const { msgs } = useServerEvent(eventName);
     useEffect(() => {
-        const end = msgs.length - 1;
-        console.log(pointer,)
         setList((list) => {
+            let updatedList = list;
             msgs.slice(pointer, -1)
                 .forEach((msg) => {
-                    const lastMsg = msg;
+                    updatedList = patchData(msg.keys, updatedList, msg.data);
                     setPointer((p: number) => p + 1)
-                    // console.log(lastMsg?.keys.map(key => key.toString()).join('.'), lastMsg?.data)
-
-                    const keys = Array.from(lastMsg.keys);
-                    const finalKey = keys.pop();
-                    if (list) {
-                        let tempTarget = list;
-                        for (let key of keys) {
-                            if (isPatchable(tempTarget, key)) {
-                                tempTarget = tempTarget[key as any]
-                                // console.log(key, tempTarget)
-                            }
-                        }
-                        if (tempTarget != undefined) {
-                            if ((finalKey != undefined) && isPatchable(tempTarget, finalKey)) {
-                                tempTarget[finalKey as any] = lastMsg.data
-                            }
-                        }
-                    } else {
-                        if (keys[0] == 0) {
-                            list = [lastMsg.data]
-                        }
-                    }
                 })
-            return list
+            return updatedList
         })
 
     }, [msgs, pointer, setList])
@@ -348,4 +325,53 @@ function isPatchable(target: any, key: string | number) {
         console.warn("Data patch failed: target is not a list or object", key, JSON.stringify(target))
         return false
     }
+}
+
+function patchDataNotSafe(keys: (number | string)[], list: any, final: any) {
+    const finalKey = keys.pop();
+    if (list) {
+        let tempTarget = list;
+        for (let key of keys) {
+            if (isPatchable(tempTarget, key)) {
+                tempTarget = tempTarget[key as any]
+                // console.log(key, tempTarget)
+            }
+        }
+        if (tempTarget != undefined) {
+            if ((finalKey != undefined) && isPatchable(tempTarget, finalKey)) {
+                if (Array.isArray(tempTarget)) {
+                    tempTarget
+                }
+                tempTarget[finalKey as any] = final
+            }
+        }
+    } else {
+        if (keys[0] == 0) {
+            list = [final]
+        }
+    }
+}
+
+function patchData(keys: (number | string)[], data: any, final: any): any {
+    // console.log(keys, data, final)
+    const nextKey = keys.shift();
+    if (nextKey == undefined) return final;
+    if (isPatchable(data, nextKey)) {
+        const nextData = data[nextKey as any]
+        if (Array.isArray(data) && (typeof nextKey === "number")) {
+            if (nextKey == data.length) {
+                if (keys.length > 0) console.warn("Key over sized", keys)
+                return [...data, final]
+            } else if (nextKey < data.length) {
+                data[nextKey] = patchData(keys, nextData, final);
+                return [...data]
+            }
+        } else if (typeof data === "object" && data != null) {
+            return {
+                ...data,
+                [nextKey]: patchData(keys, nextData, final)
+            }
+        }
+    }
+    return data;
 }
