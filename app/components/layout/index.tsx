@@ -19,7 +19,7 @@ import type { MenuProps } from 'antd';
 import { Button, Flex, Layout, Menu, theme } from 'antd';
 
 import LoginModal from '../login';
-import HeaderSearch from '../headerSearch';
+import HeaderSearch from '../HeaderSearch';
 import { ServerConfig } from '@/app/utils/api/serverConfig';
 import Link from 'next/link';
 import { Next13ProgressBar } from 'next13-progressbar';
@@ -132,7 +132,7 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
 
 
   const [collapsed, setCollapsed] = useState(false);
-  const { token } = theme.useToken();
+  const { token, } = theme.useToken();
 
   const [selectedPath, setSelectedPath] = useState<{ selectedKey: string[], openKey: string[] }>();
 
@@ -206,7 +206,7 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
                   zIndex: 1
                 }} >
                 <Next13ProgressBar height="3px" color={token.colorPrimaryBorder} options={{ showSpinner: true }} showOnShallow />
-                <Flex align="center">
+                <Flex align="center" style={{ height: token.Layout?.headerHeight, }}>
                   <Button icon={<MenuOutlined />} onClick={() => { setCollapsed((collapsed) => !collapsed) }} type="text" />
                   <HeaderSearch />
                 </Flex>
