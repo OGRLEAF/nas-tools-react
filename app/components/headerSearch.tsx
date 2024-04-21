@@ -19,19 +19,18 @@ const HeaderSearch = () => {
     const onSearch = (value: string) => {
         router.push("/search/" + value)
     }
-    return (
-        <Flex justify="space-between" align="center"  style={{ width: "100%", boxSizing: "border-box", padding: '0px 0px 0 15px' }}>
-            <Taskbar />
-            <Flex justify="flex-end" align="center" >
-                <Search placeholder="搜索"
-                    style={{ width: 500 }}
-                    onSearch={onSearch}
-                    enterButton
-                />
-                <MessageCenterEntry />
-            </Flex>
-        </Flex >
-    )
+    return <Flex align="center" justify="space-between" style={{ width: "100%" }} gap={16}>
+        <Taskbar />
+        <Flex justify="flex-end" align="center" style={{ paddingRight: 16 }} >
+            <Search placeholder="搜索"
+                style={{ width: 450 }}
+                onSearch={onSearch}
+                enterButton
+            />
+            <MessageCenterEntry />
+        </Flex>
+    </Flex >
 }
+// <Flex justify="space-between" align="center" style={{ width: "100%", boxSizing: "border-box", padding: '0px 0px 0 15px' }}>
 
 export default HeaderSearch 

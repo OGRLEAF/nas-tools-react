@@ -6,6 +6,7 @@ import { useAPIContext, useEventDataPatch, useResource } from "../utils/api/api_
 import { Taskflow, TaskflowResource, TaskflowInfo, Task, TaskState } from "../utils/api/taskflow";
 import { useServerEvent } from "../utils/api/message/ServerEvent";
 import { useTaskflow, useTaskflowList } from "../components/taskflow/TaskflowContext";
+import { TaskflowCard } from "../components/taskflow/TaskflowCard";
 
 const TaskCardStatus = ({ state, children: children }: { state: TaskState, children?: ReactNode }) => {
     const defaultAlterts: Record<string, { message: string, type: AlertProps["type"] }> = ({
@@ -66,7 +67,7 @@ const TaskCard = ({ taskflow }: { taskflow: TaskflowInfo }) => {
         }
     })
     return <Space direction="vertical">
-        <span>{new Date(taskflow.start_time * 1000).toLocaleString()}</span>
+        <span>{new Date(taskflow.start_time * 1000).toLocaleString()} {taskflow.status}</span>
         <Timeline items={subtasks} />
     </Space>
 }
@@ -75,17 +76,22 @@ export default function TaskflowPage() {
     const taskflowList = useTaskflowList();
     const { API } = useAPIContext();
     const { list, refresh } = taskflowList;
+    // const [currentId, setCurrentId] = useState<string | null>(null)
     const sortedTasks = useMemo(() => {
         if (list) {
             return [...list].sort((a, b) => b.start_time - a.start_time)
         }
         return []
     }, [list])
+    const currentId = useMemo(() => sortedTasks[0]?.id, [sortedTasks]);
     return <Section title="任务" onRefresh={() => { refresh() }} >
         <Space direction="vertical" style={{ width: "100%" }}>
-            <Button onClick={() => {
-                API.launchTaskflow("example_flow", { count: 1 })
+            <Button onClick={async () => {
+                const { taskflow_id } = await API.launchTaskflow("example_flow", { count: 1 })
+                console.log(taskflow_id)
+                // setCurrentId(taskflow_id)
             }}>运行测试 {sortedTasks.length}</Button>
+            {currentId && <TaskflowCard id={currentId} />}
             <Flex vertical gap={16}>
                 {
                     sortedTasks ? sortedTasks.map((taskflow) => <Card key={taskflow.id} title={taskflow.id}>
@@ -93,6 +99,7 @@ export default function TaskflowPage() {
                     </Card>)
                         : <Empty description="暂无任务" />
                 }
+
             </Flex>
         </Space>
     </Section>

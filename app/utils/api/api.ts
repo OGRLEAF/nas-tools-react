@@ -987,7 +987,9 @@ export class NASTOOL {
     }
 
     public async launchTaskflow(taskflow_profile: string, input: object) {
-        return await this.post<any>("taskflow/create", {
+        return await this.post<{
+            taskflow_id: string
+        }>("taskflow/create", {
             auth: true, data: {
                 profile_name: taskflow_profile,
                 input: input

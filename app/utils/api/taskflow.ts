@@ -13,20 +13,21 @@ export interface TaskLog {
 }
 
 export interface TaskState {
-    status: string,
+    status: "wait" | "running" | "exited" | "timeout" | "finished",
     logs: TaskLog[]
 }
 
 export type Task = {
     draft: TaskMeta,
-    instance: TaskState
+    instance?: TaskState
 }
 
 export interface TaskflowInfo {
+    name: string,
     id: string,
     tasks: Task[],
     start_time: number,
-    status: string
+    status: "ready" | "running" | "exited" | "finished"
 }
 
 export interface TaskflowResource {

@@ -22,13 +22,10 @@ export function useTaskflowList() {
 
 export function useTaskflow(taskflowId: string) {
     const [taskflow, setTaskflow] = useState<TaskflowInfo | null>(null)
-    const list = useTaskflowList();
+    const { list: taskflows } = useTaskflowList();
     useEffect(() => {
-        if (list) {
-            const { list: taskflows } = list;
-            setTaskflow(taskflows?.find((item) => item.id === taskflowId) ?? null)
-        }
-    }, [list, taskflowId])
+        setTaskflow(taskflows?.find((item) => item.id === taskflowId) ?? null)
+    }, [taskflows, taskflowId])
     return [taskflow]
 }
 

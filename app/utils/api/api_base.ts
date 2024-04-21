@@ -288,7 +288,7 @@ export function useEventDataPatch<Res extends ResourceType>(resourceList: ResLis
     useEffect(() => {
         setList((list) => {
             let updatedList = list;
-            msgs.slice(pointer, -1)
+            msgs.slice(pointer)
                 .forEach((msg) => {
                     updatedList = patchData(msg.keys, updatedList, msg.data);
                     setPointer((p: number) => p + 1)
