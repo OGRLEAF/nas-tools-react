@@ -71,12 +71,13 @@ export default function SearchTask({
         form.setFieldsValue(searchTaskConfig)
         // form.setFieldValue("keyword", searchTaskConfig.media_type);
         // console.log("search task config", searchTaskConfig)
-    }, [searchTaskConfig])
+    }, [form, searchTaskConfig])
 
-    const onFinish = useCallback((value: SearchTaskConfig) => {
+    const onFinish = useCallback(async (value: SearchTaskConfig) => {
         // console.log(value)
         setSearchConfig(value)
-        API.createTask(TaskType.SEARCH, JSON.stringify(value))
+        // API.createTask(TaskType.SEARCH, JSON.stringify(value))
+        await (API).launchTaskflow("search_taskflow", value);
     }, [API])
 
     return <Space direction="vertical" size={32} style={{ width: "100%", ...style }}>

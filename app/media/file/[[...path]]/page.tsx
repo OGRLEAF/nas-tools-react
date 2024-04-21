@@ -43,7 +43,6 @@ const DirectoryList = ({ dirList, loading }:
     const { token: { colorBgBase }, } = theme.useToken();
     const searchParams = useSearchParams();
     const pathParams = searchParams.get('path') ?? "/"
-    const pathname = usePathname();
     const [sortConfig, setSortConfig] = useState<{ key: SortKey, dir: SortDirection }>()
     const [filterConfig, setFilterConfig] = useState<string>("");
     const sortedDirList = useMemo(() => (
@@ -90,11 +89,9 @@ const DirectoryList = ({ dirList, loading }:
                     // const link = `/media/file/${paths ? paths.join("/") : ""}/${encodeURI(cleanName)}`
                     return (
                         <List.Item>
-                            <Tooltip title={`${pathname}`}>
-                                <FileLink targetPath={path.join(pathParams, cleanName)}>
-                                    {item.name}
-                                </FileLink>
-                            </Tooltip>
+                            <FileLink targetPath={path.join(pathParams, cleanName)}>
+                                {item.name}
+                            </FileLink>
                         </List.Item>
                     )
                 }}
