@@ -1,0 +1,23 @@
+.small-scroll {
+    &::-webkit-scrollbar {
+        width: 0.25rem;
+        height: 0.25rem;
+        scrollbar-width: none;
+        position: absolute;
+        -webkit-transition: background-start-rgb .3s;
+        transition: background-start-rgb .3s;
+    }
+
+    &::-webkit-scrollbar-corner {
+        background: 0 0;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: 5px;
+        background: rgba(29, 39, 59, .16);
+    }
+
+    &::-webkit-scrollbar-track {
+        background: rgba(var(--background-start-rgb), .06);
+    }
+}

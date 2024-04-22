@@ -8,7 +8,7 @@ import _ from 'lodash';
 
 interface StatusProps {
     message: string,
-    type:  "success" | "processing" | "error" | "default" | "warning",
+    type: "success" | "processing" | "error" | "default" | "warning",
     icon?: React.ReactNode,
 }
 
@@ -76,25 +76,10 @@ export function useTaskStatus() {
 export function TaskflowCard({ id }: { id: string }) {
     const { refresh } = useTaskflowList();
     const [taskflow] = useTaskflow(id);
-
-    const taskflowStatus = useTaskflowStatus();
     const { token } = theme.useToken()
 
-    const cardTitle = useMemo(() => {
-        if (taskflow) {
-            const currentTaskflowStatus = taskflowStatus[taskflow.status];
-            const dateStr = dayjs(taskflow.start_time * 1000).format("YYYY.MM.DD HH:mm:ss")
-            return <Space><span>{currentTaskflowStatus.icon}</span>
-                <span>{dateStr}</span>
-                <span>{currentTaskflowStatus.message}</span>
-            </Space>;
-        } else {
-            return <>等待任务</>
-        }
-    }, [taskflow, taskflowStatus])
 
-
-    return <Card title={cardTitle}
+    return <Card title={<TaskflowCardTitle taskflow={taskflow} />}
         extra={
             <Button type="text"
                 size="small"
@@ -107,7 +92,21 @@ export function TaskflowCard({ id }: { id: string }) {
 
 }
 
-function TaskflowCardContent({ taskflow }: { taskflow: TaskflowInfo }) {
+export function TaskflowCardTitle({ taskflow }: { taskflow: TaskflowInfo | null }) {
+    const taskflowStatus = useTaskflowStatus();
+    if (taskflow) {
+        const currentTaskflowStatus = taskflowStatus[taskflow.status];
+        const dateStr = dayjs(taskflow.start_time * 1000).format("YYYY.MM.DD HH:mm:ss")
+        return <Space><span>{currentTaskflowStatus.icon}</span>
+            <span>{dateStr}</span>
+            <span>{currentTaskflowStatus.message}</span>
+        </Space>;
+    } else {
+        return <>等待任务</>
+    }
+}
+
+export function TaskflowCardContent({ taskflow }: { taskflow: TaskflowInfo }) {
     const status = useTaskStatus()
     const [activeKeys, setActiveKeys] = useState<string[]>([])
     const runningTasks = useMemo(() => taskflow.tasks.find((item) => item.instance?.status === "running"), [taskflow]);
@@ -183,7 +182,7 @@ export function TaskLog({ logs }: { logs: TaskState['logs'] }) {
             const label = <Tag bordered={false} color={LogLevelStateTag[item.level].color}>{dateStr}<Divider type="vertical" />
                 <div style={{ display: "inline-block", minWidth: "4em" }}>{item.level}</div>
             </Tag>
-            return <List.Item style={{ fontSize: token.fontSizeSM, padding:"4px 0" }}>
+            return <List.Item style={{ fontSize: token.fontSizeSM, padding: "4px 0" }}>
                 {label}{item.msg}
             </List.Item>
         }}

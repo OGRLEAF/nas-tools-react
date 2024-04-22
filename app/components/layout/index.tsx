@@ -16,7 +16,7 @@ import {
 } from '@ant-design/icons';
 import { IconBookBookMark, IconCalendarDaysSolid, IconCubes, IconCustomSolid, IconDatabase, IconDownloader, IconFilmSolid, IconFilter, IconFolderTreeSolid, IconFont, IconHistory, IconIndexer, IconLink, IconLoading, IconMediaServer, IconMediaSolid, IconRefresh, IconRssSolid, IconTvSolid } from '../icons';
 import type { MenuProps } from 'antd';
-import { Button, Flex, Layout, Menu, theme } from 'antd';
+import { Button, Divider, Flex, Layout, Menu, theme } from 'antd';
 
 import LoginModal from '../login';
 import HeaderSearch from '../HeaderSearch';
@@ -26,6 +26,7 @@ import { Next13ProgressBar } from 'next13-progressbar';
 import { APIContext } from '@/app/utils/api/api_base';
 import { NASTOOL } from '@/app/utils/api/api';
 import { TaskflowContextProvider } from '../taskflow/TaskflowContext';
+import Taskbar from '../Taskbar';
 
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -206,8 +207,11 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
                   zIndex: 1
                 }} >
                 <Next13ProgressBar height="3px" color={token.colorPrimaryBorder} options={{ showSpinner: true }} showOnShallow />
-                <Flex align="center" style={{ height: token.Layout?.headerHeight, }}>
+                <Flex align="center" style={{ height: token.Layout?.headerHeight, }} justify="space-between">
                   <Button icon={<MenuOutlined />} onClick={() => { setCollapsed((collapsed) => !collapsed) }} type="text" />
+                  <Divider type="vertical" />
+                  <Taskbar />
+                  <Divider type="vertical" />
                   <HeaderSearch />
                 </Flex>
               </Header>

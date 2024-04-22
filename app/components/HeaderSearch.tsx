@@ -19,8 +19,7 @@ const HeaderSearch = () => {
     const onSearch = (value: string) => {
         router.push("/search/" + value)
     }
-    return <Flex align="center" justify="space-between" style={{ width: "100%", height: "100%" }} gap={16}>
-        <Taskbar />
+    return <Flex align="center" justify="space-between" style={{ height: "100%" }} gap={16}>
         <Flex justify="flex-end" align="center" style={{ paddingRight: 16 }} >
             <Search placeholder="搜索"
                 style={{ width: 450 }}
