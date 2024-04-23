@@ -47,6 +47,7 @@ const Home = () => {
     })[coverType];
 
     const image = <Image width={cardStyle.width} height={cardStyle.height}
+      alt={library.name}
       style={{ objectFit: "cover" }}
       src={library.image} />;
 
