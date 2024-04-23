@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useTaskflow, useTaskflowList } from './TaskflowContext';
 import { Button, Card, Collapse, Divider, List, Space, Tag, theme } from 'antd';
 import { TaskState, TaskflowInfo } from '@/app/utils/api/taskflow';
-import { SyncOutlined, LoadingOutlined, CheckOutlined, RedoOutlined, ExclamationOutlined, ClockCircleOutlined } from "@ant-design/icons"
+import { SyncOutlined, LoadingOutlined, CheckOutlined, RedoOutlined, ExclamationOutlined, CloseOutlined,  ClockCircleOutlined } from "@ant-design/icons"
 import dayjs, { Dayjs } from 'dayjs';
 import _ from 'lodash';
 
@@ -29,7 +29,7 @@ export function useTaskflowStatus() {
         exited: {
             message: "已退出",
             type: "error",
-            icon: <ExclamationOutlined style={{ color: token.colorError }} />
+            icon: <CloseOutlined style={{ color: token.colorError }} />
         },
         running: {
             message: "正在运行",
@@ -112,7 +112,7 @@ export function TaskflowCardContent({ taskflow }: { taskflow: TaskflowInfo }) {
     const runningTasks = useMemo(() => taskflow.tasks.find((item) => item.instance?.status === "running"), [taskflow]);
     useEffect(() => {
         setActiveKeys((oldKeys) => {
-            const key = taskflow.tasks.findLastIndex((item, idx) => item.instance?.status === "running")
+            const key = taskflow.tasks.findLastIndex((item, idx) => item.instance?.status === "running" || item.instance?.status === "exited")
             if (key >= 0) return [...oldKeys, String(key)];
             else return oldKeys
         })

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Flex, Popover, Tag } from 'antd'
+import { Flex, Popover, Tag, theme } from 'antd'
 import { TaskflowCard, TaskflowCardContent, TaskflowCardTitle, useTaskflowStatus } from './taskflow/TaskflowCard'
 import { TaskflowInfo } from '../utils/api/taskflow'
 import { useTaskflowList } from './taskflow/TaskflowContext'
@@ -20,9 +20,14 @@ function TaskbarItem({ taskflow }: { taskflow: TaskflowInfo }) {
     const taskflowStatus = useTaskflowStatus()
     const status = taskflowStatus[taskflow.status];
     const [open, setOpen] = useState(false);
+    const { token } = theme.useToken();
     return <Popover
         title={
-            <div style={{ padding: "6px 12px" }}>
+            <div style={{
+                padding: "0px 12px",
+                paddingTop: token.paddingXS,
+                height: "100%", boxSizing: "border-box"
+            }}>
                 <TaskflowCardTitle taskflow={taskflow} />
             </div>
         }
