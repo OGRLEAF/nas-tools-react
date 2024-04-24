@@ -14,6 +14,7 @@ import { IdentifyHistory } from "@/app/components/mediaImport/mediaImportContext
 import { useAPIContext } from "@/app/utils/api/api_base";
 import path from "path";
 import { FileLink, useFileRouter } from "@/app/components/FileLink";
+import dayjs from "dayjs";
 
 type SortKey = "name" | "mtime"
 type SortDirection = "dec" | "inc"
@@ -152,7 +153,7 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
             title: <Space><span>文件</span><span style={{ color: colorTextTertiary }}>共 {fileList.length} 个文件</span></Space>,
             dataIndex: "name",
             key: "name",
-            render: (text, item) => <Button style={{ padding: 0 }} type="link" size="small">{text}</Button>,
+            render: (text, item) => <span style={{cursor: "pointer"}}>{text}</span>, // <Button style={{ padding: 0, width: "100%", textAlign: "start", textOverflow: "ellipsis" }} type="text" size="small">{text}</Button>,
             defaultSortOrder: "descend",
             sorter: (a: NastoolFileListItem, b: NastoolFileListItem) => ((a.name > b.name) ? -1 : 1),
         },
@@ -161,9 +162,7 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
             dataIndex: "mtime",
             render: (mtime, item) => {
                 const date = new Date(mtime * 1000);
-                return <span>
-                    {date.getFullYear()}/{date.getMonth() + 1}/{date.getDate()} {date.getHours()}:{date.getMinutes()}
-                </span>
+                return <span>{dayjs(date).format("YYYY/MM/DD HH:mm")} </span>
             },
             sorter: (a: NastoolFileListItem, b: NastoolFileListItem) => (a.mtime - b.mtime),
             width: 150
@@ -186,7 +185,7 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
             defaultSortOrder: "descend",
             filters: Array.from(fileExts.keys()).map((item) => ({ text: item, value: item })),
             onFilter: (value, record) => (record.name.split(".").pop() === value),
-            width: 100,
+            width: 75,
         }
     ]
     const sectionContext = useContext(SectionContext);
@@ -211,37 +210,34 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
         onSelectedChange(selectedFiles)
     }, [onSelectedChange, selectedFiles])
 
-    return <div>
-        <Table
-            tableLayout="fixed"
-            rowSelection={{
-                type: "checkbox",
-                selectedRowKeys: selected,
-                // columnWidth: 50,
-                onChange: (selectedRowKeys: React.Key[], selectedRows: NastoolFileListItem[]) => {
-                    setSelected(selectedRowKeys as string[])
-                    setSelectedFiles(selectedRows)
-                },
-            }}
-            dataSource={fileList}
-            columns={columns}
-            loading={loading}
-            rowKey="name"
-            pagination={false}
-            bordered size="small"
-            scroll={{ y: sectionContext.contentHeight - 200 }}
-            expandable={{
-                expandedRowRender: (record: NastoolFileListItem) =>
-                    <FileMoreAction file={record} relFiles={fileList} />,
-                expandRowByClick: true,
-                fixed: "right",
-                showExpandColumn: false,
-                rowExpandable: () => true
-            }}
-        // footer={() => <>{sectionContext.contentHeight}</>}
-        >
-        </Table>
-    </div>
+    return <Table
+        // tableLayout="fixed"
+        rowSelection={{
+            type: "checkbox",
+            selectedRowKeys: selected,
+            // columnWidth: 50,
+            onChange: (selectedRowKeys: React.Key[], selectedRows: NastoolFileListItem[]) => {
+                setSelected(selectedRowKeys as string[])
+                setSelectedFiles(selectedRows)
+            },
+        }}
+        dataSource={fileList}
+        columns={columns}
+        loading={loading}
+        rowKey="name"
+        pagination={false}
+        bordered size="small"
+        scroll={{ y: sectionContext.contentHeight - 200 }}
+        expandable={{
+            expandedRowRender: (record: NastoolFileListItem) =>
+                <FileMoreAction file={record} relFiles={fileList} />,
+            expandRowByClick: true,
+            fixed: "right",
+            showExpandColumn: false,
+            rowExpandable: () => true
+        }}
+    >
+    </Table>
 }
 
 
