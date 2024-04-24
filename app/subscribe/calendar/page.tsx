@@ -1,13 +1,19 @@
 "use client"
 import { Section } from "@/app/components/Section";
 import { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
-import { Subscription, TVSubscription } from "@/app/utils/api/subscription/subscribe";
+import { TVSubscription } from "@/app/utils/api/subscription/subscribe";
 import { TMDB } from "@/app/utils/api/media/tmdb";
 import { MediaWork, MediaWorkEpisode, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
-import { Calendar, CalendarProps, Card, Popover, Space, Spin, theme } from "antd";
-import { Dayjs } from "dayjs";
+import { Calendar, Col, Popover, Radio, Row, Select, Spin, theme } from "antd";
+import dayjs, { Dayjs } from "dayjs";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAPIContext } from "@/app/utils/api/api_base";
+import { HeaderRender } from "antd/es/calendar/generateCalendar";
+
+import 'dayjs/locale/zh-cn';
+import dayLocaleData from 'dayjs/plugin/localeData';
+
+dayjs.extend(dayLocaleData);
 
 export default function SubscribeCalendar() {
     const [tvEpisodes, setTvEpisodes] = useState<MediaWorkEpisode[]>([]);
@@ -80,7 +86,7 @@ export default function SubscribeCalendar() {
 
     return <Section title="订阅日历" onRefresh={fetchEpisodes}>
         <Spin spinning={loading}>
-            <Calendar cellRender={cellRender} />
+            <Calendar cellRender={cellRender} headerRender={CalendarHeader} />
         </Spin>
     </Section>
 }
@@ -98,28 +104,103 @@ const CalendarCard = (options: { mediaWork: MediaWork }) => {
     })
     const { token } = theme.useToken();
     return <>
-
-        <div
-            style={{
-                padding: "0px 8px 0px 8px",
-                marginBottom: 2,
-                borderLeft: `solid 4px ${token.colorPrimaryBorder}`,
-                backgroundColor: token.colorPrimaryBg,
-                display: "inline-flex",
-                justifyContent: "space-between",
-                width: "100%",
-
-            }}
-        >
-            <span>
-                <Popover content={
-                    <MediaDetailCard size="card" mediaDetail={options.mediaWork} />
-                } >
-                    {topMediaWork?.metadata?.title}
-                </Popover >
-            </span>
-            <span>S{series.s}E{series.e}  {metadata?.title}</span>
-        </div>
-
+        <Popover content={
+            <MediaDetailCard size="card" mediaDetail={options.mediaWork} />
+        } >
+            <div
+                style={{
+                    padding: "0px 4px 0px 4px",
+                    marginBottom: 2,
+                    fontSize: token.fontSizeSM,
+                    borderLeft: `solid 3px ${token.colorPrimaryBorder}`,
+                    backgroundColor: token.colorInfoBgHover,
+                    // display: "inline-flex",
+                    justifyContent: "space-between",
+                    width: "100%",
+                }}
+            >
+                <> {topMediaWork?.metadata?.title}</>
+                <div style={{ textAlign: "end" }}>
+                    {series.s && `S${series.s}`}{series.e && `E${series.e}`} {metadata?.title}
+                </div>
+            </div>
+        </Popover>
     </>
+}
+
+
+function CalendarHeader({ value, type, onChange, onTypeChange }: Parameters<HeaderRender<Dayjs>>[0]) {
+    const start = 0;
+    const end = 12;
+    const monthOptions = [];
+
+    let current = value.clone();
+    const localeData = value.localeData();
+    const months = [];
+    for (let i = 0; i < 12; i++) {
+        current = current.month(i);
+        months.push(localeData.monthsShort(current));
+    }
+
+    for (let i = start; i < end; i++) {
+        monthOptions.push(
+            <Select.Option key={i} value={i} className="month-item">
+                {months[i]}
+            </Select.Option>,
+        );
+    }
+
+    const year = value.year();
+    const month = value.month();
+    const options = [];
+    for (let i = year - 10; i < year + 10; i += 1) {
+        options.push(
+            <Select.Option key={i} value={i} className="year-item">
+                {i}
+            </Select.Option>,
+        );
+    }
+    return (
+        <div style={{ padding: 8 }}>
+            <Row gutter={8}>
+                <Col>
+                    <Radio.Group
+                        size="small"
+                        onChange={(e) => onTypeChange(e.target.value)}
+                        value={type}
+                    >
+                        <Radio.Button value="month">Month</Radio.Button>
+                        <Radio.Button value="year">Year</Radio.Button>
+                    </Radio.Group>
+                </Col>
+                <Col>
+                    <Select
+                        size="small"
+                        popupMatchSelectWidth={false}
+                        className="my-year-select"
+                        value={year}
+                        onChange={(newYear) => {
+                            const now = value.clone().year(newYear);
+                            onChange(now);
+                        }}
+                    >
+                        {options}
+                    </Select>
+                </Col>
+                <Col>
+                    <Select
+                        size="small"
+                        popupMatchSelectWidth={false}
+                        value={month}
+                        onChange={(newMonth) => {
+                            const now = value.clone().month(newMonth);
+                            onChange(now);
+                        }}
+                    >
+                        {monthOptions}
+                    </Select>
+                </Col>
+            </Row>
+        </div>
+    )
 }
