@@ -2,8 +2,8 @@
 import { Section, SectionContext } from "@/app/components/Section";
 import { NastoolFileListItem } from "@/app/utils/api/api";
 import { Col, Row, List, Space, Segmented, Button, theme, Table, Cascader, Input, Form, Select, Tooltip, Flex } from "antd";
-import React, { memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { ColumnsType } from "antd/es/table";
+import React, { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { ColumnsType, TableRef } from "antd/es/table";
 import FileMoreAction from "@/app/components/fileMoreAction";
 import MediaImportEntry, { MediaImportProvider } from "@/app/components/mediaImport/mediaImportEntry";
 import MediaImport from "@/app/components/mediaImport/mediaImport";
@@ -153,7 +153,7 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
             title: <Space><span>文件</span><span style={{ color: colorTextTertiary }}>共 {fileList.length} 个文件</span></Space>,
             dataIndex: "name",
             key: "name",
-            render: (text, item) => <span style={{cursor: "pointer"}}>{text}</span>, // <Button style={{ padding: 0, width: "100%", textAlign: "start", textOverflow: "ellipsis" }} type="text" size="small">{text}</Button>,
+            render: (text, item) => <span style={{ cursor: "pointer" }}>{text}</span>, // <Button style={{ padding: 0, width: "100%", textAlign: "start", textOverflow: "ellipsis" }} type="text" size="small">{text}</Button>,
             defaultSortOrder: "descend",
             sorter: (a: NastoolFileListItem, b: NastoolFileListItem) => ((a.name > b.name) ? -1 : 1),
         },
@@ -192,6 +192,7 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
     const [selected, setSelected] = useState((defaultSelected || []).map(v => v.name))
     const [selectedFiles, setSelectedFiles] = useState<NastoolFileListItem[]>(defaultSelected)
     const searchParam = useSearchParams();
+    const tableRef = useRef<TableRef>(null)
     useEffect(() => {
         const from = searchParam.get("from")
         if (from) {
@@ -199,6 +200,7 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
             if (assumeFile) {
                 const fileItem = fileList.find((item) => item.name == assumeFile);
                 if (fileItem) {
+                    tableRef.current?.scrollTo({ key: assumeFile, })
                     setSelected((keys) => [assumeFile]);
                     setSelectedFiles((files) => [...files, fileItem])
                 }
@@ -211,11 +213,10 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
     }, [onSelectedChange, selectedFiles])
 
     return <Table
-        // tableLayout="fixed"
+        ref={tableRef}
         rowSelection={{
             type: "checkbox",
             selectedRowKeys: selected,
-            // columnWidth: 50,
             onChange: (selectedRowKeys: React.Key[], selectedRows: NastoolFileListItem[]) => {
                 setSelected(selectedRowKeys as string[])
                 setSelectedFiles(selectedRows)
