@@ -107,7 +107,7 @@ const stateTagMap: StateMap<MediaWorkType> = {
 }
 
 
-function CoverImage(options: { alt: string, src: string, maxHeight?: number }) {
+export function CoverImage(options: { alt: string, src: string, maxHeight?: number }) {
     const { alt, src } = options;
     const [size, setSize] = useState<{ height: number, width: number }>({ height: 0, width: 0 })
     const maxHeight = options.maxHeight ?? 250;

@@ -1,5 +1,5 @@
 import { DBMediaType, NastoolFilterruleBasic, NastoolResponse } from "../api";
-import { APIBase } from "../api_base";
+import { APIArrayResourceBase, APIBase, ResourceType } from "../api_base";
 /*
 {
   "type": "MOV",
@@ -190,7 +190,12 @@ export class Subscription extends APIBase {
     }
 }
 
-export class TVSubscription extends Subscription {
+export interface TVSubsResource extends ResourceType {
+    ItemType: TVRssInfo,
+
+}
+
+export class TVSubscription extends APIArrayResourceBase<TVSubsResource> {
     public async list() {
         const list = await (await this.API).post<{ result: TvRssList }>("subscribe/tv/list", {
             auth: true
@@ -212,11 +217,27 @@ export class TVSubscription extends Subscription {
     }
 
     public async delete(rssid: number) {
-        return await super.delete(rssid, DBMediaType.TV)
+        const update = await (await this.API).post("subscribe/delete", {
+            data: {
+                rssid,
+                type: DBMediaType.TV
+            },
+            auth: true,
+
+        })
+        return update
+    }
+
+    public async listHook(options?: any): Promise<TVRssInfo[]> {
+        return await this.list()
+    }
+
+    public async updateHook(value: any, options?: any): Promise<boolean> {
+        return true
     }
 
     public async refresh(rssid: number) {
-        return await super.refresh(rssid, DBMediaType.TV)
+        // return await super.refresh(rssid, DBMediaType.TV)
     }
 }
 

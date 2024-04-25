@@ -1,6 +1,6 @@
 "use client"
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import { Button, Col, Form, Input, InputNumber, List, Row, Space, Switch, Tag, theme } from "antd";
+import { Button, Col, Flex, Form, Input, InputNumber, List, Row, Space, Switch, theme } from "antd";
 import { TVRssInfo, RssState, TVSubscription, TVSubsResource } from "@/app/utils/api/subscription/subscribe";
 import { MediaSearchGroup, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { MediaWork, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
@@ -10,12 +10,82 @@ import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResT
 import { useForm } from "antd/es/form/Form";
 import { MediaSeasonInput } from "@/app/components/mediaImport/mediaImport";
 import { RetweetOutlined, EditOutlined } from "@ant-design/icons"
-import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
+import { CardnFormContext } from "@/app/components/CardnForm";
 import { TMDB } from "@/app/utils/api/media/tmdb";
-import { ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
 import Image from "next/image";
 import { useAPIContext } from "@/app/utils/api/api_base";
+import { CardsForm, useCardsFormContext } from "@/app/components/CardsForm";
 import _ from "lodash";
+import "./styles.scss"
+
+export default function SubscribeTV() {
+    return <CardsForm<TVSubsResource> title="电视剧订阅" resource={TVSubscription}
+        formComponent={SubscribeTVForm}
+    >
+        <CardsList />
+    </CardsForm>
+}
+
+function CardsList() {
+    const ctx = useCardsFormContext<TVSubsResource>();
+    const { resource } = ctx;
+    const { useList } = resource;
+    const { list } = useList();
+
+    return <List
+        itemLayout="vertical"
+        dataSource={list}
+        renderItem={(item) => {
+            return <SubsItemCard record={item} />
+        }}
+    />
+}
+
+function SubsItemCard({ record }: { record: TVRssInfo }) {
+    const ctx = useCardsFormContext<TVSubsResource>();
+    const episodes = _.range(0, record.total_ep);
+    const { token } = theme.useToken();
+    const editButton = <Button type="text" icon={<EditOutlined />} size="small"
+        onClick={(evt) => {
+            evt.stopPropagation();
+            if (ctx.resource.update) {
+                ctx.openEditor(record, { title: <>{ctx.options.title} / {record.name}</> });
+            }
+        }}
+    >编辑</Button>
+    const refreshButton = <Button type="text" icon={<RetweetOutlined />} size="small"
+    >刷新</Button>
+    const episodesList = <Space wrap>
+        {episodes.map((ep, idx) => {
+            return <Button type='primary' className="episode-tag" key={ep} >
+                <div>{ep}</div>
+            </Button>
+        })}
+    </Space>
+    return <List.Item
+        key={record.name}
+        actions={[editButton, refreshButton]}
+        extra={<Image src={record.image} alt={record.name} width={275} height={175} style={{ objectFit: "cover" }} />}
+    >
+        <List.Item.Meta
+            // avatar={<Image src={record.image} alt={record.name} width={250} height={150} style={{ objectFit: "cover" }} />}
+            title={<Space>
+                {record.name}
+                {/* <a href={record.mediaid}>{record.name}</a> */}
+                <Space style={{ fontSize: token.fontSizeSM, color: token.colorTextDescription }}>
+                    <div>季{record.season}</div>
+                    <div>共{record.total_ep}集</div>
+                    <div>{record.download_setting}</div>
+                </Space>
+            </Space>
+            }
+            description={<span style={{ overflow: "auto" }}>
+                {record.overview}
+            </span>}
+        ></List.Item.Meta>
+        {episodesList}
+    </List.Item>
+}
 
 
 const defaultConfig: TVRssInfo = {
@@ -47,47 +117,6 @@ const defaultConfig: TVRssInfo = {
     season: 0
 }
 
-
-export default function SubscribeTV() {
-    const { token } = theme.useToken();
-    const StatusTag = ({
-        [RssState.QUEUING]: <Tag color={token.colorInfoActive}>队列中</Tag>,
-        [RssState.RUNNING]: <Tag color={token.colorSuccess}>运行中</Tag>,
-        [RssState.SEARCHING]: <Tag color={token.colorSuccessActive}>搜索中</Tag>,
-        [RssState.FINISH]: <Tag>已完成</Tag>,
-    })
-    const { API } = useAPIContext();
-    return <CardnForm title="电视剧订阅"
-        onFetch={() => new TVSubscription(API).list()}
-        onDelete={async (record) => {
-            if (record.rssid != undefined) new TVSubscription(API).delete(record.rssid);
-            return true;
-        }}
-        extraActions={[{
-            icon: <RetweetOutlined />,
-            key: "refresh",
-            async onClick(record) {
-                if (record.rssid != undefined) new TVSubscription(API).refresh(record.rssid);
-            },
-        }
-        ]}
-        defaultRecord={defaultConfig}
-
-        formRender={SubscribeTVForm} layout={"horizontal"}    >
-        <ListItemCardList
-            cardProps={(record: TVRssInfo) => ({
-                cover: <div style={{ position: "relative", width: "100%", height: 175, }}>
-                    <Image alt={`${record.name}`} fill style={{ objectFit: "cover", overflow: "hidden" }} sizes={"100vw"} priority={false} src={record.image} />
-                </div>,
-                title: <Space>
-                    {record.name}
-                    <Tag color="green" bordered={false}>季{record.season}</Tag>
-                </Space>,
-                description: StatusTag[record.state]
-            })}
-        />
-    </CardnForm>
-}
 
 
 const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {

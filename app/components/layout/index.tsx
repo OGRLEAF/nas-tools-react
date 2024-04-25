@@ -81,6 +81,7 @@ const getMenuItems = async (API: NASTOOL) => {
     getItem('订阅管理', '/subscribe', <IconRssSolid />, [
       getItem('电影订阅', '/subscribe/movie', <IconFilmSolid />),
       getItem('电视剧订阅', '/subscribe/tv', <IconTvSolid />),
+      getItem('电视剧订阅(Beta)', '/subscribe/tv_beta', <IconTvSolid />),
       getItem('自定义订阅', '/subscribe/custom', <IconCustomSolid />),
       getItem('订阅日历', '/subscribe/calendar', <IconCalendarDaysSolid />),
     ]),
