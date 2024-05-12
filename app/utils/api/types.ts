@@ -45,7 +45,7 @@ export interface MediaFile {
 export interface MediaWorkMetadata {
   title: string,
   description: string,
-  image?: {
+  images?: {
     cover: string,
     background?: string,
   },

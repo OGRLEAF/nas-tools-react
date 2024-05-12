@@ -142,7 +142,7 @@ export class TMDB extends APIBase {
             key: detail.tmdbid,
             title: detail.title,
             metadata: {
-                image: {
+                images: {
                     cover: detail.image,
                     background: detail.background[0]
                 },
@@ -169,7 +169,7 @@ export class TMDB extends APIBase {
                 metadata: {
                     title: season.name,
                     description: season.overview,
-                    image: {
+                    images: {
                         cover: season.poster_path
                     },
                     links: {

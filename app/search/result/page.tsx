@@ -36,7 +36,7 @@ function SearchResultPannel({ result }: { result: SearchResult }) {
         title: result.title,
         metadata: {
             description: result.overview,
-            image: {
+            images: {
                 background: result.backdrop,
                 cover: result.poster
             },

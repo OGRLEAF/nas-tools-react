@@ -1,6 +1,6 @@
 "use client"
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import { Button, Col, Flex, Form, Input, InputNumber, List, Row, Space, Switch, theme } from "antd";
+import { Button, Col, Flex, Form, Input, InputNumber, List, Row, Space, Switch, theme, Skeleton } from "antd";
 import { TVRssInfo, RssState, TVSubscription, TVSubsResource } from "@/app/utils/api/subscription/subscribe";
 import { MediaSearchGroup, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { MediaWork, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
@@ -65,25 +65,28 @@ function SubsItemCard({ record }: { record: TVRssInfo }) {
     return <List.Item
         key={record.name}
         actions={[editButton, refreshButton]}
+
         extra={<Image src={record.image} alt={record.name} width={275} height={175} style={{ objectFit: "cover" }} />}
     >
-        <List.Item.Meta
-            // avatar={<Image src={record.image} alt={record.name} width={250} height={150} style={{ objectFit: "cover" }} />}
-            title={<Space>
-                {record.name}
-                {/* <a href={record.mediaid}>{record.name}</a> */}
-                <Space style={{ fontSize: token.fontSizeSM, color: token.colorTextDescription }}>
-                    <div>季{record.season}</div>
-                    <div>共{record.total_ep}集</div>
-                    <div>{record.download_setting}</div>
+        <div style={{ height: 150, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <List.Item.Meta
+                // avatar={<Image src={record.image} alt={record.name} width={250} height={150} style={{ objectFit: "cover" }} />}
+                title={<Space >
+                    {record.name}
+                    {/* <a href={record.mediaid}>{record.name}</a> */}
+                    <Space style={{ fontSize: token.fontSizeSM, color: token.colorTextDescription }}>
+                        <div>季{record.season}</div>
+                        <div>共{record.total_ep}集</div>
+                        <div>{record.download_setting}</div>
+                    </Space>
                 </Space>
-            </Space>
-            }
-            description={<span style={{ overflow: "auto" }}>
-                {record.overview}
-            </span>}
-        ></List.Item.Meta>
-        {episodesList}
+                }
+                description={<div style={{ overflow: "auto", height: 65, }}>{record.overview}</div>}
+            ></List.Item.Meta>
+            <div style={{ height: 32, paddingBottom: 15, }}>
+                {episodesList}
+            </div>
+        </div>
     </List.Item>
 }
 
