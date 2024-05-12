@@ -1,30 +1,37 @@
 import _ from "lodash";
 import { DBMediaType, NASTOOL } from "../api";
 import { APIBase } from "../api_base";
-import { MediaIdentifyContext, MediaWork, MediaWorkEpisode, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "../types"
+import { MediaIdentifyContext, MediaWorkEpisode, MediaWorkMetadata, MediaWorkSeason, MediaWorkType, SeriesKeyType } from "../types"
+import { SeriesKey, SeriesKeyTuple } from "./SeriesKey"
+import { useCallback, useEffect, useState } from "react";
 
 
-interface TMDBEpisode {
-    air_date: string,
-    episode_number: number,
-    id: number,
-    name: string,
-    overview: string,
-    production_code: string,
-    runtime: number,
-    season_number: number,
-    show_id: number,
-    still_path: string,
-    vote_average: number,
-    state: boolean
+export interface MediaWork {
+    series: SeriesKey,
+    type: MediaWorkType,
+    metadata?: MediaWorkMetadata,
+}
+
+export interface MediaWorkData {
+    series: SeriesKeyTuple,
+    type: MediaWorkType,
+    key: number | string,
+    title: string
+    metadata?: MediaWorkMetadata,
 }
 
 export class MediaWorkService extends APIBase {
 
     static share: Record<string, MediaWork> = {}
     protected static instance: MediaWorkService;
+    private typeMap = {
+        [MediaWorkType.TV]: "tv",
+        [MediaWorkType.MOVIE]: "movie",
+        [MediaWorkType.ANI]: "tv",
+        [MediaWorkType.UNKNOWN]: null
+    }
     private static _cache: Record<string, TMDBMediaWork> = {};
-    constructor(API?:NASTOOL) {
+    constructor(API?: NASTOOL) {
         super(API);
         if (MediaWorkService.instance) {
             return MediaWorkService.instance;
@@ -32,191 +39,78 @@ export class MediaWorkService extends APIBase {
         MediaWorkService.instance = this;
     }
 
-    public async getMediaWork(identify: MediaIdentifyContext): Promise<MediaWork | undefined> {
-        const media = TMDBMedia.fromIdentify(identify);
-        return await media.tmdbid(identify.tmdbId).get();
-    }
-}
-
-export class TMDBMedia {
-    public type: MediaWorkType
-    private static _cache: Record<string, TMDBMediaWork> = {};
-    constructor(mediaType: MediaWorkType) {
-        this.type = mediaType;
-    }
-    public tmdbid(tmdbid: string) {
-        if (TMDBMedia._cache[tmdbid]) {
-            return TMDBMedia._cache[tmdbid]
-        } else {
-            const mediaWork = new TMDBMediaWork(tmdbid, this.type);
-            TMDBMedia._cache[tmdbid] = mediaWork;
-            return mediaWork;
-        }
-    }
-
-    public static fromIdentify(identify: MediaIdentifyContext) {
-        let target;
-        if (identify.type && identify.tmdbId) {
-            target = new TMDBMedia(identify.type)
-            target = target.tmdbid(identify.tmdbId);
-            if (identify.season != undefined) {
-                target = target?.season(identify.season);
-                if (identify.episode != undefined) {
-                    target = target?.episode(identify.episode)
-                }
+    public async getBySeriesKey(series_key: SeriesKey) {
+        const [t, ...keys] = series_key.dump();
+        const queryType = t && this.typeMap[t as MediaWorkType]
+        if (t) {
+            const query_path = keys.join("/")
+            const mediaWorkData = await this.API.get<MediaWorkData>(`media_work/${queryType}/${query_path}`, { auth: true })
+            const mediaWork: MediaWork = {
+                ...mediaWorkData,
+                series: SeriesKey.load(mediaWorkData.series)
             }
+            return mediaWork
         }
-
-        return target;
     }
 
+    public async getChildrenBySeriesKey(series_key: SeriesKey) {
+        const [t, ...keys] = series_key.dump();
+        const queryType = t && this.typeMap[t as MediaWorkType]
+        if (t) {
+            const query_path = keys.join("/")
+            const media_work = this.API.get<{ list: MediaWorkData[] }>(`media_work/${queryType}/${query_path}/s`, { auth: true })
+            return (await media_work).list.map((item) => ({
+                ...item,
+                series: SeriesKey.load(item.series)
+            }))
+        }
+    }
 }
-
 
 
 export class TMDBMediaWork {
-    public tmdbId: string;
-    protected mediaType: MediaWorkType
-    public seasons: Record<number, MediaWorkSeason> = {};
+    private series_key: SeriesKey;
     private mediaWork?: MediaWork;
-    private _cache: Record<number, TMDBMediaWorkSeason> = {};
-    private _globalwait?: ReturnType<TMDB['detail']>;
-    constructor(tmdbId: string, mediaType: MediaWorkType) {
-        this.tmdbId = tmdbId;
-        this.mediaType = mediaType;
-
+    private _cache: Record<number, TMDBMediaWork> = {};
+    private _get_await?: ReturnType<MediaWorkService['getBySeriesKey']>;
+    constructor(series_key: SeriesKey) {
+        this.series_key = series_key
     }
 
     public async get(): Promise<MediaWork | undefined> {
-        if (this._globalwait == undefined) {
-            this._globalwait = new TMDB().detail(this.tmdbId, this.mediaType);
+        if (this._get_await == undefined) {
+            this._get_await = new MediaWorkService().getBySeriesKey(this.series_key)
         }
-        const [mediaWork, seasons] = await this._globalwait;
+        const mediaWork = await this._get_await;
         this.mediaWork = mediaWork;
-        if (seasons?.length) {
-            seasons.forEach(season => {
-                this.seasons[season.key] = season
-            })
-        }
         return this.mediaWork;
-        // if (this.mediaWork == undefined) {
-        //     const [mediaWork, seasons] = await new TMDB().detail(this.tmdbId, this.mediaType);
-        //     if (seasons?.length) {
-        //         seasons.forEach(season => {
-        //             this.seasons[season.key] = season
-        //         })
-        //     }
-        //     this.mediaWork = mediaWork;
-        //     return mediaWork
-        // }
-
-        // return this.mediaWork
     }
 
-    public async get_children() {
-        if (_.isEmpty(this.seasons)) {
-            await this.get();
-            // const [mediaWork, seasons] = await new TMDB().detail(this.tmdbId, this.mediaType);
-            // if (seasons?.length) {
-            //     seasons.forEach(season => {
-            //         this.seasons[season.key] = season
-            //     })
-            // }
-            // return seasons
-        }
-        // debugger;
-        return Object.values(this.seasons);
-    }
-
-    public season(season: number) {
-        const cacheKey = season
-        if (this._cache[cacheKey])
-            return this._cache[cacheKey];
-        else {
-            const mediaWork = new TMDBMediaWorkSeason(this, season);
-            this._cache[cacheKey] = mediaWork;
-            return mediaWork;
-        }
+    public async getChildren() {
+        const mediaWorks = await new MediaWorkService().getChildrenBySeriesKey(this.series_key)
+        return mediaWorks
     }
 }
 
-export class TMDBMediaWorkSeason {
-    protected seasonKey: number;
-    public episodes: Record<number, MediaWorkEpisode> = {};
-    private parent: TMDBMediaWork;
-    private _cache: Record<number, TMDBMediaWorkEpisode> = {};
-    private _globalwait?: Promise<MediaWorkEpisode[]>;
-    static identifiler = 0;
-    public id;
-    constructor(mediaWork: TMDBMediaWork, key: number) {
-        this.parent = mediaWork;
-        this.seasonKey = key;
 
-        this.id = TMDBMediaWorkSeason.identifiler;
-        TMDBMediaWorkSeason.identifiler += 1;
-    }
-
-    public async get() {
-        if (!_.isEmpty(this.parent.seasons)) {
-            return this.parent.seasons[this.seasonKey];
-        } else {
-            await this.parent.get_children();
-            if (this.parent.seasons) {
-                return this.parent.seasons[this.seasonKey];
-            }
-            return undefined
-        }
-    }
-
-    public async get_children() {
-        if (this._globalwait == undefined) {
-            this._globalwait = new TMDB().episodes({ tmdbId: this.parent.tmdbId, season: this.seasonKey });
-        }
-        const episodes = await this._globalwait;
-        episodes.forEach(ep => {
-            this.episodes[ep.key] = ep
-        })
-        return episodes
-    }
-
-    public episode(ep: number) {
-        const cacheKey = ep;
-        if (this._cache[cacheKey])
-            return this._cache[cacheKey];
-        else {
-            const mediaWork = new TMDBMediaWorkEpisode(this, ep);
-            this._cache[cacheKey] = mediaWork;
-            return mediaWork;
-        }
-    }
+export function useMediaWork(series_key: SeriesKey) {
+    const [mediaWork, setMediaWork] = useState<MediaWork>();
+    useEffect(() => {
+        new TMDBMediaWork(series_key).get()
+            .then(mediaWork => {
+                setMediaWork(() => mediaWork)
+            })
+    }, [series_key])
+    return [mediaWork]
 }
 
-export class TMDBMediaWorkEpisode {
-    protected episodeKey: number;
-    public parent: TMDBMediaWorkSeason;
-    private _globalwait?: Promise<any>;
-    static identifiler = 0;
-    private id;
-    constructor(season: TMDBMediaWorkSeason, key: number) {
-        this.parent = season;
-        this.episodeKey = key;
-        this.id = TMDBMediaWorkEpisode.identifiler;
-        TMDBMediaWorkEpisode.identifiler += 1;
-    }
-    public async get() {
-        if (!_.isEmpty(this.parent.episodes)) {
-            return this.parent.episodes[this.episodeKey]
-        } else {
-            if (this._globalwait == undefined) {
-                this._globalwait = this.parent.get_children();
-            }
-            await this._globalwait;
-            return this.parent.episodes[this.episodeKey]
-        }
-        return undefined
-    }
-
-    public async get_children() {
-        return []
-    }
+export function useMediaWorks(series_key: SeriesKey) {
+    const [mediaWorks, setMediaWorks] = useState<MediaWork[]>();
+    useEffect(() => {
+        new TMDBMediaWork(series_key).getChildren()
+            .then(mediaWorks => {
+                setMediaWorks(() => mediaWorks)
+            })
+    }, [series_key])
+    return [mediaWorks]
 }

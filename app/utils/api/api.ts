@@ -94,7 +94,7 @@ type NastoolApi =
     "brushtask/list" |
     "brushtask/update" |
     "brushtask/delete" |
-    "brushtask/torrents"
+    "brushtask/torrents" | string
 
 
 export interface NastoolResponse<T> {
