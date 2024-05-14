@@ -50,12 +50,6 @@ export const CardsFormContext = createContext<GenernalType>({
     openEditor: () => { }
 })
 
-type CardFormContextType<Res extends ResourceType> = {
-    resource: ResourceInstance<ResourceType>,
-    options: ResourceType,
-    openEditor: ((value: ItemType<ResourceType>) => void);
-}
-
 const createCardFormContext = once(<T extends ResourceType,>() => createContext({} as CardsFormContextType<T>))
 
 export function useCardsFormContext<Res extends ResourceType>() {
@@ -67,7 +61,8 @@ export function useCardsFormContext<Res extends ResourceType>() {
 export function CardsForm<Res extends ResourceType>(props: CardsFormProps<Res>) {
     const resource = useResource<Res>(props.resource, { initialOptions: props.initialOptions, useMessage: true })
     const { useList, add, update, messageContext } = resource;
-    const { refresh } = useList();
+    const listInstance = useList();
+    const { refresh } = listInstance;
     const FormComponent = props.formComponent;
     const [openEditing, setOpenEditing] = useState(false)
     const [editingRecord, setEditingRecord] = useState<ItemType<Res>>();
@@ -105,9 +100,15 @@ export function CardsForm<Res extends ResourceType>(props: CardsFormProps<Res>) 
         }
     >
         {messageContext}
-        <CardsFormContext.Provider value={{ resource, options: props, openEditor }}>
+        <CardsFormContext.Provider value={{
+            resource: {
+                ...resource,
+                useList: () => listInstance,
+            }, options: props, openEditor
+        }
+        } >
             {props.children}
-            <Drawer title={editorOptions?.title ?? props.title} open={openEditing} size="large"
+            < Drawer title={editorOptions?.title ?? props.title} open={openEditing} size="large"
                 onClose={() => { setOpenEditing(false); setEditingRecord(undefined) }}>
                 {form}
             </Drawer>
