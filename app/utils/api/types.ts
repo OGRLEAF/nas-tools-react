@@ -47,6 +47,7 @@ export interface MediaWorkMetadata {
   description: string,
   images?: {
     cover: string,
+    poster?: string,
     background?: string,
   },
   links?: {
