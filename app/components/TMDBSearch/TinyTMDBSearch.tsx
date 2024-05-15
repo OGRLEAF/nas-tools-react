@@ -324,7 +324,6 @@ export interface MediaSearchProps {
 
 export function MediaSearchGroup({ value, onChange, children, filter }: MediaSearchProps) {
     const [searchContext] = useSearch(value);
-    // const [searchContext] = useContext(SearchContext)
     const { setSelected, selected, series, setSeries } = searchContext;
     const [seasons, setSeasons] = useState<MediaWorkSeason[]>([])
     const [loading, setLoading] = useState(false)
@@ -396,6 +395,7 @@ export function MediaSearchSeason() {
             季：<MediaSeasonInput style={{ width: 250 }
             }
                 series={series}
+                value={series.s}
                 onChange={(value) => {
                     if (series.has("tmdbId")) {
                         setSeries(new SeriesKey(series).season(value))

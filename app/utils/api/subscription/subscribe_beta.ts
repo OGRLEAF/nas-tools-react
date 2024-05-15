@@ -26,7 +26,7 @@ enum EpisodeConfigFlag {
     enable = 1
 }
 
-enum SubsStatus {
+export enum SubsStatus {
     scheduled = "scheduled",
     fetching = "fetching",
     finished = "finished",
