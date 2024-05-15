@@ -2,7 +2,7 @@
 import React, { useMemo, useState } from "react";
 import { Button, Form, List, Space, theme, Divider, InputNumber, Select, Flex, Input } from "antd";
 import { SeriesKeyType } from "@/app/utils/api/types";
-import { RetweetOutlined, EditOutlined } from "@ant-design/icons"
+import { RetweetOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons"
 import Image from "next/image";
 import { CardsForm, useCardsFormContext } from "@/app/components/CardsForm";
 import _, { create } from "lodash";
@@ -131,12 +131,13 @@ function EpisodesConfig({ value }: { value?: EpisodesConfig }) {
 
     const [createConfig, setCreateConfig] = useState({ episodesString: '', status: SubsStatus.scheduled })
     return <><List
+        size="small"
         dataSource={episodesList}
         renderItem={(item) => <List.Item>
             <Flex style={{ width: "100%" }} justify="space-between">
                 {item.num}
                 <Space>
-                    <SubsStatusSelect size="small" value={item.status} onChange={(value) => {
+                    <SubsStatusSelect variant="borderless" size="small" value={item.status} onChange={(value) => {
                         setConfigs((list) => ({
                             ...list, [item.num]: {
                                 num: item.num,
@@ -144,19 +145,21 @@ function EpisodesConfig({ value }: { value?: EpisodesConfig }) {
                             }
                         }))
                     }} />
-                    <Button size="small" onClick={() => {
+                    <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => {
                         setConfigs((list) => {
                             list && delete list[item.num]
                             return { ...list }
                         })
-                    }}>删除</Button>
+                    }} />
                 </Space>
             </Flex>
         </List.Item>}
     />
         <Space style={{ width: "100%" }}>
-            <Input value={createConfig.episodesString} onChange={(value) => setCreateConfig((conf) => ({ ...conf, episodesString: value.currentTarget.value }))} ></Input>
-            <SubsStatusSelect value={createConfig.status} onChange={(value) => setCreateConfig((conf) => ({ ...conf, status: value }))} />
+            <Space.Compact>
+                <Input value={createConfig.episodesString} onChange={(value) => setCreateConfig((conf) => ({ ...conf, episodesString: value.currentTarget.value }))} ></Input>
+                <SubsStatusSelect value={createConfig.status} onChange={(value) => setCreateConfig((conf) => ({ ...conf, status: value }))} />
+            </Space.Compact>
             <Button onClick={() => {
                 const episodes = number_string_to_list(createConfig.episodesString);
                 setConfigs(confs => ({
