@@ -176,7 +176,7 @@ export const MediaWorkCategoryUnionSelect = (options: FormItemProp<[MediaWorkTyp
     const [selectedCat, setSelectedCat] = useState<MediaWorkCategoryType>(category)
     useEffect(() => {
         options.onChange?.([selectedType, selectedCat])
-    }, [options, selectedCat, selectedType])
+    }, [selectedCat, selectedType])
     useEffect(() => {
         setSelectedCat("")
     }, [selectedType])
