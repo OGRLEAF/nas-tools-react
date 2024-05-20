@@ -1,7 +1,7 @@
 import { APIArrayResourceBase, APIBase, ResourceType } from "../api_base"
 import { SeriesKeyTuple } from "../media/SeriesKey"
 
-interface SubsFilter {
+export interface SubsFilter {
     res_type?: string
     resolution?: string
     release_team?: string
@@ -10,12 +10,12 @@ interface SubsFilter {
     exclude?: string
 }
 
-enum SourceType {
+export enum SourceType {
     search = "search",
     rss = "rss"
 }
 
-interface FetchSourceConfig {
+export interface FetchSourceConfig {
     src_id: string
     type: SourceType
 }
@@ -39,7 +39,7 @@ interface EpisodeState {
     status: SubsStatus
 }
 
-interface TVSubsConfig {
+export interface TVSubsConfig {
     filter?: SubsFilter,
     sources?: FetchSourceConfig[],
 }

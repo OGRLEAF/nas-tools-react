@@ -1,14 +1,14 @@
 "use client"
 import React, { useMemo, useState } from "react";
-import { Button, Form, List, Space, theme, Divider, InputNumber, Select, Flex, Input } from "antd";
+import { Button, Form, List, Space, theme, Divider, InputNumber, Select, Flex, Input, Tooltip, Row, Col } from "antd";
 import { SeriesKeyType } from "@/app/utils/api/types";
-import { RetweetOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons"
+import { RetweetOutlined, EditOutlined, DeleteOutlined, QuestionCircleOutlined } from "@ant-design/icons"
 import Image from "next/image";
 import { CardsForm, useCardsFormContext } from "@/app/components/CardsForm";
 import _, { create } from "lodash";
 import "./styles.scss"
 
-import { TVSubsProfile, TVSubscribe, TVSubsResource, SubsStatus } from "@/app/utils/api/subscription/subscribe_beta";
+import { TVSubsProfile, TVSubscribe, TVSubsResource, SubsStatus, TVSubsConfig, SubsFilter, FetchSourceConfig, SourceType } from "@/app/utils/api/subscription/subscribe_beta";
 import { useMediaWork, useMediaWorks } from "@/app/utils/api/media/media_work";
 import { SeriesKey } from "@/app/utils/api/media/SeriesKey";
 import { MediaSearchGroup, MediaSearchSeason, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
@@ -29,6 +29,7 @@ function CardsList() {
 
     return <List
         itemLayout="vertical"
+
         dataSource={list}
         renderItem={(item) => {
             // return <>{item.series_key}</>
@@ -95,6 +96,16 @@ import { SeriesKey as SeriesKeyLegacy } from "@/app/utils/api/types";
 import { SelectProps } from "antd/lib";
 import { useForm } from "antd/es/form/Form";
 import { number_string_to_list } from "@/app/utils";
+import { FilterRuleSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
+
+const FormSection = ({ title, tooltip }: { title: string, tooltip?: string }) => {
+    return <Divider orientation="left" orientationMargin={0} style={{ marginTop: 0 }}>
+        <Space style={{ width: "100%" }}>
+            <span>{title}</span>
+            {tooltip && <Tooltip title={tooltip}><QuestionCircleOutlined size={4} style={{ color: "#00000073" }} /></Tooltip>}
+        </Space>
+    </Divider>
+}
 
 const SubscribeTVForm = ({ record: profile }: { record?: TVSubsProfile }) => {
     const seriesKey = profile?.series_key && SeriesKey.load(profile?.series_key)
@@ -107,21 +118,86 @@ const SubscribeTVForm = ({ record: profile }: { record?: TVSubsProfile }) => {
             ...profile,
             episodes: profile && Object.values(profile?.state.episodes),
             series: legacySeriesKey
-        }}>
-            <Form.Item name="series" noStyle>
-                <MediaSearchGroup >
-                    <Space direction="vertical">
-                        <MediaSearchWork />
-                        <MediaSearchSeason />
-                    </Space>
-                </MediaSearchGroup>
+        }} layout="vertical">
+            <Space direction="vertical">
+                <Form.Item name="series" noStyle>
+                    <MediaSearchGroup >
+                        <Space direction="vertical">
+                            <MediaSearchWork />
+                            <MediaSearchSeason />
+                        </Space>
+                    </MediaSearchGroup>
+                </Form.Item>
+                <FormSection title="分集设置" />
+                <Form.Item name={["state", "episodes"]}>
+                    <EpisodesConfig />
+                </Form.Item>
+            </Space>
+            <FormSection title="过滤设置" />
+
+            <Row gutter={8}>
+                <Col span={8}>
+                    <Form.Item name={["config", "filter", "res_type"]} label="质量">
+                        <ResTypeSelect />
+                    </Form.Item>
+                </Col>
+                <Col span={8}>
+                    <Form.Item name={["config", "filter", "resolution"]} label="分辨率">
+                        <PixSelect />
+                    </Form.Item>
+                </Col>
+
+                <Col span={8}>
+                    <Form.Item label="过滤规则" name={["config", "filter", "rule"]}>
+                        <FilterRuleSelect />
+                    </Form.Item>
+                </Col>
+            </Row>
+            <Row gutter={8}>
+                <Col span={12}>
+                    <Form.Item name={["config", "filter", "include"]} label="包含">
+                        <Input />
+                    </Form.Item>
+                </Col>
+                <Col span={12}>
+                    <Form.Item name={["config", "filter", "exclude"]} label="排除">
+                        <Input />
+                    </Form.Item>
+                </Col>
+            </Row>
+            <Form.Item name={["config", "filter", "release_team"]} label="发布组">
+                <Input />
             </Form.Item>
-            <Form.Item name={["state", "episodes"]}>
-                <EpisodesConfig />
+            <FormSection title="资源设置" />
+            <Form.Item name={["config", "sources"]} style={{ width: "100%" }}>
+                <SourceConfig />
             </Form.Item>
-        </Form>
+        </Form >
+
+
     </Space >
 }
+
+
+function SourceConfig({ value, onChange }: { value?: FetchSourceConfig[], onChange?: (value: FetchSourceConfig[]) => void }) {
+    const [rssSites, setRssSites] = useState(value?.filter(value => value.type == SourceType.rss).map((item) => item.src_id))
+    const [searchSites, setSearchSites] = useState(value?.filter(value => value.type == SourceType.search).map((item) => item.src_id))
+    return <>
+        <Form.Item label="订阅站点">
+            <SiteSelect mode="multiple" value={rssSites}
+                onChange={(values) => {
+                    setRssSites(values)
+                }} />
+        </Form.Item>
+        <Form.Item label="搜索站点">
+            <SiteSelect mode="multiple" value={searchSites}
+                onChange={(values) => {
+                    setSearchSites(values)
+                }} />
+        </Form.Item>
+    </>
+}
+
 
 type EpisodesConfig = TVSubsProfile['state']['episodes']
 
@@ -130,31 +206,34 @@ function EpisodesConfig({ value }: { value?: EpisodesConfig }) {
     const episodesList = useMemo(() => Object.values(configs || {}), [configs])
 
     const [createConfig, setCreateConfig] = useState({ episodesString: '', status: SubsStatus.scheduled })
-    return <><List
-        size="small"
-        dataSource={episodesList}
-        renderItem={(item) => <List.Item>
-            <Flex style={{ width: "100%" }} justify="space-between">
-                {item.num}
-                <Space>
-                    <SubsStatusSelect variant="borderless" size="small" value={item.status} onChange={(value) => {
-                        setConfigs((list) => ({
-                            ...list, [item.num]: {
-                                num: item.num,
-                                status: value
-                            }
-                        }))
-                    }} />
-                    <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => {
-                        setConfigs((list) => {
-                            list && delete list[item.num]
-                            return { ...list }
-                        })
-                    }} />
-                </Space>
-            </Flex>
-        </List.Item>}
-    />
+    return <Space direction="vertical" style={{ width: "100%" }}>
+        <List
+            bordered
+            size="small"
+            dataSource={episodesList}
+            renderItem={(item) => <List.Item>
+                <Flex style={{ width: "100%" }} justify="space-between">
+                    {item.num}
+                    <Space>
+                        <SubsStatusSelect size="small" value={item.status} onChange={(value) => {
+                            setConfigs((list) => ({
+                                ...list, [item.num]: {
+                                    num: item.num,
+                                    status: value
+                                }
+                            }))
+                        }} />
+                        <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => {
+                            setConfigs((list) => {
+                                list && delete list[item.num]
+                                return { ...list }
+                            })
+                        }} />
+                    </Space>
+                </Flex>
+            </List.Item>
+            }
+        />
         <Space style={{ width: "100%" }}>
             <Space.Compact>
                 <Input value={createConfig.episodesString} onChange={(value) => setCreateConfig((conf) => ({ ...conf, episodesString: value.currentTarget.value }))} ></Input>
@@ -167,9 +246,10 @@ function EpisodesConfig({ value }: { value?: EpisodesConfig }) {
                     ...Object.fromEntries(episodes.map((e) => ([e, { num: e, status: createConfig.status }])))
                 }))
             }} >添加</Button>
-        </Space>
-    </>
+        </Space >
+    </Space >
 }
+
 
 function SubsStatusSelect({ value, onChange, ...selectProps }: { value: SubsStatus, onChange: (value: SubsStatus) => void } & SelectProps) {
 

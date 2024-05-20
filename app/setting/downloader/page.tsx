@@ -164,7 +164,7 @@ function DownloadClientConfigForm({ record, onChange }: { record?: DownloadClien
         onChange?.(convertToRecord(value));
     }
 
-    const downloadDirList = (name: string) => <Form.List name={["config", name]}>
+    const downloadDirList = useMemo(() => <Form.List name={["config", "download_dir"]}>
         {(fields, { add, remove }) => <>
             <Divider orientation="left" orientationMargin="0">下载目录设置</Divider>
             {
@@ -212,7 +212,8 @@ function DownloadClientConfigForm({ record, onChange }: { record?: DownloadClien
                 </Button>
             </Row>
         </>}
-    </Form.List>
+    </Form.List>, [])
+
     return <Form form={form} layout="vertical"
         onFinish={(value: any) => { onFinish(value); }}
         initialValues={clientFormData}>
@@ -256,8 +257,57 @@ function DownloadClientConfigForm({ record, onChange }: { record?: DownloadClien
                 </Form.Item>
             </Col>
         </Row>
+        {/* {downloadDirList} */}
+        {/* {downloadDirList("download_dir")} */}
+        <Form.List name={["config", "download_dir"]}>
+            {(fields, { add, remove }) => <>
+                <Divider orientation="left" orientationMargin="0">下载目录设置</Divider>
+                {
+                    fields.map((field) => {
+                        return (<div key={field.key}>
+                            <Row gutter={16}>
+                                <Col span={16}>
+                                    <Form.Item style={{ marginBottom: 5 }} name={[field.name, "category"]} label="媒体类型">
+                                        <MediaWorkCategoryUnionSelect />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={8}>
+                                    <Form.Item name={[field.name, "label"]} label="分类名">
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                            <Row gutter={16} >
 
-        {downloadDirList("download_dir")}
+                                <Col span={12}>
+                                    <Form.Item name={[field.name, "save_path"]} label="下载器内路径" >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item name={[field.name, "container_path"]} label="本地路径" >
+                                        <PathSelector />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col span={2}>
+                                    <Button type="text" size="small" danger icon={<DeleteOutlined />} onClick={() => remove(field.name)}>删除</Button>
+                                </Col>
+                            </Row>
+                            <Divider />
+                        </div>)
+                    }
+                    )
+                }
+                <Row>
+                    <Button type="dashed" block icon={<PlusOutlined />}
+                        onClick={() => add({ category: ["", ""], container_path: "/" })}>
+                        增加
+                    </Button>
+                </Row>
+            </>}
+        </Form.List>
         <br />
         <Space>
             <Form.Item noStyle>
