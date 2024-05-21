@@ -1,6 +1,6 @@
 import React, { CSSProperties, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { NastoolServerConfig } from "../../utils/api/api";
-import { AutoComplete, Input, Space, theme, Typography, Empty, Select, Flex, Spin, SelectProps } from "antd";
+import { AutoComplete, Input, Space, theme, Typography, Empty, Select, Flex, Spin, SelectProps, Button } from "antd";
 import { TMDB } from "../../utils/api/media/tmdb";
 import { MediaWork, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "../../utils/api/types";
 import { SearchContext, SearchContextType, useSearch } from "./SearchContext";
@@ -126,14 +126,23 @@ export function CoverImage(options: { alt: string, src: string, maxHeight?: numb
     />
 }
 
+export interface MediaDetailCardProps {
+    mediaDetail?: MediaWork,
+    size?: CardSize,
+    action?: React.ReactNode,
+    layout?: "vertical" | "horizonal",
+    onTitleClick?: (mediaDetail: MediaWork) => void,
+    loading?: boolean,
+    postImageStyle?: CSSProperties
+}
+
+
 export function MediaDetailCard({
     mediaDetail,
     size,
     action,
     layout,
-    loading,
-    postImageStyle
-}: { mediaDetail?: MediaWork, size?: CardSize, action?: React.ReactNode, loading?: boolean, layout?: "vertical" | "horizonal", onTitleClick?: (mediaDetail: MediaWork) => void, postImageStyle?: CSSProperties }) {
+}: MediaDetailCardProps) {
     const { token } = theme.useToken()
     const _size = size ? size : "normal";
     const style = cardStyleMap[_size];
@@ -170,9 +179,9 @@ export function MediaDetailCard({
         <div style={{ height: textHeight, width: "100%", overflow: "auto" }}>
             {titleArea}
             <div style={{ padding: "0px 4px" }}>
-                <Typography.Link style={{ color: token.colorTextDescription }} href={metadata?.links?.tmdb} target="_blank">
+                <Button type="link" style={{ padding: 0 }} href={metadata?.links?.tmdb} target="_blank">
                     {metadata?.links?.tmdb}
-                </Typography.Link>
+                </Button>
                 <span style={{ color: token.colorTextDescription, display: "block", wordWrap: "break-word", whiteSpace: "pre-wrap" }}>
                     {metadata?.description.replaceAll("\n\n", "\n").replaceAll("\n\n", "\n")}
                 </span>
