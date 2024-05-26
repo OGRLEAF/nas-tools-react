@@ -57,6 +57,9 @@ function SubsItemCard({ record }: { record: TVSubsProfile }) {
         }}
     >编辑</Button>
     const refreshButton = <Button type="text" icon={<RetweetOutlined />} size="small">刷新</Button>
+    const deleteButton = <Button type="text" icon={<DeleteOutlined />} danger
+        onClick={() => { ctx.resource.del && ctx.resource.del(record) }}
+        size="small">删除</Button>
 
     const episodesList = <Space wrap>
         {episodes?.toSorted((a, b) => (a.series.e || 0) - (b.series.e || 0))
@@ -68,7 +71,7 @@ function SubsItemCard({ record }: { record: TVSubsProfile }) {
     </Space>
     return <List.Item
         key={metadata?.title}
-        actions={[editButton, refreshButton]}
+        actions={[editButton, refreshButton, deleteButton]}
         extra={metadata?.images?.poster && <Image src={metadata.images.poster} alt={metadata?.title || "empty"} width={275} height={175} style={{ objectFit: "cover" }} />}
     >
         <div style={{ minHeight: 150, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
@@ -113,15 +116,15 @@ const SubscribeTVForm = ({ record: profile }: { record?: TVSubsProfile }) => {
         .season(Number(seriesKey?.s)), [seriesKey])
 
 
-    return <Space direction="vertical">
-        <Form initialValues={{
+    return <Space direction="vertical" style={{ width: "100%" }}>
+        <Form style={{ width: "100%" }} initialValues={{
             ...profile,
             episodes: profile && Object.values(profile?.state.episodes),
             series: legacySeriesKey
         }} layout="vertical">
-            <Space direction="vertical">
+            <Space direction="vertical" style={{ width: "100%" }}>
                 <Form.Item name="series" noStyle>
-                    <MediaSearchGroup >
+                    <MediaSearchGroup>
                         <Space direction="vertical">
                             <MediaSearchWork />
                             <MediaSearchSeason />
@@ -148,7 +151,7 @@ const SubscribeTVForm = ({ record: profile }: { record?: TVSubsProfile }) => {
                 </Col>
 
                 <Col span={8}>
-                    <Form.Item label="过滤规则" name={["config", "filter", "rule"]}>
+                    <Form.Item label="过滤规则" name={["config", "filter", "rule_id"]}>
                         <FilterRuleSelect />
                     </Form.Item>
                 </Col>

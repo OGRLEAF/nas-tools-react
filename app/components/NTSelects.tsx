@@ -14,7 +14,8 @@ import { useAPIContext, useDataResource, useResource } from "../utils/api/api_ba
 interface FormItemProp<T> {
     value?: T,
     onChange?: (value: T) => void,
-    style?: CSSProperties
+    style?: CSSProperties,
+    default?: { label: string, value: T } | T
 }
 
 export const DownloadSettingSelect = (options: { default?: { label: string, value: any } } & FormItemProp<string>) => {
@@ -41,7 +42,7 @@ export const DownloadClientSelect = (options: & FormItemProp<string>) => {
     return <Select options={downloadClientOptions} value={options.value} onChange={options.onChange} />
 }
 
-export const FilterRuleSelect = (options: FormItemProp<string>) => {
+export const FilterRuleSelect = (options: FormItemProp<number>) => {
     const [filterRules, setFilterRules] = useState<NastoolFilterruleBasic[]>([]);
     const { API } = useAPIContext()
     useEffect(() => {
@@ -59,7 +60,7 @@ export const FilterRuleSelect = (options: FormItemProp<string>) => {
         },
         ...filterRules.map((item) => ({ label: item.name, value: item.id }))
     ]
-    return <Select options={filterRuleOption} value={String(options.value)} onChange={options.onChange} />
+    return <Select options={filterRuleOption} value={options.value} onChange={options.onChange} />
 }
 
 const resTypeOptions = [

@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { Method } from "axios";
 import ClientStorage from "../storage"
 import { objectToFormData } from "./api_utils"
 import { DeepPartial } from "..";
@@ -422,7 +422,7 @@ type NastoolSiteProfileResult = {
 }
 
 export interface NastoolFilterruleBasic {
-    id: string,
+    id: number,
     name: string
 }
 
@@ -1067,6 +1067,16 @@ export class NASTOOL {
         })
     }
 
+    public async del<T>(api: NastoolApi, options: { auth?: boolean, params?: Record<string, string> } = {}): Promise<T> {
+        return await this.request<T>(api, "delete", {
+            params: {
+                ...options.params,
+                // apikey: options.auth ? this.serverConfig?.security.api_key : undefined
+            },
+            auth: options.auth
+        })
+    }
+
     public async post<T>(api: NastoolApi, options: { auth?: boolean, json?: boolean, data?: Record<string, string> | any, params?: Record<string, string> } = {}): Promise<T> {
         // const formData =//new FormData();
         // Object.entries<string>(options.data || {}).forEach(([k, v]) => formData.append(k, v));
@@ -1078,7 +1088,7 @@ export class NASTOOL {
         })
     }
 
-    private async request<T>(api: NastoolApi, method: "get" | "post", options: { params?: any, data?: FormData | any, auth?: boolean }): Promise<T> {
+    private async request<T>(api: NastoolApi, method: Method, options: { params?: any, data?: FormData | any, auth?: boolean }): Promise<T> {
         try {
             return await this._request(api, method, options,)
         } catch (e) {
@@ -1097,7 +1107,7 @@ export class NASTOOL {
         }
     }
 
-    private async _request<T>(api: NastoolApi, method: "get" | "post", options: { params?: any, data?: FormData | any, auth?: boolean }): Promise<T> {
+    private async _request<T>(api: NastoolApi, method: Method, options: { params?: any, data?: FormData | any, auth?: boolean }): Promise<T> {
         const headers = {
             // ...(options.data?options.data.),
             ...(options.auth ? { Authorization: this.token } : {})

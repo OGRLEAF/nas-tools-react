@@ -5,7 +5,7 @@ export interface SubsFilter {
     res_type?: string
     resolution?: string
     release_team?: string
-    rule?: string
+    rule_id?: number
     include?: string
     exclude?: string
 }
@@ -68,7 +68,20 @@ export class TVSubscribe extends APIArrayResourceBase<TVSubsResource> {
         return subs.list
     }
 
+    public async del(id: number) {
+        const resp = await this.API.del<{ list: TVSubsProfile[], total: number }>(`subscribe/subs/${id}`, { auth: true });
+        return true;
+    }
+
+    public async addHook(value: any): Promise<boolean> {
+        return false
+    }
+
     public async listHook(options?: any): Promise<TVSubsProfile[]> {
         return this.list();
+    }
+
+    public async deleteHook(value: TVSubsProfile, options?: any): Promise<boolean> {
+        return this.del(value.id)
     }
 }

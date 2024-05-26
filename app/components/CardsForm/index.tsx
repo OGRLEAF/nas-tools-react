@@ -201,6 +201,7 @@ export function CollapsableList<Res extends ResourceType>(options:
             actions.push(<Button key="edit_button" size="small" style={{ padding: 0 }} icon={<EditOutlined />}
                 onClick={(evt) => {
                     evt.stopPropagation();
+
                     ctx.openEditor(record)
                 }} type="text" />)
             if (ctx.resource.del) {
@@ -247,3 +248,11 @@ export function CollapsableList<Res extends ResourceType>(options:
     </ ConfigProvider >
 
 }
+
+
+
+
+
+
+
+
