@@ -1,5 +1,5 @@
 "use client"
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button, Form, List, Space, theme, Divider, InputNumber, Select, Flex, Input, Tooltip, Row, Col } from "antd";
 import { SeriesKeyType } from "@/app/utils/api/types";
 import { RetweetOutlined, EditOutlined, DeleteOutlined, QuestionCircleOutlined } from "@ant-design/icons"
@@ -121,7 +121,13 @@ const SubscribeTVForm = ({ record: profile }: { record?: TVSubsProfile }) => {
             ...profile,
             episodes: profile && Object.values(profile?.state.episodes),
             series: legacySeriesKey
-        }} layout="vertical">
+        }} 
+        onFinish={(values)=>{
+            console.log(profile)
+            console.log(values)
+        }}
+        
+        layout="vertical">
             <Space direction="vertical" style={{ width: "100%" }}>
                 <Form.Item name="series" noStyle>
                     <MediaSearchGroup>
@@ -141,12 +147,12 @@ const SubscribeTVForm = ({ record: profile }: { record?: TVSubsProfile }) => {
             <Row gutter={8}>
                 <Col span={8}>
                     <Form.Item name={["config", "filter", "res_type"]} label="质量">
-                        <ResTypeSelect />
+                        <ResTypeSelect default={{value: null, label: "全部"}}/>
                     </Form.Item>
                 </Col>
                 <Col span={8}>
                     <Form.Item name={["config", "filter", "resolution"]} label="分辨率">
-                        <PixSelect />
+                        <PixSelect default={{value: null, label: "全部"}}/>
                     </Form.Item>
                 </Col>
 
@@ -175,6 +181,9 @@ const SubscribeTVForm = ({ record: profile }: { record?: TVSubsProfile }) => {
             <Form.Item name={["config", "sources"]} style={{ width: "100%" }}>
                 <SourceConfig />
             </Form.Item>
+            <Form.Item>
+                <Button htmlType="submit" type="primary">保存</Button>
+            </Form.Item>
         </Form >
 
 
@@ -183,19 +192,35 @@ const SubscribeTVForm = ({ record: profile }: { record?: TVSubsProfile }) => {
 
 
 function SourceConfig({ value, onChange }: { value?: FetchSourceConfig[], onChange?: (value: FetchSourceConfig[]) => void }) {
-    const [rssSites, setRssSites] = useState(value?.filter(value => value.type == SourceType.rss).map((item) => item.src_id))
-    const [searchSites, setSearchSites] = useState(value?.filter(value => value.type == SourceType.search).map((item) => item.src_id))
+    const initValue = useMemo(() => {
+        console.log("Revert")
+        const rssSites = value?.filter(value => value.type == SourceType.rss).map((item) => item.src_id) || []
+        const searchSites = value?.filter(value => value.type == SourceType.search).map((item) => item.src_id) || []
+        return [rssSites, searchSites]
+    }, 
+    [value])
+    const [sites, setSites] = useState({rss: initValue[0], search: initValue[1]})
+    useEffect(()=>{
+            console.log("123")
+            onChange?.([
+                ...sites.rss.map((id) => ({ type: SourceType.rss, src_id: id })),
+                ...sites.search.map((id) => ({ type: SourceType.search, src_id: id }))
+            ])
+    }
+    ,[sites])
     return <>
         <Form.Item label="订阅站点">
-            <SiteSelect mode="multiple" value={rssSites}
+            <SiteSelect mode="multiple" value={sites.rss}
                 onChange={(values) => {
-                    setRssSites(values)
+                    console.log("update rss")
+                  setSites((sites) => ({...sites, rss: values}))
                 }} />
         </Form.Item>
         <Form.Item label="搜索站点">
-            <SiteSelect mode="multiple" value={searchSites}
+            <SiteSelect mode="multiple" value={sites.search}
                 onChange={(values) => {
-                    setSearchSites(values)
+                    console.log("update search")
+                    setSites((sites) => ({...sites, search: values}))
                 }} />
         </Form.Item>
     </>
@@ -204,11 +229,14 @@ function SourceConfig({ value, onChange }: { value?: FetchSourceConfig[], onChan
 
 type EpisodesConfig = TVSubsProfile['state']['episodes']
 
-function EpisodesConfig({ value }: { value?: EpisodesConfig }) {
+function EpisodesConfig({ value, onChange }: { value?: EpisodesConfig, onChange?: (value:EpisodesConfig)=>void }) {
     const [configs, setConfigs] = useState(value);
     const episodesList = useMemo(() => Object.values(configs || {}), [configs])
 
     const [createConfig, setCreateConfig] = useState({ episodesString: '', status: SubsStatus.scheduled })
+    useEffect(()=>{
+        if(configs) onChange?.(configs)
+    }, [configs, onChange])
     return <Space direction="vertical" style={{ width: "100%" }}>
         <List
             bordered

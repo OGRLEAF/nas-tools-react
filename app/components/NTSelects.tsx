@@ -15,7 +15,7 @@ interface FormItemProp<T> {
     value?: T,
     onChange?: (value: T) => void,
     style?: CSSProperties,
-    default?: { label: string, value: T } | T
+    default?: { label: string, value: T }
 }
 
 export const DownloadSettingSelect = (options: { default?: { label: string, value: any } } & FormItemProp<string>) => {
@@ -53,39 +53,44 @@ export const FilterRuleSelect = (options: FormItemProp<number>) => {
                 })
         })()
     }, [API])
+
     const filterRuleOption = [
         {
             label: "默认",
-            value: ""
+            value: "",
+            ...options.default
         },
         ...filterRules.map((item) => ({ label: item.name, value: item.id }))
     ]
     return <Select options={filterRuleOption} value={options.value} onChange={options.onChange} />
 }
 
-const resTypeOptions = [
-    {
-        value: "",
-        label: "全部"
-    },
-    ...["BLURAY", "REMUX", "DOLBY", "WEB", "HDTV", "UHD", "HDR", "3D"]
-        .map((value) => ({ value: value, label: value }))
-]
 
-export const ResTypeSelect = (options: FormItemProp<string>) => {
+export const ResTypeSelect = (options: FormItemProp<string | null>) => {
+
+    const resTypeOptions = [
+        {
+            value: "",
+            label: "全部",
+            ...options.default
+        },
+        ...["BLURAY", "REMUX", "DOLBY", "WEB", "HDTV", "UHD", "HDR", "3D"]
+            .map((value) => ({ value: value, label: value }))
+    ]
     return <Select value={options.value} onChange={options.onChange} options={resTypeOptions} />
 }
 
-const pixOptions = [
-    {
-        value: "",
-        label: "全部"
-    },
-    ...["8k", "4k", "1080p", "720p"]
-        .map((value) => ({ value: value, label: value }))
-]
+export const PixSelect = (options: FormItemProp<string | null>) => {
+    const pixOptions = [
+        {
+            value: "",
+            label: "全部",
+            ...options.default
+        },
+        ...["8k", "4k", "1080p", "720p"]
+            .map((value) => ({ value: value, label: value }))
+    ]
 
-export const PixSelect = (options: FormItemProp<string>) => {
     return <Select value={options.value} onChange={options.onChange} options={pixOptions} />
 }
 
