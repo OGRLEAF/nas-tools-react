@@ -99,7 +99,7 @@ import { SeriesKey as SeriesKeyLegacy } from "@/app/utils/api/types";
 import { SelectProps } from "antd/lib";
 import { useForm } from "antd/es/form/Form";
 import { number_string_to_list } from "@/app/utils";
-import { FilterRuleSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
+import { DownloadSettingSelect, FilterRuleSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 
 const FormSection = ({ title, tooltip }: { title: string, tooltip?: string }) => {
     return <Divider orientation="left" orientationMargin={0} style={{ marginTop: 0 }}>
@@ -115,7 +115,6 @@ const SubscribeTVForm = ({ record: profile }: { record?: TVSubsProfile }) => {
     const legacySeriesKey = useMemo(() => new SeriesKeyLegacy().type(seriesKey?.t).tmdbId(seriesKey?.i)
         .season(Number(seriesKey?.s)), [seriesKey])
 
-
     return <Space direction="vertical" style={{ width: "100%" }}>
         <Form style={{ width: "100%" }} initialValues={{
             ...profile,
@@ -123,8 +122,12 @@ const SubscribeTVForm = ({ record: profile }: { record?: TVSubsProfile }) => {
             series: legacySeriesKey
         }}
             onFinish={(values) => {
+                const seriesKeyLagcy: SeriesKeyLegacy = values.series
+                const seriesKey = new SeriesKey().type(seriesKeyLagcy.t).tmdbId(seriesKeyLagcy.i).season(seriesKeyLagcy.s || null)
+                    .episode(-1)
+
                 console.log(profile)
-                console.log(values)
+                console.log(values, seriesKey.dump())
             }}
 
             layout="vertical">
@@ -147,12 +150,12 @@ const SubscribeTVForm = ({ record: profile }: { record?: TVSubsProfile }) => {
             <Row gutter={8}>
                 <Col span={8}>
                     <Form.Item name={["config", "filter", "res_type"]} label="质量">
-                        <ResTypeSelect default={{ value: null, label: "全部" }} />
+                        <ResTypeSelect unsetOption={{ value: undefined, label: "全部" }} />
                     </Form.Item>
                 </Col>
                 <Col span={8}>
                     <Form.Item name={["config", "filter", "resolution"]} label="分辨率">
-                        <PixSelect default={{ value: null, label: "全部" }} />
+                        <PixSelect unsetOption={{ value: undefined, label: "全部" }} />
                     </Form.Item>
                 </Col>
 
@@ -181,9 +184,14 @@ const SubscribeTVForm = ({ record: profile }: { record?: TVSubsProfile }) => {
             <Form.Item name={["config", "sources"]} style={{ width: "100%" }}>
                 <SourceConfig />
             </Form.Item>
+            <FormSection title="下载设置" />
+            <Form.Item label="Preset" name={["config", "download_setting", "preset"]}>
+                <DownloadSettingSelect />
+            </Form.Item>
             <Form.Item>
                 <Button htmlType="submit" type="primary">保存</Button>
             </Form.Item>
+
         </Form >
 
 

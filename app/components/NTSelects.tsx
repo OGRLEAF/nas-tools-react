@@ -1,5 +1,5 @@
 
-import React, { CSSProperties, useEffect, useMemo, useState } from "react"
+import React, { CSSProperties, useCallback, useEffect, useMemo, useState } from "react"
 import { API, NastoolFilterruleBasic, NastoolIndexer, NastoolServerConfig, NastoolSiteInfo, NastoolSiteProfile } from "../utils/api/api"
 import { Select, Space } from "antd"
 import { Sites } from "../utils/api/sites"
@@ -15,19 +15,20 @@ interface FormItemProp<T> {
     value?: T,
     onChange?: (value: T) => void,
     style?: CSSProperties,
-    default?: { label: string, value: T }
+    unsetOption?: { label: string, value: T },
+    nullDefault?: T
 }
 
 export const DownloadSettingSelect = (options: { default?: { label: string, value: any } } & FormItemProp<string>) => {
     const { useList } = useResource<DownloadConfigResource>(DownloadConfigs)
     const { list } = useList();
     const selectOptions = useMemo(() => [
-        (options.default ?? {
+        (options.unsetOption ?? {
             label: "站点设置",
             value: 0
         }),
         ...list?.map((config) => ({ label: config.name, value: config.id })) ?? []
-    ], [list, options.default])
+    ], [list, options.unsetOption])
     return <Select style={{ ...options.style }} options={selectOptions} value={options.value} onChange={options.onChange} />
 }
 
@@ -57,8 +58,8 @@ export const FilterRuleSelect = (options: FormItemProp<number>) => {
     const filterRuleOption = [
         {
             label: "默认",
-            value: "",
-            ...options.default
+            value: -1,
+            ...options.unsetOption
         },
         ...filterRules.map((item) => ({ label: item.name, value: item.id }))
     ]
@@ -66,32 +67,26 @@ export const FilterRuleSelect = (options: FormItemProp<number>) => {
 }
 
 
-export const ResTypeSelect = (options: FormItemProp<string | null>) => {
+export const ResTypeSelect = (options: FormItemProp<string | null | undefined>) => {
+    const {onChange, value, defaultOption} = useUnsetOption(options)
 
     const resTypeOptions = [
-        {
-            value: "",
-            label: "全部",
-            ...options.default
-        },
+        defaultOption,
         ...["BLURAY", "REMUX", "DOLBY", "WEB", "HDTV", "UHD", "HDR", "3D"]
             .map((value) => ({ value: value, label: value }))
     ]
-    return <Select value={options.value} onChange={options.onChange} options={resTypeOptions} />
+    return <Select value={value} onChange={onChange} options={resTypeOptions} />
 }
 
-export const PixSelect = (options: FormItemProp<string | null>) => {
+export const PixSelect = (options: FormItemProp<string | undefined>) => {
+    const {onChange, value, defaultOption} = useUnsetOption(options)
     const pixOptions = [
-        {
-            value: "",
-            label: "全部",
-            ...options.default
-        },
+        defaultOption,
         ...["8k", "4k", "1080p", "720p"]
             .map((value) => ({ value: value, label: value }))
     ]
 
-    return <Select value={options.value} onChange={options.onChange} options={pixOptions} />
+    return <Select value={value} onChange={onChange} options={pixOptions} />
 }
 
 export const SiteSelect = (options: FormItemProp<string[]>
@@ -192,3 +187,35 @@ export const MediaWorkCategoryUnionSelect = (options: FormItemProp<[MediaWorkTyp
     </Space.Compact>
 }
 
+function useUnsetOption<T>(options: FormItemProp<T|undefined>, ) {
+    const convDefault = useCallback((value?:T)=>{
+        if(value==null) {
+            return options.nullDefault || ""
+        }
+        return value
+    }, [options.nullDefault])
+    const revConvDefault = useCallback((value:T)=>{
+        if(value == (options.nullDefault || "")) {
+            return options.nullDefault 
+        }
+        return value;
+    },[options.nullDefault])
+
+    const onChange = useCallback((value:T)=>{
+        if(options.onChange) {
+            options.onChange(revConvDefault(value))
+        }
+    }, [options, revConvDefault]);
+
+    const convertedValue = useMemo(()=>convDefault(options.value), [convDefault, options.value])
+
+    const defaultOption = {
+        value: convDefault(options.unsetOption?.value),
+        label:  options.unsetOption?.label || "全部",
+    }
+    return {
+        value: convertedValue,
+        onChange: onChange,
+        defaultOption: defaultOption
+    }
+}

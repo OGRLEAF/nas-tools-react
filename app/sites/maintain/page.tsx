@@ -208,7 +208,7 @@ const SiteProfileEditor = ({ record: profile, onChange }: { record?: SiteProfile
             </Flex>
             <Space size={18} wrap style={{ width: "100%" }} >
                 <Form.Item label="下载设置" style={{ minWidth: 150 }} name="download_setting">
-                    <DownloadSettingSelect default={({ label: "默认", value: '' })} />
+                    <DownloadSettingSelect unsetOption={({ label: "默认", value: '' })} />
                 </Form.Item>
                 <Form.Item label="过滤规则" style={{ minWidth: 150 }} name="rule">
                     <FilterRuleSelect />
