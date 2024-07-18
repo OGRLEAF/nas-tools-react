@@ -1,6 +1,6 @@
 "use client"
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Form, List, Space, theme, Divider, InputNumber, Select, Flex, Input, Tooltip, Row, Col } from "antd";
+import { Button, Form, List, Space, theme, Divider, InputNumber, Select, Flex, Input, Tooltip, Row, Col, Radio } from "antd";
 import { SeriesKeyType } from "@/app/utils/api/types";
 import { RetweetOutlined, EditOutlined, DeleteOutlined, QuestionCircleOutlined } from "@ant-design/icons"
 import Image from "next/image";
@@ -110,7 +110,7 @@ const FormSection = ({ title, tooltip }: { title: string, tooltip?: string }) =>
     </Divider>
 }
 
-const SubscribeTVForm = ({ record: profile }: { record?: TVSubsProfile }) => {
+const SubscribeTVForm = ({ record: profile, onChange }: { record?: TVSubsProfile, onChange?: (value: TVSubsProfile) => void }) => {
     const seriesKey = profile?.series_key && SeriesKey.load(profile?.series_key)
     const legacySeriesKey = useMemo(() => new SeriesKeyLegacy().type(seriesKey?.t).tmdbId(seriesKey?.i)
         .season(Number(seriesKey?.s)), [seriesKey])
@@ -119,20 +119,27 @@ const SubscribeTVForm = ({ record: profile }: { record?: TVSubsProfile }) => {
         <Form style={{ width: "100%" }} initialValues={{
             ...profile,
             episodes: profile && Object.values(profile?.state.episodes),
-            series: legacySeriesKey
+            _series: legacySeriesKey
         }}
             onFinish={(values) => {
-                const seriesKeyLagcy: SeriesKeyLegacy = values.series
+                const seriesKeyLagcy: SeriesKeyLegacy = values._series
                 const seriesKey = new SeriesKey().type(seriesKeyLagcy.t).tmdbId(seriesKeyLagcy.i).season(seriesKeyLagcy.s || null)
                     .episode(-1)
 
                 console.log(profile)
                 console.log(values, seriesKey.dump())
+                const mergedProfile = _.merge(profile, values, { series_key: seriesKey.dump(), _series: undefined })
+                onChange?.({
+                    id: mergedProfile.id,
+                    series_key: mergedProfile.series_key,
+                    state: values.state,
+                    config: mergedProfile.config
+                })
             }}
 
             layout="vertical">
             <Space direction="vertical" style={{ width: "100%" }}>
-                <Form.Item name="series" noStyle>
+                <Form.Item name="_series" noStyle>
                     <MediaSearchGroup>
                         <Space direction="vertical">
                             <MediaSearchWork />
@@ -240,14 +247,15 @@ function EpisodesConfig({ value, onChange }: { value?: EpisodesConfig, onChange?
     }, [configs, onChange])
     return <Space direction="vertical" style={{ width: "100%" }}>
         <List
-            bordered
             size="small"
+            split={true}
+            bordered={false}
             dataSource={episodesList}
             renderItem={(item) => <List.Item>
-                <Flex style={{ width: "100%" }} justify="space-between">
+                <Flex style={{ width: "100%" }} justify="space-between" align="center">
                     {item.num}
                     <Space>
-                        <SubsStatusSelect size="small" value={item.status} onChange={(value) => {
+                        <SubsStatusRadioGroup value={item.status} onChange={(value) => {
                             setConfigs((list) => ({
                                 ...list, [item.num]: {
                                     num: item.num,
@@ -255,57 +263,72 @@ function EpisodesConfig({ value, onChange }: { value?: EpisodesConfig, onChange?
                                 }
                             }))
                         }} />
-                        <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => {
+                        <Button danger icon={<DeleteOutlined />} onClick={() => {
                             setConfigs((list) => {
                                 list && delete list[item.num]
                                 return { ...list }
                             })
-                        }} />
+                        }}></Button>
                     </Space>
                 </Flex>
             </List.Item>
             }
         />
-        <Space style={{ width: "100%" }}>
-            <Space.Compact>
-                <Input value={createConfig.episodesString} onChange={(value) => setCreateConfig((conf) => ({ ...conf, episodesString: value.currentTarget.value }))} ></Input>
+        <Flex style={{ width: "100%" }} align="center" justify="end" gap={20}>
+            <div>ONE SHOOT</div>
+
+            <Input
+                style={{ width: 200 }}
+                value={createConfig.episodesString} onChange={(value) => setCreateConfig((conf) => ({ ...conf, episodesString: value.currentTarget.value }))} ></Input>
+            <Space>
                 <SubsStatusSelect value={createConfig.status} onChange={(value) => setCreateConfig((conf) => ({ ...conf, status: value }))} />
-            </Space.Compact>
-            <Button onClick={() => {
-                const episodes = number_string_to_list(createConfig.episodesString);
-                setConfigs(confs => ({
-                    ...confs,
-                    ...Object.fromEntries(episodes.map((e) => ([e, { num: e, status: createConfig.status }])))
-                }))
-            }} >添加</Button>
-        </Space >
+                {/* </Space.Compact> */}
+                <Button onClick={() => {
+                    const episodes = number_string_to_list(createConfig.episodesString);
+                    setConfigs(confs => ({
+                        ...confs,
+                        ...Object.fromEntries(episodes.map((e) => ([e, { num: e, status: createConfig.status }])))
+                    }))
+                }} >添加</Button>
+            </Space>
+        </Flex>
     </Space >
 }
 
+const options = [
+    {
+        value: SubsStatus.scheduled,
+        label: "订阅"
+    },
+    {
+        value: SubsStatus.fetching,
+        label: "运行"
+    },
+    {
+        value: SubsStatus.finished,
+        label: "完成"
+    },
+    {
+        value: SubsStatus.stalled,
+        label: "暂停"
+    },
+    {
+        value: SubsStatus.disabled,
+        label: "停止"
+    },
+]
+
+
+function SubsStatusRadioGroup({ value, onChange, ...selectProps }: { value: SubsStatus, onChange: (value: SubsStatus) => void } & SelectProps) {
+
+
+    // return <Select {...selectProps} options={options} value={value} onChange={(value) => onChange(value)} style={{ width: 100 }} />
+    return <Radio.Group optionType="button" buttonStyle="solid" options={options} value={value} onChange={(e) => onChange(e.target.value)} />
+}
 
 function SubsStatusSelect({ value, onChange, ...selectProps }: { value: SubsStatus, onChange: (value: SubsStatus) => void } & SelectProps) {
 
-    const options: SelectProps['options'] = [
-        {
-            value: SubsStatus.scheduled,
-            label: "订阅"
-        },
-        {
-            value: SubsStatus.fetching,
-            label: "运行"
-        },
-        {
-            value: SubsStatus.finished,
-            label: "完成"
-        },
-        {
-            value: SubsStatus.stalled,
-            label: "暂停"
-        },
-        {
-            value: SubsStatus.disabled,
-            label: "停止"
-        },
-    ]
+
     return <Select {...selectProps} options={options} value={value} onChange={(value) => onChange(value)} style={{ width: 100 }} />
+    // return <Radio.Group optionType="button" buttonStyle="solid" options={options} value={value} onChange={(e) => onChange(e.target.value)} />
 }
