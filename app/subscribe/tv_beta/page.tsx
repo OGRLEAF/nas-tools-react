@@ -1,6 +1,6 @@
 "use client"
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Form, List, Space, theme, Divider, InputNumber, Select, Flex, Input, Tooltip, Row, Col, Radio } from "antd";
+import { Button, Form, List, Space, theme, Divider, InputNumber, Select, Flex, Input, Tooltip, Row, Col, Radio, Tag } from "antd";
 import { SeriesKeyType } from "@/app/utils/api/types";
 import { RetweetOutlined, EditOutlined, DeleteOutlined, QuestionCircleOutlined } from "@ant-design/icons"
 import Image from "next/image";
@@ -64,9 +64,9 @@ function SubsItemCard({ record }: { record: TVSubsProfile }) {
     const episodesList = <Space wrap>
         {episodes?.toSorted((a, b) => (a.series.e || 0) - (b.series.e || 0))
             .map((ep, idx) => {
-                return <Button type='primary' className="episode-tag" key={ep.series.e} >
+                return <Tag color={'red'} className="episode-tag" key={ep.series.e} >
                     <div>{ep.series.e}</div>
-                </Button>
+                </Tag>
             })}
     </Space>
     return <List.Item
@@ -123,11 +123,9 @@ const SubscribeTVForm = ({ record: profile, onChange }: { record?: TVSubsProfile
         }}
             onFinish={(values) => {
                 const seriesKeyLagcy: SeriesKeyLegacy = values._series
-                const seriesKey = new SeriesKey().type(seriesKeyLagcy.t).tmdbId(seriesKeyLagcy.i).season(seriesKeyLagcy.s || null)
+                const seriesKey = new SeriesKey().type(seriesKeyLagcy.t).tmdbId(String(seriesKeyLagcy.i)).season(seriesKeyLagcy.s || null)
                     .episode(-1)
 
-                console.log(profile)
-                console.log(values, seriesKey.dump())
                 const mergedProfile = _.merge(profile, values, { series_key: seriesKey.dump(), _series: undefined })
                 onChange?.({
                     id: mergedProfile.id,

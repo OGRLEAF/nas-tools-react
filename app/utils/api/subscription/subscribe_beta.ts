@@ -78,12 +78,17 @@ export class TVSubscribe extends APIArrayResourceBase<TVSubsResource> {
         return true;
     }
 
+    public async add(value: TVSubsProfile) {
+        const resp = await this.API.post(`subscribe/subs`, { auth: true, data: value, json: true });
+        return true;
+    }
+
     public async updateHook(value: any, options?: any): Promise<boolean> {
         return this.update(value);
     }
 
     public async addHook(value: any): Promise<boolean> {
-        return this.update(value);
+        return this.add(value);
     }
 
     public async listHook(options?: any): Promise<TVSubsProfile[]> {

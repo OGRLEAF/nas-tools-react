@@ -9,7 +9,7 @@ type NumericKeyType = number | UnsetKeyType | AnyKeyType;
 
 
 // export type MediaWorkType = MediaWorkType
-export type TmdbIdType = MediaWork['key']
+export type TmdbIdType = string; // MediaWork['key']
 export type SeasonKeyType = NumericKeyType
 export type EpisodeKeyType = NumericKeyType
 
@@ -19,7 +19,7 @@ export type SeriesKeyTuple = [
 
 export class SeriesKey {
   private typeKey: MediaWorkType = MediaWorkType.UNKNOWN;
-  private tmdbIdKey?: MediaWork['key']
+  private tmdbIdKey?: string;//  MediaWork['key']
   private seasonKey: SeasonKeyType = -1;
   private episodeKey: EpisodeKeyType = -1;
   private _end: SeriesKeyType = SeriesKeyType.NULL;
@@ -47,7 +47,7 @@ export class SeriesKey {
     return this
   }
 
-  public tmdbId(tmdbId?: MediaWork['key']) {
+  public tmdbId(tmdbId?: string) {
     if (this.typeKey != MediaWorkType.UNKNOWN && tmdbId != "") {
       this._end = SeriesKeyType.TMDBID;
       this.tmdbIdKey = tmdbId;
