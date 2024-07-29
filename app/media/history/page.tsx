@@ -10,6 +10,7 @@ import MediaImportEntry, { MediaImportProvider } from "@/app/components/mediaImp
 import { IdentifyHistory } from "@/app/components/mediaImport/mediaImportContext";
 import MediaImportWrapper from "@/app/components/mediaImport/mediaImport";
 import { SeriesKey } from "@/app/utils/api/types";
+import { FileLink } from "@/app/components/FileLink";
 
 const MediaInfoColumn = ({ title, record, onTitleClick }: { title: string, record: OrganizeRecord, onTitleClick?: (value: string) => void }) => {
     const { token } = theme.useToken();
@@ -35,10 +36,10 @@ const MediaFileInfoColumn = ({ record }: { record: OrganizeRecord }) => {
     const { token } = theme.useToken();
     return <Space direction="vertical" size={0}>
         <span style={{ color: token.colorInfoText }}>
-            <Link href={'/media/file' + encodeURI(record.SOURCE_PATH)}>{record.SOURCE_FILENAME}</Link>
+            <FileLink targetPath={record.SOURCE_PATH + '/' + record.SOURCE_FILENAME}>{record.SOURCE_FILENAME}</FileLink>
         </span>
         <span style={{ color: token.colorInfoText }}>
-            <Link href={'/media/file' + encodeURI(record.DEST_PATH)}>{record.DEST_FILENAME}</Link>
+            <FileLink targetPath={record.DEST_PATH + '/' + record.DEST_FILENAME}>{record.DEST_FILENAME}</FileLink>
         </span>
     </Space>
 }
