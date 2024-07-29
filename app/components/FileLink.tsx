@@ -7,7 +7,7 @@ export function FileLink({ basePath, targetPath, children }:
     { basePath?: string, targetPath: string, children?: React.ReactNode }) {
     return <Link href={
         {
-            pathname: "/media/file",
+            pathname: basePath || "/media/file",
             query: {
                 path: targetPath
             }
