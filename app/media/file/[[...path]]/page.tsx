@@ -44,7 +44,7 @@ const DirectoryList = ({ dirList, loading }:
     const { token: { colorBgBase }, } = theme.useToken();
     const searchParams = useSearchParams();
     const pathParams = searchParams.get('path') ?? "/"
-    const [sortConfig, setSortConfig] = useState<{ key: SortKey, dir: SortDirection }>()
+    const [sortConfig, setSortConfig] = useState<{ key: SortKey, dir: SortDirection }>({key: "name", dir:"dec"})
     const [filterConfig, setFilterConfig] = useState<string>("");
     const sortedDirList = useMemo(() => (
         (filterConfig ? dirList.filter((item) => item.name.includes(filterConfig)) : dirList)
@@ -58,8 +58,8 @@ const DirectoryList = ({ dirList, loading }:
 
     const footer = <Space.Compact>
         <Cascader style={{ width: 130 }}
-            value={[sortConfig?.key || "name", sortConfig?.dir || "dec"]}
             onChange={(value) => {
+                console.log(value)
                 setSortConfig({
                     // ...sortConfig,
                     key: value[0] as SortKey || sortConfig?.key || "name",
