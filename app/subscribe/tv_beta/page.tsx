@@ -1,8 +1,8 @@
 "use client"
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Form, List, Space, theme, Divider, InputNumber, Select, Flex, Input, Tooltip, Row, Col, Radio, Tag, Table, TableColumnsType, Switch, Checkbox } from "antd";
-import { SeriesKeyType } from "@/app/utils/api/types";
-import { RetweetOutlined, EditOutlined, DeleteOutlined, QuestionCircleOutlined } from "@ant-design/icons"
+import { Button, Form, List, Space, theme, Divider, Select, Flex, Input, Tooltip, Row, Col, Radio, Tag, Table, TableColumnsType, Switch, Checkbox, Spin } from "antd";
+import { MediaWorkMetadata, SeriesKeyType } from "@/app/utils/api/types";
+import { RetweetOutlined, EditOutlined, DeleteOutlined, QuestionCircleOutlined, LoadingOutlined } from "@ant-design/icons"
 import Image from "next/image";
 import { CardsForm, useCardsFormContext } from "@/app/components/CardsForm";
 import _, { create } from "lodash";
@@ -99,6 +99,8 @@ import { SeriesKey as SeriesKeyLegacy } from "@/app/utils/api/types";
 import { SelectProps } from "antd/lib";
 import { number_string_to_list } from "@/app/utils";
 import { DownloadSettingSelect, FilterRuleSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
+import { useForm } from "antd/es/form/Form";
+import { IconLoading } from "@/app/components/icons";
 
 const FormSection = ({ title, tooltip }: { title: string, tooltip?: string }) => {
     return <Divider orientation="left" orientationMargin={0} style={{ marginTop: 0 }}>
@@ -114,8 +116,18 @@ const SubscribeTVForm = ({ record: profile, onChange }: { record?: TVSubsProfile
     const legacySeriesKey = useMemo(() => new SeriesKeyLegacy().type(seriesKey?.t).tmdbId(seriesKey?.i)
         .season(Number(seriesKey?.s)), [seriesKey])
 
+    const [form] = useForm();
+    const seriesKeyLegacy: SeriesKeyLegacy | undefined = Form.useWatch('_series', form)
+    const [selectedSeries, setSelectedSeries] = useState<SeriesKey>();
+    useEffect(() => {
+        if (seriesKeyLegacy?.end == SeriesKeyType.SEASON) {
+            setSelectedSeries(new SeriesKey().type(seriesKeyLegacy.t).tmdbId(String(seriesKeyLegacy.i)).season(seriesKeyLegacy.s || null)
+                .episode(-1))
+        }
+    }, [seriesKeyLegacy])
+
     return <Space direction="vertical" style={{ width: "100%" }}>
-        <Form style={{ width: "100%" }} initialValues={{
+        <Form form={form} style={{ width: "100%" }} initialValues={{
             ...profile,
             episodes: profile && Object.values(profile?.state.episodes),
             _series: legacySeriesKey
@@ -145,7 +157,7 @@ const SubscribeTVForm = ({ record: profile, onChange }: { record?: TVSubsProfile
                     </MediaSearchGroup>
                 </Form.Item>
                 <Form.Item name={["state", "episodes"]}>
-                    <EpisodesConfig />
+                    <EpisodesConfig selectedSeries={selectedSeries} />
                 </Form.Item>
             </Space>
             <FormSection title="过滤设置" />
@@ -233,14 +245,31 @@ function SourceConfig({ value, onChange }: { value?: FetchSourceConfig[], onChan
 
 type EpisodesConfig = TVSubsProfile['state']['episodes']
 
-function EpisodesConfig({ value, onChange }: { value?: EpisodesConfig, onChange?: (value: EpisodesConfig) => void }) {
+function EpisodesConfig({ value, onChange, selectedSeries }:
+    { value?: EpisodesConfig, onChange?: (value: EpisodesConfig) => void, selectedSeries?: SeriesKey }) {
     const [configs, setConfigs] = useState(value);
-    const episodesList = useMemo(() => Object.values(configs || {}), [configs])
 
     const [createConfig, setCreateConfig] = useState({ episodesString: '', status: SubsStatus.scheduled })
+    const [enableOnlineEpisodes, setEnableOnlineEpisodes] = useState(false);
+    const [onlineEpisodes, loading] = useMediaWorks(enableOnlineEpisodes ? selectedSeries : undefined);
+
+    const episodesList = useMemo(() => {
+        const onlineEpisodesMap = (onlineEpisodes && !loading) && _.fromPairs(onlineEpisodes?.map((ep) => [ep.series.e,
+        {
+            metadata: ep.metadata,
+            num: ep.series.e
+        }
+        ]))
+        return Object.values(_.merge(onlineEpisodesMap, configs) || {})
+    }, [configs, onlineEpisodes, loading])
+
     useEffect(() => {
         if (configs) onChange?.(configs)
     }, [configs, onChange])
+
+    useEffect(() => {
+        console.log(episodesList)
+    }, [episodesList])
 
     const ListItem = ({ item }: { item: EpisodesConfig[number] }) =>
         <Space>
@@ -266,16 +295,27 @@ function EpisodesConfig({ value, onChange }: { value?: EpisodesConfig, onChange?
             dataIndex: 'num',
         },
         {
+            title: '标题',
+            dataIndex: 'metadata',
+            render: (value?: MediaWorkMetadata) => {
+                return value?.title
+            }
+        },
+        {
             title: '状态',
             render: (_, record) => <ListItem item={record} />,
             align: "right"
         },
     ];
     return <Space direction="vertical" style={{ width: "100%" }}>
-        <Table size="small" columns={episodesConfigColumns} dataSource={episodesList}
-            title={() =><Flex style={{ width: "100%" }} align="center" justify="space-between" gap={20}>
+        <Table size="small" columns={episodesConfigColumns} dataSource={episodesList} rowKey={'num'}
+            title={() => <Flex style={{ width: "100%" }} align="center" justify="space-between" gap={20}>
                 <span>分集设置</span>
-                <Checkbox>在线数据</Checkbox>
+                <Spin indicator={<LoadingOutlined spin />} spinning={loading} size="small" >
+                    <Checkbox checked={enableOnlineEpisodes} onChange={(evt) => setEnableOnlineEpisodes(evt.target.checked)}>
+                        在线数据
+                    </Checkbox>
+                </Spin>
             </Flex>
             }
             footer={() => <Flex style={{ width: "100%" }} align="center" justify="end" gap={20}>
@@ -288,7 +328,8 @@ function EpisodesConfig({ value, onChange }: { value?: EpisodesConfig, onChange?
                         const episodes = number_string_to_list(createConfig.episodesString);
                         setConfigs(confs => ({
                             ...confs,
-                            ...Object.fromEntries(episodes.map((e) => ([e, { num: e, status: createConfig.status }])))
+                            ...Object.fromEntries(episodes
+                                .map((e) => ([e, { num: e, status: createConfig.status }])))
                         }))
                     }} >添加</Button>
                 </Space>
