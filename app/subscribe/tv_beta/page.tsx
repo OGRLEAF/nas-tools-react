@@ -1,6 +1,6 @@
 "use client"
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Form, List, Space, theme, Divider, InputNumber, Select, Flex, Input, Tooltip, Row, Col, Radio, Tag } from "antd";
+import { Button, Form, List, Space, theme, Divider, InputNumber, Select, Flex, Input, Tooltip, Row, Col, Radio, Tag, Table, TableColumnsType, Switch, Checkbox } from "antd";
 import { SeriesKeyType } from "@/app/utils/api/types";
 import { RetweetOutlined, EditOutlined, DeleteOutlined, QuestionCircleOutlined } from "@ant-design/icons"
 import Image from "next/image";
@@ -97,7 +97,6 @@ function SubsItemCard({ record }: { record: TVSubsProfile }) {
 
 import { SeriesKey as SeriesKeyLegacy } from "@/app/utils/api/types";
 import { SelectProps } from "antd/lib";
-import { useForm } from "antd/es/form/Form";
 import { number_string_to_list } from "@/app/utils";
 import { DownloadSettingSelect, FilterRuleSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 
@@ -145,7 +144,6 @@ const SubscribeTVForm = ({ record: profile, onChange }: { record?: TVSubsProfile
                         </Space>
                     </MediaSearchGroup>
                 </Form.Item>
-                <FormSection title="分集设置" />
                 <Form.Item name={["state", "episodes"]}>
                     <EpisodesConfig />
                 </Form.Item>
@@ -243,53 +241,59 @@ function EpisodesConfig({ value, onChange }: { value?: EpisodesConfig, onChange?
     useEffect(() => {
         if (configs) onChange?.(configs)
     }, [configs, onChange])
-    return <Space direction="vertical" style={{ width: "100%" }}>
-        <List
-            size="small"
-            split={true}
-            bordered={false}
-            dataSource={episodesList}
-            renderItem={(item) => <List.Item>
-                <Flex style={{ width: "100%" }} justify="space-between" align="center">
-                    {item.num}
-                    <Space>
-                        <SubsStatusRadioGroup value={item.status} onChange={(value) => {
-                            setConfigs((list) => ({
-                                ...list, [item.num]: {
-                                    num: item.num,
-                                    status: value
-                                }
-                            }))
-                        }} />
-                        <Button danger icon={<DeleteOutlined />} onClick={() => {
-                            setConfigs((list) => {
-                                list && delete list[item.num]
-                                return { ...list }
-                            })
-                        }}></Button>
-                    </Space>
-                </Flex>
-            </List.Item>
-            }
-        />
-        <Flex style={{ width: "100%" }} align="center" justify="end" gap={20}>
-            <div>ONE SHOOT</div>
 
-            <Input
-                style={{ width: 200 }}
-                value={createConfig.episodesString} onChange={(value) => setCreateConfig((conf) => ({ ...conf, episodesString: value.currentTarget.value }))} ></Input>
-            <Space>
-                <SubsStatusSelect value={createConfig.status} onChange={(value) => setCreateConfig((conf) => ({ ...conf, status: value }))} />
-                {/* </Space.Compact> */}
-                <Button onClick={() => {
-                    const episodes = number_string_to_list(createConfig.episodesString);
-                    setConfigs(confs => ({
-                        ...confs,
-                        ...Object.fromEntries(episodes.map((e) => ([e, { num: e, status: createConfig.status }])))
-                    }))
-                }} >添加</Button>
-            </Space>
-        </Flex>
+    const ListItem = ({ item }: { item: EpisodesConfig[number] }) =>
+        <Space>
+            <SubsStatusRadioGroup value={item.status} onChange={(value) => {
+                setConfigs((list) => ({
+                    ...list, [item.num]: {
+                        num: item.num,
+                        status: value
+                    }
+                }))
+            }} />
+            <Button danger icon={<DeleteOutlined />} onClick={() => {
+                setConfigs((list) => {
+                    list && delete list[item.num]
+                    return { ...list }
+                })
+            }}></Button>
+        </Space>
+
+    const episodesConfigColumns: TableColumnsType<EpisodesConfig[number]> = [
+        {
+            title: '序号',
+            dataIndex: 'num',
+        },
+        {
+            title: '状态',
+            render: (_, record) => <ListItem item={record} />,
+            align: "right"
+        },
+    ];
+    return <Space direction="vertical" style={{ width: "100%" }}>
+        <Table size="small" columns={episodesConfigColumns} dataSource={episodesList}
+            title={() =><Flex style={{ width: "100%" }} align="center" justify="space-between" gap={20}>
+                <span>分集设置</span>
+                <Checkbox>在线数据</Checkbox>
+            </Flex>
+            }
+            footer={() => <Flex style={{ width: "100%" }} align="center" justify="end" gap={20}>
+                <Input
+                    style={{ width: 200 }}
+                    value={createConfig.episodesString} onChange={(value) => setCreateConfig((conf) => ({ ...conf, episodesString: value.currentTarget.value }))} ></Input>
+                <Space>
+                    <SubsStatusSelect value={createConfig.status} onChange={(value) => setCreateConfig((conf) => ({ ...conf, status: value }))} />
+                    <Button onClick={() => {
+                        const episodes = number_string_to_list(createConfig.episodesString);
+                        setConfigs(confs => ({
+                            ...confs,
+                            ...Object.fromEntries(episodes.map((e) => ([e, { num: e, status: createConfig.status }])))
+                        }))
+                    }} >添加</Button>
+                </Space>
+            </Flex>}
+        />
     </Space >
 }
 
