@@ -104,13 +104,18 @@ export function useMediaWork(series_key: SeriesKey) {
     return [mediaWork]
 }
 
-export function useMediaWorks(series_key: SeriesKey) {
+export function useMediaWorks(series_key?: SeriesKey): [MediaWork[] | undefined, boolean] {
     const [mediaWorks, setMediaWorks] = useState<MediaWork[]>();
+    const [loading, setLoading] = useState(false);
     useEffect(() => {
-        new TMDBMediaWork(series_key).getChildren()
-            .then(mediaWorks => {
-                setMediaWorks(() => mediaWorks)
-            })
+        if (series_key) {
+            setLoading(true)
+            new TMDBMediaWork(series_key).getChildren()
+                .then(mediaWorks => {
+                    setMediaWorks(() => mediaWorks)
+                })
+                .finally(() => setLoading(false))
+        }
     }, [series_key])
-    return [mediaWorks]
+    return [mediaWorks, loading]
 }
