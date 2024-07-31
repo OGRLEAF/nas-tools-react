@@ -153,7 +153,9 @@ export function MediaDetailCard({
     const titleArea = useMemo(() => mediaDetail &&
         <Flex style={{
             position: "sticky", top: 0, color: token.colorTextBase,
-            fontSize: "1.6rem", margin: 0, padding: `0px ${token.padding}px 4px 5px`, ...style.title
+            fontSize: "1.6rem", margin: 0, padding: `0px ${token.padding}px 4px 5px`,
+            zIndex: 1,
+            ...style.title
         }} justify="space-between" align="end">
             <Space>
                 <span style={{ fontSize: "1.25rem", fontWeight: "bold" }}>{mediaDetail.title}</span>
