@@ -218,7 +218,7 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
               </Header>
               <Layout>
                 <Content style={{ margin: '0px 0px', overflow: 'initial' }} >
-                  <div style={{ padding: "0px 16px 16px 16px", minHeight: "50vh", height: "100%", }}>
+                  <div style={{ padding: "0px 16px 0px 16px", minHeight: "50vh", height: "100%", }}>
                     {API.loginState ? children : <></>}
                   </div>
                 </Content>
