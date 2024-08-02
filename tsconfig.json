@@ -4,7 +4,7 @@
     "lib": [
       "dom",
       "dom.iterable",
-      "es2021"
+      "ESNext"
     ],
     "allowJs": true,
     "skipLibCheck": true,
@@ -19,9 +19,6 @@
     "jsx": "preserve",
     "incremental": true,
     "plugins": [
-      {
-        "name": "es2021"
-      },
       {
         "name": "next"
       }

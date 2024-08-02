@@ -1,45 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { API, NastoolFileListItem, NastoolNameTestResultData } from "../utils/api/api";
-import { Button, Descriptions, Divider, Drawer, List, Modal, Space, Spin, Table } from "antd";
-import { EditOutlined, SwapOutlined } from '@ant-design/icons';
-import TMDBSearch from "@/app/components/TMDBSearch"
+import { NastoolFileListItem } from "../utils/api/api";
+import { Button, Descriptions, Space, Spin, Table } from "antd";
 import MediaImportEntry from "@/app/components/mediaImport/mediaImportEntry"
 import { usePathManager } from "./pathManager";
 import path from "path";
 import { ColumnsType } from "antd/es/table";
-import { MediaIdentifyContext, MediaWork, MediaWorkType, SeriesKey } from "../utils/api/types";
+import { MediaWork, MediaWorkType, SeriesKey } from "../utils/api/types";
 import { MediaIdentify } from "../utils/api/media/mediaIdentify";
 import { asyncEffect } from "../utils";
 import { TMDB } from "../utils/api/media/tmdb";
-import { set } from "lodash";
 import { IdentifyHistory } from "./mediaImport/mediaImportContext";
-
-const tmdbSearchModalConfig = {
-    title: "搜索",
-    content: (<><TMDBSearch initialSearchValue={"0"} /></>)
-}
-
-
-const TMDBSearchEntry = ({ onApply, initialSearchValue }: { onApply: (tmdbid: string) => void, initialSearchValue: string }) => {
-
-    const [open, setOpen] = useState(false);
-    const onOpenTMDBSearch = async () => { setOpen(true) }
-    return (<>
-        <Button size="small" type="text" onClick={onOpenTMDBSearch} icon={<SwapOutlined />} />
-        <Drawer title="搜索" placement="right"
-            size="large"
-            open={open}
-            onClose={() => setOpen(false)}
-        >
-            <TMDBSearch initialSearchValue={initialSearchValue} onSelected={(id: string) => {
-                onApply(id);
-                setOpen(false)
-            }} />
-        </Drawer>
-    </>
-    )
-}
-
 
 const RelFileTable = ({ relFiles }: { relFiles: NastoolFileListItem[] }) => {
     const relFilesTableData = relFiles.map((file) => ({

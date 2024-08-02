@@ -1,9 +1,9 @@
 "use client"
 import React, { useState } from "react";
-import TMDBSearch, { TMDBSearchList } from "@/app/components/TMDBSearch"
+import { TMDBSearchList } from "@/app/components/TMDBSearch"
 import SearchTask from "@/app/components/SearchTask"
-import { Drawer, Space, Spin } from "antd";
-import { NastoolMediaSearchResultItem, NastoolMediaType } from "@/app/utils/api/api";
+import { Drawer, Spin } from "antd";
+import { NastoolMediaSearchResultItem } from "@/app/utils/api/api";
 
 export default function SearchResultPage({ params }: { params: { keyword: string } }) {
     const [openTaskDrawer, setOpenTaskDrawer] = useState(false)

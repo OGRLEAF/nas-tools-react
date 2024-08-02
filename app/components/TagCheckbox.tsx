@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Space, Tag, Checkbox } from 'antd';
-import type { CheckboxChangeEvent } from 'antd/es/checkbox';
-import type { CheckboxGroupProps, CheckboxOptionType, CheckboxValueType, } from 'antd/es/checkbox/Group';
+import { Space, Tag } from 'antd';
+import type { CheckboxOptionType, } from 'antd/es/checkbox/Group';
 
 
 const { CheckableTag } = Tag;
 
 
-export interface TagCheckboxGroupProps {
+export interface TagCheckboxGroupProps<T = any> {
     options: Array<CheckboxOptionType>;
-    value?: Array<CheckboxValueType>;
-    onChange?: (checkedValue: Array<CheckboxValueType>) => void;
+    value?: Array<T>;
+    onChange?: (checkedValue: Array<T>) => void;
 }
 
-export function TagCheckboxGroup(props: TagCheckboxGroupProps) {
+export function TagCheckboxGroup<T>(props: TagCheckboxGroupProps<T>) {
     const { onChange } = props;
-    const [selectedTags, setSelectedTags] = useState<CheckboxValueType[]>(props.value || []);
-    const handleChange = (tag: CheckboxValueType, checked: boolean) => {
+    const [selectedTags, setSelectedTags] = useState<T[]>(props.value || []);
+    const handleChange = (tag: T, checked: boolean) => {
         const nextSelectedTags = checked
             ? [...selectedTags, tag]
             : selectedTags.filter((t) => t !== tag);
