@@ -38,6 +38,14 @@ function CardsList() {
     />
 }
 
+const episodeStateColor:Record<SubsStatus, string> = {
+    [SubsStatus.scheduled]: "blue",
+    [SubsStatus.fetching]: "green",
+    [SubsStatus.finished]: "purple",
+    [SubsStatus.stalled]: "red",
+    [SubsStatus.disabled]: "default"
+}
+
 function SubsItemCard({ record }: { record: TVSubsProfile }) {
     const ctx = useCardsFormContext<TVSubsResource>();
     const seriesKey = useMemo(() => SeriesKey.load(record.series_key), [record]);
@@ -64,7 +72,8 @@ function SubsItemCard({ record }: { record: TVSubsProfile }) {
     const episodesList = <Space wrap>
         {episodes?.toSorted((a, b) => (a.series.e || 0) - (b.series.e || 0))
             .map((ep, idx) => {
-                return <Tag color={'red'} className="episode-tag" key={ep.series.e} >
+                const episodeState = ep.series.e && record.state.episodes[ep.series.e].status || SubsStatus.disabled;
+                return <Tag color={episodeStateColor[episodeState]} className="episode-tag" key={ep.series.e} >
                     <div>{ep.series.e}</div>
                 </Tag>
             })}
