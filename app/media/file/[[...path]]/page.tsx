@@ -44,7 +44,7 @@ const DirectoryList = ({ dirList, loading }:
     const { token: { colorBgBase }, } = theme.useToken();
     const searchParams = useSearchParams();
     const pathParams = searchParams.get('path') ?? "/"
-    const [sortConfig, setSortConfig] = useState<{ key: SortKey, dir: SortDirection }>({key: "name", dir:"dec"})
+    const [sortConfig, setSortConfig] = useState<{ key: SortKey, dir: SortDirection }>({ key: "name", dir: "dec" })
     const [filterConfig, setFilterConfig] = useState<string>("");
     const sortedDirList = useMemo(() => (
         (filterConfig ? dirList.filter((item) => item.name.includes(filterConfig)) : dirList)
@@ -58,14 +58,15 @@ const DirectoryList = ({ dirList, loading }:
 
     const footer = <Space.Compact>
         <Cascader style={{ width: 130 }}
+            allowClear={false}
             onChange={(value) => {
-                console.log(value)
-                setSortConfig({
-                    // ...sortConfig,
-                    key: value[0] as SortKey || sortConfig?.key || "name",
-                    dir: value[1] as SortDirection || sortConfig?.dir || "dec",
-                })
-            }} options={sortOption} placeholder="排序" />
+                if (value)
+                    setSortConfig({
+                        // ...sortConfig,
+                        key: value[0] as SortKey || sortConfig?.key || "name",
+                        dir: value[1] as SortDirection || sortConfig?.dir || "dec",
+                    })
+            }} options={sortOption} defaultValue={["name"]} placeholder="排序" />
         <Input
             allowClear
             value={filterConfig}
