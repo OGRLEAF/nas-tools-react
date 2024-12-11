@@ -317,26 +317,22 @@ const MediaFileExplorer = () => {
     </MediaImportProvider>
 }
 
-function MediaFile() {
+export default function MediaFile() {
     return <PathSearchManagerProvider>
         <MediaFileExplorer />
     </PathSearchManagerProvider>
 }
 
-export default memo(MediaFile, (prev, next) => {
-    console.log('memo', prev, next)
-    return false
-})
-
 
 function PathManagerBar() {
     const pathManagerState = usePathManager();
-    const dispath = usePathManagerDispatch();
     const [historyDeepPath, setHistoryDeepPath] = useState(pathManagerState.getPathArray());
+    const [selectedPart, setSelectedPart] = useState<string>('/');
 
     useEffect(() => {
         const latestPath = pathManagerState.getPathArray();
-
+        
+        setSelectedPart(pathManagerState.deepestPath);
         const shouldUpdate = latestPath.length <= historyDeepPath.length ? latestPath.map((part, index) => {
             if (part.name == historyDeepPath[index].name) {
                 return false
@@ -364,15 +360,14 @@ function PathManagerBar() {
 
     const { push } = useFileRouter();
     return <>
-        <Space>
-            <Segmented
-                options={segmentedPathTag}
-                value={pathManagerState.deepestPath}
-                onChange={(evt) => {
-                    push(evt)
-                }
-                }
-            />
-        </Space>
+        <Segmented
+            options={segmentedPathTag}
+            // defaultValue={pathManagerState.deepestPath}
+            value={selectedPart}
+            onChange={(evt) => {
+                push(evt);
+            }
+            }
+        />
     </>
 }

@@ -14,7 +14,7 @@ export interface DownloadSettingForm {
 export type DownloadFormAction = {
     getSetting: () => DownloadSettingForm
 }
-export function _TorrentDownloadForm({
+export function TorrentDownloadFormWithRef({
     layout,
     onChange,
 }: {
@@ -51,4 +51,4 @@ export function _TorrentDownloadForm({
 
 
 
-export const TorrentDownloadForm = forwardRef(_TorrentDownloadForm,)
+export const TorrentDownloadForm = forwardRef(TorrentDownloadFormWithRef)
