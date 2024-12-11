@@ -42,7 +42,7 @@ const LibraryPathForm = (options: { onCreate: (value: string) => void }) => {
 
 type LibraryPathCardAction = { getPaths: () => string[] };
 const LibraryPathCard = forwardRef(
-    function _LibraryPathCard(options: { title: string, paths: string[], }, ref: ForwardedRef<LibraryPathCardAction>) {
+    function LibraryPathCardWithRef(options: { title: string, paths: string[], }, ref: ForwardedRef<LibraryPathCardAction>) {
         const [paths, setPaths] = useState<string[]>([]);
         const { API } = useAPIContext()
         const TableHeader = () => {
