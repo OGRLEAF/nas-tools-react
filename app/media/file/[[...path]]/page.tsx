@@ -67,7 +67,7 @@ const DirectoryList = ({ dirList, loading }:
             } else {
                 return sortConfig?.dir == "dec" ? a.mtime - b.mtime : b.mtime - a.mtime;
             }
-        })), [dirList, sortConfig, filterConfig, filterRegexPattern])
+        })), [dirList, sortConfig, filterRegexPattern])
 
     const footer = <Space.Compact>
         <Cascader style={{ width: 130 }}
