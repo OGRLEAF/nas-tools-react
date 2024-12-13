@@ -54,7 +54,7 @@ export const PathSearchManagerProvider = ({ children }: { children: React.ReactN
     const pathManager = new PathManager('/');
 
     if (path) {
-        console.log(path)
+        // console.log(path)
         pathManager.setPath(path)
     }
 
