@@ -1,7 +1,8 @@
 'use client'
 import { Section, SectionContext } from "@/app/components/Section";
 import { NastoolFileListItem } from "@/app/utils/api/api";
-import { Col, Row, List, Space, Segmented, Button, theme, Table, Cascader, Input, Form, Select, Tooltip, Flex } from "antd";
+import { Col, Row, List, Space, Segmented, Button, theme, Table, Cascader, Input, Form, Select, Tooltip, Flex, Tag } from "antd";
+import { FontColorsOutlined, SmallDashOutlined } from "@ant-design/icons"
 import React, { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ColumnsType, TableRef } from "antd/es/table";
 import FileMoreAction from "@/app/components/fileMoreAction";
@@ -15,6 +16,7 @@ import { useAPIContext } from "@/app/utils/api/api_base";
 import path from "path";
 import { FileLink, useFileRouter } from "@/app/components/FileLink";
 import dayjs from "dayjs";
+import { TagCheckboxGroup } from "@/app/components/TagCheckbox";
 
 type SortKey = "name" | "mtime"
 type SortDirection = "dec" | "inc"
@@ -44,17 +46,28 @@ const DirectoryList = ({ dirList, loading }:
     const { token: { colorBgBase }, } = theme.useToken();
     const searchParams = useSearchParams();
     const pathParams = searchParams.get('path') ?? "/"
+
     const [sortConfig, setSortConfig] = useState<{ key: SortKey, dir: SortDirection }>({ key: "name", dir: "dec" })
     const [filterConfig, setFilterConfig] = useState<string>("");
+    const [matchOptions, setMatchOptions] = useState({
+        matchCase: false,
+        matchWholeWord: false
+    })
+
+    const filterRegexPattern = useMemo(() => {
+        const surround = matchOptions.matchWholeWord ? '\\b' : ''
+        const flag = matchOptions.matchCase ? '' : 'i';
+        return new RegExp(`${surround}${filterConfig ?? '.*'}${surround}`, 'g' + flag)
+    }, [matchOptions, filterConfig]);
+
     const sortedDirList = useMemo(() => (
-        (filterConfig ? dirList.filter((item) => item.name.includes(filterConfig)) : dirList)
-            .sort((a, b) => {
-                if (sortConfig?.key == "name") {
-                    return sortConfig?.dir == "dec" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
-                } else {
-                    return sortConfig?.dir == "dec" ? a.mtime - b.mtime : b.mtime - a.mtime;
-                }
-            })), [dirList, sortConfig, filterConfig])
+        dirList.filter((item) => filterRegexPattern.test(item.name)).sort((a, b) => {
+            if (sortConfig?.key == "name") {
+                return sortConfig?.dir == "dec" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+            } else {
+                return sortConfig?.dir == "dec" ? a.mtime - b.mtime : b.mtime - a.mtime;
+            }
+        })), [dirList, sortConfig, filterConfig, filterRegexPattern])
 
     const footer = <Space.Compact>
         <Cascader style={{ width: 130 }}
@@ -69,7 +82,28 @@ const DirectoryList = ({ dirList, loading }:
             }} options={sortOption} defaultValue={["name"]} placeholder="排序" />
         <Input
             allowClear
+
             value={filterConfig}
+            suffix={<TagCheckboxGroup styles={{
+                tag: {
+                    marginRight: 0, marginLeft: 1, padding: '0 4px'
+                }
+            }}
+                options={
+                    [{
+                        label: <FontColorsOutlined />,
+                        value: 'matchCase'
+                    }, {
+                        label: <SmallDashOutlined />,
+                        value: 'matchWholeWord'
+                    }]}
+                onChange={(tags) => {
+                    setMatchOptions({
+                        matchCase: tags.includes('matchCase'),
+                        matchWholeWord: tags.includes('matchWholeWord')
+                    })
+                }}
+            />}
             onChange={(evt) => {
                 setFilterConfig(evt.target.value);
             }}
@@ -331,7 +365,7 @@ function PathManagerBar() {
 
     useEffect(() => {
         const latestPath = pathManagerState.getPathArray();
-        
+
         setSelectedPart(pathManagerState.deepestPath);
         const shouldUpdate = latestPath.length <= historyDeepPath.length ? latestPath.map((part, index) => {
             if (part.name == historyDeepPath[index].name) {
@@ -370,4 +404,4 @@ function PathManagerBar() {
             }
         />
     </>
-}
+}        
