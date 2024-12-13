@@ -10,6 +10,9 @@ export interface TagCheckboxGroupProps<T = any> {
     options: Array<CheckboxOptionType>;
     value?: Array<T>;
     onChange?: (checkedValue: Array<T>) => void;
+    styles?: {
+        tag?: React.CSSProperties
+    }
 }
 
 export function TagCheckboxGroup<T>(props: TagCheckboxGroupProps<T>) {
@@ -35,6 +38,7 @@ export function TagCheckboxGroup<T>(props: TagCheckboxGroupProps<T>) {
                 {props.options?.map((option) => {
                     return (
                         <CheckableTag
+                            style={props.styles?.tag}
                             key={option.value.toString()}
                             checked={selectedTags.includes(option.value)}
                             onChange={(checked) => handleChange(option.value, checked)}
