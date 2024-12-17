@@ -10,6 +10,7 @@ import TinyTMDBSearch, { MediaDetailCard, MediaSearchGroup, MediaSearchSeason, M
 import { TMDB } from "@/app/utils/api/media/tmdb";
 import { ImportList } from "./mediaImportList";
 import { SearchContext, SearchContextProvider, useSearch } from "../TMDBSearch/SearchContext";
+import TaskBar from "@/app/components/Taskbar"
 import _ from "lodash";
 export interface MediaImportInitial {
     type: NastoolMediaType,
@@ -67,16 +68,15 @@ export default function MediaImportWrapper({ initialValue }: { initialValue?: Me
     const mediaImportContext = useMediaImport();
 
 
-    return (<div>
-        <Drawer placement="top"
+    return (<Drawer placement="top"
+            getContainer={false}
+            title={<TaskBar />}
             open={mediaImportContext.isImportWorkspaceOpen}
             onClose={() => { mediaImportDispatch({ type: "close_workspace" }) }}
             height={850}
-
         >
             <MediaImport />
-        </Drawer>
-    </div>)
+        </Drawer>)
 }
 
 enum EpisodeMethod {
@@ -84,7 +84,7 @@ enum EpisodeMethod {
     EpisodeFormat = 'e'
 }
 
-const MediaImport = () => {
+function MediaImport(){
     const mediaImportContext = useMediaImport();
     const mediaImportDispatch = useMediaImportDispatch();
     const [form] = Form.useForm();

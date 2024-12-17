@@ -9,7 +9,7 @@ import { MediaImportAction, MediaImportFile, MediaImportFileKey, useMediaImportD
 import Table, { ColumnsType } from "antd/es/table";
 import { SearchContext } from "../TMDBSearch/SearchContext";
 import { IconEllipsisLoading } from "../icons";
-import _, { values } from "lodash";
+import _ from "lodash";
 import { ImportMode } from "@/app/utils/api/api";
 import { DownloadPathSelect, EmptyPathSelect, LibraryPathSelect, PathTreeSelect, UnionPathsSelectGroup } from "../LibraryPathSelector";
 // import { useImportListContext } from "./mediaImportList";
@@ -385,11 +385,10 @@ function TableIdentifyColumn(options: { value: number | string | undefined, file
             {
                 loading ? <IconEllipsisLoading /> : work ? <>
                     <span style={{
-                        overflow: "hidden",
                         whiteSpace: "nowrap",
                         textOverflow: "ellipsis",
                         maxWidth: 200,
-                        lineHeight: "1em",
+                        lineHeight: 0,
                         display: "inline-block"
                     }}>{work.metadata?.title}</span>
                 </> : <></>

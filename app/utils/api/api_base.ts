@@ -144,6 +144,8 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
     public async validateHook?(value: ItemType<T>): Promise<[boolean, string]>;
 
     public async updateManyHook?(value: UpdateItemType<T>[], options?: UpdateOptionType<T>): Promise<void>;
+
+    public async actionHook?(action: string, paylaod: ItemType<T>): Promise<void>;
 }
 
 
@@ -253,12 +255,14 @@ export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) =>
             true
         ) : undefined;
 
+    const action = (async (action: string, payload: ItemType<T>) => self.actionHook?.(action, payload));
+
     return {
         useList: () => {
             useListCache = useList(API);
             return useListCache;
         },
-        add, del, val,
+        add, del, val, update,
         confirm: (action?: (value: T) => any) => {
             if (action)
                 return async (value: ItemType<T>, title?: string, content?: string) => {
@@ -270,10 +274,12 @@ export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) =>
                 }
         },
         delMany,
-        updateMany: updateMany,
+        updateMany,
+        action,
+        
         messageContext: [message.contextHolder, modalContextHolder],
         message,
-        update: update,
+
         api: self
 
     }

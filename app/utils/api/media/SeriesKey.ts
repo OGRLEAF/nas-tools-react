@@ -65,11 +65,11 @@ export class SeriesKey {
   }
 
 
-  public episode(episode: EpisodeKeyType) {
+  public episode(episode?: EpisodeKeyType) {
     if (this.t == MediaWorkType.MOVIE) return this;
     if (this.seasonKey != undefined) {
       this._end = SeriesKeyType.EPISODE
-      this.episodeKey = episode;
+      this.episodeKey = episode ?? -1;
     }
     return this
   }

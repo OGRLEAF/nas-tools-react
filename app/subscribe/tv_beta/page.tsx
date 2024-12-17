@@ -38,7 +38,7 @@ function CardsList() {
     />
 }
 
-const episodeStateColor:Record<SubsStatus, string> = {
+const episodeStateColor: Record<SubsStatus, string> = {
     [SubsStatus.scheduled]: "blue",
     [SubsStatus.fetching]: "green",
     [SubsStatus.finished]: "purple",
@@ -62,9 +62,10 @@ function SubsItemCard({ record }: { record: TVSubsProfile }) {
         onClick={(evt) => {
             evt.stopPropagation();
             ctx.openEditor(record, { title: <>{ctx.options.title} / {metadata?.title} / {season?.metadata?.title}</> });
-        }}
-    >编辑</Button>
-    const refreshButton = <Button type="text" icon={<RetweetOutlined />} size="small">刷新</Button>
+        }} >编辑</Button>
+    const refreshButton = <Button type="text" icon={<RetweetOutlined />}
+        onClick={() => ctx.resource.action && ctx.resource.action('refresh', record)}
+        size="small">刷新</Button>
     const deleteButton = <Button type="text" icon={<DeleteOutlined />} danger
         onClick={() => { ctx.resource.del && ctx.resource.del(record) }}
         size="small">删除</Button>
@@ -72,7 +73,7 @@ function SubsItemCard({ record }: { record: TVSubsProfile }) {
     const episodesList = <Space wrap>
         {episodes?.toSorted((a, b) => (a.series.e || 0) - (b.series.e || 0))
             .map((ep, idx) => {
-                const episodeState = ep.series.e && record.state.episodes[ep.series.e].status || SubsStatus.disabled;
+                const episodeState = ep.series.e && record.state.episodes[ep.series.e]?.status || SubsStatus.disabled;
                 return <Tag color={episodeStateColor[episodeState]} className="episode-tag" key={ep.series.e} >
                     <div>{ep.series.e}</div>
                 </Tag>
@@ -131,7 +132,7 @@ const SubscribeTVForm = ({ record: profile, onChange }: { record?: TVSubsProfile
     useEffect(() => {
         if (seriesKeyLegacy?.end == SeriesKeyType.SEASON) {
             setSelectedSeries(new SeriesKey().type(seriesKeyLegacy.t).tmdbId(String(seriesKeyLegacy.i)).season(seriesKeyLegacy.s || null)
-                .episode(-1))
+                .episode())
         }
     }, [seriesKeyLegacy])
 
@@ -144,7 +145,7 @@ const SubscribeTVForm = ({ record: profile, onChange }: { record?: TVSubsProfile
             onFinish={(values) => {
                 const seriesKeyLagcy: SeriesKeyLegacy = values._series
                 const seriesKey = new SeriesKey().type(seriesKeyLagcy.t).tmdbId(String(seriesKeyLagcy.i)).season(seriesKeyLagcy.s || null)
-                    .episode(-1)
+                    .episode()
 
                 const mergedProfile = _.merge(profile, values, { series_key: seriesKey.dump(), _series: undefined })
                 onChange?.({

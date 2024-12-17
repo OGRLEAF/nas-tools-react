@@ -83,6 +83,10 @@ export class TVSubscribe extends APIArrayResourceBase<TVSubsResource> {
         return true;
     }
 
+    public async action(action:string, payload: TVSubsProfile) {
+        return await this.API.post(`subscribe/subs/${payload.id}/action/${action}`, { auth: true, json: true });
+    }
+
     public async updateHook(value: any, options?: any): Promise<boolean> {
         return this.update(value);
     }
@@ -97,5 +101,10 @@ export class TVSubscribe extends APIArrayResourceBase<TVSubsResource> {
 
     public async deleteHook(value: TVSubsProfile, options?: any): Promise<boolean> {
         return this.del(value.id)
+    }
+
+    public async actionHook(action: string, payload: TVSubsProfile) {
+        console.log(action, payload)
+        await this.action(action, payload);
     }
 }

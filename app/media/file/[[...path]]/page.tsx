@@ -2,7 +2,7 @@
 import { Section, SectionContext } from "@/app/components/Section";
 import { NastoolFileListItem } from "@/app/utils/api/api";
 import { Col, Row, List, Space, Segmented, Button, theme, Table, Cascader, Input, Form, Select, Tooltip, Flex, Tag } from "antd";
-import { FontColorsOutlined, SmallDashOutlined } from "@ant-design/icons"
+import { BarsOutlined, BuildOutlined, FontColorsOutlined, SmallDashOutlined } from "@ant-design/icons"
 import React, { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ColumnsType, TableRef } from "antd/es/table";
 import FileMoreAction from "@/app/components/fileMoreAction";
@@ -276,8 +276,11 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
     </Table>
 }
 
+function AnalyzedFileList() {
+    return <></>
+}
 
-const MediaFileExplorer = () => {
+function MediaFileExplorer() {
     const [loadingState, setLoadingState] = useState(true)
     const [dirList, setDirList] = useState<NastoolFileListItem[]>([])
     const [fileList, setFileList] = useState<NastoolFileListItem[]>([])
@@ -286,6 +289,7 @@ const MediaFileExplorer = () => {
     const router = useRouter()
     const { API } = useAPIContext();
     const [selectedFiles, setSelectedFiles] = useState<NastoolFileListItem[]>([]);
+    const [view, setView] = useState<string>('plain')
 
     const { fallback } = useFileRouter();
     const onRefresh = useCallback(async () => {
@@ -331,20 +335,30 @@ const MediaFileExplorer = () => {
         <Section title="文件管理" onRefresh={onRefresh} style={{ height: "100%" }}>
             <Flex justify="space-between">
                 <PathManagerBar />
-                <MediaImportEntry
-                    flush={true}
-                    appendFiles={importFiles}
-                />
+                <Space>
+                    <Segmented value={view} block={true} onChange={(value) => setView(value)} options={[{
+                        label: <BuildOutlined title="分析视图" />,
+                        value: 'analyzed'
+                    }, {
+                        label: <BarsOutlined title="平铺视图" />,
+                        value: 'plain',
+                    }]} />
+                    <MediaImportEntry
+                        flush={true}
+                        appendFiles={importFiles}
+                    />
+                </Space>
             </Flex>
             <Row gutter={16} >
                 <Col span={6}>
                     <DirectoryList dirList={dirList} loading={loadingState} />
                 </Col>
                 <Col span={18}>
+                    {view == "plain" ? 
                     <FileList fileList={fileList}
                         loading={loadingState}
                         selected={selectedFiles}
-                        onSelectedChange={(files) => setSelectedFiles(files)} />
+                        onSelectedChange={(files) => setSelectedFiles(files)} />: <AnalyzedFileList />}
                 </Col>
             </Row>
         </Section>
