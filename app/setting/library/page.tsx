@@ -1,5 +1,5 @@
 "use client"
-import { App, Button, Card, Form, Input, List, Modal, Space, Table } from "antd";
+import { App, Button, Card, Form, Input, List, Modal, Space, Table, theme } from "antd";
 import React, { ForwardedRef, forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 
 import { PlusOutlined, CloseOutlined, RedoOutlined } from "@ant-design/icons"
@@ -60,7 +60,7 @@ const LibraryPathCard = forwardRef(
         }, [options])
 
         const { confirm } = Modal;
-
+        const { token } = theme.useToken();
         useImperativeHandle(ref, () => {
             return {
                 getPaths: () => paths
@@ -85,6 +85,7 @@ const LibraryPathCard = forwardRef(
             }
         }))
         return <List size="small" dataSource={tableData} bordered header={<TableHeader />}
+            style={{ backgroundColor: token.colorBgBase }}
             renderItem={(item) => <List.Item
                 actions={[
                     <Button key="delete_btn" type="text" danger icon={<CloseOutlined />} onClick={() => item.onDelete(item.value)} />
