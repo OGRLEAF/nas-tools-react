@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useTaskflow, useTaskflowList } from './TaskflowContext';
 import { Button, Card, Collapse, Divider, List, Space, Tag, theme } from 'antd';
 import { TaskState, TaskflowInfo } from '@/app/utils/api/taskflow';
-import { SyncOutlined, LoadingOutlined, CheckOutlined, RedoOutlined, ExclamationOutlined, CloseOutlined,  ClockCircleOutlined } from "@ant-design/icons"
+import { SyncOutlined, LoadingOutlined, CheckOutlined, RedoOutlined, ExclamationOutlined, CloseOutlined, ClockCircleOutlined } from "@ant-design/icons"
 import dayjs, { Dayjs } from 'dayjs';
 import _ from 'lodash';
 
@@ -152,22 +152,10 @@ export function TaskflowCardContent({ taskflow }: { taskflow: TaskflowInfo }) {
 }
 
 const LogLevelStateTag: Record<string, any> = {
-    INFO: {
-        key: "INFO",
-        color: "blue",
-    },
-    DEBUG: {
-        key: "DEBUG",
-        color: "geekblue"
-    },
-    WARN: {
-        key: "WARN",
-        color: "warning"
-    },
-    ERROR: {
-        key: "ERROR",
-        color: "error"
-    },
+    INFO: ["INFO", "blue"],
+    DEBUG: ["DEBUG", "geekblue"],
+    WARNING: ["WARN", "warning"],
+    ERROR: ["ERROR", "error"]
 }
 
 
@@ -178,9 +166,10 @@ export function TaskLog({ logs }: { logs: TaskState['logs'] }) {
         size="small"
         dataSource={logs}
         renderItem={(item) => {
+            const [levelText, color] = LogLevelStateTag[item.level];
             const dateStr = dayjs(item.create_time * 1000).format("YYYY.MM.DD HH:mm:ss")
-            const label = <Tag bordered={false} color={LogLevelStateTag[item.level].color}>{dateStr}<Divider type="vertical" />
-                <div style={{ display: "inline-block", minWidth: "4em" }}>{item.level}</div>
+            const label = <Tag bordered={false} color={color}>{dateStr}<Divider type="vertical" />
+                <div style={{ display: "inline-block", minWidth: "4em" }}>{levelText}</div>
             </Tag>
             return <List.Item style={{ fontSize: token.fontSizeSM, padding: "4px 0" }}>
                 {label}{item.msg}
