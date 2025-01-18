@@ -30,7 +30,7 @@ export const Section = ({ children, title, extra, onRefresh, interval: _interval
     const { token } = theme.useToken()
     const contentHeight = useMemo(() => window.innerHeight + (headRef.current?.scrollHeight ?? 0) - 8, [token.Layout?.headerHeight])
     return (
-        <Flex ref={outRef} style={{ width: "100%", maxHeight: titleLevel == 1 ? "100%" : undefined, marginBottom: 12, ...style }} vertical gap={4}>
+        <Flex ref={outRef} style={{ width: "100%", maxHeight: titleLevel == 1 ? "100%" : undefined, marginBottom: 0, ...style }} vertical gap={4}>
             <Flex ref={headRef} style={{ marginBottom: 4, width: "100%", height: token.Layout?.headerHeight }} align="end" justify="space-between">
                 {titleLevel == 1 ? <Typography.Title style={{ fontSize: `${1.9 - titleLevel * 0.25}em` }} level={titleLevel}>{title}</Typography.Title>
                     :
