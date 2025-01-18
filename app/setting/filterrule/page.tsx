@@ -1,15 +1,12 @@
 "use client"
 import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
 import { IconAdd, IconDelete, IconEdit } from "@/app/components/icons";
-import { asyncEffect, bytes_to_human } from "@/app/utils";
 import { FilterRuleGroup, FilterRuleGroupConfig, FilterRuleConfig } from "@/app/utils/api/filterrule";
-import { Button, Card, Checkbox, Col, ConfigProvider, Drawer, Form, Input, InputNumber, List, Modal, Radio, Row, Select, Slider, Space, Tag } from "antd";
-import { PlusOutlined, MinusCircleOutlined, CloseCircleOutlined } from "@ant-design/icons"
+import { Button, Checkbox, Col, ConfigProvider, Drawer, Form, Input, InputNumber, List, Modal, Row, Space, Tag, Flex } from "antd";
+import { PlusOutlined, MinusCircleOutlined } from "@ant-design/icons"
 import { useForm } from "antd/es/form/Form";
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { TabCards } from "@/app/components/CardnForm/TabCards";
-import CheckableTag from "antd/es/tag/CheckableTag";
-import { idText } from "typescript";
 import { useAPIContext } from "@/app/utils/api/api_base";
 
 
@@ -80,10 +77,15 @@ export default function FilterRulePage() {
         }
     >
         <TabCards
+            tabsProps={{
+                tabPosition: "left",
+                type: "editable-card",
+                removeIcon: <></>
+            }}
             cardProps={(record: FilterRuleGroupConfig) => {
                 return ({
-                    title: <>{record.default ? <Tag bordered={false} color="blue">默认</Tag> : <></>} {record.name}</>,
-                    description: <Space direction="vertical" size="small" style={{ alignItems: "stretch", width: "100%" }}>
+                    title: <Space>{record.name}{record.default ? <Tag bordered={false} color="blue">默认</Tag> : <></>}</Space>,
+                    description: <Space direction="vertical" size="small" style={{ alignItems: "stretch", width: "100%", }}>
                         <FilterRuleList filterRuleGroup={record} />
                     </Space>
                 });
@@ -119,19 +121,23 @@ function FilterRuleList({ filterRuleGroup }: { filterRuleGroup: FilterRuleGroupC
     }, [filterRuleGroup.default])
     const [openDrawer, setOpenDrawer] = useState(false)
     return <>
-        <Space direction="vertical">
-            <Checkbox checked={isDefault}
-                onChange={(value) => {
-                    if (value) {
-                        setDefault(true);
-                        execDefault();
-                    }
-                }}>默认</Checkbox>
-            <Button size="small" onClick={() => setOpenDrawer(true)} icon={<IconAdd />} type="primary">新增规则</Button>
+        <Flex style={{ width: "100%", justifyContent: 'space-between' }} >
+            <Space>
+                <Checkbox checked={isDefault}
+                    onChange={(value) => {
+                        if (value) {
+                            setDefault(true);
+                            execDefault();
+                        }
+                    }}>设为默认</Checkbox>
+
+                <Button onClick={() => ctx.performDelete(filterRuleGroup, {title: filterRuleGroup.name, description: filterRuleGroup.name})} icon={<IconDelete />} type="text" danger>删除规则组</Button>
+            </Space>
+            <Button onClick={() => setOpenDrawer(true)} icon={<IconAdd />} type="primary">新增规则</Button>
             <Drawer size="large" open={openDrawer} onClose={() => setOpenDrawer(false)}>
                 <FilterRuleEditForm initialValue={{ ...defaultRuleConfig, group: filterRuleGroup.id }} />
             </Drawer>
-        </Space>
+        </Flex>
         <ConfigProvider
             theme={{
                 components: {
