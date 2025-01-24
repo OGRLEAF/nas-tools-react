@@ -337,10 +337,10 @@ function MediaFileExplorer() {
                 <PathManagerBar />
                 <Space>
                     <Segmented value={view} block={true} onChange={(value) => setView(value)} options={[{
-                        label: <BuildOutlined title="分析视图" />,
+                        icon: <BuildOutlined title="分析视图" />,
                         value: 'analyzed'
                     }, {
-                        label: <BarsOutlined title="平铺视图" />,
+                        icon: <BarsOutlined title="平铺视图" />,
                         value: 'plain',
                     }]} />
                     <MediaImportEntry

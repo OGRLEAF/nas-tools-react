@@ -91,6 +91,7 @@ const getMenuItems = async (API: NASTOOL) => {
       getItem("手动识别", '/media/manual', <IconLink />),
       getItem("历史记录", '/media/history', <IconHistory />),
       getItem("TMDB缓存", '/media/tmdb-db', <IconDatabase />),
+      getItem("TMDB缓存(Beta)", '/media/tmdb-db_beta', <IconDatabase />),
     ]),
     getItem("设置", "/setting", <SettingOutlined />, [
       getItem("基础设置", "/setting/basic", <ToolOutlined />),

@@ -314,59 +314,6 @@ const EpisodeInputFromFormat = (options: { onChange: (value: number[]) => void, 
     </Space>
 }
 
-const MediaSearch = ({ value, onChange }: { value?: string[], onChange?: (value: SeriesKey) => void }) => {
-    const searchContext = useContext(SearchContext);
-    const { setSelected, selected, series, setSeries } = searchContext;
-    const [seasons, setSeasons] = useState<MediaWorkSeason[]>([])
-    const [loading, setLoading] = useState(false)
-
-    const onTMDBSelected = async (value: MediaWork) => {
-        setSeasons([])
-        setLoading(true)
-        const work = new TMDB().work(String(value.key), value.type)
-        const mediaWork = await work.get();
-        if (mediaWork) setSeries(new SeriesKey(mediaWork.series).tmdbId(mediaWork.key))
-        setLoading(false)
-    }
-    const isTvSeries = useMemo(() => {
-        return (series.t == MediaWorkType.TV || series.t == MediaWorkType.ANI)
-    }, [series])
-    useEffect(asyncEffect(async () => {
-        if (series.i != undefined) {
-            const media = new TMDB().fromSeries(series.slice(SeriesKeyType.TMDBID));
-            const mediaWork = await media?.get();
-            if (mediaWork && media) {
-                setSelected(mediaWork);
-            }
-        }
-    }), [series.i])
-
-
-    useEffect(() => {
-        if (onChange) onChange(new SeriesKey(series))
-    }, [series])
-
-    return <Space direction="vertical" style={{ width: "100%" }}>
-        <TinyTMDBSearch onSelected={onTMDBSelected} />
-        {/* <MediaDetailCardFromSearch loading={loading} />
-         */}
-        <Spin spinning={loading} style={{ height: "150px", }}>
-            <MediaDetailCard mediaDetail={selected} size="small" />
-        </Spin>
-        {isTvSeries ?
-            <Space>
-                季：<MediaSeasonInput style={{ width: 250 }}
-                    series={series}
-                    onChange={(value) => {
-
-                        if (series.has("tmdbId")) {
-                            setSeries(new SeriesKey(series).season(value))
-                        }
-                    }} />
-            </Space>
-            : <></>}
-    </Space>
-}
 
 export const MediaSeasonInput = ({ series, value, onChange, style }: { series: SeriesKey, value?: number, onChange?: (value: number) => void, style?: CSSProperties }) => {
     const [seasonOptions, setSeasonOptions] = useState<SelectProps['options']>([])

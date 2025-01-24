@@ -37,7 +37,7 @@ const tvImportColumns: ColumnsType<MediaImportFile> = [{
     title: "季",
     render: (value, record) => {
         // const [changed, finalValue] = isOverriden(value, record.overridenIdentify?.season);
-        return <TableIdentifyColumn value={record.indentifyHistory.last().s} file={record} displayKey={SeriesKeyType.SEASON} />
+        return <TableIdentifyColumn file={record} displayKey={SeriesKeyType.SEASON} />
     },
     // width: 250,
     shouldCellUpdate: (record, prevRecord) => !_.isEqual(record, prevRecord)  //checkIdentityChange(record, prevRecord, "season")
@@ -45,7 +45,7 @@ const tvImportColumns: ColumnsType<MediaImportFile> = [{
 {
     title: "集",
     render: (value, record) => {
-        return <TableIdentifyColumn value={record.indentifyHistory.last().e} file={record} displayKey={SeriesKeyType.EPISODE} />
+        return <TableIdentifyColumn file={record} displayKey={SeriesKeyType.EPISODE} />
     },
     // width: 250,
     shouldCellUpdate: (record, prevRecord) => !_.isEqual(record, prevRecord) // checkIdentityChange(record, prevRecord, "episode")
@@ -287,7 +287,7 @@ function MovieImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: 
                         path: files[0].path,
                         rmt_mode: value.type,
                         files: files.map((file) => [0, file.name]),
-                        season: mergedSeriesKey.s,
+                        season: mergedSeriesKey.s != null ? mergedSeriesKey.s : undefined ,
                         tmdbid: String(mergedSeriesKey.i),
                         mediaType: mergedSeriesKey.t
                     })
@@ -323,7 +323,7 @@ function ImportListItemAction({ fileKey }: { fileKey: MediaImportFileKey }) {
     return <Button key="delete_button" size="small" style={{ padding: 0 }} danger icon={<CloseOutlined />} onClick={onClick} type="text"></Button>
 }
 
-function TableIdentifyColumn(options: { value: number | string | undefined, file: MediaImportFile, displayKey: SeriesKeyType }) {
+function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: SeriesKeyType }) {
     const [work, setWork] = useState<MediaWork>();
     const { file, displayKey: key } = options;
     const [lastest, old] = file.indentifyHistory.lastDiffs();
@@ -358,7 +358,7 @@ function TableIdentifyColumn(options: { value: number | string | undefined, file
 
     const onSelect = () => {
         if (work) {
-            setSeries(new SeriesKey().type(work.type).tmdbId(work.key))
+            setSeries(new SeriesKey().type(work.type).tmdbId(String(work.key)))
         }
     }
     const popCard = <Space direction="vertical">
