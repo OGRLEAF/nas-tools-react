@@ -154,25 +154,28 @@ export default function TMDBCache() {
         }
     }
 
-    return <Table
-        rowSelection={{
-            type: "checkbox",
-        }}
-        loading={loading}
-        rowKey={(record) => record[0]}
-        size="small"
-        dataSource={list}
+    return <>
+        <br />
+        <Table
+            rowSelection={{
+                type: "checkbox",
+            }}
+            loading={loading}
+            rowKey={(record) => record[0]}
+            size="small"
+            dataSource={list}
 
-        columns={columns}
-        pagination={{
-            ...pagination,
-            total: total,
-            pageSizeOptions: [10, 20, 50, 100],
-            onChange: (page, pageSize) => {
-                setPagination({ ...pagination, current: page, pageSize })
-            }
+            columns={columns}
+            pagination={{
+                ...pagination,
+                total: total,
+                pageSizeOptions: [10, 20, 50, 100],
+                onChange: (page, pageSize) => {
+                    setPagination({ ...pagination, current: page, pageSize })
+                }
 
-        }}
-        onChange={onTableChange}
-    />
+            }}
+            onChange={onTableChange}
+        />
+    </>
 }
