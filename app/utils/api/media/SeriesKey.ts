@@ -1,4 +1,4 @@
-import { MediaWorkType, MediaWork, MediaWorkSeason, MediaWorkEpisode, SeriesKeyType } from "../types";
+import { MediaWorkType, SeriesKeyType } from "../types";
 
 
 type UnsetKeyType = -1;
@@ -18,11 +18,12 @@ export type SeriesKeyTuple = [
 
 
 export class SeriesKey {
+
   private typeKey: MediaWorkType = MediaWorkType.UNKNOWN;
   private tmdbIdKey?: string;//  MediaWork['key']
   private seasonKey: SeasonKeyType = -1;
   private episodeKey: EpisodeKeyType = -1;
-  private _end: SeriesKeyType = SeriesKeyType.NULL;
+  protected _end: SeriesKeyType = SeriesKeyType.NULL;
 
   constructor(keys?: SeriesKey) {
     if (keys) {
@@ -55,11 +56,12 @@ export class SeriesKey {
     return this
   }
 
-  public season(season: SeasonKeyType) {
+  public season(season?: SeasonKeyType) {
     if (this.t == MediaWorkType.MOVIE) return this;
     if (this.tmdbIdKey != undefined) {
-      this._end = SeriesKeyType.SEASON
-      this.seasonKey = season;
+      this.seasonKey = season ?? -1;
+      if(this.seasonKey != -1)
+        this._end = SeriesKeyType.SEASON
     }
     return this
   }
@@ -68,8 +70,10 @@ export class SeriesKey {
   public episode(episode?: EpisodeKeyType) {
     if (this.t == MediaWorkType.MOVIE) return this;
     if (this.seasonKey != undefined) {
-      this._end = SeriesKeyType.EPISODE
       this.episodeKey = episode ?? -1;
+      if (this.episodeKey != -1) {
+        this._end = SeriesKeyType.EPISODE
+      }
     }
     return this
   }

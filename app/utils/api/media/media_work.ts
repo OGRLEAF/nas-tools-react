@@ -53,12 +53,17 @@ export class MediaWorkService extends APIBase {
         }
     }
 
-    public async getChildrenBySeriesKey(series_key: SeriesKey) {
+    public async getEntriesBySeriesKey(series_key: SeriesKey) {
         const [t, ...keys] = series_key.dump();
+        console.log(t, keys)
         const queryType = t && this.typeMap[t as MediaWorkType]
         if (t) {
-            const query_path = keys.join("/")
-            const media_work = this.API.get<{ list: MediaWorkData[] }>(`media_work/${queryType}/${query_path}/s`, { auth: true })
+            console.log(keys, keys.length)
+            const useCache = keys.length == 0;
+            const queryPath = [queryType, ...keys, 'all', ] 
+            if(useCache)
+                queryPath.push('cached') 
+            const media_work = this.API.get<{ list: MediaWorkData[] }>(`media_work/${queryPath.join('/')}`, { auth: true })
             return (await media_work).list.map((item) => ({
                 ...item,
                 series: SeriesKey.load(item.series)
@@ -87,7 +92,7 @@ export class TMDBMediaWork {
     }
 
     public async getChildren() {
-        const mediaWorks = await new MediaWorkService().getChildrenBySeriesKey(this.series_key)
+        const mediaWorks = await new MediaWorkService().getEntriesBySeriesKey(this.series_key)
         return mediaWorks
     }
 }
@@ -96,6 +101,7 @@ export class TMDBMediaWork {
 export function useMediaWork(series_key: SeriesKey) {
     const [mediaWork, setMediaWork] = useState<MediaWork>();
     useEffect(() => {
+      if(series_key.end >= SeriesKeyType.TMDBID)
         new TMDBMediaWork(series_key).get()
             .then(mediaWork => {
                 setMediaWork(() => mediaWork)

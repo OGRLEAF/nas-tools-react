@@ -67,13 +67,42 @@ export enum SeriesKeyType {
   EPISODE = 3,
 }
 
-export class SeriesKey {
+
+// TODO: For migrating to beta
+import { SeriesKey  as SeriesKeyBase } from "./media/SeriesKey"
+
+export class SeriesKey extends SeriesKeyBase {
+
+  public equal(s: SeriesKey) {
+    return this.compare(s) == SeriesKeyType.EPISODE
+  }
+  public uniqueKey() {
+    return this.dump().join('-')
+    // return `${this.typeKey}-${this.tmdbIdKey}-${this.seasonKey}-${this.episodeKey}`
+  }
+  public merge(s: SeriesKey) {
+    return new SeriesKey(this).type(s.t ?? this.t).tmdbId(s.i ?? this.i).season(s.s ?? this.s).episode(s.e ?? this.e)
+  }
+  public slice(key: SeriesKeyType) {
+    const s = new SeriesKey(this);
+    if (s._end > key) {
+      s._end = key;
+    }
+
+    return s
+  }
+}
+
+/**
+ * @deprecated
+  */
+export class SeriesKeyLegacy {
   private typeKey: MediaWorkType = MediaWorkType.UNKNOWN;
   private tmdbIdKey?: MediaWork['key']
   private seasonKey?: MediaWorkSeason['key'];
   private episodeKey?: MediaWorkEpisode['key'];
   private _end: SeriesKeyType = SeriesKeyType.NULL;
-  constructor(keys?: SeriesKey) {
+  constructor(keys?: SeriesKeyLegacy) {
     if (keys) {
       this.episodeKey = keys.episodeKey;
       this.seasonKey = keys.seasonKey;
@@ -203,7 +232,10 @@ export class SeriesKey {
   }
 }
 
-export interface MediaWork {
+// TODO: For migrating to beta
+import { MediaWork as MediaWorkBase } from "./media/media_work"
+
+export interface MediaWork extends MediaWorkBase {
   series: SeriesKey,
   type: MediaWorkType,
   key: number | string,

@@ -2,6 +2,7 @@ import React, { CSSProperties, useCallback, useContext, useEffect, useMemo, useS
 import { NastoolServerConfig } from "../../utils/api/api";
 import { AutoComplete, Input, Space, theme, Typography, Empty, Select, Flex, Spin, SelectProps, Button } from "antd";
 import { TMDB } from "../../utils/api/media/tmdb";
+import { MediaWork as MediaWorkBase } from "../../utils/api/media/media_work";
 import { MediaWork, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "../../utils/api/types";
 import { SearchContext, SearchContextType, useSearch } from "./SearchContext";
 import { ServerConfig } from "@/app/utils/api/serverConfig";
@@ -127,7 +128,7 @@ export function CoverImage(options: { alt: string, src: string, maxHeight?: numb
 }
 
 export interface MediaDetailCardProps {
-    mediaDetail?: MediaWork,
+    mediaDetail?: MediaWorkBase,
     size?: CardSize,
     action?: React.ReactNode,
     layout?: "vertical" | "horizonal",
@@ -148,7 +149,8 @@ export function MediaDetailCard({
     const style = cardStyleMap[_size];
 
     const metadata = mediaDetail?.metadata
-    const coverImage = metadata?.images?.cover && <CoverImage maxHeight={style.height} alt={metadata.title} src={metadata?.images?.cover} />
+    const coverImage = metadata?.images?.cover && 
+       <CoverImage maxHeight={style.height} alt={metadata.title} src={metadata?.images?.cover} />
 
     const titleArea = useMemo(() => mediaDetail &&
         <Flex style={{
@@ -158,7 +160,7 @@ export function MediaDetailCard({
             ...style.title
         }} justify="space-between" align="end">
             <Space>
-                <span style={{ fontSize: "1.25rem", fontWeight: "bold" }}>{mediaDetail.title}</span>
+                <span style={{ fontSize: "1.25rem", fontWeight: "bold" }}>{metadata?.title}</span>
                 <span style={{ fontSize: "1rem" }}> {metadata?.date?.release}</span>
                 <StateTag stateMap={stateTagMap} value={mediaDetail.series.t ?? MediaWorkType.UNKNOWN} />
             </Space>
@@ -351,7 +353,7 @@ export function MediaSearchGroup({ value, onChange, children, filter }: MediaSea
         setLoading(true)
         const work = new TMDB().work(String(value.key), value.type)
         const mediaWork = await work.get();
-        if (mediaWork) setSeries(new SeriesKey(mediaWork.series).tmdbId(mediaWork.key))
+        if (mediaWork) setSeries(new SeriesKey(mediaWork.series).tmdbId(String(mediaWork.key)))
         setLoading(false)
     }, [])
 
@@ -416,7 +418,8 @@ export function MediaSearchSeason() {
     }
 }
 
-export const MediaSeasonInput = ({ series, value, onChange, style }: { series: SeriesKey, value?: number, onChange?: (value: number) => void, style?: CSSProperties }) => {
+export const MediaSeasonInput = ({ series, value, onChange, style }: 
+  { series: SeriesKey, value?: SeriesKey['seasonKey'], onChange?: (value: number) => void, style?: CSSProperties }) => {
     const [seasonOptions, setSeasonOptions] = useState<SelectProps['options']>([])
     const [loading, setLoading] = useState(false)
     const updateSeason = useCallback(async (series: SeriesKey) => {
