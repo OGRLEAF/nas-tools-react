@@ -16,7 +16,7 @@ export type EpisodeKeyType = NumericKeyType
 export type SeriesKeyTuple = [
   MediaWorkType, TmdbIdType, SeasonKeyType, EpisodeKeyType]
 
-
+// TODO: Better to seperate SeriesKey to multiple level: TypeKey -> TMDBKey -> SeasonKey -> EpisodeKey -> SeriesKey
 export class SeriesKey {
 
   private typeKey: MediaWorkType = MediaWorkType.UNKNOWN;
@@ -147,4 +147,11 @@ export class SeriesKey {
 
     return s
   }
+
+  public stepUpper() {
+    if(this._end >= SeriesKeyType.TMDBID) {
+      return this.slice(this._end - 1)
+    } 
+  }
+
 }

@@ -4,58 +4,69 @@ import { Section } from "@/app/components/Section";
 import { useMediaWork, useMediaWorks } from "@/app/utils/api/media/media_work"
 import { SeriesKey } from "@/app/utils/api/media/SeriesKey"
 import { MediaWorkType, SeriesKeyType } from "@/app/utils/api/types"
-import { Segmented, Table } from "antd";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { Button, Segmented, Table } from "antd";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 const defaultSeriesKey = new SeriesKey().type(MediaWorkType.TV);
 
-type PathParamsAllowType = MediaWorkType.TV | MediaWorkType.MOVIE;
 
-const pathParamsMap: Record<PathParamsAllowType, string | undefined> = {
-  [MediaWorkType.TV]: 'tv',
-  [MediaWorkType.MOVIE]: 'movie'
+function TitleLabel({ seriesKey }: { seriesKey: SeriesKey }) {
+  const [mediaWork] = useMediaWork(seriesKey)
+  return <>{seriesKey.end > SeriesKeyType.TYPE ? mediaWork?.metadata?.title : seriesKey.t}</>
 }
 
-const mapPathParams = Object.fromEntries(Object.entries(pathParamsMap).map(([k, v]) => [v, k]))
 
 export default function TMDBBeta({ params }: { params: { series_key?: string[] } }) {
 
-  const pagePath = usePathname()
+  const [seriesKey, setSeriesKey] = useState<SeriesKey>(defaultSeriesKey)
+  const [sliceKey, setSliceKey] = useState<SeriesKeyType>(SeriesKeyType.TYPE)
+  const slicedSeriesKey = useMemo(() => seriesKey.slice(sliceKey), [sliceKey, seriesKey])
 
-  const seriesKey = useMemo(() => {
-    const seriesKey = new SeriesKey();
-    // TODO: use TV as default type
-    seriesKey.type(MediaWorkType.TV)
+  const [mediaWorks, loading] = useMediaWorks(slicedSeriesKey);
+  const [mediaWork,] = useMediaWork(slicedSeriesKey);
 
-    if (params.series_key) {
-      if (params.series_key[0] == 'tv') {
-        seriesKey.type(mapPathParams[params.series_key[0]] as MediaWorkType)
+  const [pathSegments, setPathSegements] = useState([{
+    label: <>{defaultSeriesKey.get(defaultSeriesKey.end)}</>,
+    value: defaultSeriesKey.end
+  }])
+  useEffect(() => {
+    setPathSegements((pathSegments) => {
+      const farestKey = pathSegments[pathSegments.length - 1];
+      if ((farestKey.value < seriesKey.end))
+        return [...pathSegments, {
+          label: <TitleLabel seriesKey={seriesKey} />,
+          // label: seriesKey.get(seriesKey.end),
+          value: seriesKey.end,
+        }]
+      else {
+        return [...pathSegments.slice(0, seriesKey.end),
+        {
+          // label: seriesKey.get(seriesKey.end),
+          label: <TitleLabel seriesKey={seriesKey} />,
+          value: seriesKey.end
+        }
+        ]
       }
-      if (params.series_key[1])
-        seriesKey.tmdbId(params.series_key[1])
-      if (params.series_key[2] && Number.isInteger(Number(params.series_key[2]))) {
-        seriesKey.season(Number(params.series_key[2]))
-      }
-      return seriesKey;
-    } else
-      return defaultSeriesKey
-  }, [params])
+    })
+  }, [seriesKey, setPathSegements])
 
-  const [mediaWorks, loading] = useMediaWorks(seriesKey);
-  const [mediaWork, ] = useMediaWork(seriesKey);
+  const renderTitle = useCallback(() => mediaWork && <MediaDetailCard mediaDetail={mediaWork} size="poster" />, [mediaWork])
+
   return <Section title={`TMDB缓存`}>
+    <Segmented options={pathSegments} value={sliceKey}
+      onChange={(value) => {
+        setSliceKey(value)
+      }} />
     <br />
     <Table
       size="small"
-      title={() => mediaWork && <MediaDetailCard mediaDetail={mediaWork} size="poster"/>}
+      title={slicedSeriesKey.end > SeriesKeyType.TYPE ? renderTitle: undefined}
       columns={[
         {
           title: '#',
           dataIndex: ['series'],
-          render(value:SeriesKey) {
-            return  value.get(value.end)
+          render(value: SeriesKey) {
+            return value.get(value.end)
           }
         },
         {
@@ -65,16 +76,17 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
             const seriesKey = record.series;
             const nextKey = seriesKey.end;
             if (nextKey >= SeriesKeyType.TMDBID)
-                  return <Link href={`${pagePath}/${seriesKey.get(nextKey)}`}>{value}</Link>
+              return <Button type="link" onClick={() => {
+                setSeriesKey(seriesKey)
+                setSliceKey(seriesKey.end)
+              }}>{value}</Button>
             return value
           },
         },
       ]}
       dataSource={mediaWorks} loading={loading}
       rowKey={
-        (record) => {
-          return record.series.dump().join('_')
-        }
+        (record) => record.series.dump().join('_')
       }
     />
   </Section>

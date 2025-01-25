@@ -55,10 +55,8 @@ export class MediaWorkService extends APIBase {
 
     public async getEntriesBySeriesKey(series_key: SeriesKey) {
         const [t, ...keys] = series_key.dump();
-        console.log(t, keys)
         const queryType = t && this.typeMap[t as MediaWorkType]
         if (t) {
-            console.log(keys, keys.length)
             const useCache = keys.length == 0;
             const queryPath = [queryType, ...keys, 'all', ] 
             if(useCache)
@@ -114,7 +112,7 @@ export function useMediaWorks(series_key?: SeriesKey): [MediaWork[] | undefined,
     const [mediaWorks, setMediaWorks] = useState<MediaWork[]>();
     const [loading, setLoading] = useState(false);
     useEffect(() => {
-        if (series_key) {
+        if (series_key && (series_key.end < SeriesKeyType.EPISODE)) {
             setLoading(true)
             new TMDBMediaWork(series_key).getChildren()
                 .then(mediaWorks => {
