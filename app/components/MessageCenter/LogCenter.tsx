@@ -11,7 +11,7 @@ import { StateMap, StateTag } from "../StateTag";
 import VirtualList, { ListRef } from "rc-virtual-list"
 import _ from "lodash";
 import { useAPIContext } from "@/app/utils/api/api_base";
-import { useSeverMessage, useSocketio } from "@/app/utils/api/message/ServerEvent";
+import { useServerMessage, useSocketio } from "@/app/utils/api/message/ServerEvent";
 
 const LogLevelStateTag: StateMap<Log['level']> = {
     INFO: {
@@ -42,7 +42,7 @@ const MessageCard = ({ msg }: { msg: Log, }) => {
 
 export default function LogPanel() {
     const socketio = useSocketio('/log')
-    const { msg, msgs, emit } = useSeverMessage<Log>(socketio, 'log')
+    const { msg, msgs, emit } = useServerMessage<Log>(socketio, 'log')
     useEffect(() => {
         emit({ size: 20 }, 'pull_log')
     }, [emit])
