@@ -1,11 +1,12 @@
 'use client'
 import { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { Section } from "@/app/components/Section";
-import { useMediaWork, useMediaWorks } from "@/app/utils/api/media/media_work"
+import { DateType, MediaWorkData, MediaWorkMetadata, MediaWorkService, MetadataDate, toDayjs, useMediaWork, useMediaWorks } from "@/app/utils/api/media/media_work"
 import { SeriesKey } from "@/app/utils/api/media/SeriesKey"
 import { MediaWorkType, SeriesKeyType } from "@/app/utils/api/types"
-import { Button, Segmented, Table } from "antd";
+import { Button, DatePicker, Drawer, Form, Input, Segmented, Space, Table } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { TMDBMediaWork } from "@/app/utils/api/media/tmdb";
 
 const defaultSeriesKey = new SeriesKey().type(MediaWorkType.TV);
 
@@ -50,7 +51,10 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
     })
   }, [seriesKey, setPathSegements])
 
-  const renderTitle = useCallback(() => mediaWork && <MediaDetailCard mediaDetail={mediaWork} size="poster" />, [mediaWork])
+  const titleRender = useCallback(() => mediaWork && <MediaDetailCard
+    key={mediaWork.series.dump().join('_')}
+    action={<MetadataEditorDrawer seriesKey={mediaWork.series} />}
+    mediaDetail={mediaWork} size="poster" />, [mediaWork])
 
   return <Section title={`TMDB缓存`}>
     <Segmented options={pathSegments} value={sliceKey}
@@ -60,7 +64,7 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
     <br />
     <Table
       size="small"
-      title={slicedSeriesKey.end > SeriesKeyType.TYPE ? renderTitle: undefined}
+      title={slicedSeriesKey.end > SeriesKeyType.TYPE ? titleRender : undefined}
       columns={[
         {
           title: '#',
@@ -83,6 +87,13 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
             return value
           },
         },
+        {
+          title: "操作",
+          dataIndex: ['series'],
+          render(value: SeriesKey, record, index) {
+            return <MetadataEditorDrawer seriesKey={value} />
+          }
+        }
       ]}
       dataSource={mediaWorks} loading={loading}
       rowKey={
@@ -90,4 +101,87 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
       }
     />
   </Section>
+}
+
+
+function MetadataEditorDrawer({ seriesKey }: { seriesKey: SeriesKey }) {
+  const [open, setOpen] = useState(false)
+  return <>
+    <Button type="link" size="small" onClick={() => setOpen(true)}>编辑</Button>
+    <Drawer open={open} onClose={() => setOpen(false)} size="large">
+      {open && <MetadataEditor seriesKey={seriesKey} />}
+    </Drawer>
+  </>
+}
+
+
+function MetadataEditor({ seriesKey }: { seriesKey: SeriesKey }) {
+  const [form] = Form.useForm();
+  const [mediaWork, action] = useMediaWork(seriesKey)
+
+  const initialValues = useMemo(() => mediaWork?.metadata, [mediaWork])
+
+  useEffect(() => {
+    form.setFieldsValue(initialValues)
+  }, [initialValues])
+
+  return <>
+    <MediaDetailCard mediaDetail={{
+      series: seriesKey,
+      metadata: initialValues
+    }} />
+    <br />
+    <Form<MediaWorkMetadata> form={form} initialValues={initialValues}
+    onFinish={(values) => {
+      if (values && mediaWork)
+        action.update({
+          series: mediaWork.series,
+          metadata: values
+        })
+    }} layout="vertical">
+    <Form.Item label="标题" name="title" >
+      <Input></Input>
+    </Form.Item>
+    <Form.Item<MediaWorkMetadata> label="描述" name="description" >
+      <Input.TextArea></Input.TextArea>
+    </Form.Item>
+    <Space>
+      <Form.Item<MediaWorkMetadata> label="发行日期" name={["date", "release"]} >
+        <MetadataDatePicker />
+      </Form.Item>
+      <Form.Item<MediaWorkMetadata> label="播出日期" name={["date", "airing"]} >
+        <MetadataDatePicker />
+      </Form.Item>
+    </Space>
+    <Form.Item<MediaWorkMetadata> label="TMDB链接" name={["links", "tmdb"]}>
+      <Input />
+    </Form.Item>
+    <Form.Item<MediaWorkMetadata> label="海报图片" name={["images", "poster"]}>
+      <Input />
+    </Form.Item>
+    <Form.Item<MediaWorkMetadata> label="封面图片" name={["images", "cover"]}>
+      <Input />
+    </Form.Item>
+    <Form.Item>
+      <Button type="primary" htmlType="submit">保存</Button>
+    </Form.Item>
+  </Form>
+  </>
+}
+
+function MetadataDatePicker({ value, onChange }: { value?: MetadataDate, onChange?: (value: MetadataDate) => void }) {
+  const formValue = useMemo(() => value && toDayjs(value), [value])
+  return <DatePicker value={formValue}
+    onChange={(value) => {
+      onChange?.(
+        [
+          value.year(),
+          value.month() + 1,
+          value.date(),
+          null,
+          null
+        ]
+      )
+    }} />
+
 }

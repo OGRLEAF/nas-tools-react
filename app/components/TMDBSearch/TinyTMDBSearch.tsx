@@ -149,7 +149,7 @@ export function MediaDetailCard({
     const style = cardStyleMap[_size];
 
     const metadata = mediaDetail?.metadata
-    const coverImage = metadata?.images?.cover && 
+    const coverImage = metadata?.images?.cover &&
        <CoverImage maxHeight={style.height} alt={metadata.title} src={metadata?.images?.cover} />
 
     const titleArea = useMemo(() => mediaDetail &&

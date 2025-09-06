@@ -1,7 +1,8 @@
 import { MediaWorkType, SeriesKeyType } from "../types";
 
+const UnsetKey = -1;
 
-type UnsetKeyType = -1;
+type UnsetKeyType = typeof UnsetKey;
 type AnyKeyType = null;
 
 
@@ -14,7 +15,7 @@ export type SeasonKeyType = NumericKeyType
 export type EpisodeKeyType = NumericKeyType
 
 export type SeriesKeyTuple = [
-  MediaWorkType, TmdbIdType, SeasonKeyType, EpisodeKeyType]
+  t: MediaWorkType, i?: TmdbIdType, s?: SeasonKeyType, e?: EpisodeKeyType]
 
 // TODO: Better to seperate SeriesKey to multiple level: TypeKey -> TMDBKey -> SeasonKey -> EpisodeKey -> SeriesKey
 export class SeriesKey {
@@ -33,6 +34,7 @@ export class SeriesKey {
       this.typeKey = keys.typeKey;
       this._end = keys._end;
     }
+
   }
 
   public type(type?: MediaWorkType) {
@@ -60,7 +62,7 @@ export class SeriesKey {
     if (this.t == MediaWorkType.MOVIE) return this;
     if (this.tmdbIdKey != undefined) {
       this.seasonKey = season ?? -1;
-      if(this.seasonKey != -1)
+      if (this.seasonKey != -1)
         this._end = SeriesKeyType.SEASON
     }
     return this
@@ -98,24 +100,28 @@ export class SeriesKey {
 
   public get s() {
     if (this.end >= SeriesKeyType.SEASON) return this.seasonKey
+    return -1
   }
   public get e() {
     if (this.end >= SeriesKeyType.EPISODE) return this.episodeKey
+    return -1;
   }
   public get i() {
     if (this.end >= SeriesKeyType.TMDBID) return this.tmdbIdKey
+
   }
   public get t() {
-    if (this.end >= SeriesKeyType.TYPE) return this.typeKey
+    return this.typeKey
   }
 
   public get end() {
     return this._end
   }
 
-  public dump() {
-    const keyPath = [this.t, this.i, this.s, this.e];
-    return keyPath.filter(k => k != -1 && k != undefined)
+  public dump(): SeriesKeyTuple {
+    const keyPath: SeriesKeyTuple = [this.t, this.i, this.s, this.e];
+    return keyPath;
+    // return keyPath.filter(k => k != -1 && k != undefined)
   }
 
   public static load(keyPath: SeriesKeyTuple) {
@@ -149,9 +155,9 @@ export class SeriesKey {
   }
 
   public stepUpper() {
-    if(this._end >= SeriesKeyType.TMDBID) {
+    if (this._end >= SeriesKeyType.TMDBID) {
       return this.slice(this._end - 1)
-    } 
+    }
   }
 
 }

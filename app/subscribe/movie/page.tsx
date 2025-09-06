@@ -72,7 +72,7 @@ export default function SubscribeMovie() {
         layout="horizontal"
     >
         <ListItemCardList cardProps={(record: MovieRssInfo) => ({
-            cover: <Image alt={record.name} style={{ maxHeight: 175, objectFit: "cover" }} src={record.image} />,
+            cover: <Image alt={record.name} width={320} height={175} style={{ maxHeight: 175, objectFit: "cover" }} src={record.image} />,
             title: record.name,
             description: StatusTag[record.state]
         })}

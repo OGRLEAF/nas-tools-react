@@ -235,7 +235,7 @@ export class SeriesKeyLegacy {
 // TODO: For migrating to beta
 import { MediaWork as MediaWorkBase } from "./media/media_work"
 
-export interface MediaWork extends MediaWorkBase {
+export interface MediaWork extends MediaWork {
   series: SeriesKey,
   type: MediaWorkType,
   key: number | string,
