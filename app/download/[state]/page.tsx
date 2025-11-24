@@ -195,7 +195,7 @@ export default function DownloadedPage() {
                     {
                         upSpeed > 0 || downSpeed > 0 ? <Tag bordered={false} color="blue">
                             {upSpeed > 0 ? <><CaretUpOutlined /><span>{upSpeed} {upSpeedUnit}/s</span></> : <></>}
-                            {upSpeed > 0 && downSpeed > 0 ? <Divider type="vertical" /> : <></>}
+                            {upSpeed > 0 && downSpeed > 0 ? <Divider orientation="vertical" /> : <></>}
                             {downSpeed > 0 ? <><CaretDownOutlined /><span>{downSpeed} {downSpeedUnit}/s</span></> : <></>}
                         </Tag> : <></>
                     }
@@ -347,7 +347,7 @@ function AddDownloadTask() {
     return <>
         <Popconfirm title={"下载"}
             description={
-                <Space direction="vertical" style={{ minWidth: 400 }}>
+                <Space orientation="vertical" style={{ minWidth: 400 }}>
                     <TorrentDownloadForm layout="horizontal" ref={ref} />
                     <Input placeholder="URL"
                         allowClear

@@ -96,12 +96,12 @@ function SearchResultPannel({ result }: { result: SearchResult }) {
             </Form.Item>
         }
     ]
-    return <Space direction="vertical" style={{ width: "100%" }}>
+    return <Space orientation="vertical" style={{ width: "100%" }}>
         <Row gutter={20}>
             <Col span={4}>
                 <MediaDetailCard layout="vertical" size="tiny" mediaDetail={mediaWork} />
                 <br />
-                <Divider orientation="left" orientationMargin={0}>过滤</Divider>
+                <Divider titlePlacement="left">过滤</Divider>
                 <Form layout="vertical"
                     onValuesChange={((values: [keyof FilterType, FilterType[keyof FilterType]], allValues) => {
                         const [[key, value]] = Object.entries(values) as [keyof FilterType, FilterType[keyof FilterType]][];
@@ -159,7 +159,7 @@ function TorrentsList({ list: group }: { list: Torrent[] }) {
                         render={(value) => `${value}X`}
                     />
                 </Space>
-                <Divider type="vertical" />
+                <Divider orientation="vertical" />
             </List.Item>
         }}
     />

@@ -8,17 +8,17 @@ export default function SettingService() {
         <Row gutter={24}>
             <Col span={6}>
                 <Form.Item label="订阅RSS周期" name={["pt", "pt_check_interval"]}>
-                    <InputNumber style={{ width: "100%" }} addonAfter="秒" />
+                    <InputNumber style={{ width: "100%" }} suffix="秒" />
                 </Form.Item>
             </Col>
             <Col span={6}>
                 <Form.Item label="订阅搜索周期" name={["pt", "search_rss_interval"]}>
-                    <InputNumber style={{ width: "100%" }} addonAfter="小时" />
+                    <InputNumber style={{ width: "100%" }} suffix="小时" />
                 </Form.Item>
             </Col>
             <Col span={6}>
                 <Form.Item label="媒体库同步周期" name={["media", "mediasync_interval"]}>
-                    <InputNumber style={{ width: "100%" }} addonAfter="小时" />
+                    <InputNumber style={{ width: "100%" }} suffix="小时" />
                 </Form.Item>
             </Col>
             <Col span={6}>

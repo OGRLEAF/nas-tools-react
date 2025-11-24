@@ -34,7 +34,7 @@ export function TagCheckboxGroup<T>(props: TagCheckboxGroupProps<T>) {
 
     return (
         <>
-            <Space size={[0, 8]} wrap>
+            <Space size="small" wrap>
                 {props.options?.map((option) => {
                     return (
                         <CheckableTag

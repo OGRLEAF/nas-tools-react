@@ -172,7 +172,7 @@ const TableFileName = (options: { name: string, item: MediaImportFile }) => {
     return <div style={{ width: "100%", display: "flex", justifyContent: "space-between" }}>
         {options.name}
         <Space>
-            <Tooltip title={<pre>{JSON.stringify(options.item, null, 2)}</pre>} overlayInnerStyle={{ overflow: "auto", maxHeight: 500 }}>
+            <Tooltip title={<pre>{JSON.stringify(options.item, null, 2)}</pre>} styles={{ container: { overflow: "auto", maxHeight: 500 } }}>
                 <InfoCircleOutlined style={{ color: failed ? token.colorWarningTextActive : token.colorTextDescription }} />
             </Tooltip>
             <Button size="small" type="link" loading={loading} icon={<RedoOutlined />}

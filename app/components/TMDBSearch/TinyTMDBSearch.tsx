@@ -299,7 +299,7 @@ export default function TinyTMDBSearch({
         }
     ]
     return <>
-        <Space style={{ width: "100%" }} direction="vertical" size={16}>
+        <Space style={{ width: "100%" }} orientation="vertical" size={16}>
             {/* <Radio.Group defaultValue={NastoolMediaType.TV}>
                 <Radio.Button value={NastoolMediaType.MOVIE}>电影</Radio.Button>
                 <Radio.Button value={NastoolMediaType.TV}>电视剧</Radio.Button>
@@ -379,7 +379,7 @@ export function MediaSearchGroup({ value, onChange, children, filter }: MediaSea
         }
     }, [series])
 
-    return <Space direction="vertical" style={{ width: "100%" }}>
+    return <Space orientation="vertical" style={{ width: "100%" }}>
         <TinyTMDBSearch onSelected={onTMDBSelected} filter={filter} />
         <SearchContext.Provider value={searchContext}>
             {

@@ -80,7 +80,7 @@ const MediaEpisodeView = ({
             />
         </>
     }
-    return <Space direction="vertical" style={{ width: "100%" }}>
+    return <Space orientation="vertical" style={{ width: "100%" }}>
         {
             data.source.map((src) => (
                 <MediaSource key={src.path.local} source={src} />
@@ -131,7 +131,7 @@ export default function MediaView({
         border: "solid #ccc 1px"
     }
     return <Section title={`媒体 - ${series?.series_info.title}`}>
-        <Space direction="vertical" size={24}>
+        <Space orientation="vertical" size={24}>
             <Space size={46} wrap style={{ width: "100%" }}>
                 <Image style={{ width: 200 }} src={series?.series_info.cover} />
                 <Typography style={{ maxWidth: 1000 }}>

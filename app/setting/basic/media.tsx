@@ -1,5 +1,5 @@
 import React from 'react'
-import { Form, Input, Row, Col, Select, InputNumber, Switch } from 'antd'
+import { Form, Input, Row, Col, Select, InputNumber, Switch, Space } from 'antd'
 import TagsSelect from "@/app/components/TagsSelect"
 import { PathSelector } from '@/app/components/PathSelector';
 import { DownloadPathSelect, LibraryPathSelect, PathTreeSelect, UnionPathsSelectGroup } from '@/app/components/LibraryPathSelector';
@@ -175,7 +175,7 @@ export default function SettingMedia() {
             </Col>
             <Col span={6}>
                 <Form.Item label="转移最小文件大小" name={["media", "min_filesize"]}>
-                    <InputNumber style={{ width: "100%" }} addonAfter="MB" />
+                    <InputNumber style={{ width: "100%" }} suffix="MB"/>
                 </Form.Item>
             </Col>
             <Col span={6}>

@@ -13,8 +13,10 @@ import { useMediaWork, useMediaWorks } from "@/app/utils/api/media/media_work";
 import { SeriesKey } from "@/app/utils/api/media/SeriesKey";
 import { MediaSearchGroup, MediaSearchSeason, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 
+
 export default function SubscribeTV() {
     return <CardsForm<TVSubsResource> title="电视剧订阅" resource={TVSubscribe}
+        extra={()=><Button>刷新</Button>}
         formComponent={SubscribeTVForm}
     >
         <CardsList />
@@ -88,7 +90,7 @@ function SubsItemCard({ record }: { record: TVSubsProfile }) {
             <List.Item.Meta
                 // avatar={<Image src={record.image} alt={record.name} width={250} height={150} style={{ objectFit: "cover" }} />}
                 title={<Space >
-                    <span>{metadata?.title}<Divider type="vertical" />{season?.metadata?.title}</span>
+                    <span>{metadata?.title}<Divider orientation="vertical" />{season?.metadata?.title}</span>
                     {/* <a href={record.mediaid}>{record.name}</a> */}
                     <Space style={{ fontSize: token.fontSizeSM, color: token.colorTextDescription }}>
                         <div>季{season?.series.s}</div>
@@ -136,7 +138,7 @@ const SubscribeTVForm = ({ record: profile, onChange }: { record?: TVSubsProfile
         }
     }, [seriesKeyLegacy])
 
-    return <Space direction="vertical" style={{ width: "100%" }}>
+    return <Space orientation="vertical" style={{ width: "100%" }}>
         <Form form={form} style={{ width: "100%" }} initialValues={{
             ...profile,
             episodes: profile && Object.values(profile?.state.episodes),
@@ -157,10 +159,10 @@ const SubscribeTVForm = ({ record: profile, onChange }: { record?: TVSubsProfile
             }}
 
             layout="vertical">
-            <Space direction="vertical" style={{ width: "100%" }}>
+            <Space orientation="vertical" style={{ width: "100%" }}>
                 <Form.Item name="_series" noStyle>
                     <MediaSearchGroup>
-                        <Space direction="vertical">
+                        <Space orientation="vertical">
                             <MediaSearchWork />
                             <MediaSearchSeason />
                         </Space>
@@ -317,7 +319,7 @@ function EpisodesConfig({ value, onChange, selectedSeries }:
             align: "right"
         },
     ];
-    return <Space direction="vertical" style={{ width: "100%" }}>
+    return <Space orientation="vertical" style={{ width: "100%" }}>
         <Table size="small" columns={episodesConfigColumns} dataSource={episodesList} rowKey={'num'}
             title={() => <Flex style={{ width: "100%" }} align="center" justify="space-between" gap={20}>
                 <span>分集设置</span>

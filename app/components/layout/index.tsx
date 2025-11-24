@@ -211,9 +211,9 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
                 <Next13ProgressBar height="3px" color={token.colorPrimaryBorder} options={{ showSpinner: true }} showOnShallow />
                 <Flex align="center" style={{ height: token.Layout?.headerHeight, }} justify="space-between">
                   <Button icon={<MenuOutlined />} onClick={() => { setCollapsed((collapsed) => !collapsed) }} type="text" />
-                  <Divider type="vertical" />
+                  <Divider orientation="vertical" />
                   <Taskbar />
-                  <Divider type="vertical" />
+                  <Divider orientation="vertical" />
                   <HeaderSearch />
                 </Flex>
               </Header>

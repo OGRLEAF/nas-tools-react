@@ -32,7 +32,7 @@ const FilterRuleCard = ({ config }: { config: FilterRuleConfig }) => {
     const deleteRule = () => {
         Modal.confirm({
             title: `确认删除规则${config.name}?`,
-            content: <Space size="small" direction="vertical">
+            content: <Space size="small" orientation="vertical">
                 <span>包含：{config.include}</span>
                 <span>排除：{config.exclude}</span>
             </Space>,
@@ -52,7 +52,7 @@ const FilterRuleCard = ({ config }: { config: FilterRuleConfig }) => {
         ]}
     >
         <List.Item.Meta title={config.name} />
-        <Space size="small" direction="vertical">
+        <Space size="small" orientation="vertical">
             <span>包含：{config.include}</span>
             <span>排除：{config.exclude}</span>
         </Space>
@@ -78,14 +78,14 @@ export default function FilterRulePage() {
     >
         <TabCards
             tabsProps={{
-                tabPosition: "left",
+                tabPlacement: "top",
                 type: "editable-card",
                 removeIcon: <></>
             }}
             cardProps={(record: FilterRuleGroupConfig) => {
                 return ({
                     title: <Space>{record.name}{record.default ? <Tag bordered={false} color="blue">默认</Tag> : <></>}</Space>,
-                    description: <Space direction="vertical" size="small" style={{ alignItems: "stretch", width: "100%", }}>
+                    description: <Space orientation="vertical" size="small" style={{ alignItems: "stretch", width: "100%", }}>
                         <FilterRuleList filterRuleGroup={record} />
                     </Space>
                 });
@@ -314,10 +314,10 @@ function InfiniteSlider({ value, onChange, }: { value?: [number, number], onChan
     }, [topValue, botValue])
     return <Space size="large">
         <Form.Item label={<Checkbox disabled={topValue <= 0} checked={botValue > 0} onChange={((value) => { if (!value.target.checked) setBotValue(0); else setBotValue(1) })}>下限</Checkbox >}>
-            <InputNumber disabled={botValue <= 0 || topValue <= 0} value={botValue} onChange={(value) => { if (value != null) setBotValue(value) }} addonBefore=">" addonAfter="GB" />
+            <InputNumber disabled={botValue <= 0 || topValue <= 0} value={botValue} onChange={(value) => { if (value != null) setBotValue(value) }} prefix=">" suffix="GB" />
         </Form.Item>
         <Form.Item label={<Checkbox checked={topValue > 0} onChange={((value) => { if (!value.target.checked) { setTopValue(0); setBotValue(0) } else setTopValue(1) })}>上限</Checkbox >}>
-            <InputNumber disabled={topValue <= 0} value={topValue} onChange={(value) => { if (value != null) setTopValue(value) }} addonBefore="<" addonAfter="GB" />
+            <InputNumber disabled={topValue <= 0} value={topValue} onChange={(value) => { if (value != null) setTopValue(value) }} prefix="<" suffix="GB" />
         </Form.Item>
     </Space>
 }

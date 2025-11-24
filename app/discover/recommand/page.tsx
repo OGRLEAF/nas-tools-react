@@ -8,7 +8,7 @@ export default function Page() {
 
     return (
         <div className="App">
-            <Space direction="vertical">
+            <Space orientation="vertical">
                 <Section title="推荐">
                     <Space>
                         <PostCard cover={

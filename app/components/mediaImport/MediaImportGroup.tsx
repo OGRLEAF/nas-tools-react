@@ -361,7 +361,7 @@ function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: Serie
             setSeries(new SeriesKey().type(work.type).tmdbId(String(work.key)))
         }
     }
-    const popCard = <Space direction="vertical">
+    const popCard = <Space orientation="vertical">
         {work ? <MediaDetailCard mediaDetail={work} size="card"
             action={work.series.end == SeriesKeyType.TMDBID ?
                 <Space>
@@ -379,7 +379,7 @@ function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: Serie
             {work?.key ?? finalValue ?? <>N/A</>}
         </Tooltip>
         {loading || work ?
-            <Divider type="vertical" style={{ borderInlineColor: changed ? 'pink' : 'rgba(5, 5, 5, 0.06)' }} />
+            <Divider orientation="vertical" style={{ borderInlineColor: changed ? 'pink' : 'rgba(5, 5, 5, 0.06)' }} />
             : <></>}
         <Popover content={popCard} placement="topRight">
             {
@@ -391,7 +391,7 @@ function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: Serie
                         lineHeight: 0,
                         display: "inline-block"
                     }}>{work.metadata?.title}</span>
-                </> : <></>
+                </> : null
             }
         </Popover>
 

@@ -138,7 +138,7 @@ const SubscribeMovieForm = ({ record: config }: { record?: MovieRssInfo }) => {
                 ctx.error(e);
             })
     }
-    return <Space direction="vertical" style={{ width: "100%" }}>
+    return <Space orientation="vertical" style={{ width: "100%" }}>
         <MediaSearchGroup value={series} onChange={(series) => setSeries(series)}
             filter={{ type: [MediaWorkType.MOVIE] }}
         >

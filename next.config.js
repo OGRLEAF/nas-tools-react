@@ -10,13 +10,13 @@ const nextConfig = {
     basePath: process.env.BASE_PATH,
     reactStrictMode: false,
     output: 'standalone',
+    
     env: {
         BASE_PATH: process.env.BASE_PATH,
         NEXT_PUBLIC_PACKAGE_VERSION: version,
         NEXT_PUBLIC_BUILD_TIME: buildTime,
         NEXT_PUBLIC_API_HOST: backendApiHost
     },
-
     rewrites: () => {
         return [
             {

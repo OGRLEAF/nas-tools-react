@@ -61,7 +61,7 @@ export default function SiteResource({
 
             <Table.Column title="标题" dataIndex="title"
                 render={(title, record: NastoolSiteResourceItem) => (<>
-                    <Space direction="vertical" size={4}>
+                    <Space orientation="vertical" size={4}>
                         <Space>
                             <Link href={record.page_url} target="_blank">{title}</Link>
                             <DualArrowTag show={(value) => value != 0} up={record.uploadvolumefactor} down={record.downloadvolumefactor}

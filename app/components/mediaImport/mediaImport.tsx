@@ -73,7 +73,7 @@ export default function MediaImportWrapper({ initialValue }: { initialValue?: Me
             title={<TaskBar />}
             open={mediaImportContext.isImportWorkspaceOpen}
             onClose={() => { mediaImportDispatch({ type: "close_workspace" }) }}
-            height={850}
+            size={850}
         >
             <MediaImport />
         </Drawer>)
@@ -138,7 +138,7 @@ function MediaImport(){
                     episode_offset: 0
                 }}
                 onFinish={onFinish}>
-                <Space direction="vertical" style={{ width: "100%" }}>
+                <Space orientation="vertical" style={{ width: "100%" }}>
                     <SearchContext.Provider value={search}>
                         <Form.Item name="series" noStyle>
 
@@ -250,7 +250,7 @@ const EpisodeInputFromTMDB = (options: { onChange: (value: number[]) => void }) 
                 // console.log("EpisodeInputFromTMDB", episodes)
                 setEpisodeOptions(episodes.sort((a, b) => a.key - b.key).map((ep) => ({
                     value: ep.key,
-                    label: <span>{ep.key}<Divider type="vertical" />{ep.metadata?.title}</span>
+                    label: <span>{ep.key}<Divider orientation="vertical" />{ep.metadata?.title}</span>
                 })))
                 setValue([]);
             }
@@ -308,7 +308,7 @@ const EpisodeInputFromFormat = (options: { onChange: (value: number[]) => void, 
             options.onChange(eps);
         }
     }, [offset, formatPat])
-    return <Space direction="vertical" style={{ width: "100%" }}>
+    return <Space orientation="vertical" style={{ width: "100%" }}>
         <Input placeholder="E{ep}" onChange={(value) => setFormatPat(value.currentTarget.value)} />
         <InputNumber value={offset} onChange={(value) => { if (value != null) { setOffset(value) } }} precision={0} placeholder="集数偏移" />
     </Space>

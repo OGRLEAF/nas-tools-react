@@ -44,7 +44,7 @@ export default function DownloaderSetting() {
                     return ({
                         title: <span>{record.name}</span>,
                         cover: config.cover,
-                        description: <>{record.enabled ? <Tag color={token.colorSuccess} bordered={false}>启用</Tag> : <Tag color={token.colorInfo}>停用</Tag>}</>,
+                        description: <>{record.enabled ? <Tag color={token.colorSuccess} variant="filled">启用</Tag> : <Tag color={token.colorInfo}>停用</Tag>}</>,
                         extra: (resource) => <Button icon={<RetweetOutlined />} type="text"
                             onClick={(evt) => { evt.stopPropagation(); resource.val?.(record); }}
                         />
@@ -166,7 +166,7 @@ function DownloadClientConfigForm({ record, onChange }: { record?: DownloadClien
 
     const downloadDirList = useMemo(() => <Form.List name={["config", "download_dir"]}>
         {(fields, { add, remove }) => <>
-            <Divider orientation="left" orientationMargin="0">下载目录设置</Divider>
+            <Divider titlePlacement="left">下载目录设置</Divider>
             {
                 fields.map((field) => {
                     return (<div key={field.key}>
@@ -261,7 +261,7 @@ function DownloadClientConfigForm({ record, onChange }: { record?: DownloadClien
         {/* {downloadDirList("download_dir")} */}
         <Form.List name={["config", "download_dir"]}>
             {(fields, { add, remove }) => <>
-                <Divider orientation="left" orientationMargin="0">下载目录设置</Divider>
+                <Divider titlePlacement="left" >下载目录设置</Divider>
                 {
                     fields.map((field) => {
                         return (<div key={field.key}>

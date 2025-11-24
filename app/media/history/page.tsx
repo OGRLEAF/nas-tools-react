@@ -14,7 +14,7 @@ import { FileLink } from "@/app/components/FileLink";
 
 const MediaInfoColumn = ({ title, record, onTitleClick }: { title: string, record: OrganizeRecord, onTitleClick?: (value: string) => void }) => {
     const { token } = theme.useToken();
-    return <Space direction="vertical" size={0}>
+    return <Space orientation="vertical" size={0}>
 
         <Space style={{ color: token.colorTextHeading }}>
             <Button
@@ -34,7 +34,7 @@ const MediaInfoColumn = ({ title, record, onTitleClick }: { title: string, recor
 
 const MediaFileInfoColumn = ({ record }: { record: OrganizeRecord }) => {
     const { token } = theme.useToken();
-    return <Space direction="vertical" size={0}>
+    return <Space orientation="vertical" size={0}>
         <span style={{ color: token.colorInfoText }}>
             <FileLink targetPath={record.SOURCE_PATH + '/' + record.SOURCE_FILENAME}>{record.SOURCE_FILENAME}</FileLink>
         </span>
@@ -46,7 +46,7 @@ const MediaFileInfoColumn = ({ record }: { record: OrganizeRecord }) => {
 
 const MediaFileImportInfoColumn = ({ record }: { record: OrganizeRecord }) => {
     const { token } = theme.useToken();
-    return <Space direction="vertical" size={0}>
+    return <Space orientation="vertical" size={0}>
         <span style={{ color: token.colorTextLabel }}>
             {record.DATE}
         </span>

@@ -1,6 +1,6 @@
 "use client"
-import { Button, Divider, Dropdown, Flex, InputNumber, Space, Typography, theme, } from 'antd'
-import React, { useEffect, useState, createContext, useContext, CSSProperties, useRef, useMemo } from 'react'
+import { Button, Divider, Flex, Space, Typography, theme, } from 'antd'
+import React, { createContext, useContext, CSSProperties, useRef, useMemo } from 'react'
 import { RedoOutlined } from "@ant-design/icons"
 import { TitleProps } from 'antd/es/typography/Title'
 
@@ -34,7 +34,7 @@ export const Section = ({ children, title, extra, onRefresh, interval: _interval
             <Flex ref={headRef} style={{ marginBottom: 4, width: "100%", height: token.Layout?.headerHeight }} align="end" justify="space-between">
                 {titleLevel == 1 ? <Typography.Title style={{ fontSize: `${1.9 - titleLevel * 0.25}em` }} level={titleLevel}>{title}</Typography.Title>
                     :
-                    <Divider style={{ margin: 0, fontSize: `${1.9 - titleLevel * 0.25}em` }} orientation="left" orientationMargin={0}>{title}</Divider>
+                    <Divider style={{ margin: 0, fontSize: `${1.9 - titleLevel * 0.25}em` }}  styles={{ content: { margin: '10rpx' } }} orientation="horizontal" titlePlacement="start">{title}</Divider>
                 }
                 <div>
                     <Space>

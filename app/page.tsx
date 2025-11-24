@@ -70,7 +70,7 @@ const Home = () => {
 
 
   const mediaItemCardGroup = (items: NastoolMediaLibraryItem[], coverType: CardCoverType) => {
-    return (<Space direction='vertical'>
+    return (<Space orientation='vertical'>
       <Space wrap>
         {items.map((library) => libraryCard(library, coverType))}
       </Space>
@@ -78,7 +78,7 @@ const Home = () => {
   }
 
   const libraryCards = (
-    <Space direction='vertical'>
+    <Space orientation='vertical'>
       <Space wrap>
         {libraryBrief.libraries.map((library) => libraryCard(library, "post"))}
       </Space>
@@ -89,10 +89,10 @@ const Home = () => {
   const latestMediaCards = mediaItemCardGroup(libraryBrief.latest, "still")
 
   return (
-    <ConfigProvider locale={zhCN} theme={{ cssVar: true }}>
+    <ConfigProvider locale={zhCN} theme={{ cssVar: undefined }}>
       <App>
         <div className="App">
-          <Space direction='vertical'>
+          <Space orientation='vertical'>
             <Section title="我的媒体库">{libraryCards}</Section>
             <Section title="正在观看">{watchingMediaCards}</Section>
             <Section title="最新添加">{latestMediaCards}</Section>

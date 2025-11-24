@@ -26,7 +26,7 @@ export default function SitesTasksPage() {
             formComponent={TaskConfigForm}
             extra={(resource) => {
                 return [
-                    <Divider key="divider" type="vertical" />,
+                    <Divider key="divider" orientation="vertical" />,
                     <BatchActions key="batch_action" selection={selection} />,
                     <Button key="enable_btn" icon={<IconPlay />}
                         onClick={async () => {
@@ -130,10 +130,10 @@ function TaskConfigForm({ record, onChange }: { record?: BrushTaskProfile, onCha
         </Form.Item>
         <Space size="large">
             <Form.Item name="dl_limit" label="上限下载速度">
-                <InputNumber addonAfter="KB/s" />
+                <InputNumber suffix="KB/s" />
             </Form.Item>
             <Form.Item name="up_limit" label="上限上传速度">
-                <InputNumber addonAfter="KB/s" />
+                <InputNumber suffix="KB/s" />
             </Form.Item>
         </Space>
         <Form.Item name="rss_url" label="RSS地址">
@@ -182,10 +182,10 @@ function TaskConfigForm({ record, onChange }: { record?: BrushTaskProfile, onCha
         </Form.Item>
         <Space size="large">
             <Form.Item name={['rss_rule', 'upspeed']} label="上传限速">
-                <InputNumber addonAfter="KB/s" />
+                <InputNumber suffix="KB/s" />
             </Form.Item>
             <Form.Item name={['rss_rule', 'downspeed']} label="下载限速">
-                <InputNumber addonAfter="KB/s" />
+                <InputNumber suffix="KB/s" />
             </Form.Item>
         </Space>
         <Space size="large" wrap>
@@ -275,7 +275,7 @@ const NumberRange = ({ value, onChange, addonAfter }: { value?: string, onChange
     return <><Space.Compact>
         {cmp == "bw" ? <InputNumber value={prefix} onChange={(v) => setPrefix(v)} /> : null}
         <Select style={{ width: 70 }} options={numberRangeType} value={cmp} onChange={(v) => setCmp(v)} />
-        <InputNumber disabled={cmp == ''} value={suffix} onChange={(v) => setSuffix(v)} addonAfter={addonAfter} />
+        <InputNumber disabled={cmp == ''} value={suffix} onChange={(v) => setSuffix(v)} suffix={addonAfter} />
     </Space.Compact>
     </>
 };

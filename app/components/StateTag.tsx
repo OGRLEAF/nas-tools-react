@@ -18,8 +18,8 @@ export function StateTag<K extends string | number | symbol>({ stateMap, value, 
 
     const currentState = stateMap[value];
     if (currentState != undefined)
-        return <Tag bordered={false} color={currentState.color}>{currentState.value ?? String(value)}
-            {children ? <><Divider type="vertical" />{children}</> : <></>}
+        return <Tag variant="filled" color={currentState.color}>{currentState.value ?? String(value)}
+            {children ? <><Divider orientation="vertical" />{children}</> : <></>}
         </Tag>
     else {
         return undefined

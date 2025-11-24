@@ -28,7 +28,7 @@ export default function SubscribeMoviePage() {
             formComponent={CustomRssForm}
             extra={(resource) => {
                 return [
-                    <Divider key="divider" type="vertical" />,
+                    <Divider key="divider" orientation="vertical" />,
                     <BatchActions key="batch_action" selection={selection} />,
                     <Button key="enable_btn" icon={<IconPlay />}
                         onClick={async () => {

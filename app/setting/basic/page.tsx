@@ -31,7 +31,7 @@ export default function SettingBasic() {
     // }, [onRefresh])
     return <>
         <Section title="基础设置" onRefresh={refresh}>
-            <Space direction="vertical" style={{ width: "100%" }}>
+            <Space orientation="vertical" style={{ width: "100%" }}>
                 <SettingCard name="系统" settingForm={SettingSystem} config={serverConfig} />
                 <SettingCard name="媒体" settingForm={SettingMedia} config={serverConfig} />
                 <SettingCard name="服务" settingForm={SettingService} config={serverConfig} />

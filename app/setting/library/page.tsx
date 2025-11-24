@@ -41,23 +41,23 @@ const LibraryPathForm = (options: { onCreate: (value: string) => void }) => {
 }
 
 type LibraryPathCardAction = { getPaths: () => string[] };
+interface LibraryPathOptions { title: string; paths: string[]; };
+
+function TableHeader(options: { title: string, onChange: (value: string) => void }) {
+    return <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 10px" }}>
+        <div style={{ fontSize: "1.15em", fontWeight: "bold" }}>{options.title}</div>
+        <LibraryPathForm onCreate={(value) => {
+            options.onChange(value);
+            // const mediaPath = { media: { [options.value.key]: [...paths, value] } }
+            // new ServerConfig(API).update(mediaPath as unknown as NastoolServerConfig)
+        }} />
+    </div>
+}
+
 const LibraryPathCard = forwardRef(
-    function LibraryPathCardWithRef(options: { title: string, paths: string[], }, ref: ForwardedRef<LibraryPathCardAction>) {
-        const [paths, setPaths] = useState<string[]>([]);
+    function LibraryPathCardWithRef(options: LibraryPathOptions, ref: ForwardedRef<LibraryPathCardAction>) {
+        const [paths, setPaths] = useState<string[]>(options.paths);
         const { API } = useAPIContext()
-        const TableHeader = () => {
-            return <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ fontSize: "1.15em", fontWeight: "bold" }}>{options.title}</div>
-                <LibraryPathForm onCreate={(value) => {
-                    setPaths([...paths, value])
-                    // const mediaPath = { media: { [options.value.key]: [...paths, value] } }
-                    // new ServerConfig(API).update(mediaPath as unknown as NastoolServerConfig)
-                }} />
-            </div>
-        }
-        useEffect(() => {
-            setPaths(options.paths)
-        }, [options])
 
         const { confirm } = Modal;
         const { token } = theme.useToken();
@@ -84,7 +84,7 @@ const LibraryPathCard = forwardRef(
 
             }
         }))
-        return <List size="small" dataSource={tableData} bordered header={<TableHeader />}
+        return <List size="small" dataSource={tableData} bordered header={<TableHeader title={options.title} onChange={(value)=>{setPaths([...paths, value])}} />}
             style={{ backgroundColor: token.colorBgBase }}
             renderItem={(item) => <List.Item
                 actions={[
@@ -110,7 +110,7 @@ export default function LibraryPage() {
             <Button type="primary" onClick={() => refresh()} icon={<RedoOutlined />} />
             {/* {library[2].paths} */}
         </>}>
-        <Space direction="vertical" size={16} style={{ width: "100%" }}>
+        <Space orientation="vertical" size={16} style={{ width: "100%" }}>
             {data &&
                 <>
                     <LibraryPathCard ref={moviePathsRef} key="movie_path" title="电影" paths={data.media.movie_path} />

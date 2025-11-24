@@ -50,7 +50,7 @@ const TaskCard = ({ taskflow }: { taskflow: TaskflowInfo }) => {
         const { draft: taskMeta, instance: taskState } = item;
         return {
             // label: item.type,
-            children: <Space direction="vertical" style={{ width: "100%" }}>
+            children: <Space orientation="vertical" style={{ width: "100%" }}>
                 <Space>
                     <span>
                         {taskMeta.type}
@@ -66,7 +66,7 @@ const TaskCard = ({ taskflow }: { taskflow: TaskflowInfo }) => {
             color: timeLineStateColor[taskState?.status ?? "unknown"]
         }
     })
-    return <Space direction="vertical">
+    return <Space orientation="vertical">
         <span>{new Date(taskflow.start_time * 1000).toLocaleString()} {taskflow.status}</span>
         <Timeline items={subtasks} />
     </Space>
@@ -85,7 +85,7 @@ export default function TaskflowPage() {
     }, [list])
     const currentId = useMemo(() => sortedTasks[0]?.id, [sortedTasks]);
     return <Section title="任务" onRefresh={() => { refresh() }} >
-        <Space direction="vertical" style={{ width: "100%" }}>
+        <Space orientation="vertical" style={{ width: "100%" }}>
             <Button onClick={async () => {
                 const { taskflow_id } = await API.launchTaskflow("example_flow", { count: 1 })
                 console.log(taskflow_id)

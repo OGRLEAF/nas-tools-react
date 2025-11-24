@@ -14,7 +14,7 @@ export const DualArrowTag = (props:
     const showDown = show(down);
     return showUp || showDown ? <Tag bordered={bordered} color={(down <= 0 || down == undefined) ? "green" : "blue"}>
         {showUp ? <><CaretUpOutlined /><span>{render(up)}</span></> : <></>}
-        {showUp && showDown ? <Divider type="vertical" /> : <></>}
+        {showUp && showDown ? <Divider orientation="vertical" /> : <></>}
         {showDown ? <><CaretDownOutlined /><span>{render(down)}</span></> : <></>}
     </Tag> : <></>
 }

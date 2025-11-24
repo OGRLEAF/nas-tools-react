@@ -42,22 +42,27 @@ export interface MediaFile {
 
 }
 
-export interface MediaWorkMetadata {
-  title: string,
-  description: string,
-  images?: {
-    cover: string,
-    poster?: string,
-    background?: string,
-  },
-  links?: {
-    tmdb?: string,
-    douban?: string
-  }
-  date?: {
-    release: string
-  }
-}
+
+// TODO: For migrating to beta
+import { MediaWorkMetadata } from "./media/media_work"
+
+// export const MediaWorkMetadata =  MediaWorkMetadataBeta;
+// export interface MediaWorkMetadata {
+//   title: string,
+//   description: string,
+//   images?: {
+//     cover: string,
+//     poster?: string,
+//     background?: string,
+//   },
+//   links?: {
+//     tmdb?: string,
+//     douban?: string
+//   }
+//   date?: {
+//     release: string
+//   }
+// }
 
 export enum SeriesKeyType {
   NULL = -1,
@@ -235,7 +240,7 @@ export class SeriesKeyLegacy {
 // TODO: For migrating to beta
 import { MediaWork as MediaWorkBase } from "./media/media_work"
 
-export interface MediaWork extends MediaWork {
+export interface MediaWork extends MediaWorkBase {
   series: SeriesKey,
   type: MediaWorkType,
   key: number | string,

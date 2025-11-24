@@ -3,7 +3,7 @@ import "./globals.scss"
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import DefaultLayout from './components/layout'
-import { Suspense, useEffect } from 'react'
+import { Suspense } from 'react'
 import { App, ConfigProvider, Spin } from 'antd'
 import zhCN from 'antd/locale/zh_CN';
 
@@ -27,6 +27,10 @@ export default function RootLayout({
           components: {
             Layout: {
               headerHeight: 56
+            },
+            Divider: {
+              orientationMargin: 0,
+              textPaddingInline: "0 1em"
             }
           }
         }}>

@@ -168,7 +168,7 @@ export function TaskLog({ logs }: { logs: TaskState['logs'] }) {
         renderItem={(item) => {
             const [levelText, color] = LogLevelStateTag[item.level];
             const dateStr = dayjs(item.create_time * 1000).format("YYYY.MM.DD HH:mm:ss")
-            const label = <Tag bordered={false} color={color}>{dateStr}<Divider type="vertical" />
+            const label = <Tag bordered={false} color={color}>{dateStr}<Divider orientation="vertical" />
                 <div style={{ display: "inline-block", minWidth: "4em" }}>{levelText}</div>
             </Tag>
             return <List.Item style={{ fontSize: token.fontSizeSM, padding: "4px 0" }}>

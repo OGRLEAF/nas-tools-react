@@ -14,7 +14,7 @@ const TMDBInfo = ({ record }: { record: TMDBCacheItem }) => {
     const { token } = theme.useToken();
     return <Space align="start" size={14}>
         <Image src={`https://image.tmdb.org/t/p/w500${record.poster_path}`} width={80} alt="TMDB Poster"/>
-        <Space direction="vertical" style={{ paddingTop: 14 }}>
+        <Space orientation="vertical" style={{ paddingTop: 14 }}>
             <div style={{ color: token.colorTextLabel }}>
                 {record.title} ({record.year})
 
@@ -48,7 +48,7 @@ const FilterForm = ({ keyword, onFinish }: { keyword?: string, onFinish: (value:
             onFinish={onFinishFilterForm}
             form={form}
         >
-            <Space direction="vertical">
+            <Space orientation="vertical">
                 <Form.Item name="keyword" noStyle>
                     <Input allowClear />
                 </Form.Item>

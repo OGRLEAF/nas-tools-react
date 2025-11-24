@@ -54,7 +54,7 @@ export default function MessagePanel() {
                 boxShadowTertiary: "none"
             }
         }}>
-            <Space style={{ height: "100%", overflowY: "auto" }} direction="vertical" size={0} >
+            <Space style={{ height: "100%", overflowY: "auto" }} orientation="vertical" size={0} >
                 {
                     msgs.map((msg, index) => (<div key={`${index}-${msg.timestamp}`}>
                         {index > 0 ? <Divider style={{ margin: 0 }} /> : <></>}

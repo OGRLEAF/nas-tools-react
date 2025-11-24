@@ -183,7 +183,7 @@ const SubscribeTVForm = ({ record: config }: { record?: TVRssInfo }) => {
         //     })
     }
 
-    return <Space direction="vertical" style={{ width: "100%" }}>
+    return <Space orientation="vertical" style={{ width: "100%" }}>
         <MediaSearchGroup value={series} filter={{ type: [MediaWorkType.TV, MediaWorkType.ANI] }}
             onChange={(series) => {
                 console.log("update series")

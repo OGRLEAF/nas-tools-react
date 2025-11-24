@@ -34,8 +34,8 @@ export default function SettingCard(
                     onFinish={onFinished} >
                     {contextHolder}
                     <SettingForm config={config} />
-                    <Form.Item noStyle >
-                        <Button htmlType="submit" type='primary' style={{ float: "right" }}>保存</Button>
+                    <Form.Item noStyle>
+                        <Button htmlType="submit" type='primary' style={{ }}>保存</Button>
                     </Form.Item>
                 </Form>
             }
