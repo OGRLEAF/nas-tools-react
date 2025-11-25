@@ -193,7 +193,7 @@ export default function DownloadedPage() {
                 return <Space align="center" size="small">
                     {value}
                     {
-                        upSpeed > 0 || downSpeed > 0 ? <Tag bordered={false} color="blue">
+                        upSpeed > 0 || downSpeed > 0 ? <Tag variant="filled" color="blue">
                             {upSpeed > 0 ? <><CaretUpOutlined /><span>{upSpeed} {upSpeedUnit}/s</span></> : <></>}
                             {upSpeed > 0 && downSpeed > 0 ? <Divider orientation="vertical" /> : <></>}
                             {downSpeed > 0 ? <><CaretDownOutlined /><span>{downSpeed} {downSpeedUnit}/s</span></> : <></>}
@@ -208,7 +208,7 @@ export default function DownloadedPage() {
             dataIndex: "category",
             render(value: string, record) {
                 if (value.length)
-                    return <Tag color="cyan" bordered={false}>{value}</Tag>
+                    return <Tag color="cyan" variant="filled">{value}</Tag>
                 else
                     return <></>
             },
@@ -296,7 +296,7 @@ export default function DownloadedPage() {
             loading={loading}
             pagination={
                 {
-                    position: ["bottomRight"],
+                    placement: ["bottomEnd"],
                     showSizeChanger: true,
                     // total: totalTorrents
                     pageSize: pageSize,

@@ -103,7 +103,7 @@ function SearchResultPannel({ result }: { result: SearchResult }) {
                 <br />
                 <Divider titlePlacement="left">过滤</Divider>
                 <Form layout="vertical"
-                    onValuesChange={((values: [keyof FilterType, FilterType[keyof FilterType]], allValues) => {
+                    onValuesChange={((values: Partial<FilterType>, allValues) => {
                         const [[key, value]] = Object.entries(values) as [keyof FilterType, FilterType[keyof FilterType]][];
                         const newFilter = { ...filter };
                         if (key == "keyword") newFilter[key] = value as string;
