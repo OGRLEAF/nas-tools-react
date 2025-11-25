@@ -1,8 +1,5 @@
-import React, { useReducer, useContext, createContext, useEffect, useMemo } from "react"
-import { Button, Segmented, Space, theme } from "antd"
+import React, { useReducer, useContext, createContext, useEffect, useMemo, useState, useCallback } from "react"
 import PathManager from "../utils/pathManager"
-import CopyToClipboard from "@/app/components/copyToClipboard"
-import { CopyOutlined } from "@ant-design/icons"
 import { useParams, useSearchParams, } from "next/navigation"
 export const PathManagerContext = createContext<PathManager>(new PathManager("/"));
 export const PathManagerDispatchContext = createContext(({ type }: { type: any, path: string }) => { });
@@ -47,18 +44,87 @@ export const PathManagerProvider = ({ children }: { children: React.ReactNode, s
     )
 }
 
-export const PathSearchManagerProvider = ({ children }: { children: React.ReactNode, startPath?: string }) => {
+export function usePathManager2(initialPath: string = '/', mode: "pathname" | "searchparam" = 'searchparam') {
     const searchParams = useSearchParams();
-    const path = searchParams.get("path");
+    // const pathName = usePathname();
+    const [pathName] = useState<string>();
+    // const router = useRouter();
+
+    
+    const [historyPath, setHistoryPath] = useState<string[]>([]);
+    const [currentPath, setCurrentPath] = useState<string>();
+
+    const path = useMemo(()=>{
+        return mode == "searchparam" ? searchParams.get("path") : pathName;
+    }, [searchParams, pathName])
+
+    useEffect(() => {
+        const path = searchParams.get("path");
+        if (path) {
+            setCurrentPath(path);
+            setHistoryPath((preHistory) => {
+                return [...preHistory, path];
+            })
+        }
+    }, [searchParams])
+
+    const pushHistoryPath = useCallback((newPath: string) => {
+        setHistoryPath((preHistory) => {
+            if (newPath) return [...preHistory, newPath];
+            else return preHistory
+        })
+    }, [])
+
+    const pathPartedArray = useMemo(() => {
+        const deepestPath = currentPath;
+        if (deepestPath) {
+            return deepestPath.split('/').filter((item) => item.length > 0);
+        } else {
+            return [];
+        }
+    }, [currentPath])
+
+    const pathArray = useMemo(() => {
+        const loaded: string[] = []
+        return [
+            {
+                full: initialPath,
+                name: initialPath,
+                relative: ""
+            },
+            ...(pathPartedArray
+                .map((item) => {
+                    loaded.push(item);
+                    return {
+                        full: `${initialPath}${loaded.join("/")}`,
+                        relative: loaded.join("/"),
+                        name: item
+                    }
+                }))
+        ]
+    }, [pathPartedArray])
+
+    // const push = useCallback((newPath:string)=>{
+    //     console.log(newPath)
+    //     // router.push(newUrl, {scroll: false})
+    // }, [router]);
+
+    return { historyPath, pathArray, pushHistoryPath }
+}
+
+export function PathSearchManagerProvider({ children }: { children: React.ReactNode, startPath?: string }) {
+    const searchParams = useSearchParams();
 
     const pathManager = new PathManager('/');
 
-    if (path) {
-        // console.log(path)
-        pathManager.setPath(path)
-    }
-
     const [pathManagerData, dispath] = useReducer(reducer, pathManager);
+
+    useEffect(() => {
+        const path = searchParams.get("path");
+        dispath({ type: 'set_path', path: path || "/" })
+        if (path) pathManager.appendPath(path)
+    }, [searchParams])
+
     return (
         <PathManagerContext.Provider value={pathManagerData}>
             <PathManagerDispatchContext.Provider value={dispath}>
