@@ -81,7 +81,7 @@ export default function SubscribeTV() {
                 </div>,
                 title: <Space>
                     {record.name}
-                    <Tag color="green" bordered={false}>季{record.season}</Tag>
+                    <Tag color="green" variant="filled">季{record.season}</Tag>
                 </Space>,
                 description: StatusTag[record.state]
             })}

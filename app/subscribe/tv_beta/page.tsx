@@ -115,7 +115,7 @@ import { useForm } from "antd/es/form/Form";
 import { IconLoading } from "@/app/components/icons";
 
 const FormSection = ({ title, tooltip }: { title: string, tooltip?: string }) => {
-    return <Divider orientation="left" orientationMargin={0} style={{ marginTop: 0 }}>
+    return <Divider titlePlacement="left" orientation="horizontal" style={{ marginTop: 0 }}>
         <Space style={{ width: "100%" }}>
             <span>{title}</span>
             {tooltip && <Tooltip title={tooltip}><QuestionCircleOutlined size={4} style={{ color: "#00000073" }} /></Tooltip>}

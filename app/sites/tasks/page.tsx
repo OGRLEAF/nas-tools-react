@@ -154,7 +154,7 @@ function TaskConfigForm({ record, onChange }: { record?: BrushTaskProfile, onCha
                 <Switch />
             </Form.Item>
         </Space>
-        <Divider orientation="left" orientationMargin="0">选种规则（与）</Divider>
+        <Divider orientation="horizontal" titlePlacement="start">选种规则（与）</Divider>
 
         <Flex gap={12} wrap={"wrap"} style={{ width: "100%" }}>
             <Form.Item name={['rss_rule', 'dlcount']} label="同时下载任务数" style={{ width: "calc(25% - 6px)", }}>
@@ -200,7 +200,7 @@ function TaskConfigForm({ record, onChange }: { record?: BrushTaskProfile, onCha
             </Form.Item>
         </Space>
 
-        <Divider orientation="left" orientationMargin="0">删种规则</Divider>
+        <Divider orientation="horizontal" titlePlacement="start" >删种规则</Divider>
         <Space size="large" wrap>
             <Form.Item name={['remove_rule', 'time']} label="做种时间（小时）">
                 <NumberRange />

@@ -10,7 +10,7 @@ const nextConfig = {
     basePath: process.env.BASE_PATH,
     reactStrictMode: false,
     output: 'standalone',
-    
+    allowedDevOrigins: ['nastool.nosu.win'],
     env: {
         BASE_PATH: process.env.BASE_PATH,
         NEXT_PUBLIC_PACKAGE_VERSION: version,

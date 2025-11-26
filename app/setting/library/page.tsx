@@ -57,9 +57,9 @@ function TableHeader(options: { title: string, onChange: (value: string) => void
 const LibraryPathCard = forwardRef(
     function LibraryPathCardWithRef(options: LibraryPathOptions, ref: ForwardedRef<LibraryPathCardAction>) {
         const [paths, setPaths] = useState<string[]>(options.paths);
-        const { API } = useAPIContext()
 
-        const { confirm } = Modal;
+        const { modal } = App.useApp();
+        const { confirm } = modal;
         const { token } = theme.useToken();
         useImperativeHandle(ref, () => {
             return {
@@ -127,6 +127,7 @@ export default function LibraryPage() {
                         movie_path: moviePathsRef.current?.getPaths()
                     }
                 }
+                console.log("Update Path Config:", newPathConfig);
                 update(newPathConfig as NastoolServerConfig)
             }}>保存</Button>
         </Space>

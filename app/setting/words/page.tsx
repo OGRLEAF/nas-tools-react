@@ -1,18 +1,13 @@
 "use client"
-import { CardProps, CardsForm, CollapsableList, useCardsFormContext } from "@/app/components/CardsForm";
-import { Cards } from "@/app/components/CardsForm/Cards";
-import TinyTMDBSearch, { MediaSearchGroup, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
+import { CardsForm, useCardsFormContext } from "@/app/components/CardsForm";
+import { MediaSearchGroup, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { useSubmitMessage } from "@/app/utils";
-import { ResourceType } from "@/app/utils/api/api_base";
 import { SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
 import { WordConfig, WordConfigGroup, Words, WordsResource } from "@/app/utils/api/words";
-import { Button, Checkbox, Divider, Drawer, Flex, Form, Input, Modal, Radio, Space, Table, TableProps, Tabs, Tag, theme } from "antd";
+import { Button, Checkbox, Divider, Drawer, Form, Input, Space, Table, TableProps, Tabs, Tag, theme } from "antd";
 import { CloseOutlined } from "@ant-design/icons"
-import useFormInstance from "antd/es/form/hooks/useFormInstance";
-import CheckableTag from "antd/es/tag/CheckableTag";
 import { TabsProps } from "antd/lib";
-import { group } from "console";
-import React, { createContext, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 export default function WordsGroupPage() {
     const { token } = theme.useToken();
@@ -206,7 +201,7 @@ const WordConfigTabs = [
 
 ]
 
-const ForItemDivider = ({ children }: { children: React.ReactNode }) => <Divider orientation="left" orientationMargin={0}>{children}</Divider>
+const ForItemDivider = ({ children }: { children: React.ReactNode }) => <Divider orientation="vertical" titlePlacement="start">{children}</Divider>
 
 const FormSection = ({ title, content, enable, onEnableChange }:
     {
@@ -217,7 +212,7 @@ const FormSection = ({ title, content, enable, onEnableChange }:
     useEffect(() => onEnableChange(en), [en])
     const checkContext = <Checkbox checked={en} onChange={(value) => setEnable(value.target.checked)}>{title}</Checkbox>;
     return <>
-        <Divider orientation="left" orientationMargin={0}>
+        <Divider orientation="vertical" titlePlacement="start">
             <Space>
 
             </Space>

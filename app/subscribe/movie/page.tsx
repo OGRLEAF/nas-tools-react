@@ -1,17 +1,17 @@
 "use client"
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 
 import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
-import TinyTMDBSearch, { MediaDetailCard, MediaSearchGroup, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
+import { MediaSearchGroup, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { ResTypeSelect, PixSelect, FilterRuleSelect, DownloadSettingSelect, SiteSelect, IndexerSelect } from "@/app/components/NTSelects";
 import { DownloadPathSelect, EmptyPathSelect, StringPathInput, UnionPathsSelectGroup } from "@/app/components/LibraryPathSelector";
 import { DBMediaType } from "@/app/utils/api/api";
-import { MovieRssInfo, MovieSubscription, RssState, Subscription } from "@/app/utils/api/subscription/subscribe";
+import { MovieRssInfo, MovieSubscription, RssState } from "@/app/utils/api/subscription/subscribe";
 import { MediaWork, SeriesKey, MediaWorkType } from "@/app/utils/api/types";
 import { Button, Col, Form, Input, Row, Space, Switch, Tag, theme } from "antd";
 import { RetweetOutlined } from "@ant-design/icons"
 import { useForm } from "antd/es/form/Form";
-import { ListItemCard, ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
+import { ListItemCardList } from "@/app/components/CardnForm/ListItemCard";
 import { TMDB } from "@/app/utils/api/media/tmdb";
 import Image from "next/image";
 

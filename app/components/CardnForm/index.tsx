@@ -118,7 +118,7 @@ export default function CardnForm<T>(options: CardnFormProps<T>) {
         {contextHolder}
         < CardnFormContext.Provider value={ctx} >
             <Space
-                direction={options.layout ?? "horizontal"}
+                orientation={options.layout ?? "horizontal"}
                 style={{ width: "100%" }}
                 wrap={(options.layout ?? "horizontal") == "horizontal"}
             >
