@@ -15,6 +15,7 @@ import { DownloadPathSelect, EmptyPathSelect, LibraryPathSelect, PathTreeSelect,
 // import { useImportListContext } from "./mediaImportList";
 import { StateMap, StateTag } from "../StateTag";
 import { ImportTask, ImportTaskConfig } from "@/app/utils/api/import";
+import { useMediaWork } from "@/app/utils/api/media/media_work";
 
 export interface MediaImportGroupProps {
     seriesKey: SeriesKey,
@@ -63,35 +64,30 @@ const tvImportColumns: ColumnsType<MediaImportFile> = [{
 ]
 
 export function TvMediaImportGroup(props: MediaImportGroupProps) {
-    const [work, setWork] = useState<MediaWork>();
     const mediaImportDispatch = useMediaImportDispatch();
-    const loadMediaWork = useCallback(async () => {
-        const series = new SeriesKey(props.seriesKey).slice(SeriesKeyType.TMDBID)
-        const target = new TMDB().fromSeries(series);
-        setWork(await target?.get())
-    }, [props.seriesKey])
-    useEffect(() => {
-        loadMediaWork()
-    }, [loadMediaWork])
+    const mediaWorkKey = useMemo(() => new SeriesKey(props.seriesKey).slice(SeriesKeyType.TMDBID), [props.seriesKey])
+    const [work] = useMediaWork(mediaWorkKey);
+
     const { setSeries, setKeyword } = useContext(SearchContext);
-    const selectButton = <Button type="primary" size="small" onClick={() => { if (work?.title) setKeyword(work?.title) }}>搜索</Button>
-    const searchButton = <Button size="small" onClick={() => {
-        if (work) {
-            console.log(work)
-            setSeries(new SeriesKey(work.series))
-        }
-    }}>选择</Button>
-    return <Table
-        title={() => {
+    const cardTitle = useMemo(() => {
+        if(work) {
+            const selectButton = <Button type="primary" size="small" onClick={() => { if (work.metadata?.title) setKeyword(work.metadata?.title) }}>搜索</Button>
+            const searchButton = <Button size="small" onClick={() => { if (work) setSeries(new SeriesKey(work.series)) }}>选择</Button>
+
             return <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
-                {work ? <MediaDetailCard
+                <MediaDetailCard
                     postImageStyle={{ width: 100 }}
-                    mediaDetail={work} size="poster"
+                    mediaDetail={work} size="small"
                     onTitleClick={(mediaWork) => { setSeries(mediaWork.series) }}
                     action={<Space>{selectButton}{searchButton}</Space>}
-                /> : <>{props.seriesKey.t}</>}
+                />
             </div>
-        }}
+        }
+    }, [work, props.seriesKey.t, setSeries, setKeyword])
+
+
+    return <Table
+        title={() => cardTitle}
         bordered
         rowSelection={{
             type: "checkbox",
@@ -139,28 +135,25 @@ const movieImportColumns: ColumnsType<MediaImportFile> = [
 
 
 export function MovieMediaImportGroup(props: MediaImportGroupProps) {
-    const [work, setWork] = useState<MediaWork>();
-    const loadMediaWork = useCallback(async () => {
-        const series = new SeriesKey(props.seriesKey).slice(SeriesKeyType.TMDBID)
-        const target = new TMDB().fromSeries(series);
-        setWork(await target?.get())
-    }, [props.seriesKey])
-
-    useEffect(() => {
-        loadMediaWork()
-    }, [loadMediaWork])
+    const mediaWorkKey = useMemo(() => new SeriesKey(props.seriesKey).slice(SeriesKeyType.TMDBID), [props.seriesKey])
+    const [work] = useMediaWork(mediaWorkKey);
 
     const { setSeries, setKeyword } = useContext(SearchContext);
-    const selectButton = <Button type="primary" size="small" onClick={() => { if (work?.title) setKeyword(work?.title) }}>搜索</Button>
-    const searchButton = <Button size="small" onClick={() => { if (work) setSeries(work.series) }}>选择</Button>
-    const cardTitle = <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
-        {work ? <MediaDetailCard
-            postImageStyle={{ width: 100 }}
-            mediaDetail={work} size="small"
-            onTitleClick={(mediaWork) => { setSeries(mediaWork.series) }}
-            action={<Space>{selectButton}{searchButton}</Space>}
-        /> : <>{props.seriesKey.t}</>}
-    </div>
+    const cardTitle = useMemo(() => {
+        if(work) {
+            const selectButton = <Button type="primary" size="small" onClick={() => { if (work.metadata?.title) setKeyword(work.metadata?.title) }}>搜索</Button>
+            const searchButton = <Button size="small" onClick={() => { if (work) setSeries(new SeriesKey(work.series)) }}>选择</Button>
+
+            return <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
+                <MediaDetailCard
+                    postImageStyle={{ width: 100 }}
+                    mediaDetail={work} size="small"
+                    onTitleClick={(mediaWork) => { setSeries(mediaWork.series) }}
+                    action={<Space>{selectButton}{searchButton}</Space>}
+                />
+            </div>
+        }
+    }, [work, props.seriesKey.t, setSeries, setKeyword])
     const mediaImportDispatch = useMediaImportDispatch();
     return <Table
         title={() => cardTitle}
@@ -287,7 +280,7 @@ function MovieImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: 
                         path: files[0].path,
                         rmt_mode: value.type,
                         files: files.map((file) => [0, file.name]),
-                        season: mergedSeriesKey.s != null ? mergedSeriesKey.s : undefined ,
+                        season: mergedSeriesKey.s != null ? mergedSeriesKey.s : undefined,
                         tmdbid: String(mergedSeriesKey.i),
                         mediaType: mergedSeriesKey.t
                     })
@@ -383,7 +376,7 @@ function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: Serie
             : <></>}
         <Popover content={popCard} placement="topRight">
             {
-                loading ? <IconEllipsisLoading /> : work ? <>
+                loading ? <IconEllipsisLoading /> : work ?
                     <span style={{
                         whiteSpace: "nowrap",
                         textOverflow: "ellipsis",
@@ -391,7 +384,7 @@ function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: Serie
                         lineHeight: 0,
                         display: "inline-block"
                     }}>{work.metadata?.title}</span>
-                </> : null
+                    : null
             }
         </Popover>
 
