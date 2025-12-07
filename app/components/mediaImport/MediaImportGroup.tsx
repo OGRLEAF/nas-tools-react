@@ -334,7 +334,7 @@ function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: Serie
     }, [file.indentifyHistory, key]);
 
 
-    const [work, loading] = useMediaWork(mediaWorkKey ?? new SeriesKey());
+    const [work] = useMediaWork(mediaWorkKey ?? new SeriesKey());
 
     useEffect(() => {
         console.log("TableIdentifyColumn MediaWorkKey Changed:", mediaWorkKey?.dump(), key, work);
