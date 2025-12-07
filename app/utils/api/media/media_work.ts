@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { NASTOOL } from "../api";
 import { APIBase } from "../api_base";
-import { Media, MediaWorkType, SeriesKeyType } from "../types"
+import { MediaWorkType, SeriesKeyType } from "../types"
 import { SeriesKey, SeriesKeyTuple } from "./SeriesKey"
 import { useCallback, useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
