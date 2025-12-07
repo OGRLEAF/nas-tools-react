@@ -1,4 +1,4 @@
-import { message } from "antd";
+import { App, message } from "antd";
 import { floor } from "lodash";
 import { useMemo, useState } from "react";
 
@@ -48,6 +48,7 @@ export function asyncEffect(func: CallableFunction) {
 }
 
 export function useSubmitMessage(key: string) {
+    // const{ mes} = App.useApp();
     const [messageApi, contextHolder] = message.useMessage({});
 
     const success = (msg?: string) => {
