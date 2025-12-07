@@ -148,9 +148,9 @@ export function MediaDetailCard({
     const _size = size ? size : "normal";
     const style = cardStyleMap[_size];
 
-    const metadata = mediaDetail?.metadata
-    const coverImage = metadata?.images?.cover &&
-       <CoverImage maxHeight={style.height} alt={metadata.title} src={metadata?.images?.cover} />
+    const metadata = useMemo(() => mediaDetail?.metadata, [mediaDetail])
+    const coverImage = useMemo(()=>(metadata?.images?.poster || metadata?.images?.cover), [metadata])
+    const coverImageNode = useMemo(()=>(coverImage && <CoverImage maxHeight={style.height} alt={metadata?.title ?? ""} src={coverImage} />), [metadata, coverImage, style.height])
 
     const titleArea = useMemo(() => mediaDetail &&
         <Flex style={{
@@ -179,7 +179,7 @@ export function MediaDetailCard({
             maxWidth: style.maxWidth,
             width: "100%",
         }}>
-        {coverImage}
+        {coverImageNode}
         <div style={{ height: textHeight, width: "100%", overflow: "auto" }}>
             {titleArea}
             <div style={{ padding: "0px 4px" }}>
