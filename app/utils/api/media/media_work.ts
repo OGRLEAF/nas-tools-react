@@ -125,7 +125,7 @@ export class MediaWorkService extends APIBase {
         const queryType = t && this.typeMap[t as MediaWorkType]
         // TODO: ugly
         if (t && mediaWork.series.t) {
-            const query_path = keys
+            const query_path = keys.join("/")
             const postData: MediaWorkData = {
                 series: mediaWork.series.dump(),
                 metadata: mediaWork.metadata,
