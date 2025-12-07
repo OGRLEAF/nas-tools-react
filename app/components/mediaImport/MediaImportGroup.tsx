@@ -317,32 +317,29 @@ function ImportListItemAction({ fileKey }: { fileKey: MediaImportFileKey }) {
 }
 
 function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: SeriesKeyType }) {
-    const [work, setWork] = useState<MediaWork>();
     const { file, displayKey: key } = options;
     const [lastest, old] = file.indentifyHistory.lastDiffs();
     const changed = (lastest != undefined && old != undefined) ? lastest.compare(old) < key : false
     const finalValue = lastest?.get(key);
-    const [loading, setLoading] = useState(false);
-    const [localSeries, setLocalSeries] = useState<SeriesKey>();
-
-    const getWorkFromSeriesKey = useCallback(async () => {
-        setLoading(true)
+    
+    const mediaWorkKey = useMemo(() => {
         const seriesKey = file.indentifyHistory.last();
+        
         if (seriesKey !== undefined) {
             const sliced = seriesKey.slice(key)
-            setLocalSeries(sliced)
-            if (sliced.end == key) {
-                const target = new TMDB().fromSeries(sliced);
-                setWork(await target?.get())
-            }
-
+            
+            return sliced.end == key ? sliced : undefined;
         }
-        setLoading(false)
-    }, [file.indentifyHistory, key])
+        return undefined;
+    }, [file.indentifyHistory, key]);
+
+
+    const [work, loading] = useMediaWork(mediaWorkKey ?? new SeriesKey());
 
     useEffect(() => {
-        getWorkFromSeriesKey()
-    }, [getWorkFromSeriesKey])
+        console.log("TableIdentifyColumn MediaWorkKey Changed:", mediaWorkKey?.dump(), key, work);
+    }, [mediaWorkKey, key, work]);
+
 
     const { setKeyword, setSeries } = useContext(SearchContext);
     const onTitleTagClick = (value: string) => {
@@ -351,14 +348,14 @@ function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: Serie
 
     const onSelect = () => {
         if (work) {
-            setSeries(new SeriesKey().type(work.type).tmdbId(String(work.key)))
+            setSeries(new SeriesKey(work.series))
         }
     }
     const popCard = <Space orientation="vertical">
         {work ? <MediaDetailCard mediaDetail={work} size="card"
             action={work.series.end == SeriesKeyType.TMDBID ?
                 <Space>
-                    <Button type="primary" size="small" onClick={() => { if (work?.title) onTitleTagClick(work?.title) }}
+                    <Button type="primary" size="small" onClick={() => { if (work?.metadata?.title) onTitleTagClick(work?.metadata?.title) }}
                     >搜索</Button>
                     <Button size="small" onClick={onSelect}
                     >选择</Button>
@@ -367,28 +364,33 @@ function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: Serie
             }
         /> : null}
     </Space>
-    return <Tag color={changed ? 'pink' : 'cyan'}>
-        <Tooltip title={JSON.stringify([localSeries, key, lastest?.t, old?.t, old ? lastest?.compare(old) : "", changed])}>
-            {work?.key ?? finalValue ?? <>N/A</>}
+    return <Tag color={changed ? 'pink' : 'cyan'} style={{display: "flex", alignItems: "center"}}>
+        <Tooltip title={JSON.stringify([mediaWorkKey, key, lastest?.t, old?.t, old ? lastest?.compare(old) : "", changed])}>
+                {work ? <span style={{
+                        maxWidth: 200,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        display: "inline-block"
+                    }}>{work?.series.get(key) ?? finalValue ?? "N/A"}</span>: null
+                }
         </Tooltip>
-        {loading || work ?
-            <Divider orientation="vertical" style={{ borderInlineColor: changed ? 'pink' : 'rgba(5, 5, 5, 0.06)' }} />
+        {work ?
+            <div style={{ width: "1px", height: "1rem", display: "inline-block", margin: "0px 8px 0 8px", backgroundColor: changed ? 'pink' : 'rgba(5, 5, 5, 0.06)' }} />
             : <></>}
         <Popover content={popCard} placement="topRight">
             {
-                loading ? <IconEllipsisLoading /> : work ?
-                    <span style={{
-                        whiteSpace: "nowrap",
-                        textOverflow: "ellipsis",
+                work ? <span style={{
                         maxWidth: 200,
-                        lineHeight: 0,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
                         display: "inline-block"
                     }}>{work.metadata?.title}</span>
-                    : null
+                    :  <IconEllipsisLoading /> 
             }
         </Popover>
 
     </Tag >
 
 }
-
