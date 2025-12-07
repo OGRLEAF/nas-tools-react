@@ -84,7 +84,7 @@ const LibraryPathCard = forwardRef(
 
             }
         }))
-        return <List size="small" dataSource={tableData} bordered header={<TableHeader title={options.title} onChange={(value)=>{setPaths([...paths, value])}} />}
+        return <List size="small" dataSource={tableData} bordered header={<TableHeader title={options.title} onChange={(value) => { setPaths([...paths, value]) }} />}
             style={{ backgroundColor: token.colorBgBase }}
             renderItem={(item) => <List.Item
                 actions={[
@@ -97,8 +97,8 @@ const LibraryPathCard = forwardRef(
     })
 
 export default function LibraryPage() {
-    const { API } = useAPIContext()
-    const serverConfig = useDataResource<NastoolServerConfig>(ServerConfig)
+
+    const serverConfig = useDataResource<NastoolServerConfig>(ServerConfig, { useMessage: true })
     const { useData, update } = serverConfig;
     const { data, refresh } = useData();
     const moviePathsRef = useRef<LibraryPathCardAction>(null);
@@ -130,6 +130,7 @@ export default function LibraryPage() {
                 console.log("Update Path Config:", newPathConfig);
                 update(newPathConfig as NastoolServerConfig)
             }}>保存</Button>
+            {serverConfig.messageContext}
         </Space>
     </Section>
 }

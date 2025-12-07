@@ -126,7 +126,7 @@ const DirectoryList = ({ dirList, loading }:
                     return (
                         <List.Item>
                             <FileLink targetPath={path.join(pathParams, cleanName)}>
-                                {item.name}
+                                <span style={{wordWrap: "break-word"}}>{item.name}</span>
                             </FileLink>
                         </List.Item>
                     )
@@ -379,7 +379,7 @@ function PathManagerBar() {
 
     useEffect(() => {
         const latestPath = pathManagerState.getPathArray();
-
+        // console.log("PathManagerBar", latestPath);
         setSelectedPart(pathManagerState.deepestPath);
         const shouldUpdate = latestPath.length <= historyDeepPath.length ? latestPath.map((part, index) => {
             if (part.name == historyDeepPath[index].name) {
@@ -412,10 +412,7 @@ function PathManagerBar() {
             options={segmentedPathTag}
             // defaultValue={pathManagerState.deepestPath}
             value={selectedPart}
-            onChange={(evt) => {
-                push(evt);
-            }
-            }
+            onChange={(evt) => {push(evt);}}
         />
     </>
 }        

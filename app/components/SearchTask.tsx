@@ -80,7 +80,7 @@ export default function SearchTask({
         await (API).launchTaskflow("search_taskflow", value);
     }, [API])
 
-    return <Space direction="vertical" size={32} style={{ width: "100%", ...style }}>
+    return <Space orientation="vertical" size={32} style={{ width: "100%", ...style }}>
         {/* {search ? (
             <>{search.keyword} {search.mediaId} {search.mediaType}</>
         ) : ""} */}
