@@ -1,11 +1,11 @@
 "use client"
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import { TMDBSearchList } from "@/app/components/TMDBSearch"
 import SearchTask from "@/app/components/SearchTask"
 import { Drawer, Spin } from "antd";
 import { NastoolMediaSearchResultItem } from "@/app/utils/api/api";
 
-export default function SearchResultPage({ params }: { params: { keyword: string } }) {
+export default function SearchResultPage({ params }: { params: Promise<{ keyword: string }> }) {
     const [openTaskDrawer, setOpenTaskDrawer] = useState(false)
     const [selectedMediaId, setSelectedMediaId] = useState<string | null>(null)
     const [mediaInfo, setMediaInfo] = useState<NastoolMediaSearchResultItem>()
@@ -18,8 +18,9 @@ export default function SearchResultPage({ params }: { params: { keyword: string
         console.log(media_info)
     }
     const onCloseDrawer = () => setOpenTaskDrawer(false)
+    const { keyword } = use(params);
 
-    return <>搜索 {decodeURI(params.keyword)}
+    return <>搜索 {decodeURI(keyword)}
         <Drawer
             open={openTaskDrawer}
             onClose={onCloseDrawer}
@@ -38,6 +39,6 @@ export default function SearchResultPage({ params }: { params: { keyword: string
                 : <Spin />}
         </Drawer>
 
-        <TMDBSearchList keyword={decodeURI(params.keyword)} onSelected={onSelected} />
+        <TMDBSearchList keyword={decodeURI(keyword)} onSelected={onSelected} />
     </>
 }
