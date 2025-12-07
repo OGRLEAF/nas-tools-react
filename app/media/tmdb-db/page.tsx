@@ -43,7 +43,7 @@ const FilterForm = ({ keyword, onFinish }: { keyword?: string, onFinish: (value:
         // console.log("Set->", keyword)
         form.setFieldValue("keyword", keyword)
     }, [form, keyword])
-    return <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+    return <div style={{ padding: 8 }}>
         <Form initialValues={{ keyword: "" }}
             onFinish={onFinishFilterForm}
             form={form}
