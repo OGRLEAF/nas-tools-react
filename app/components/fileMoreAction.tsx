@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { NastoolFileListItem } from "../utils/api/api";
 import { Button, Descriptions, Space, Spin, Table } from "antd";
-import MediaImportEntry from "@/app/components/mediaImport/mediaImportEntry"
+import MediaImportEntry from "@/app/components/MediaImport/mediaImportEntry"
 import { usePathManager } from "./pathManager";
 import path from "path";
 import { ColumnsType } from "antd/es/table";
@@ -9,7 +9,7 @@ import { MediaWork, MediaWorkType, SeriesKey } from "../utils/api/types";
 import { MediaIdentify } from "../utils/api/media/mediaIdentify";
 import { asyncEffect } from "../utils";
 import { TMDB } from "../utils/api/media/tmdb";
-import { IdentifyHistory } from "./mediaImport/mediaImportContext";
+import { IdentifyHistory } from "./MediaImport/mediaImportContext";
 
 const RelFileTable = ({ relFiles }: { relFiles: NastoolFileListItem[] }) => {
     const relFilesTableData = relFiles.map((file) => ({

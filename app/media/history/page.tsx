@@ -6,9 +6,9 @@ import { ColumnType, ColumnsType, TableProps } from "antd/es/table";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CardsForm, useCardsFormContext } from "@/app/components/CardsForm";
-import MediaImportEntry, { MediaImportProvider } from "@/app/components/mediaImport/mediaImportEntry";
-import { IdentifyHistory } from "@/app/components/mediaImport/mediaImportContext";
-import MediaImportWrapper from "@/app/components/mediaImport/mediaImport";
+import MediaImportEntry, { MediaImportProvider } from "@/app/components/MediaImport/mediaImportEntry";
+import { IdentifyHistory } from "@/app/components/MediaImport/mediaImportContext";
+import MediaImportWrapper from "@/app/components/MediaImport/mediaImport";
 import { SeriesKey } from "@/app/utils/api/types";
 import { FileLink } from "@/app/components/FileLink";
 

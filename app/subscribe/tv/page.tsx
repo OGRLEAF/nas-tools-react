@@ -8,7 +8,7 @@ import { DBMediaType } from "@/app/utils/api/api";
 import { DownloadPathSelect, EmptyPathSelect, StringPathInput, UnionPathsSelectGroup } from "@/app/components/LibraryPathSelector";
 import { DownloadSettingSelect, FilterRuleSelect, IndexerSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 import { useForm } from "antd/es/form/Form";
-import { MediaSeasonInput } from "@/app/components/mediaImport/mediaImport";
+import { MediaSeasonInput } from "@/app/components/MediaImport/mediaImport";
 import { RetweetOutlined, EditOutlined } from "@ant-design/icons"
 import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
 import { TMDB } from "@/app/utils/api/media/tmdb";

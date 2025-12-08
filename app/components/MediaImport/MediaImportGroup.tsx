@@ -380,14 +380,13 @@ function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: Serie
             : <></>}
         <Popover content={popCard} placement="topRight">
             {
-                work ? <span style={{
+               <span style={{
                         maxWidth: 200,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
                         display: "inline-block"
-                    }}>{work.metadata?.title}</span>
-                    :  <IconEllipsisLoading /> 
+                    }}>{  work ? work.metadata?.title : <IconEllipsisLoading /> }</span>
             }
         </Popover>
 

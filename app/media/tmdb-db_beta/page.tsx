@@ -88,6 +88,7 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
     () => [
       {
         title: '#',
+        columnWidth: 10,
         dataIndex: ['series'],
         render(value: SeriesKey) {
           return value.get(value.end);
@@ -95,11 +96,13 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
       },
       {
         title: '名称',
+        columnWidth: 50,
         dataIndex: ['metadata', 'title'],
         render: nameColumnRender,
       },
       {
         title: '发行日期/播出日期',
+        columnWidth: 10,
         dataIndex: ['metadata'],
         render(value: MediaWork['metadata'], record, index) {
           return value?.date.airing || value?.date.release || '-';
@@ -107,6 +110,7 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
       },
       {
         title: '操作',
+        columnWidth: 30,
         dataIndex: ['series'],
         render: operationColumnRender,
       },
@@ -124,7 +128,6 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
       onChange={(value) => {
         setSliceKey(value)
       }} />
-    <br />
     <Table
       size="small"
       title={slicedSeriesKey.end > SeriesKeyType.TYPE ? titleRender : undefined}
@@ -140,12 +143,13 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
 
 function MetadataEditorDrawer({ seriesKey }: { seriesKey: SeriesKey }) {
   const [open, setOpen] = useState(false)
-  return <>
+  return <Space>
     <Button type="link" size="small" onClick={() => setOpen(true)}>编辑</Button>
+    <Button type="link" size="small" danger onClick={() => setOpen(true)}>删除</Button>
     <Drawer open={open} onClose={() => setOpen(false)} size="large">
       {open && <MetadataEditor seriesKey={seriesKey} />}
     </Drawer>
-  </>
+  </Space>
 }
 
 

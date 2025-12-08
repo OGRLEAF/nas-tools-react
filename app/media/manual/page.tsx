@@ -1,9 +1,9 @@
 "use client"
 import { CardsForm, useCardsFormContext } from "@/app/components/CardsForm";
 import { FileLink } from "@/app/components/FileLink";
-import MediaImportWrapper from "@/app/components/mediaImport/mediaImport";
-import { IdentifyHistory } from "@/app/components/mediaImport/mediaImportContext";
-import MediaImportEntry, { MediaImportProvider } from "@/app/components/mediaImport/mediaImportEntry";
+import MediaImportWrapper from "@/app/components/MediaImport/mediaImport";
+import { IdentifyHistory } from "@/app/components/MediaImport/mediaImportContext";
+import MediaImportEntry, { MediaImportProvider } from "@/app/components/MediaImport/mediaImportEntry";
 import { OrganizeRecord, OrganizeUnknown, OrganizeUnkownResouce, UnknownRecord } from "@/app/utils/api/import";
 import { Button, Flex, theme } from "antd";
 import Table, { ColumnsType, TableProps } from "antd/es/table";

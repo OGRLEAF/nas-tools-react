@@ -6,12 +6,12 @@ import { BarsOutlined, BuildOutlined, FontColorsOutlined, SmallDashOutlined } fr
 import React, { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ColumnsType, TableRef } from "antd/es/table";
 import FileMoreAction from "@/app/components/fileMoreAction";
-import MediaImportEntry, { MediaImportProvider } from "@/app/components/mediaImport/mediaImportEntry";
-import MediaImport from "@/app/components/mediaImport/mediaImport";
+import MediaImportEntry, { MediaImportProvider } from "@/app/components/MediaImport/mediaImportEntry";
+import MediaImport from "@/app/components/MediaImport/mediaImport";
 import { PathSearchManagerProvider, usePathManager, usePathManagerDispatch } from "@/app/components/pathManager"
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { bytes_to_human } from "@/app/utils";
-import { IdentifyHistory } from "@/app/components/mediaImport/mediaImportContext";
+import { IdentifyHistory } from "@/app/components/MediaImport/mediaImportContext";
 import { useAPIContext } from "@/app/utils/api/api_base";
 import path from "path";
 import { FileLink, useFileRouter } from "@/app/components/FileLink";
