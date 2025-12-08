@@ -176,6 +176,8 @@ function MetadataEditor({ seriesKey }: { seriesKey: SeriesKey }) {
           action.update({
             series: mediaWork.series,
             metadata: values
+          }).then(()=>{
+            action.refresh();
           })
       }} layout="vertical">
       <Form.Item label="标题" name="title" >
