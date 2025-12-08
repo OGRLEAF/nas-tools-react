@@ -1,14 +1,13 @@
 'use client'
 import { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { Section } from "@/app/components/Section";
-import { DateType, MediaWork, MediaWorkData, MediaWorkMetadata, MediaWorkService, MetadataDate, toDayjs, useMediaWork, useMediaWorks } from "@/app/utils/api/media/media_work"
+import { MediaWork, MediaWorkMetadata, MetadataDate, toDayjs, useMediaWork, useMediaWorks } from "@/app/utils/api/media/media_work"
 import { SeriesKey } from "@/app/utils/api/media/SeriesKey"
 import { MediaWorkType, SeriesKeyType } from "@/app/utils/api/types"
 import { Button, DatePicker, Drawer, Form, Input, Segmented, Space, Table, TableColumnsType } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { TMDBMediaWork } from "@/app/utils/api/media/tmdb";
 
-const defaultSeriesKey = new SeriesKey().type(MediaWorkType.MOVIE);
+const defaultSeriesKey = new SeriesKey().type(MediaWorkType.TV);
 
 
 function TitleLabel({ seriesKey }: { seriesKey: SeriesKey }) {
@@ -37,13 +36,11 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
       if ((farestKey.value < seriesKey.end))
         return [...pathSegments, {
           label: <TitleLabel seriesKey={seriesKey} />,
-          // label: seriesKey.get(seriesKey.end),
           value: seriesKey.end,
         }]
       else {
         return [...pathSegments.slice(0, seriesKey.end),
         {
-          // label: seriesKey.get(seriesKey.end),
           label: <TitleLabel seriesKey={seriesKey} />,
           value: seriesKey.end
         }
@@ -77,7 +74,7 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
       return value;
     },
     [setSeriesKey, setSliceKey]
-  ); ``
+  );
 
   // Extracted render function for the "操作" column
   const operationColumnRender = useCallback(
@@ -121,6 +118,7 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
     <Segmented options={[MediaWorkType.TV, MediaWorkType.MOVIE]} value={seriesKey.t}
       onChange={(value) => {
         setSeriesKey(new SeriesKey().type(value as MediaWorkType));
+        setSliceKey(SeriesKeyType.TYPE);
       }} />
     <Segmented options={pathSegments} value={sliceKey}
       onChange={(value) => {

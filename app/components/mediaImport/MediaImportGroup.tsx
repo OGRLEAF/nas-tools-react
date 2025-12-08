@@ -320,7 +320,7 @@ function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: Serie
     const { file, displayKey: key } = options;
     const [lastest, old] = file.indentifyHistory.lastDiffs();
     const changed = (lastest != undefined && old != undefined) ? lastest.compare(old) < key : false
-    const finalValue = lastest?.get(key);
+    const finalValue = lastest?.get(key); 
     
     const mediaWorkKey = useMemo(() => {
         const seriesKey = file.indentifyHistory.last();
