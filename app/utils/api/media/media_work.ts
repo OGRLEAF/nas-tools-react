@@ -201,18 +201,22 @@ export function useMediaWork(series_key: SeriesKey): [MediaWork | undefined, {
     return [mediaWork, { update, refresh }]
 }
 
-export function useMediaWorks(series_key?: SeriesKey): [MediaWork[] | undefined, boolean] {
+export function useMediaWorks(seriesKey?: SeriesKey): [MediaWork[] | undefined, boolean, () => void] {
     const [mediaWorks, setMediaWorks] = useState<MediaWork[]>();
     const [loading, setLoading] = useState(false);
-    useEffect(() => {
-        if (series_key && (series_key.end < SeriesKeyType.EPISODE)) {
+    const refresh = useCallback(() => {
+        if (seriesKey && (seriesKey.t ==  MediaWorkType.TV ? (seriesKey.end < SeriesKeyType.EPISODE) : (seriesKey.end < SeriesKeyType.TMDBID))
+        ) {
             setLoading(true)
-            new TMDBMediaWork(series_key).getChildren()
+            new TMDBMediaWork(seriesKey).getChildren()
                 .then(mediaWorks => {
                     setMediaWorks(() => mediaWorks)
                 })
                 .finally(() => setLoading(false))
         }
-    }, [series_key])
-    return [mediaWorks, loading]
+    }, [seriesKey])
+    useEffect(() => {
+        refresh();
+    }, [refresh])
+    return [mediaWorks, loading, refresh]
 }
