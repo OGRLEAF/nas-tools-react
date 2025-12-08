@@ -1,7 +1,7 @@
 'use client'
 import { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { Section } from "@/app/components/Section";
-import { MediaWork, MediaWorkMetadata, MetadataDate, toDayjs, useMediaWork, useMediaWorks } from "@/app/utils/api/media/media_work"
+import { MediaWork, MediaWorkMetadata, MetadataDate, toDayjs, useMediaWork, useMediaWorkAction, useMediaWorks } from "@/app/utils/api/media/media_work"
 import { SeriesKey } from "@/app/utils/api/media/SeriesKey"
 import { MediaWorkType, SeriesKeyType } from "@/app/utils/api/types"
 import { Button, DatePicker, Drawer, Form, Input, Segmented, Space, Table, TableColumnsType } from "antd";
@@ -143,9 +143,10 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
 
 function MetadataEditorDrawer({ seriesKey }: { seriesKey: SeriesKey }) {
   const [open, setOpen] = useState(false)
+  const {drop} = useMediaWorkAction(seriesKey);
   return <Space>
     <Button type="link" size="small" onClick={() => setOpen(true)}>编辑</Button>
-    <Button type="link" size="small" danger onClick={() => setOpen(true)}>删除</Button>
+    <Button type="link" size="small" danger onClick={() => drop()}>删除</Button>
     <Drawer open={open} onClose={() => setOpen(false)} size="large">
       {open && <MetadataEditor seriesKey={seriesKey} />}
     </Drawer>

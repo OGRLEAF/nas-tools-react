@@ -140,6 +140,16 @@ export class MediaWorkService extends APIBase {
 
         }
     }
+
+    public async dropMediaWork(series_key: SeriesKey) {
+        const [t, ...keys] = series_key.dump().slice(0, series_key.end + 1);
+        const queryType = t && this.typeMap[t as MediaWorkType]
+        if (t) {
+            const query_path = keys.join("/")
+            const ret = await this.API.del(`media_work/${queryType}/${query_path}`, { auth: true })
+            return ret
+        }
+    }
 }
 
 
@@ -170,42 +180,57 @@ export class TMDBMediaWork {
         const ret = await new MediaWorkService().updateMediaWork(mediaWork)
         return ret
     }
+
+    public async drop() {
+        return await new MediaWorkService().dropMediaWork(this.series_key)
+    }
 }
 
-
-export function useMediaWork(series_key: SeriesKey): [MediaWork | undefined, {
-    update: (m: MediaWork) => void,
-    refresh: () => void
-}] {
+export function useMediaWorkAction(series_key: SeriesKey) {
     const instance = useMemo(() => {
         if (series_key.end >= SeriesKeyType.TMDBID)
             return new TMDBMediaWork(series_key)
-
     }, [series_key])
-    const [mediaWork, setMediaWork] = useState<MediaWork>();
-
-    const refresh = useCallback(() => {
-        instance?.get()
-            .then(mediaWork => {
-                setMediaWork(() => mediaWork)
-            })
+    const get = useCallback(() => {
+        return instance?.get()
     }, [instance]);
     const update = useCallback((mediaWork: MediaWork) => {
         instance?.set(mediaWork)
     }, [instance,])
 
-    useEffect(() => {
-        refresh()
-    }, [instance])
+    const drop = useCallback(() => {
+        instance?.drop()
+    }, [instance]);
+    return { update, get, drop }
+}
 
-    return [mediaWork, { update, refresh }]
+export function useMediaWork(series_key: SeriesKey): [MediaWork | undefined, {
+    update: (m: MediaWork) => void,
+    refresh: () => void,
+    drop: () => void
+}] {
+
+    const { get, update, drop } = useMediaWorkAction(series_key);
+    const [mediaWork, setMediaWork] = useState<MediaWork>();
+
+    const refresh = useCallback(() => {
+        get()?.then((mw) => {
+            setMediaWork(mw)
+        })
+    }, [get]);
+
+    useEffect(() => {
+        refresh();
+    }, [refresh])
+
+    return [mediaWork, { update, refresh, drop }]
 }
 
 export function useMediaWorks(seriesKey?: SeriesKey): [MediaWork[] | undefined, boolean, () => void] {
     const [mediaWorks, setMediaWorks] = useState<MediaWork[]>();
     const [loading, setLoading] = useState(false);
     const refresh = useCallback(() => {
-        if (seriesKey && (seriesKey.t ==  MediaWorkType.TV ? (seriesKey.end < SeriesKeyType.EPISODE) : (seriesKey.end < SeriesKeyType.TMDBID))
+        if (seriesKey && (seriesKey.t == MediaWorkType.TV ? (seriesKey.end < SeriesKeyType.EPISODE) : (seriesKey.end < SeriesKeyType.TMDBID))
         ) {
             setLoading(true)
             new TMDBMediaWork(seriesKey).getChildren()
