@@ -8,7 +8,7 @@ import { Button, DatePicker, Drawer, Form, Input, Segmented, Space, Table, Table
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TMDBMediaWork } from "@/app/utils/api/media/tmdb";
 
-const defaultSeriesKey = new SeriesKey().type(MediaWorkType.TV);
+const defaultSeriesKey = new SeriesKey().type(MediaWorkType.MOVIE);
 
 
 function TitleLabel({ seriesKey }: { seriesKey: SeriesKey }) {
@@ -23,13 +23,14 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
   const [sliceKey, setSliceKey] = useState<SeriesKeyType>(SeriesKeyType.TYPE)
   const slicedSeriesKey = useMemo(() => seriesKey.slice(sliceKey), [sliceKey, seriesKey])
 
-  const [mediaWorks, loading] = useMediaWorks(slicedSeriesKey);
+  const [mediaWorks, loading, refresh] = useMediaWorks(slicedSeriesKey);
   const [mediaWork,] = useMediaWork(slicedSeriesKey);
 
   const [pathSegments, setPathSegements] = useState([{
     label: <>{defaultSeriesKey.get(defaultSeriesKey.end)}</>,
     value: defaultSeriesKey.end
   }])
+
   useEffect(() => {
     setPathSegements((pathSegments) => {
       const farestKey = pathSegments[pathSegments.length - 1];
@@ -76,7 +77,7 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
       return value;
     },
     [setSeriesKey, setSliceKey]
-  );
+  ); ``
 
   // Extracted render function for the "操作" column
   const operationColumnRender = useCallback(
@@ -116,7 +117,11 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
     [nameColumnRender, operationColumnRender]
   );
 
-  return <Section title={`TMDB缓存`}>
+  return <Section title={`TMDB缓存`} onRefresh={() => refresh()}>
+    <Segmented options={[MediaWorkType.TV, MediaWorkType.MOVIE]} value={seriesKey.t}
+      onChange={(value) => {
+        setSeriesKey(new SeriesKey().type(value as MediaWorkType));
+      }} />
     <Segmented options={pathSegments} value={sliceKey}
       onChange={(value) => {
         setSliceKey(value)
