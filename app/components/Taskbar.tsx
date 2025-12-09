@@ -37,8 +37,8 @@ function TaskbarItem({ taskflow }: { taskflow: TaskflowInfo }) {
             </div>
         }
         placement="bottomLeft"
-        overlayInnerStyle={{ padding: 0 }}
-        overlayStyle={{ width: "50%", backgroundColor: "unset", }}>
+        styles={{ container: { padding: 0 },  root: { width: "50%", backgroundColor: "unset", } }}
+        >
         <Tag style={{ marginRight: 0 }}
             onClick={() => { setOpen(true) }}
             color={status.type}
