@@ -252,18 +252,20 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
         rowSelection={{
             type: "checkbox",
             selectedRowKeys: selected,
+            columnWidth: 32,
             onChange: (selectedRowKeys: React.Key[], selectedRows: NastoolFileListItem[]) => {
                 setSelected(selectedRowKeys as string[])
                 setSelectedFiles(selectedRows)
             },
         }}
+        virtual={true}
         dataSource={fileList}
         columns={columns}
         loading={loading}
         rowKey="name"
         pagination={false}
         bordered size="small"
-        scroll={{ y: sectionContext.contentHeight - 200 }}
+        scroll={{ y: sectionContext.contentHeight - 200, x: 400 }}
         expandable={{
             expandedRowRender: (record: NastoolFileListItem) =>
                 <FileMoreAction file={record} relFiles={fileList} />,
@@ -292,22 +294,26 @@ function MediaFileExplorer() {
     const [view, setView] = useState<string>('plain')
 
     const { fallback } = useFileRouter();
+    const [pathLoaded, setPathLoaded] = useState(false);
     const onRefresh = useCallback(async () => {
         setLoadingState(true);
-        try {
-            const deepesetPath = pathManagerContext.getDeepestRelativePath();
-            const fileList = await API.getFileList(pathManagerContext.getBasePath,
-                deepesetPath.replaceAll("＃", "#"));
-            if (fileList.fallback_to != undefined) {
-                fallback(fileList.fallback_to, deepesetPath)
-            } else {
-                setDirList(fileList.directories)
-                setFileList(fileList.files)
-                setLoadingState(false);
-            }
-        } catch (e) {
+        if(pathLoaded) {
+            try {
+                const deepesetPath = pathManagerContext.getDeepestRelativePath();
+                const fileList = await API.getFileList(pathManagerContext.getBasePath,
+                    deepesetPath.replaceAll("＃", "#"));
+                if (fileList.fallback_to != undefined) {
+                    fallback(fileList.fallback_to, deepesetPath)
+                } else {
+                    setDirList(fileList.directories)
+                    setFileList(fileList.files)
+                    setLoadingState(false);
+                }
+            } catch (e) {
 
+            }
         }
+
     }, [API, fallback, pathManagerContext])
 
     useEffect(() => {
@@ -319,6 +325,7 @@ function MediaFileExplorer() {
     useEffect(() => {
         if (path.normalize(pathParams) != path.normalize(pathManagerContext.deepestPath)) {
             pathManagerDispath({ type: "set_path", path: pathParams })
+            setPathLoaded(true)
         }
     }, [onRefresh, pathManagerContext, pathManagerDispath, pathParams, router])
 
@@ -349,7 +356,7 @@ function MediaFileExplorer() {
                     />
                 </Space>
             </Flex>
-            <Row gutter={16} >
+            <Row gutter={14} >
                 <Col span={6}>
                     <DirectoryList dirList={dirList} loading={loadingState} />
                 </Col>
