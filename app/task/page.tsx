@@ -50,7 +50,7 @@ const TaskCard = ({ taskflow }: { taskflow: TaskflowInfo }) => {
         const { draft: taskMeta, instance: taskState } = item;
         return {
             // label: item.type,
-            children: <Space orientation="vertical" style={{ width: "100%" }}>
+            content: <Space orientation="vertical" style={{ width: "100%" }}>
                 <Space>
                     <span>
                         {taskMeta.type}
