@@ -20,7 +20,7 @@ export function useTaskflowList() {
 }
 
 
-export function useTaskflow(taskflowId: string) {
+export function useTaskflow(taskflowId?: string) {
     const [taskflow, setTaskflow] = useState<TaskflowInfo | null>(null)
     const { list: taskflows } = useTaskflowList();
     useEffect(() => {

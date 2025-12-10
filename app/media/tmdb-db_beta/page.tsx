@@ -136,10 +136,17 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
       rowKey={
         (record) => record.series.dump().join('_')
       }
+      footer={()=><TMDBAdd></TMDBAdd>}
     />
   </Section>
 }
 
+function TMDBAdd(){
+  return <Space>
+    <Input placeholder="TMDB ID" />
+    <Button type="primary">添加</Button>
+  </Space>
+}
 
 function MetadataEditorDrawer({ seriesKey }: { seriesKey: SeriesKey }) {
   const [open, setOpen] = useState(false)

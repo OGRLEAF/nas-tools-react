@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTaskflow, useTaskflowList } from './TaskflowContext';
-import { Button, Card, Collapse, Divider, List, Space, Tag, theme } from 'antd';
+import { Button, Card, Collapse, Divider, List, Progress, Space, Tag, theme } from 'antd';
 import { TaskState, TaskflowInfo } from '@/app/utils/api/taskflow';
 import { SyncOutlined, LoadingOutlined, CheckOutlined, RedoOutlined, ExclamationOutlined, CloseOutlined, ClockCircleOutlined } from "@ant-design/icons"
 import dayjs, { Dayjs } from 'dayjs';
@@ -131,10 +131,13 @@ export function TaskflowCardContent({ taskflow }: { taskflow: TaskflowInfo }) {
                 const props = status[item.instance.status]
                 return {
                     key: idx,
-                    label: <Space>
-                        <span>{props.icon}</span>
-                        <span>{draft.type}</span>
-                    </Space>,
+                    label: <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        {item.instance.status == "running" ?
+                            <Progress style={{ display: "inline-block" }} type="circle" percent={item.instance.progress * 100} size={15} /> : props.icon
+                        }
+                        <span style={{ display: "inline-block" }}>{draft.type}</span>
+
+                    </div>,
                     children: <TaskLog logs={item.instance.logs}></TaskLog>
                 }
             } else {
@@ -169,7 +172,7 @@ export function TaskLog({ logs }: { logs: TaskState['logs'] }) {
             const [levelText, color] = LogLevelStateTag[item.level];
             const dateStr = dayjs(item.create_time * 1000).format("YYYY.MM.DD HH:mm:ss")
             const label = <Tag variant="filled" color={color} style={{ marginRight: "8px" }}>{dateStr}<Divider orientation="vertical" />
-                <div style={{ display: "inline-block", minWidth: "4em",}}>{levelText}</div>
+                <div style={{ display: "inline-block", minWidth: "4em", }}>{levelText}</div>
             </Tag>
             return <List.Item style={{ fontSize: token.fontSizeSM, padding: "4px 0" }}>
                 {label}{item.msg}
