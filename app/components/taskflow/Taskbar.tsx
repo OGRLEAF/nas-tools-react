@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
-import { Flex, Popover, Tag, theme } from 'antd'
-import { TaskflowCard, TaskflowCardContent, TaskflowCardTitle, useTaskflowStatus } from './taskflow/TaskflowCard'
-import { TaskflowInfo } from '../utils/api/taskflow'
-import { useTaskflowList } from './taskflow/TaskflowContext'
+import React, { useMemo, useState } from 'react'
+import { Flex, Popover, Progress, Tag, theme } from 'antd'
+import { TaskflowCard, TaskflowCardContent, TaskflowCardTitle, useTaskflowStatus } from './TaskflowCard'
+import { TaskflowInfo } from '../../utils/api/taskflow'
+import { useTaskflowList } from './TaskflowContext'
 import "@/app/globals.scss"
 
 
@@ -18,9 +18,20 @@ export default function Taskbar() {
 
 function TaskbarItem({ taskflow }: { taskflow: TaskflowInfo }) {
     const taskflowStatus = useTaskflowStatus()
-    const status = taskflowStatus[taskflow.status];
+
     const [open, setOpen] = useState(false);
     const { token } = theme.useToken();
+
+    const status = useMemo(() => taskflowStatus[taskflow.status], [taskflow]);
+
+    const statusIcon = useMemo(()=>{ 
+        if(taskflow.progress >=0 && taskflow.status === "running"){
+            return <Progress type="dashboard" percent={taskflow.progress * 100} size={20} />
+        } else {
+            return status.icon
+        }
+    }, [taskflow, status]);
+
     return <Popover
         title={
             <div style={{
@@ -42,7 +53,7 @@ function TaskbarItem({ taskflow }: { taskflow: TaskflowInfo }) {
         <Tag style={{ marginRight: 0 }}
             onClick={() => { setOpen(true) }}
             color={status.type}
-            key={taskflow.id} icon={status.icon}>
+            key={taskflow.id} icon={statusIcon}>
             <span style={{ cursor: "pointer" }}>{taskflow.name}</span>
         </Tag>
     </Popover>

@@ -16,6 +16,7 @@ import { DownloadPathSelect, EmptyPathSelect, LibraryPathSelect, PathTreeSelect,
 import { StateMap, StateTag } from "../StateTag";
 import { ImportTask, ImportTaskConfig } from "@/app/utils/api/import";
 import { useMediaWork } from "@/app/utils/api/media/media_work";
+import { useTaskflow } from "../taskflow/TaskflowContext";
 
 export interface MediaImportGroupProps {
     seriesKey: SeriesKey,
@@ -70,7 +71,7 @@ export function TvMediaImportGroup(props: MediaImportGroupProps) {
 
     const { setSeries, setKeyword } = useContext(SearchContext);
     const cardTitle = useMemo(() => {
-        if(work) {
+        if (work) {
             const selectButton = <Button type="primary" size="small" onClick={() => { if (work.metadata?.title) setKeyword(work.metadata?.title) }}>搜索</Button>
             const searchButton = <Button size="small" onClick={() => { if (work) setSeries(new SeriesKey(work.series)) }}>选择</Button>
 
@@ -140,7 +141,7 @@ export function MovieMediaImportGroup(props: MediaImportGroupProps) {
 
     const { setSeries, setKeyword } = useContext(SearchContext);
     const cardTitle = useMemo(() => {
-        if(work) {
+        if (work) {
             const selectButton = <Button type="primary" size="small" onClick={() => { if (work.metadata?.title) setKeyword(work.metadata?.title) }}>搜索</Button>
             const searchButton = <Button size="small" onClick={() => { if (work) setSeries(new SeriesKey(work.series)) }}>选择</Button>
 
@@ -197,6 +198,11 @@ function TvImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Med
 
     const disableImport = mergedSeriesKey.end < SeriesKeyType.SEASON;
 
+    const [taskflowId, setTaskflowId] = useState<string>();
+    const [taskflow] = useTaskflow(taskflowId)
+    const [submitting, setSubmitting] = useState(false);
+    const submitLoading = useMemo(()=> submitting || (taskflow && taskflow?.status !== "finished") || false, [taskflow, taskflowId]);
+
     const submitImport = (value: ImportFormValues) => {
         const completedFiles: [number, MediaImportFile][] = []
         files.forEach((file) => {
@@ -210,6 +216,7 @@ function TvImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Med
             && (mergedSeriesKey.i != undefined)
             && (mergedSeriesKey.s != undefined)
         ) {
+            setSubmitting(true);
             new ImportTask().import({
                 target_path: value.target_path,
                 path: completedFiles[0][1].path,
@@ -218,7 +225,11 @@ function TvImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Med
                 season: mergedSeriesKey.s,
                 tmdbid: String(mergedSeriesKey.i),
                 mediaType: mergedSeriesKey.t
+            }).then((result)=>{
+                console.log("Import Task Result:", result.taskflow_id);
+                setTaskflowId(result.taskflow_id);
             })
+            .finally(()=>{setSubmitting(false);})
         }
     }
 
@@ -246,7 +257,9 @@ function TvImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Med
                 </Radio.Group>
             </Form.Item>
             <Form.Item>
-                <Button type="primary" htmlType="submit">导入</Button>
+                <Button type="primary" htmlType="submit" loading={submitLoading}>
+                    { submitting ? "提交中" : (taskflow?.status == "finished" ? "导入完成" : "导入") }
+                </Button>
             </Form.Item>
         </Form>
     </Flex>
@@ -265,33 +278,40 @@ function MovieImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: 
 
     const disableImport = mergedSeriesKey.end < SeriesKeyType.TMDBID;
 
+    const [taskflowId, setTaskflowId] = useState<string>();
+    const [taskflow] = useTaskflow(taskflowId)
+    const taskflowLoading = useMemo(()=>(taskflow && taskflow?.status !== "finished") || false, [taskflow, taskflowId]);
+
+    const onFinish = useCallback((value: any) => {
+        if (mergedSeriesKey.t == MediaWorkType.MOVIE) {
+            new ImportTask().import({
+                target_path: value.target_path,
+                path: files[0].path,
+                rmt_mode: value.type,
+                files: files.map((file) => [0, file.name]),
+                season: mergedSeriesKey.s != null ? mergedSeriesKey.s : undefined,
+                tmdbid: String(mergedSeriesKey.i),
+                mediaType: mergedSeriesKey.t
+            })
+            .then((result)=>{
+                setTaskflowId(result.taskflow_id);
+            })
+        }
+    }, [files, mergedSeriesKey])
+
     return <Flex style={{ width: "100%" }} justify="flex-end" align="center" gap="middle">
         <Space size={16}>
             <span>{mergedSeriesKey.t}#{mergedSeriesKey.i} {metadata?.title}</span>
             <span>共 {files.length} 个文件</span>
         </Space>
         <Form layout="inline" initialValues={{ type: ImportMode.LINK }} disabled={disableImport}
-            onFinish={(value: any) => {
-                console.log(mergedSeriesKey, value)
-                if (mergedSeriesKey.t == MediaWorkType.MOVIE) {
-                    const path = files[0].path;
-                    new ImportTask().import({
-                        target_path: value.target_path,
-                        path: files[0].path,
-                        rmt_mode: value.type,
-                        files: files.map((file) => [0, file.name]),
-                        season: mergedSeriesKey.s != null ? mergedSeriesKey.s : undefined,
-                        tmdbid: String(mergedSeriesKey.i),
-                        mediaType: mergedSeriesKey.t
-                    })
-                }
-            }}
+            onFinish={onFinish}
         >
             <Form.Item name="target_path" >
-                <UnionPathsSelectGroup fallback="customize">
+                <UnionPathsSelectGroup fallback="customize" width={400}>
                     <EmptyPathSelect key="auto" label="自动" />
-                    <LibraryPathSelect key="library" label="媒体库目录" />
-                    <PathTreeSelect key="customize" label="自定义目录" />
+                    <LibraryPathSelect key="library" label="媒体库目录" width={400} />
+                    <PathTreeSelect key="customize" label="自定义目录" width={400} />
                 </UnionPathsSelectGroup>
             </Form.Item>
             <Form.Item name="type">
@@ -302,9 +322,12 @@ function MovieImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: 
                 </Radio.Group>
             </Form.Item>
             <Form.Item>
-                <Button type="primary" htmlType="submit">导入</Button>
+                <Button type="primary" htmlType="submit" loading={taskflowLoading}>
+                    { taskflow?.status == "finished" ? "导入完成" : "导入" }
+                </Button>
             </Form.Item>
         </Form>
+        {/* {taskflow && <span>{taskflow.id} - {taskflow.status}</span>} */}
     </Flex>
 }
 
@@ -320,14 +343,14 @@ function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: Serie
     const { file, displayKey: key } = options;
     const [lastest, old] = file.indentifyHistory.lastDiffs();
     const changed = (lastest != undefined && old != undefined) ? lastest.compare(old) < key : false
-    const finalValue = lastest?.get(key); 
-    
+    const finalValue = lastest?.get(key);
+
     const mediaWorkKey = useMemo(() => {
         const seriesKey = file.indentifyHistory.last();
-        
+
         if (seriesKey !== undefined) {
             const sliced = seriesKey.slice(key)
-            
+
             return sliced.end == key ? sliced : undefined;
         }
         return undefined;
@@ -364,29 +387,29 @@ function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: Serie
             }
         /> : null}
     </Space>
-    return <Tag color={changed ? 'pink' : 'cyan'} style={{display: "flex", alignItems: "center"}}>
+    return <Tag color={changed ? 'pink' : 'cyan'} style={{ display: "flex", alignItems: "center" }}>
         <Tooltip title={JSON.stringify([mediaWorkKey, key, lastest?.t, old?.t, old ? lastest?.compare(old) : "", changed])}>
-                {work ? <span style={{
-                        maxWidth: 200,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        display: "inline-block"
-                    }}>{work?.series.get(key) ?? finalValue ?? "N/A"}</span>: null
-                }
+            {work ? <span style={{
+                maxWidth: 200,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                display: "inline-block"
+            }}>{work?.series.get(key) ?? finalValue ?? "N/A"}</span> : null
+            }
         </Tooltip>
         {work ?
             <div style={{ width: "1px", height: "1rem", display: "inline-block", margin: "0px 8px 0 8px", backgroundColor: changed ? 'pink' : 'rgba(5, 5, 5, 0.06)' }} />
             : <></>}
         <Popover content={popCard} placement="topRight">
             {
-               <span style={{
-                        maxWidth: 200,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        display: "inline-block"
-                    }}>{  work ? work.metadata?.title : <IconEllipsisLoading /> }</span>
+                <span style={{
+                    maxWidth: 200,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    display: "inline-block"
+                }}>{work ? work.metadata?.title : <IconEllipsisLoading />}</span>
             }
         </Popover>
 

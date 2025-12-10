@@ -3,7 +3,7 @@ import { ControlOutlined, UserOutlined } from "@ant-design/icons"
 import { useRouter } from 'next/navigation';
 import MessageCenter, { MessageCenterEntry } from './MessageCenter';
 import { useState } from 'react';
-import Taskbar from './Taskbar'
+import Taskbar from './taskflow/Taskbar'
 const { Search } = Input;
 
 const suffix = (

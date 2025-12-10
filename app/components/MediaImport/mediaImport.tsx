@@ -10,7 +10,7 @@ import TinyTMDBSearch, { MediaDetailCard, MediaSearchGroup, MediaSearchSeason, M
 import { TMDB } from "@/app/utils/api/media/tmdb";
 import { ImportList } from "./mediaImportList";
 import { SearchContext, SearchContextProvider, useSearch } from "../TMDBSearch/SearchContext";
-import TaskBar from "@/app/components/Taskbar"
+import TaskBar from "@/app/components/taskflow/Taskbar"
 import _ from "lodash";
 export interface MediaImportInitial {
     type: NastoolMediaType,
