@@ -1,15 +1,15 @@
 'use client'
 import { Section, SectionContext } from "@/app/components/Section";
 import { NastoolFileListItem } from "@/app/utils/api/api";
-import { Col, Row, List, Space, Segmented, Button, theme, Table, Cascader, Input, Form, Select, Tooltip, Flex, Tag } from "antd";
+import { List, Space, Segmented, theme, Table, Cascader, Input, Form, Select, Flex, Splitter } from "antd";
 import { BarsOutlined, BuildOutlined, FontColorsOutlined, SmallDashOutlined } from "@ant-design/icons"
-import React, { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ColumnsType, TableRef } from "antd/es/table";
 import FileMoreAction from "@/app/components/fileMoreAction";
 import MediaImportEntry, { MediaImportProvider } from "@/app/components/MediaImport/mediaImportEntry";
 import MediaImport from "@/app/components/MediaImport/mediaImport";
 import { PathSearchManagerProvider, usePathManager, usePathManagerDispatch } from "@/app/components/pathManager"
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { bytes_to_human } from "@/app/utils";
 import { IdentifyHistory } from "@/app/components/MediaImport/mediaImportContext";
 import { useAPIContext } from "@/app/utils/api/api_base";
@@ -126,7 +126,7 @@ const DirectoryList = ({ dirList, loading }:
                     return (
                         <List.Item>
                             <FileLink targetPath={path.join(pathParams, cleanName)}>
-                                <span style={{wordWrap: "break-word"}}>{item.name}</span>
+                                <span style={{ wordWrap: "break-word" }}>{item.name}</span>
                             </FileLink>
                         </List.Item>
                     )
@@ -252,20 +252,20 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
         rowSelection={{
             type: "checkbox",
             selectedRowKeys: selected,
-            columnWidth: 32,
+            columnWidth: 50,
             onChange: (selectedRowKeys: React.Key[], selectedRows: NastoolFileListItem[]) => {
                 setSelected(selectedRowKeys as string[])
                 setSelectedFiles(selectedRows)
             },
         }}
-        virtual={true}
+        virtual={false}
         dataSource={fileList}
         columns={columns}
         loading={loading}
         rowKey="name"
         pagination={false}
         bordered size="small"
-        scroll={{ y: sectionContext.contentHeight - 200, x: 400 }}
+        scroll={{ y: sectionContext.contentHeight - 195, x: 1000 }}
         expandable={{
             expandedRowRender: (record: NastoolFileListItem) =>
                 <FileMoreAction file={record} relFiles={fileList} />,
@@ -297,7 +297,7 @@ function MediaFileExplorer() {
     const [pathLoaded, setPathLoaded] = useState(false);
     const onRefresh = useCallback(async () => {
         setLoadingState(true);
-        if(pathLoaded) {
+        if (pathLoaded) {
             try {
                 const deepesetPath = pathManagerContext.getDeepestRelativePath();
                 const fileList = await API.getFileList(pathManagerContext.getBasePath,
@@ -356,18 +356,31 @@ function MediaFileExplorer() {
                     />
                 </Space>
             </Flex>
-            <Row gutter={14} >
+            <Splitter>
+                <Splitter.Panel defaultSize="30%" min="20%" max="50%" style={{paddingRight: '8px'}}>
+                    <DirectoryList dirList={dirList} loading={loadingState} />
+                </Splitter.Panel>
+                <Splitter.Panel style={{paddingLeft: '8px'}}>
+                    {view == "plain" ?
+                        <FileList fileList={fileList}
+                            loading={loadingState}
+                            selected={selectedFiles}
+                            onSelectedChange={(files) => setSelectedFiles(files)} /> : <AnalyzedFileList />}
+                </Splitter.Panel>
+            </Splitter>
+
+            {/* <Row gutter={14} >
                 <Col span={6}>
                     <DirectoryList dirList={dirList} loading={loadingState} />
                 </Col>
                 <Col span={18}>
-                    {view == "plain" ? 
-                    <FileList fileList={fileList}
-                        loading={loadingState}
-                        selected={selectedFiles}
-                        onSelectedChange={(files) => setSelectedFiles(files)} />: <AnalyzedFileList />}
+                    {view == "plain" ?
+                        <FileList fileList={fileList}
+                            loading={loadingState}
+                            selected={selectedFiles}
+                            onSelectedChange={(files) => setSelectedFiles(files)} /> : <AnalyzedFileList />}
                 </Col>
-            </Row>
+            </Row> */}
         </Section>
     </MediaImportProvider>
 }
@@ -419,7 +432,7 @@ function PathManagerBar() {
             options={segmentedPathTag}
             // defaultValue={pathManagerState.deepestPath}
             value={selectedPart}
-            onChange={(evt) => {push(evt);}}
+            onChange={(evt) => { push(evt); }}
         />
     </>
 }        
