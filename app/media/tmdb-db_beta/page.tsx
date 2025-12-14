@@ -1,7 +1,7 @@
 'use client'
 import { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { Section } from "@/app/components/Section";
-import { MediaWork, MediaWorkMetadata, MetadataDate, toDayjs, useMediaWork, useMediaWorkAction, useMediaWorks } from "@/app/utils/api/media/media_work"
+import { MediaWork, MediaWorkMetadata, MetadataDate, toDayjs, useMediaWork, useMediaWorkAction, useMediaWorks } from "@/app/utils/api/media/mediaWork"
 import { SeriesKey } from "@/app/utils/api/media/SeriesKey"
 import { MediaWorkType, SeriesKeyType } from "@/app/utils/api/types"
 import { Button, DatePicker, Drawer, Form, Input, Segmented, Space, Table, TableColumnsType } from "antd";
@@ -93,6 +93,8 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
         title: '#',
         width: 100,
         dataIndex: ['series'],
+        sorter: (a, b) => ((Number(a.series.key) || -1) - (Number(b.series.key) || -1)),
+        defaultSortOrder: "descend",
         render(value: SeriesKey) {
           return value.get(value.end);
         },

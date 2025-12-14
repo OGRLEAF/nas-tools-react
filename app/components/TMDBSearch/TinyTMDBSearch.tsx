@@ -3,7 +3,7 @@ import { NastoolServerConfig } from "../../utils/api/api";
 import { RedoOutlined } from "@ant-design/icons"
 import { AutoComplete, Input, Space, theme, Typography, Empty, Select, Flex, Spin, SelectProps, Button } from "antd";
 import { TMDB } from "../../utils/api/media/tmdb";
-import { MediaWork as MediaWorkBase, useMediaWork, useMediaWorks } from "../../utils/api/media/media_work";
+import { MediaWork as MediaWorkBase, useMediaWork, useMediaWorks } from "../../utils/api/media/mediaWork";
 import { MediaWork, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "../../utils/api/types";
 import { SearchContext, SearchContextType, useSearch } from "./SearchContext";
 import { ServerConfig } from "@/app/utils/api/serverConfig";

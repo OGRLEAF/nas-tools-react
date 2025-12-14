@@ -9,7 +9,7 @@ import _ from "lodash";
 import "./styles.scss"
 
 import { TVSubsProfile, TVSubscribe, TVSubsResource, SubsStatus, FetchSourceConfig, SourceType } from "@/app/utils/api/subscription/subscribe_beta";
-import { useMediaWork, useMediaWorks } from "@/app/utils/api/media/media_work";
+import { useMediaWork, useMediaWorks } from "@/app/utils/api/media/mediaWork";
 import { SeriesKey } from "@/app/utils/api/media/SeriesKey";
 import { MediaSearchGroup, MediaSearchSeason, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 

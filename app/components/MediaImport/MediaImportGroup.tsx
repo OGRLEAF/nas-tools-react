@@ -13,7 +13,7 @@ import { ImportMode } from "@/app/utils/api/api";
 import { EmptyPathSelect, LibraryPathSelect, PathTreeSelect, UnionPathsSelectGroup } from "../LibraryPathSelector";
 // import { useImportListContext } from "./mediaImportList";
 import { ImportTask } from "@/app/utils/api/import";
-import { useMediaWork } from "@/app/utils/api/media/media_work";
+import { useMediaWork } from "@/app/utils/api/media/mediaWork";
 import { useTaskflow } from "../taskflow/TaskflowContext";
 
 export interface MediaImportGroupProps {

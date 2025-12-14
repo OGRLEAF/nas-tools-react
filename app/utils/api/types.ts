@@ -44,7 +44,7 @@ export interface MediaFile {
 
 
 // TODO: For migrating to beta
-import { MediaWorkMetadata } from "./media/media_work"
+import { MediaWorkMetadata } from "./media/mediaWork"
 
 // export const MediaWorkMetadata =  MediaWorkMetadataBeta;
 // export interface MediaWorkMetadata {
@@ -81,7 +81,7 @@ export class SeriesKey extends SeriesKeyBase {
 
 
 // TODO: For migrating to beta
-import { MediaWork as MediaWorkBase } from "./media/media_work"
+import { MediaWork as MediaWorkBase } from "./media/mediaWork"
 
 export interface MediaWork extends MediaWorkBase {
   series: SeriesKey,

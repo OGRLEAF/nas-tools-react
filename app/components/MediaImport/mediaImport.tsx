@@ -12,7 +12,7 @@ import { ImportList } from "./mediaImportList";
 import { SearchContext, useSearch } from "../TMDBSearch/SearchContext";
 import TaskBar from "@/app/components/taskflow/Taskbar"
 import _ from "lodash";
-import { MediaWork, MediaWorkMetadata, useMediaWorks } from "@/app/utils/api/media/media_work";
+import { MediaWork, MediaWorkMetadata, useMediaWorks } from "@/app/utils/api/media/mediaWork";
 import { ColumnsType } from "antd/lib/table";
 export interface MediaImportInitial {
     type: NastoolMediaType,
