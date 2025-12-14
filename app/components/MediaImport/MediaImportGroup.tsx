@@ -1,20 +1,18 @@
-import { asyncEffect } from "@/app/utils";
 import { TMDB } from "@/app/utils/api/media/tmdb";
 import { MediaWork, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
 import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { CloseOutlined } from "@ant-design/icons"
 import { MediaDetailCard } from "../TMDBSearch/TinyTMDBSearch";
-import { Button, Card, Checkbox, Divider, Flex, Form, Popover, Radio, RowProps, Space, Tag, Tooltip, theme } from "antd";
+import { Button, Flex, Form, Popover, Radio, Space, Tag, Tooltip } from "antd";
 import { MediaImportAction, MediaImportFile, MediaImportFileKey, useMediaImportDispatch } from "./mediaImportContext";
 import Table, { ColumnsType } from "antd/es/table";
 import { SearchContext } from "../TMDBSearch/SearchContext";
 import { IconEllipsisLoading } from "../icons";
 import _ from "lodash";
 import { ImportMode } from "@/app/utils/api/api";
-import { DownloadPathSelect, EmptyPathSelect, LibraryPathSelect, PathTreeSelect, UnionPathsSelectGroup } from "../LibraryPathSelector";
+import { EmptyPathSelect, LibraryPathSelect, PathTreeSelect, UnionPathsSelectGroup } from "../LibraryPathSelector";
 // import { useImportListContext } from "./mediaImportList";
-import { StateMap, StateTag } from "../StateTag";
-import { ImportTask, ImportTaskConfig } from "@/app/utils/api/import";
+import { ImportTask } from "@/app/utils/api/import";
 import { useMediaWork } from "@/app/utils/api/media/media_work";
 import { useTaskflow } from "../taskflow/TaskflowContext";
 

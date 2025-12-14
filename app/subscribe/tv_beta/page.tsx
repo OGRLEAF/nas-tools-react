@@ -1,14 +1,14 @@
 "use client"
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Form, List, Space, theme, Divider, Select, Flex, Input, Tooltip, Row, Col, Radio, Tag, Table, TableColumnsType, Switch, Checkbox, Spin } from "antd";
+import { useEffect, useMemo, useState } from "react";
+import { Button, Form, List, Space, theme, Divider, Select, Flex, Input, Tooltip, Row, Col, Radio, Tag, Table, TableColumnsType, Checkbox, Spin } from "antd";
 import { MediaWork, SeriesKeyType } from "@/app/utils/api/types";
 import { RetweetOutlined, EditOutlined, DeleteOutlined, QuestionCircleOutlined, LoadingOutlined } from "@ant-design/icons"
 import Image from "next/image";
 import { CardsForm, useCardsFormContext } from "@/app/components/CardsForm";
-import _, { create } from "lodash";
+import _ from "lodash";
 import "./styles.scss"
 
-import { TVSubsProfile, TVSubscribe, TVSubsResource, SubsStatus, TVSubsConfig, SubsFilter, FetchSourceConfig, SourceType } from "@/app/utils/api/subscription/subscribe_beta";
+import { TVSubsProfile, TVSubscribe, TVSubsResource, SubsStatus, FetchSourceConfig, SourceType } from "@/app/utils/api/subscription/subscribe_beta";
 import { useMediaWork, useMediaWorks } from "@/app/utils/api/media/media_work";
 import { SeriesKey } from "@/app/utils/api/media/SeriesKey";
 import { MediaSearchGroup, MediaSearchSeason, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
@@ -112,7 +112,6 @@ import { SelectProps } from "antd/lib";
 import { number_string_to_list } from "@/app/utils";
 import { DownloadSettingSelect, FilterRuleSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 import { useForm } from "antd/es/form/Form";
-import { IconLoading } from "@/app/components/icons";
 
 const FormSection = ({ title, tooltip }: { title: string, tooltip?: string }) => {
     return <Divider titlePlacement="left" orientation="horizontal" style={{ marginTop: 0 }}>

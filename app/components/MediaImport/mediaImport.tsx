@@ -1,19 +1,18 @@
-import { Button, Col, Divider, Drawer, Empty, Form, Input, InputNumber, Row, Select, SelectProps, Space, Spin, Table, TableColumnsType, Tabs, TabsProps } from "antd"
-import React, { CSSProperties, useContext, useEffect, useMemo, useState } from "react"
+import { Button, Col, Divider, Drawer, Form, Input, InputNumber, Row, Select, SelectProps, Space, Table, Tabs, TabsProps } from "antd"
+import React, { CSSProperties, useEffect, useMemo, useState } from "react"
 import { HolderOutlined } from "@ant-design/icons"
-import { MediaImportFile, MediaImportFileKey, useMediaImport, useMediaImportDispatch } from "./mediaImportContext"
+import { MediaImportFileKey, useMediaImport, useMediaImportDispatch } from "./mediaImportContext"
 import { NastoolMediaType } from "../../utils/api/api";
 import { useWatch } from "antd/es/form/Form";
 import { MediaImportAction } from "./mediaImportContext";
 import { MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
-import { asyncEffect, number_string_to_list } from "@/app/utils"
-import TinyTMDBSearch, { MediaDetailCard, MediaSearchGroup, MediaSearchSeason, MediaSearchWork } from "../TMDBSearch/TinyTMDBSearch";
-import { TMDB } from "@/app/utils/api/media/tmdb";
+import { number_string_to_list } from "@/app/utils"
+import { MediaSearchGroup, MediaSearchSeason, MediaSearchWork } from "../TMDBSearch/TinyTMDBSearch";
 import { ImportList } from "./mediaImportList";
-import { SearchContext, SearchContextProvider, useSearch } from "../TMDBSearch/SearchContext";
+import { SearchContext, useSearch } from "../TMDBSearch/SearchContext";
 import TaskBar from "@/app/components/taskflow/Taskbar"
 import _ from "lodash";
-import { MediaWork, MediaWorkMetadata, useMediaWork, useMediaWorks } from "@/app/utils/api/media/media_work";
+import { MediaWork, MediaWorkMetadata, useMediaWorks } from "@/app/utils/api/media/media_work";
 import { ColumnsType } from "antd/lib/table";
 export interface MediaImportInitial {
     type: NastoolMediaType,
