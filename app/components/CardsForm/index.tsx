@@ -169,7 +169,7 @@ export const TestButton = forwardRef(function TestButton<Res extends ResourceTyp
             <Popover {...props.popoverProps}
 
                 color={result ? token.colorSuccessBg : token.colorErrorBg}
-                overlayInnerStyle={{ padding: 2, }}
+                styles={{container: { padding: 2, }}}
                 content={content} open={(result != undefined) && props.msgType == "popover"}>
                 <Button {...props.btnProps} loading={loading}
                     icon={result == undefined ? <RetweetOutlined /> :
