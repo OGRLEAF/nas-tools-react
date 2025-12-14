@@ -235,7 +235,10 @@ export function useMediaWorks(seriesKey?: SeriesKey): [MediaWork[], boolean, () 
             setLoading(true)
             new MediaWorkService().getEntriesBySeriesKey(seriesKey, useCache)
                 .then(mediaWorks => {
-                    if(mediaWorks) setMediaWorks(() => mediaWorks)
+                    if(mediaWorks !== undefined) setMediaWorks(() => mediaWorks)
+                })
+                .catch(e=>{ 
+                    setMediaWorks([])
                 })
                 .finally(() => setLoading(false))
         }
