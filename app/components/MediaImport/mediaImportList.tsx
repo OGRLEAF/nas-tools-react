@@ -122,6 +122,24 @@ export const ImportList = () => {
             pagination={false}
             size="small"
             rowKey="name"
+            onRow={(record) => {
+
+                return {
+                    onDragOver: (e) => {
+                        e.preventDefault()
+                    },
+                    onDrop: (e) => {
+                        e.preventDefault()
+                        const data = e.dataTransfer.getData('text/json');
+                        const seriesKey = SeriesKey.load(JSON.parse(data))
+                        mediaImportDispatch({
+                            type: MediaImportAction.SetSeries,
+                            fileKeys: [record.name], 
+                            series: [seriesKey] 
+                        })
+                    },
+                }
+            }}
             dataSource={files}
             columns={columns}
             // virtual={true}
