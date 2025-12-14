@@ -163,4 +163,15 @@ export class SeriesKey {
     }
   }
 
+  public equal(s: SeriesKey) {
+    return this.compare(s) == SeriesKeyType.EPISODE
+  }
+  public uniqueKey() {
+    return this.dump().join('-')
+    // return `${this.typeKey}-${this.tmdbIdKey}-${this.seasonKey}-${this.episodeKey}`
+  }
+  public merge(s: SeriesKey) {
+    return new SeriesKey(this).type(s.t ?? this.t).tmdbId(s.i ?? this.i).season(s.s ?? this.s).episode(s.e ?? this.e)
+  }
+
 }
