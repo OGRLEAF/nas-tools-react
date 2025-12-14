@@ -265,7 +265,7 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
         rowKey="name"
         pagination={false}
         bordered size="small"
-        scroll={{ y: sectionContext.contentHeight - 195, x: 1000 }}
+        scroll={{ y: sectionContext.contentHeight - 195}}
         expandable={{
             expandedRowRender: (record: NastoolFileListItem) =>
                 <FileMoreAction file={record} relFiles={fileList} />,
