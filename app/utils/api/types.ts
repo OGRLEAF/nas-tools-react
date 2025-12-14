@@ -77,25 +77,6 @@ export enum SeriesKeyType {
 import { SeriesKey  as SeriesKeyBase } from "./media/SeriesKey"
 
 export class SeriesKey extends SeriesKeyBase {
-
-  public equal(s: SeriesKey) {
-    return this.compare(s) == SeriesKeyType.EPISODE
-  }
-  public uniqueKey() {
-    return this.dump().join('-')
-    // return `${this.typeKey}-${this.tmdbIdKey}-${this.seasonKey}-${this.episodeKey}`
-  }
-  public merge(s: SeriesKey) {
-    return new SeriesKey(this).type(s.t ?? this.t).tmdbId(s.i ?? this.i).season(s.s ?? this.s).episode(s.e ?? this.e)
-  }
-  public slice(key: SeriesKeyType) {
-    const s = new SeriesKey(this);
-    if (s._end > key) {
-      s._end = key;
-    }
-
-    return s
-  }
 }
 
 
