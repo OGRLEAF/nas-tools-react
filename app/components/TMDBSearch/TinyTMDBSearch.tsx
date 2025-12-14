@@ -1,5 +1,6 @@
 import React, { CSSProperties, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { NastoolServerConfig } from "../../utils/api/api";
+import { RedoOutlined } from "@ant-design/icons"
 import { AutoComplete, Input, Space, theme, Typography, Empty, Select, Flex, Spin, SelectProps, Button } from "antd";
 import { TMDB } from "../../utils/api/media/tmdb";
 import { MediaWork as MediaWorkBase, useMediaWork, useMediaWorks } from "../../utils/api/media/media_work";
@@ -149,8 +150,8 @@ export function MediaDetailCard({
     const style = cardStyleMap[_size];
 
     const metadata = useMemo(() => mediaDetail?.metadata, [mediaDetail])
-    const coverImage = useMemo(()=>(metadata?.images?.poster || metadata?.images?.cover), [metadata])
-    const coverImageNode = useMemo(()=>(coverImage && <CoverImage maxHeight={style.height} alt={metadata?.title ?? ""} src={coverImage} />), [metadata, coverImage, style.height])
+    const coverImage = useMemo(() => (metadata?.images?.poster || metadata?.images?.cover), [metadata])
+    const coverImageNode = useMemo(() => (coverImage && <CoverImage maxHeight={style.height} alt={metadata?.title ?? ""} src={coverImage} />), [metadata, coverImage, style.height])
 
     const titleArea = useMemo(() => mediaDetail &&
         <Flex style={{
@@ -339,7 +340,7 @@ export function MediaSearchGroup({ value, onChange, children, filter }: MediaSea
     const [seasons, setSeasons] = useState<MediaWorkSeason[]>([])
     const [loading, setLoading] = useState(false)
 
-    const validatedSeriesKey = useMemo(()=>{
+    const validatedSeriesKey = useMemo(() => {
         return series.slice(SeriesKeyType.TMDBID)
     }, [series])
 
@@ -359,8 +360,8 @@ export function MediaSearchGroup({ value, onChange, children, filter }: MediaSea
         setLoading(false)
     }, [])
 
-    useEffect(()=>{
-        if(mediaWork) {
+    useEffect(() => {
+        if (mediaWork) {
             setSelected(mediaWork)
         }
     }, [mediaWork])
@@ -437,11 +438,14 @@ export const MediaSeasonInput = ({ series, value, onChange, style }: { series: S
         }
     }, [seasons])
 
-    return <Select value={value && (value > 0 ? value : undefined)} disabled={loading || (series.i == undefined)} loading={loading} style={style}
-        placeholder="选择季数"
-        options={seasonOptions}
-        onSelect={(value: number) => {
-            if (onChange) onChange(value)
-        }}
-    />
+    return <Space>
+        <Select value={value && (value > 0 ? value : undefined)} disabled={loading || (series.i == undefined)} loading={loading} style={style}
+            placeholder="选择季数"
+            options={seasonOptions}
+            onSelect={(value: number) => {
+                if (onChange) onChange(value)
+            }}
+        />
+        <Button type="primary" onClick={() => flush()} icon={<RedoOutlined />} />
+    </Space>
 }
