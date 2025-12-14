@@ -64,70 +64,11 @@ const tvImportColumns: ColumnsType<MediaImportFile> = [{
 
 
 export function TvMediaImportGroup(props: MediaImportGroupProps) {
-    const mediaImportDispatch = useMediaImportDispatch();
-    const mediaWorkKey = useMemo(() => new SeriesKey(props.seriesKey).slice(SeriesKeyType.TMDBID), [props.seriesKey])
-    const [work] = useMediaWork(mediaWorkKey);
-
-    const { setSeries, setKeyword } = useContext(SearchContext);
-    const cardTitle = useMemo(() => {
-        if (work) {
-            const selectButton = <Button type="primary" size="small" onClick={() => { if (work.metadata?.title) setKeyword(work.metadata?.title) }}>搜索</Button>
-            const searchButton = <Button size="small" onClick={() => { if (work) setSeries(new SeriesKey(work.series)) }}>选择</Button>
-
-            return <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
-                <MediaDetailCard
-                    postImageStyle={{ width: 100 }}
-                    mediaDetail={work} size="small"
-                    onTitleClick={(mediaWork) => { setSeries(mediaWork.series) }}
-                    action={<Space>{selectButton}{searchButton}</Space>}
-                />
-            </div>
-        }
-    }, [work, props.seriesKey.t, setSeries, setKeyword])
-
-
-    return <Table
-        title={() => cardTitle}
-        bordered
-
-        rowSelection={{
-            type: "checkbox",
-            selectedRowKeys: props.files.filter(v => v.selected).map((v) => v.name),
-            onChange: (selectedRowKeys: React.Key[], selectedRows: MediaImportFile[]) => {
-                // selectedFileKeys.setSelectedFileKeys(selectedRowKeys as MediaImportFileKey[])
-                // setLocalSelectedFile(new Set(...selectedRowKeys as MediaImportFileKey[]));
-                mediaImportDispatch({ type: MediaImportAction.SetSelected, fileKeys: selectedRowKeys as MediaImportFileKey[] })
-            },
-        }}
-        onRow={(record) => {
-
-            return {
-                onDragOver: (e) => {
-                    e.preventDefault()
-                },
-                onDrop: (e) => {
-                    e.preventDefault()
-                    const data = e.dataTransfer.getData('text/json');
-                    const seriesKey = SeriesKey.load(JSON.parse(data))
-                    mediaImportDispatch({
-                        type: MediaImportAction.SetSeries,
-                        fileKeys: [record.name], 
-                        series: [seriesKey] 
-                    })
-                },
-            }
-        }}
-        pagination={false}
-        size="small"
-        rowKey="name"
-        dataSource={props.files}
-        columns={tvImportColumns}
-        footer={() => <TvImportSubmit
-            seriesKey={props.seriesKey}
-            files={props.files.filter(v => v.selected)}
-        />
-        }
+    return <GroupImportTable {...props} columns={tvImportColumns} footer={() => <TvImportSubmit
+        seriesKey={props.seriesKey}
+        files={props.files.filter(v => v.selected)}
     />
+    } />
 }
 
 const movieImportColumns: ColumnsType<MediaImportFile> = [
@@ -154,47 +95,11 @@ const movieImportColumns: ColumnsType<MediaImportFile> = [
 
 
 export function MovieMediaImportGroup(props: MediaImportGroupProps) {
-    const mediaWorkKey = useMemo(() => new SeriesKey(props.seriesKey).slice(SeriesKeyType.TMDBID), [props.seriesKey])
-    const [work] = useMediaWork(mediaWorkKey);
-
-    const { setSeries, setKeyword } = useContext(SearchContext);
-    const cardTitle = useMemo(() => {
-        if (work) {
-            const selectButton = <Button type="primary" size="small" onClick={() => { if (work.metadata?.title) setKeyword(work.metadata?.title) }}>搜索</Button>
-            const searchButton = <Button size="small" onClick={() => { if (work) setSeries(new SeriesKey(work.series)) }}>选择</Button>
-
-            return <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
-                <MediaDetailCard
-                    postImageStyle={{ width: 100 }}
-                    mediaDetail={work} size="small"
-                    onTitleClick={(mediaWork) => { setSeries(mediaWork.series) }}
-                    action={<Space>{selectButton}{searchButton}</Space>}
-                />
-            </div>
-        }
-    }, [work, props.seriesKey.t, setSeries, setKeyword])
-    const mediaImportDispatch = useMediaImportDispatch();
-    return <Table
-        title={() => cardTitle}
-        bordered
-        rowSelection={{
-            type: "checkbox",
-            selectedRowKeys: props.files.filter(v => v.selected).map((v) => v.name),
-            onChange: (selectedRowKeys: React.Key[], selectedRows: MediaImportFile[]) => {
-                mediaImportDispatch({ type: MediaImportAction.SetSelected, fileKeys: selectedRowKeys as MediaImportFileKey[] })
-            },
-            columnWidth: 20
-        }}
-        pagination={false}
-        size="small"
-        rowKey="name"
-        dataSource={props.files}
-        columns={movieImportColumns}
+    return <GroupImportTable {...props} columns={movieImportColumns}
         footer={() => <MovieImportSubmit
             seriesKey={props.seriesKey}
             files={props.files.filter(v => v.selected)}
-        />
-        }
+        />}
     />
 }
 
@@ -433,4 +338,61 @@ function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: Serie
 
     </Tag >
 
+}
+
+
+function GroupImportTable(props: MediaImportGroupProps & { columns: ColumnsType<MediaImportFile>, footer: (data: readonly MediaImportFile[]) => React.ReactNode; }) {
+    const { setSeries, setKeyword } = useContext(SearchContext);
+    const [work] = useMediaWork(props.seriesKey);
+    const cardTitle = useMemo(() => {
+        if (work) {
+            const selectButton = <Button type="primary" size="small" onClick={() => { if (work.metadata?.title) setKeyword(work.metadata?.title) }}>搜索</Button>
+            const searchButton = <Button size="small" onClick={() => { if (work) setSeries(new SeriesKey(work.series)) }}>选择</Button>
+
+            return <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
+                <MediaDetailCard
+                    postImageStyle={{ width: 100 }}
+                    mediaDetail={work} size="small"
+                    onTitleClick={(mediaWork) => { setSeries(mediaWork.series) }}
+                    action={<Space>{selectButton}{searchButton}</Space>}
+                />
+            </div>
+        }
+    }, [work, props.seriesKey.t, setSeries, setKeyword])
+    const mediaImportDispatch = useMediaImportDispatch();
+    return <Table
+        title={() => cardTitle}
+        bordered
+        rowSelection={{
+            type: "checkbox",
+            selectedRowKeys: props.files.filter(v => v.selected).map((v) => v.name),
+            onChange: (selectedRowKeys: React.Key[], selectedRows: MediaImportFile[]) => {
+                mediaImportDispatch({ type: MediaImportAction.SetSelected, fileKeys: selectedRowKeys as MediaImportFileKey[] })
+            },
+            columnWidth: 20
+        }}
+        onRow={(record) => {
+            return {
+                onDragOver: (e) => {
+                    e.preventDefault()
+                },
+                onDrop: (e) => {
+                    e.preventDefault()
+                    const data = e.dataTransfer.getData('text/json');
+                    const seriesKey = SeriesKey.load(JSON.parse(data))
+                    mediaImportDispatch({
+                        type: MediaImportAction.SetSeries,
+                        fileKeys: [record.name],
+                        series: [seriesKey]
+                    })
+                },
+            }
+        }}
+        pagination={false}
+        size="small"
+        rowKey="name"
+        dataSource={props.files}
+        columns={props.columns}
+        footer={props.footer}
+    />
 }

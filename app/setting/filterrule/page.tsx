@@ -2,12 +2,13 @@
 import CardnForm, { CardnFormContext } from "@/app/components/CardnForm";
 import { IconAdd, IconDelete, IconEdit } from "@/app/components/icons";
 import { FilterRuleGroup, FilterRuleGroupConfig, FilterRuleConfig } from "@/app/utils/api/filterrule";
-import { Button, Checkbox, Col, ConfigProvider, Drawer, Form, Input, InputNumber, List, Modal, Row, Space, Tag, Flex } from "antd";
+import { Button, Checkbox, Col, ConfigProvider, Drawer, Form, Input, InputNumber, List, Modal, Row, Space, Tag, Flex, App } from "antd";
 import { PlusOutlined, MinusCircleOutlined } from "@ant-design/icons"
 import { useForm } from "antd/es/form/Form";
 import React, { useContext, useEffect, useState } from "react";
 import { TabCards } from "@/app/components/CardnForm/TabCards";
 import { useAPIContext } from "@/app/utils/api/api_base";
+import useApp from "antd/lib/app/useApp";
 
 
 function useFilterRule() {
@@ -29,8 +30,10 @@ const FilterRuleCard = ({ config }: { config: FilterRuleConfig }) => {
     const [openDrawer, setOpenDrawer] = useState(false);
     const cardnFormContext = useContext(CardnFormContext)
     const filterRule = useFilterRule()
+    const app = useApp();
+
     const deleteRule = () => {
-        Modal.confirm({
+        app.modal.confirm({
             title: `确认删除规则${config.name}?`,
             content: <Space size="small" orientation="vertical">
                 <span>包含：{config.include}</span>
@@ -84,7 +87,7 @@ export default function FilterRulePage() {
             }}
             cardProps={(record: FilterRuleGroupConfig) => {
                 return ({
-                    title: <Space>{record.name}{record.default ? <Tag bordered={false} color="blue">默认</Tag> : <></>}</Space>,
+                    title: <Space>{record.name}{record.default ? <Tag variant="filled" color="blue">默认</Tag> : <></>}</Space>,
                     description: <Space orientation="vertical" size="small" style={{ alignItems: "stretch", width: "100%", }}>
                         <FilterRuleList filterRuleGroup={record} />
                     </Space>

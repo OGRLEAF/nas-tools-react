@@ -11,6 +11,7 @@ import { StateMap, StateTag } from "../StateTag";
 import Image from "next/image"
 import { useAPIContext } from "@/app/utils/api/api_base";
 import _ from "lodash";
+import { SeasonKeyType } from "@/app/utils/api/media/SeriesKey";
 
 type CardSize = "poster" | "normal" | "small" | "tiny" | "card";
 interface DetailCardStyle {
@@ -156,13 +157,13 @@ export function MediaDetailCard({
     const titleArea = useMemo(() => mediaDetail &&
         <Flex style={{
             position: "sticky", top: 0, color: token.colorTextBase,
-            fontSize: "1.6rem", margin: 0, padding: `0px ${token.padding}px 4px 5px`,
+            fontSize: "1.6rem", margin: 0, padding: `0px ${token.padding}px 0px 5px`,
             zIndex: 1,
             ...style.title
         }} justify="space-between" align="end">
             <Space>
                 <span style={{ fontSize: "1.25rem", fontWeight: "bold" }}>{metadata?.title}</span>
-                <span style={{ fontSize: "1rem" }}> {metadata?.date?.release}</span>
+                <span style={{ fontSize: "1rem" }}> {metadata?.date?.release && metadata.date.airing}</span>
                 <StateTag stateMap={stateTagMap} value={mediaDetail.series.t ?? MediaWorkType.UNKNOWN} />
             </Space>
             <div style={{ alignSelf: "end", position: "sticky", bottom: 0, right: 4 }}>{action}</div>
@@ -362,7 +363,7 @@ export function MediaSearchGroup({ value, onChange, children, filter }: MediaSea
 
     useEffect(() => {
         if (mediaWork) {
-            setSelected(mediaWork)
+            setSelected(mediaWork as MediaWork)
         }
     }, [mediaWork])
 
@@ -389,7 +390,7 @@ export function MediaSearchGroup({ value, onChange, children, filter }: MediaSea
 
 export function MediaSearchWork() {
     const { selected } = useContext(SearchContext);
-    return <MediaDetailCard mediaDetail={selected} size="small" />
+    return <MediaDetailCard mediaDetail={selected} size={ selected?.series.t == MediaWorkType.MOVIE ? "normal": "small"} />
 }
 
 export function MediaSearchSeason() {
@@ -412,7 +413,7 @@ export function MediaSearchSeason() {
     }
 }
 
-export const MediaSeasonInput = ({ series, value, onChange, style }: { series: SeriesKey, value?: number, onChange?: (value: number) => void, style?: CSSProperties }) => {
+export const MediaSeasonInput = ({ series, value, onChange, style }: { series: SeriesKey, value?: SeasonKeyType, onChange?: (value: number) => void, style?: CSSProperties }) => {
     const [seasonOptions, setSeasonOptions] = useState<SelectProps['options']>([])
 
     const validatedSeriesKey = useMemo(() => {
