@@ -144,6 +144,9 @@ export class SeriesKey {
     }
   }
 
+  public get key() {
+    return this.get(this._end)
+  }
 
   public slice(key: SeriesKeyType) {
     const s = new SeriesKey(this);
