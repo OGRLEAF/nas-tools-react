@@ -91,7 +91,7 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
     () => [
       {
         title: '#',
-        columnWidth: 10,
+        width: 100,
         dataIndex: ['series'],
         render(value: SeriesKey) {
           return value.get(value.end);
@@ -99,13 +99,12 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
       },
       {
         title: '名称',
-        columnWidth: 50,
         dataIndex: ['metadata', 'title'],
         render: nameColumnRender,
       },
       {
         title: '发行日期/播出日期',
-        columnWidth: 10,
+        width: 300,
         dataIndex: ['metadata'],
         render(value: MediaWork['metadata'], record, index) {
           return value?.date.airing || value?.date.release || '-';
@@ -113,7 +112,7 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
       },
       {
         title: '操作',
-        columnWidth: 30,
+        width: 200,
         dataIndex: ['series'],
         render: operationColumnRender,
       },
