@@ -22,8 +22,8 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
   const [sliceKey, setSliceKey] = useState<SeriesKeyType>(SeriesKeyType.TYPE)
   const slicedSeriesKey = useMemo(() => seriesKey.slice(sliceKey), [sliceKey, seriesKey])
 
-  const [mediaWorks, loading, refresh] = useMediaWorks(slicedSeriesKey);
-  const [mediaWork,] = useMediaWork(slicedSeriesKey);
+  const [mediaWorks, loading, refresh, flush] = useMediaWorks(slicedSeriesKey);
+  const [mediaWork, mediaWorkAction] = useMediaWork(slicedSeriesKey);
 
   const [pathSegments, setPathSegements] = useState([{
     label: <>{defaultSeriesKey.get(defaultSeriesKey.end)}</>,
@@ -51,8 +51,11 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
 
   const titleRender = useCallback(() => mediaWork && <MediaDetailCard
     key={mediaWork.series.dump().join('_')}
-    action={<MetadataEditorDrawer seriesKey={mediaWork.series} />}
-    mediaDetail={mediaWork} size="poster" />, [mediaWork])
+    action={<MetadataEditorDrawer seriesKey={mediaWork.series}>
+      <Button type="link" size="small" onClick={() => flush()}>刷新</Button>
+    </MetadataEditorDrawer>}
+    mediaDetail={mediaWork} size="poster" />, 
+    [mediaWork, flush])
 
   // Extracted render function for the "名称" column
   const nameColumnRender = useCallback(
@@ -79,9 +82,9 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
   // Extracted render function for the "操作" column
   const operationColumnRender = useCallback(
     (value: SeriesKey, record: MediaWork, index: number) => {
-      return <MetadataEditorDrawer seriesKey={value} />;
+      return <MetadataEditorDrawer seriesKey={value} onRefreshList={refresh}/>;
     },
-    []
+    [refresh]
   );
 
   const columns: TableColumnsType<MediaWork> = useMemo(
@@ -148,12 +151,13 @@ function TMDBAdd(){
   </Space>
 }
 
-function MetadataEditorDrawer({ seriesKey }: { seriesKey: SeriesKey }) {
+function MetadataEditorDrawer({ seriesKey, children, onRefreshList }: { seriesKey: SeriesKey, children?: React.ReactNode, onRefreshList?: () => void }) {
   const [open, setOpen] = useState(false)
   const {drop} = useMediaWorkAction(seriesKey);
   return <Space>
+    {children}
     <Button type="link" size="small" onClick={() => setOpen(true)}>编辑</Button>
-    <Button type="link" size="small" danger onClick={() => drop()}>删除</Button>
+    <Button type="link" size="small" danger onClick={() => drop().then(() => onRefreshList?.())}>删除</Button>
     <Drawer open={open} onClose={() => setOpen(false)} size="large">
       {open && <MetadataEditor seriesKey={seriesKey} />}
     </Drawer>

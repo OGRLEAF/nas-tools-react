@@ -185,11 +185,11 @@ export class TMDBMediaWork {
     }
 }
 
-export function useMediaWorkAction(series_key: SeriesKey) {
+export function useMediaWorkAction(serieskey: SeriesKey) {
     const instance = useMemo(() => {
-        if (series_key.end >= SeriesKeyType.TMDBID)
-            return new TMDBMediaWork(series_key)
-    }, [series_key])
+        if (serieskey.end >= SeriesKeyType.TMDBID)
+            return new TMDBMediaWork(serieskey)
+    }, [serieskey])
     const get = useCallback(async () => {
         return instance?.get()
     }, [instance]);
@@ -203,13 +203,13 @@ export function useMediaWorkAction(series_key: SeriesKey) {
     return { update, get, drop }
 }
 
-export function useMediaWork(series_key: SeriesKey): [MediaWork | undefined, {
+export function useMediaWork(seriesKey: SeriesKey): [MediaWork | undefined, {
     update: (m: MediaWork) => Promise<void>,
     refresh: () => Promise<void>,
     drop: () => Promise<void>
 }] {
 
-    const { get, update, drop } = useMediaWorkAction(series_key);
+    const { get, update, drop } = useMediaWorkAction(seriesKey);
     const [mediaWork, setMediaWork] = useState<MediaWork>();
 
     const refresh = useCallback(async () => {
@@ -224,6 +224,7 @@ export function useMediaWork(series_key: SeriesKey): [MediaWork | undefined, {
 
     return [mediaWork, { update, refresh, drop }]
 }
+
 
 export function useMediaWorks(seriesKey?: SeriesKey): [MediaWork[], boolean, () => void, () => void] {
     const [mediaWorks, setMediaWorks] = useState<MediaWork[]>([]);
