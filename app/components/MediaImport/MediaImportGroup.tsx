@@ -4,7 +4,7 @@ import { MediaWork, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/
 import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { CloseOutlined } from "@ant-design/icons"
 import { MediaDetailCard } from "../TMDBSearch/TinyTMDBSearch";
-import { Button, Card, Checkbox, Divider, Flex, Form, Popover, Radio, Space, Tag, Tooltip, theme } from "antd";
+import { Button, Card, Checkbox, Divider, Flex, Form, Popover, Radio, RowProps, Space, Tag, Tooltip, theme } from "antd";
 import { MediaImportAction, MediaImportFile, MediaImportFileKey, useMediaImportDispatch } from "./mediaImportContext";
 import Table, { ColumnsType } from "antd/es/table";
 import { SearchContext } from "../TMDBSearch/SearchContext";
@@ -64,6 +64,7 @@ const tvImportColumns: ColumnsType<MediaImportFile> = [{
 }
 ]
 
+
 export function TvMediaImportGroup(props: MediaImportGroupProps) {
     const mediaImportDispatch = useMediaImportDispatch();
     const mediaWorkKey = useMemo(() => new SeriesKey(props.seriesKey).slice(SeriesKeyType.TMDBID), [props.seriesKey])
@@ -90,6 +91,7 @@ export function TvMediaImportGroup(props: MediaImportGroupProps) {
     return <Table
         title={() => cardTitle}
         bordered
+
         rowSelection={{
             type: "checkbox",
             selectedRowKeys: props.files.filter(v => v.selected).map((v) => v.name),
@@ -98,6 +100,24 @@ export function TvMediaImportGroup(props: MediaImportGroupProps) {
                 // setLocalSelectedFile(new Set(...selectedRowKeys as MediaImportFileKey[]));
                 mediaImportDispatch({ type: MediaImportAction.SetSelected, fileKeys: selectedRowKeys as MediaImportFileKey[] })
             },
+        }}
+        onRow={(record) => {
+
+            return {
+                onDragOver: (e) => {
+                    e.preventDefault()
+                },
+                onDrop: (e) => {
+                    e.preventDefault()
+                    const data = e.dataTransfer.getData('text/json');
+                    const seriesKey = SeriesKey.load(JSON.parse(data))
+                    mediaImportDispatch({
+                        type: MediaImportAction.SetSeries,
+                        fileKeys: [record.name], 
+                        series: [seriesKey] 
+                    })
+                },
+            }
         }}
         pagination={false}
         size="small"
@@ -167,6 +187,13 @@ export function MovieMediaImportGroup(props: MediaImportGroupProps) {
             },
             columnWidth: 20
         }}
+        onRow={(record) => ({
+            onDrop: (e) => {
+                e.preventDefault()
+                const data = e.dataTransfer.getData('text/json');
+                console.log(data);
+            }
+        })}
         pagination={false}
         size="small"
         rowKey="name"
@@ -201,7 +228,7 @@ function TvImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Med
     const [taskflowId, setTaskflowId] = useState<string>();
     const [taskflow] = useTaskflow(taskflowId)
     const [submitting, setSubmitting] = useState(false);
-    const submitLoading = useMemo(()=> submitting || (taskflow && taskflow?.status !== "finished") || false, [taskflow, taskflowId]);
+    const submitLoading = useMemo(() => submitting || (taskflow && taskflow?.status !== "finished") || false, [taskflow, taskflowId]);
 
     const submitImport = (value: ImportFormValues) => {
         const completedFiles: [number, MediaImportFile][] = []
@@ -225,11 +252,11 @@ function TvImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Med
                 season: mergedSeriesKey.s,
                 tmdbid: String(mergedSeriesKey.i),
                 mediaType: mergedSeriesKey.t
-            }).then((result)=>{
+            }).then((result) => {
                 console.log("Import Task Result:", result.taskflow_id);
                 setTaskflowId(result.taskflow_id);
             })
-            .finally(()=>{setSubmitting(false);})
+                .finally(() => { setSubmitting(false); })
         }
     }
 
@@ -258,7 +285,7 @@ function TvImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Med
             </Form.Item>
             <Form.Item>
                 <Button type="primary" htmlType="submit" loading={submitLoading}>
-                    { submitting ? "提交中" : (taskflow?.status == "finished" ? "导入完成" : "导入") }
+                    {submitting ? "提交中" : (taskflow?.status == "finished" ? "导入完成" : "导入")}
                 </Button>
             </Form.Item>
         </Form>
@@ -280,7 +307,7 @@ function MovieImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: 
 
     const [taskflowId, setTaskflowId] = useState<string>();
     const [taskflow] = useTaskflow(taskflowId)
-    const taskflowLoading = useMemo(()=>(taskflow && taskflow?.status !== "finished") || false, [taskflow, taskflowId]);
+    const taskflowLoading = useMemo(() => (taskflow && taskflow?.status !== "finished") || false, [taskflow, taskflowId]);
 
     const onFinish = useCallback((value: any) => {
         if (mergedSeriesKey.t == MediaWorkType.MOVIE) {
@@ -293,9 +320,9 @@ function MovieImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: 
                 tmdbid: String(mergedSeriesKey.i),
                 mediaType: mergedSeriesKey.t
             })
-            .then((result)=>{
-                setTaskflowId(result.taskflow_id);
-            })
+                .then((result) => {
+                    setTaskflowId(result.taskflow_id);
+                })
         }
     }, [files, mergedSeriesKey])
 
@@ -323,7 +350,7 @@ function MovieImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: 
             </Form.Item>
             <Form.Item>
                 <Button type="primary" htmlType="submit" loading={taskflowLoading}>
-                    { taskflow?.status == "finished" ? "导入完成" : "导入" }
+                    {taskflow?.status == "finished" ? "导入完成" : "导入"}
                 </Button>
             </Form.Item>
         </Form>

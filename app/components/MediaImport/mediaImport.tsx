@@ -1,5 +1,6 @@
 import { Button, Col, Divider, Drawer, Empty, Form, Input, InputNumber, Row, Select, SelectProps, Space, Spin, Table, TableColumnsType, Tabs, TabsProps } from "antd"
 import React, { CSSProperties, useContext, useEffect, useMemo, useState } from "react"
+import { HolderOutlined } from "@ant-design/icons"
 import { MediaImportFile, MediaImportFileKey, useMediaImport, useMediaImportDispatch } from "./mediaImportContext"
 import { NastoolMediaType } from "../../utils/api/api";
 import { useWatch } from "antd/es/form/Form";
@@ -283,6 +284,17 @@ const EpisodeInputFromTMDB = (options: { onChange: (value: number[]) => void }) 
             key: 'metadata',
             render: (metadata: MediaWorkMetadata) => metadata?.title
         },
+        {
+            title: '操作',
+            render: (record:MediaWork) => {
+                return <div onDragStart={
+                    (e) => {
+                         e.dataTransfer.setData('text/json', JSON.stringify(record.series.dump()));
+                    }
+                } draggable><HolderOutlined /></div>
+            },
+            width: 60
+        }
     ]
 
     return <Table
@@ -290,7 +302,7 @@ const EpisodeInputFromTMDB = (options: { onChange: (value: number[]) => void }) 
         columns={columns}
         loading={loading}
         dataSource={episodes}
-        scroll={{y: 300}}
+        scroll={{y: 280}}
         pagination={false}
         rowKey={(row) => row.series.e as React.Key}
         rowSelection={{
