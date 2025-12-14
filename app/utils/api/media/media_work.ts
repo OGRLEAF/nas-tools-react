@@ -100,11 +100,10 @@ export class MediaWorkService extends APIBase {
         }
     }
 
-    public async getEntriesBySeriesKey(series_key: SeriesKey) {
+    public async getEntriesBySeriesKey(series_key: SeriesKey, useCache: boolean = true) {
         const [t, ...keys] = series_key.dump().slice(0, series_key.end + 1);
         const queryType = t && this.typeMap[t as MediaWorkType]
         if (t) {
-            const useCache = keys.length == 0;
             const queryPath = [queryType, ...keys, 'all',]
             if (useCache)
                 queryPath.push('cached')
@@ -226,22 +225,26 @@ export function useMediaWork(series_key: SeriesKey): [MediaWork | undefined, {
     return [mediaWork, { update, refresh, drop }]
 }
 
-export function useMediaWorks(seriesKey?: SeriesKey): [MediaWork[] | undefined, boolean, () => void] {
-    const [mediaWorks, setMediaWorks] = useState<MediaWork[]>();
+export function useMediaWorks(seriesKey?: SeriesKey): [MediaWork[], boolean, () => void, () => void] {
+    const [mediaWorks, setMediaWorks] = useState<MediaWork[]>([]);
     const [loading, setLoading] = useState(false);
-    const refresh = useCallback(() => {
+    const refresh = useCallback((useCache: boolean = true) => {
         if (seriesKey && (seriesKey.t == MediaWorkType.TV ? (seriesKey.end < SeriesKeyType.EPISODE) : (seriesKey.end < SeriesKeyType.TMDBID))
         ) {
             setLoading(true)
-            new TMDBMediaWork(seriesKey).getChildren()
+            new MediaWorkService().getEntriesBySeriesKey(seriesKey, useCache)
                 .then(mediaWorks => {
-                    setMediaWorks(() => mediaWorks)
+                    if(mediaWorks) setMediaWorks(() => mediaWorks)
                 })
                 .finally(() => setLoading(false))
         }
     }, [seriesKey])
     useEffect(() => {
-        refresh();
+        refresh(true);
     }, [refresh])
-    return [mediaWorks, loading, refresh]
+
+    const flush = useCallback(() => {
+        refresh(false)
+    }, [refresh])
+    return [mediaWorks, loading, refresh, flush]
 }
