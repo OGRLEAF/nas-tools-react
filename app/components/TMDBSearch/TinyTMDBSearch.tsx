@@ -1,8 +1,8 @@
-import React, { CSSProperties, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { CSSProperties, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { NastoolServerConfig } from "../../utils/api/api";
 import { AutoComplete, Input, Space, theme, Typography, Empty, Select, Flex, Spin, SelectProps, Button } from "antd";
 import { TMDB } from "../../utils/api/media/tmdb";
-import { MediaWork as MediaWorkBase } from "../../utils/api/media/media_work";
+import { MediaWork as MediaWorkBase, useMediaWork, useMediaWorks } from "../../utils/api/media/media_work";
 import { MediaWork, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "../../utils/api/types";
 import { SearchContext, SearchContextType, useSearch } from "./SearchContext";
 import { ServerConfig } from "@/app/utils/api/serverConfig";
@@ -217,7 +217,7 @@ export default function TinyTMDBSearch({
     const [loading, setLoading] = useState<boolean>(false);
     const [openResults, setOpenResults] = useState<boolean>(false)
 
-    const onSearch = (value: string) => {
+    const onSearch = useCallback((value: string) => {
         setContextKeyword(value);
         setLoading(true)
         const tmdb = new TMDB()
@@ -233,7 +233,6 @@ export default function TinyTMDBSearch({
                     })
                     .map(resultItem => ({
                         value: `${resultItem.title} (${resultItem.key})`,
-
                         label: <div
                             key={resultItem.key}
                             style={{
@@ -242,7 +241,6 @@ export default function TinyTMDBSearch({
                                 alignItems: "center"
                             }}
                         >
-
                             <span>{resultItem.title} ({resultItem.metadata?.date?.release})</span>
                             <span style={{ display: "block", textAlign: "left", lineHeight: "1em", paddingLeft: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: token.colorTextDescription }}>
                                 {resultItem.metadata?.description.trimStart()}
@@ -256,7 +254,7 @@ export default function TinyTMDBSearch({
 
             })
             .finally(() => setLoading(false))
-    }
+    }, [setLoading, setContextKeyword])
 
     useEffect(() => {
         setKeyword(contextKeyword)
@@ -341,6 +339,12 @@ export function MediaSearchGroup({ value, onChange, children, filter }: MediaSea
     const [seasons, setSeasons] = useState<MediaWorkSeason[]>([])
     const [loading, setLoading] = useState(false)
 
+    const validatedSeriesKey = useMemo(()=>{
+        return series.slice(SeriesKeyType.TMDBID)
+    }, [series])
+
+    const [mediaWork] = useMediaWork(validatedSeriesKey)
+
     useEffect(() => {
         if (value) {
             if (!value.equal(series)) setSeries(value)
@@ -348,29 +352,18 @@ export function MediaSearchGroup({ value, onChange, children, filter }: MediaSea
     }, [value])
 
     const onTMDBSelected = useCallback(async (value: MediaWork) => {
-        console.log("onTMDBSelected")
+        console.log("onTMDBSelected", value)
         setSeasons([])
         setLoading(true)
-        const work = new TMDB().work(String(value.key), value.type)
-        const mediaWork = await work.get();
-        if (mediaWork) setSeries(new SeriesKey(mediaWork.series).tmdbId(String(mediaWork.key)))
+        setSeries(new SeriesKey(value.series))
         setLoading(false)
     }, [])
 
-    const fetchMediaWork = useCallback(async () => {
-        if (series.i != undefined) {
-            setLoading(true)
-            const media = new TMDB().fromSeries(series.slice(SeriesKeyType.TMDBID));
-            const mediaWork = await media?.get();
-            if (mediaWork && media) {
-                setSelected(mediaWork);
-            }
-            setLoading(false)
+    useEffect(()=>{
+        if(mediaWork) {
+            setSelected(mediaWork)
         }
-    }, [series])
-    useEffect(() => {
-        fetchMediaWork()
-    }, [fetchMediaWork])
+    }, [mediaWork])
 
 
     useEffect(() => {
@@ -418,37 +411,34 @@ export function MediaSearchSeason() {
     }
 }
 
-export const MediaSeasonInput = ({ series, value, onChange, style }: 
-  { series: SeriesKey, value?: SeriesKey['seasonKey'], onChange?: (value: number) => void, style?: CSSProperties }) => {
+export const MediaSeasonInput = ({ series, value, onChange, style }: { series: SeriesKey, value?: number, onChange?: (value: number) => void, style?: CSSProperties }) => {
     const [seasonOptions, setSeasonOptions] = useState<SelectProps['options']>([])
-    const [loading, setLoading] = useState(false)
-    const updateSeason = useCallback(async (series: SeriesKey) => {
-        setLoading(true)
-        if (series.i) {
-            const media = new TMDB().fromSeries(series.slice(SeriesKeyType.TMDBID));
-            const mediaWork = await media?.get();
-            if (mediaWork && media) {
-                if (mediaWork.series.t == MediaWorkType.TV || mediaWork.series.t == MediaWorkType.ANI) {
-                    const seasons = await media.get_children()
-                    if (seasons?.length) {
-                        const options = seasons.map((item) => ({
-                            value: item.key,
-                            label: `季 ${item.key} - ${item.title}`,
-                        }))
-                        setSeasonOptions(options);
-                    } else {
-                        setSeasonOptions([])
-                    }
-                }
-            }
-            setLoading(false)
-        }
-    }, [])
-    useEffect(() => {
-        updateSeason(series)  // Not sure if it works
-    }, [series, updateSeason])
 
-    return <Select value={value} disabled={loading} loading={loading} style={style}
+    const validatedSeriesKey = useMemo(() => {
+        if (series.i) {
+            return new SeriesKey(series).slice(SeriesKeyType.TMDBID)
+        }
+    }, [series]);
+
+    const [seasons, loading, refresh, flush] = useMediaWorks(validatedSeriesKey);
+
+    useEffect(() => {
+        console.log("MediaSeasonInput", seasons)
+        if (seasons) {
+            if (seasons?.length) {
+                const options = seasons.map((item) => ({
+                    value: item.series.s,
+                    label: `季 ${item.series.s} - ${item.metadata?.title}`,
+                }))
+                setSeasonOptions(options);
+            } else {
+                setSeasonOptions([])
+            }
+        }
+    }, [seasons])
+
+    return <Select value={value && (value > 0 ? value : undefined)} disabled={loading || (series.i == undefined)} loading={loading} style={style}
+        placeholder="选择季数"
         options={seasonOptions}
         onSelect={(value: number) => {
             if (onChange) onChange(value)
