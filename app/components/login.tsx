@@ -106,7 +106,7 @@ const LoginModal = () => {
         >
             <Checkbox>保持登录</Checkbox>
         </Form.Item>
-        {message && <Alert banner showIcon onClose={() => setMessage(undefined)} message={message}></Alert>}
+        {message && <Alert banner showIcon closable={{onClose: () => setMessage(undefined)} } title={message}></Alert>}
     </Form>
 
     </>
