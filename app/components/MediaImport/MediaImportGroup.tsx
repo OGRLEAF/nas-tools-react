@@ -187,13 +187,6 @@ export function MovieMediaImportGroup(props: MediaImportGroupProps) {
             },
             columnWidth: 20
         }}
-        onRow={(record) => ({
-            onDrop: (e) => {
-                e.preventDefault()
-                const data = e.dataTransfer.getData('text/json');
-                console.log(data);
-            }
-        })}
         pagination={false}
         size="small"
         rowKey="name"
