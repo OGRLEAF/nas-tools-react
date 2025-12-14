@@ -1,10 +1,10 @@
-import { Button, Col, Divider, Drawer, Empty, Form, Input, InputNumber, Row, Select, SelectProps, Space, Spin, Tabs, TabsProps } from "antd"
+import { Button, Col, Divider, Drawer, Empty, Form, Input, InputNumber, Row, Select, SelectProps, Space, Spin, Table, TableColumnsType, Tabs, TabsProps } from "antd"
 import React, { CSSProperties, useContext, useEffect, useMemo, useState } from "react"
 import { MediaImportFile, MediaImportFileKey, useMediaImport, useMediaImportDispatch } from "./mediaImportContext"
 import { NastoolMediaType } from "../../utils/api/api";
 import { useWatch } from "antd/es/form/Form";
 import { MediaImportAction } from "./mediaImportContext";
-import { MediaWork, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
+import { MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
 import { asyncEffect, number_string_to_list } from "@/app/utils"
 import TinyTMDBSearch, { MediaDetailCard, MediaSearchGroup, MediaSearchSeason, MediaSearchWork } from "../TMDBSearch/TinyTMDBSearch";
 import { TMDB } from "@/app/utils/api/media/tmdb";
@@ -12,6 +12,8 @@ import { ImportList } from "./mediaImportList";
 import { SearchContext, SearchContextProvider, useSearch } from "../TMDBSearch/SearchContext";
 import TaskBar from "@/app/components/taskflow/Taskbar"
 import _ from "lodash";
+import { MediaWork, MediaWorkMetadata, useMediaWork, useMediaWorks } from "@/app/utils/api/media/media_work";
+import { ColumnsType } from "antd/lib/table";
 export interface MediaImportInitial {
     type: NastoolMediaType,
     tmdbid: string
@@ -69,14 +71,14 @@ export default function MediaImportWrapper({ initialValue }: { initialValue?: Me
 
 
     return (<Drawer placement="top"
-            getContainer={false}
-            title={<TaskBar />}
-            open={mediaImportContext.isImportWorkspaceOpen}
-            onClose={() => { mediaImportDispatch({ type: "close_workspace" }) }}
-            size={850}
-        >
-            <MediaImport />
-        </Drawer>)
+        getContainer={false}
+        title={<TaskBar />}
+        open={mediaImportContext.isImportWorkspaceOpen}
+        onClose={() => { mediaImportDispatch({ type: "close_workspace" }) }}
+        size={850}
+    >
+        <MediaImport />
+    </Drawer>)
 }
 
 enum EpisodeMethod {
@@ -84,7 +86,7 @@ enum EpisodeMethod {
     EpisodeFormat = 'e'
 }
 
-function MediaImport(){
+function MediaImport() {
     const mediaImportContext = useMediaImport();
     const mediaImportDispatch = useMediaImportDispatch();
     const [form] = Form.useForm();
@@ -141,7 +143,6 @@ function MediaImport(){
                 <Space orientation="vertical" style={{ width: "100%" }}>
                     <SearchContext.Provider value={search}>
                         <Form.Item name="series" noStyle>
-
                             <MediaSearchGroup>
                                 <MediaSearchWork />
                                 <br />
@@ -234,44 +235,73 @@ const EpisodeInputFromTMDB = (options: { onChange: (value: number[]) => void }) 
     const [episodeOptions, setEpisodeOptions] = useState<SelectProps['options']>([]);
     // const selectContext = useContext(SearchContext);
     // const { series } = selectContext;
-    const [loading, setLoading] = useState(false);
     const [value, setValue] = useState<number[]>([])
 
     const form = Form.useFormInstance();
     const series: SeriesKey | undefined = Form.useWatch('series', form)
 
-    useEffect(asyncEffect(async () => {
-        setLoading(true)
-        console.log('EpisodeInputFromTMDB', series)
-        if (series && series.end == SeriesKeyType.SEASON) {
-            const season = new TMDB().fromSeries(series.slice(SeriesKeyType.SEASON));
-            if (season) {
-                const episodes = await season.get_children();
-                // console.log("EpisodeInputFromTMDB", episodes)
-                setEpisodeOptions(episodes.sort((a, b) => a.key - b.key).map((ep) => ({
-                    value: ep.key,
-                    label: <span>{ep.key}<Divider orientation="vertical" />{ep.metadata?.title}</span>
-                })))
-                setValue([]);
+    const seriesKeyValidated = useMemo(() => {
+        console.log("SeriesUpdated: ", series);
+        if (series) {
+            if (series.end == SeriesKeyType.SEASON) {
+                return new SeriesKey(series); // .episode(ANY)
             }
         }
-        setLoading(false)
-    }), [series])
+    }, [series])
+
+    const [episodes, loading] = useMediaWorks(seriesKeyValidated)
+
+
+    useEffect(() => {
+        console.log("Episodes Updated: ", episodes);
+        if (episodes) {
+            setEpisodeOptions(episodes.sort((a, b) => (a.series.e && b.series.e) ? a.series.e - b.series.e : 0).map((ep) => ({
+                value: ep.series.e,
+                label: <span>{ep.series.e}<Divider orientation="vertical" />{ep.metadata?.title}</span>
+            })))
+
+            setValue([])
+        }
+    }, [episodes])
 
     const onChange = (values: number[]) => {
         setValue(values)
         options.onChange(values);
     }
-    return <Select
-        placeholder={episodeOptions?.length ? `从共${episodeOptions?.length}集中选择` : `选择前置信息 ${series?.i} ${series?.e}`}
-        tokenSeparators={[',']}
-        disabled={loading || (episodeOptions?.length == 0)}
+    
+    const columns: ColumnsType<MediaWork> = [
+        {
+            title: '集数',
+            dataIndex: 'series',
+            key: 'series',
+            render: (series: SeriesKey) => series.e,
+            width: 80,
+        },
+        {
+            title: '标题',
+            dataIndex: 'metadata',
+            key: 'metadata',
+            render: (metadata: MediaWorkMetadata) => metadata?.title
+        },
+    ]
+
+    return <Table
+        size="small"
+        columns={columns}
         loading={loading}
-        mode="multiple"
-        value={value}
-        onChange={onChange}
-        options={episodeOptions}
-        allowClear />
+        dataSource={episodes}
+        scroll={{y: 300}}
+        pagination={false}
+        rowKey={(row) => row.series.e as React.Key}
+        rowSelection={{
+            type: 'checkbox',
+            selectedRowKeys: value,
+            onChange: (selectedRowKeys) => {
+                const eps = selectedRowKeys as number[];
+                onChange(eps);
+            },
+        }}
+    />
 }
 
 const EpisodeInputFromString = (options: { onChange: (value: number[]) => void, }) => {
@@ -318,28 +348,29 @@ const EpisodeInputFromFormat = (options: { onChange: (value: number[]) => void, 
 export const MediaSeasonInput = ({ series, value, onChange, style }: { series: SeriesKey, value?: number, onChange?: (value: number) => void, style?: CSSProperties }) => {
     const [seasonOptions, setSeasonOptions] = useState<SelectProps['options']>([])
     const [loading, setLoading] = useState(false)
-    useEffect(asyncEffect(async () => {
+
+    const validatedSeriesKey = useMemo(() => {
         if (series.i) {
-            setLoading(true)
-            const media = new TMDB().fromSeries(series.slice(SeriesKeyType.TMDBID));
-            const mediaWork = await media?.get();
-            if (mediaWork && media) {
-                if (mediaWork.series.t == MediaWorkType.TV || mediaWork.series.t == MediaWorkType.ANI) {
-                    const seasons = await media.get_children()
-                    if (seasons?.length) {
-                        const options = seasons.map((item) => ({
-                            value: item.key,
-                            label: `季 ${item.key} - ${item.title}`,
-                        }))
-                        setSeasonOptions(options);
-                    } else {
-                        setSeasonOptions([])
-                    }
-                }
-            }
-            setLoading(false)
+            return new SeriesKey(series).slice(SeriesKeyType.TMDBID)
         }
-    }), [series.i])
+    }, [series]);
+
+    const [seasons] = useMediaWorks(validatedSeriesKey);
+
+    useEffect(() => {
+        console.log("MediaSeasonInput", seasons)
+        if (seasons) {
+            if (seasons?.length) {
+                const options = seasons.map((item) => ({
+                    value: item.series.s,
+                    label: `季 ${item.series.s} - ${item.metadata?.title}`,
+                }))
+                setSeasonOptions(options);
+            } else {
+                setSeasonOptions([])
+            }
+        }
+    }, [seasons])
 
     return <Select value={value} disabled={loading || (series.i == undefined)} loading={loading} style={style}
         options={seasonOptions}
