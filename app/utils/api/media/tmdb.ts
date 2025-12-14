@@ -39,7 +39,7 @@ export class TMDB extends APIBase {
     static share: Record<string, MediaWork> = {}
     protected static instance: TMDB;
     private static _cache: Record<string, TMDBMediaWork> = {};
-    constructor(API?:NASTOOL) {
+    constructor(API?: NASTOOL) {
         super(API);
         if (TMDB.instance) {
             return TMDB.instance;
@@ -62,27 +62,33 @@ export class TMDB extends APIBase {
 
     public async search(keyword: string): Promise<MediaWork[]> {
         const searchResult = await (await this.API).searchMedia(keyword);
-        const mediaWorks: MediaWork[] = searchResult.result.map((item) => ({
-            series: new SeriesKey()
-                .type(item.media_type as unknown as MediaWorkType)
-                .tmdbId(item.tmdb_id),
-            type: item.media_type as unknown as MediaWorkType,
-            title: item.title,
-            key: item.tmdb_id,
-            metadata: {
+        const mediaWorks: MediaWork[] = searchResult.result.map((item) => {
+            let t = item.media_type as unknown as MediaWorkType;
+            if(t == MediaWorkType.ANI) {
+                t = MediaWorkType.TV;
+            } 
+            return {
+                series: new SeriesKey()
+                    .type(t)
+                    .tmdbId(item.tmdb_id),
+                type: item.media_type as unknown as MediaWorkType,
                 title: item.title,
-                description: item.overview,
-                image: {
-                    cover: item.image
-                },
-                date: {
-                    release: item.year
-                },
-                links: {
-                    tmdb: item.link
+                key: item.tmdb_id,
+                metadata: {
+                    title: item.title,
+                    description: item.overview,
+                    images: {
+                        cover: item.image
+                    },
+                    date: {
+                        release: [Number(item.year), null, null, null, null]
+                    },
+                    links: {
+                        tmdb: item.link
+                    }
                 }
             }
-        }))
+        })
         mediaWorks.forEach((item) => {
             TMDB.addShare(item)
         })
@@ -176,7 +182,7 @@ export class TMDB extends APIBase {
                         tmdb: `${detail.link}/season/${season.season_number}`
                     },
                     date: {
-                        release: season.air_date
+                        release: [Number(season.air_date), null, null, null, null]
                     }
                 }
             })) : undefined;
