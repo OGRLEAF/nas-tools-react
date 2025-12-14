@@ -358,7 +358,7 @@ function GroupImportTable(props: MediaImportGroupProps & { columns: ColumnsType<
                 />
             </div>
         }
-    }, [work, props.seriesKey.t, setSeries, setKeyword])
+    }, [work, setSeries, setKeyword])
     const mediaImportDispatch = useMediaImportDispatch();
     return <Table
         title={() => cardTitle}
