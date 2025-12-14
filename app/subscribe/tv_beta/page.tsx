@@ -1,7 +1,7 @@
 "use client"
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Form, List, Space, theme, Divider, Select, Flex, Input, Tooltip, Row, Col, Radio, Tag, Table, TableColumnsType, Switch, Checkbox, Spin } from "antd";
-import { MediaWorkMetadata, SeriesKeyType } from "@/app/utils/api/types";
+import { MediaWork, SeriesKeyType } from "@/app/utils/api/types";
 import { RetweetOutlined, EditOutlined, DeleteOutlined, QuestionCircleOutlined, LoadingOutlined } from "@ant-design/icons"
 import Image from "next/image";
 import { CardsForm, useCardsFormContext } from "@/app/components/CardsForm";
@@ -309,7 +309,7 @@ function EpisodesConfig({ value, onChange, selectedSeries }:
         {
             title: '标题',
             dataIndex: 'metadata',
-            render: (value?: MediaWorkMetadata) => {
+            render: (value?: MediaWork['metadata']) => {
                 return value?.title
             }
         },
