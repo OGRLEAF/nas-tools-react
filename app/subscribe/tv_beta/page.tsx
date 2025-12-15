@@ -123,7 +123,7 @@ const FormSection = ({ title, tooltip }: { title: string, tooltip?: string }) =>
 }
 
 const SubscribeTVForm = ({ record: profile, onChange }: { record?: TVSubsProfile, onChange?: (value: TVSubsProfile) => void }) => {
-    const seriesKey = profile?.series_key && SeriesKey.load(profile?.series_key)
+    const seriesKey = useMemo(() => profile?.series_key && SeriesKey.load(profile?.series_key), [profile])
     const legacySeriesKey = useMemo(() => new SeriesKeyLegacy().type(seriesKey?.t).tmdbId(seriesKey?.i)
         .season(Number(seriesKey?.s)), [seriesKey])
 
