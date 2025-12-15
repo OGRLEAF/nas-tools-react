@@ -63,14 +63,13 @@ const MediaImportFilter = () => {
 }
 
 
-
-
 export default function MediaImportWrapper({ initialValue }: { initialValue?: MediaImportInitial }) {
     const mediaImportDispatch = useMediaImportDispatch();
     const mediaImportContext = useMediaImport();
 
 
     return (<Drawer placement="top"
+        destroyOnHidden={true}
         getContainer={false}
         title={<TaskBar />}
         open={mediaImportContext.isImportWorkspaceOpen}
