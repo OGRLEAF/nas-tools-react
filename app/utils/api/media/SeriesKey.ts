@@ -148,6 +148,16 @@ export class SeriesKey {
     return this.get(this._end)
   }
 
+  public append(key: SeriesKeyType, value: number | string) {
+    switch (key) {
+      case SeriesKeyType.TYPE: return this.type(value as MediaWorkType);
+      case SeriesKeyType.TMDBID: return this.tmdbId(value as string);
+      case SeriesKeyType.SEASON: return this.season(value as SeasonKeyType);
+      case SeriesKeyType.EPISODE: return this.episode(value as EpisodeKeyType);
+    }
+    return this;
+  }
+
   public slice(key: SeriesKeyType) {
     const s = new SeriesKey(this);
     if (s._end > key) {

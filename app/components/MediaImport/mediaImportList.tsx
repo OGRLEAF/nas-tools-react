@@ -66,7 +66,7 @@ const ImportListContext = createContext<ImportListContextType>({
 
 export const useImportListContext = () => useContext(ImportListContext)
 
-export const ImportList = () => {
+export function ImportList() {
     // const mediaImportDispatch = useMediaImportDispatch();
     const mediaImportContext = useMediaImport();
     const mediaImportDispatch = useMediaImportDispatch();

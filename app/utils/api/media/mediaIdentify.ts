@@ -53,9 +53,12 @@ export class MediaIdentify extends APIBase {
         const season_episode = /S(?<season>\d+)[_\s]E(?<episode>\d+)/g.exec(result.season_episode)
         const season = Number(season_episode?.groups?.['season'])
         const episode = Number(season_episode?.groups?.['episode'])
+
+        const t = result.type == MediaWorkType.ANI ? MediaWorkType.TV : result.type;
+
         return new SeriesKey()
-            .type(result.type)
-            .tmdbId(result.tmdbid)
+            .type(t)
+            .tmdbId(String(result.tmdbid))
             .season(_.isNaN(season) ? undefined : season)
             .episode(_.isNaN(episode) ? undefined : episode)
     }

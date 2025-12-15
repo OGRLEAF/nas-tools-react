@@ -423,7 +423,7 @@ export function MediaSearchSeason() {
     </Space> : null
 }
 
-export const MediaSeasonInput = ({ series, value, onChange, style }: { series: SeriesKey, value?: SeasonKeyType, onChange?: (value: number) => void, style?: CSSProperties }) => {
+export function MediaSeasonInput({ series, value, onChange, style }: { series: SeriesKey, value?: SeasonKeyType, onChange?: (value: number) => void, style?: CSSProperties }) {
 
     const validatedSeriesKey = useMemo(() => {
         if (series.i) {
@@ -441,7 +441,7 @@ export const MediaSeasonInput = ({ series, value, onChange, style }: { series: S
 
 
     const selectedSeason = useMemo(() => {
-        if (value) {
+        if (value !== undefined && value !== null) {
             if (value >= 0) {
                 return value;
             }
