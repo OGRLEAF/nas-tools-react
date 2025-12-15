@@ -1,11 +1,12 @@
 'use client'
 import { MediaDetailCard } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 import { Section } from "@/app/components/Section";
-import { MediaWork, MediaWorkMetadata, MetadataDate, toDayjs, useMediaWork, useMediaWorkAction, useMediaWorks } from "@/app/utils/api/media/mediaWork"
+import { MediaWork, MediaWorkMetadata, MetadataDate, toDayjs, useMediaWork, useMediaWorkAction, useMediaWorks, useMediaWorksPaginated } from "@/app/utils/api/media/mediaWork"
 import { SeriesKey } from "@/app/utils/api/media/SeriesKey"
 import { MediaWorkType, SeriesKeyType } from "@/app/utils/api/types"
 import { Button, DatePicker, Drawer, Form, Input, Segmented, Space, Table, TableColumnsType } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { PageQuery } from "@/app/utils/api/api";
 
 const defaultSeriesKey = new SeriesKey().type(MediaWorkType.TV);
 
@@ -22,7 +23,7 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
   const [sliceKey, setSliceKey] = useState<SeriesKeyType>(SeriesKeyType.TYPE)
   const slicedSeriesKey = useMemo(() => seriesKey.slice(sliceKey), [sliceKey, seriesKey])
 
-  const [mediaWorks, loading, refresh, flush] = useMediaWorks(slicedSeriesKey);
+  const { mediaWorks, loading, total, refresh, flush, pagination, setPagination } = useMediaWorksPaginated(slicedSeriesKey);
   const [mediaWork, mediaWorkAction] = useMediaWork(slicedSeriesKey);
 
   const [pathSegments, setPathSegements] = useState([{
@@ -54,7 +55,7 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
     action={<MetadataEditorDrawer seriesKey={mediaWork.series}>
       <Button type="link" size="small" onClick={() => flush()}>刷新</Button>
     </MetadataEditorDrawer>}
-    mediaDetail={mediaWork} size="poster" />, 
+    mediaDetail={mediaWork} size="poster" />,
     [mediaWork, flush])
 
   // Extracted render function for the "名称" column
@@ -82,7 +83,7 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
   // Extracted render function for the "操作" column
   const operationColumnRender = useCallback(
     (value: SeriesKey, record: MediaWork, index: number) => {
-      return <MetadataEditorDrawer seriesKey={value} onRefreshList={refresh}/>;
+      return <MetadataEditorDrawer seriesKey={value} onRefreshList={refresh} />;
     },
     [refresh]
   );
@@ -137,15 +138,22 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
       title={slicedSeriesKey.end > SeriesKeyType.TYPE ? titleRender : undefined}
       columns={columns}
       dataSource={mediaWorks} loading={loading}
+      pagination={{
+        pageSize: pagination.size,
+        total: total,
+        onChange(page, pageSize) {
+          setPagination({ page: page, size: pageSize })
+        }
+      }}
       rowKey={
-        (record) => record.series.dump().join('_')
+        (record) => record.series.uniqueKey()
       }
-      footer={()=><TMDBAdd></TMDBAdd>}
+      footer={() => <TMDBAdd></TMDBAdd>}
     />
   </Section>
 }
 
-function TMDBAdd(){
+function TMDBAdd() {
   return <Space>
     <Input placeholder="TMDB ID" />
     <Button type="primary">添加</Button>
@@ -154,7 +162,7 @@ function TMDBAdd(){
 
 function MetadataEditorDrawer({ seriesKey, children, onRefreshList }: { seriesKey: SeriesKey, children?: React.ReactNode, onRefreshList?: () => void }) {
   const [open, setOpen] = useState(false)
-  const {drop} = useMediaWorkAction(seriesKey);
+  const { drop } = useMediaWorkAction(seriesKey);
   return <Space>
     {children}
     <Button type="link" size="small" onClick={() => setOpen(true)}>编辑</Button>
@@ -188,7 +196,7 @@ function MetadataEditor({ seriesKey }: { seriesKey: SeriesKey }) {
           action.update({
             series: mediaWork.series,
             metadata: values
-          }).then(()=>{
+          }).then(() => {
             action.refresh();
           })
       }} layout="vertical">

@@ -96,6 +96,11 @@ type NastoolApi =
     "brushtask/delete" |
     "brushtask/torrents" | string
 
+export interface PageQuery {
+    page: number,
+    size: number
+}
+
 
 export interface NastoolResponse<T> {
     code: number,
@@ -1057,7 +1062,7 @@ export class NASTOOL {
         }
     }
 
-    public async get<T>(api: NastoolApi, options: { auth?: boolean, params?: Record<string, string> } = {}): Promise<T> {
+    public async get<T>(api: NastoolApi, options: { auth?: boolean, params?: Record<string, string | number> } = {}): Promise<T> {
         return await this.request<T>(api, "get", {
             params: {
                 ...options.params,

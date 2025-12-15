@@ -1,6 +1,6 @@
 import { APIBase, APIArrayResourceOption, ResourceType, APIArrayResourceBase } from "./api_base";
 import { MediaWorkType, SyncMode } from "./types";
-import { ImportMode as RmtMode } from "./api"
+import { PageQuery, ImportMode as RmtMode } from "./api"
 /**
  * 
 class TorrentState(Enum):
@@ -82,7 +82,7 @@ export interface DownloadResource {
     ListOptionType: ListOptions
 }
 
-type ListOptions = { page?: number, size?: number, hashs?: string[], state?: TorrentFilterState }
+type ListOptions = { hashs?: string[], state?: TorrentFilterState } & Partial<PageQuery>;
 export class Download extends APIArrayResourceBase<DownloadResource> {
     constructor() {
         super();

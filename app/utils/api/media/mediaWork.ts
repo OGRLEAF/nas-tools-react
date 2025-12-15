@@ -1,5 +1,5 @@
-import _ from "lodash";
-import { NASTOOL } from "../api";
+import _, { size } from "lodash";
+import { NASTOOL, PageQuery } from "../api";
 import { APIBase } from "../api_base";
 import { MediaWorkType, SeriesKeyType } from "../types"
 import { SeriesKey, SeriesKeyTuple } from "./SeriesKey"
@@ -66,6 +66,8 @@ export interface MediaWorkData {
     metadata?: MediaWorkMetadata,
 }
 
+type ListOptions = { cached: boolean } & Partial<PageQuery>;
+
 export class MediaWorkService extends APIBase {
 
     static share: Record<string, MediaWork> = {}
@@ -100,23 +102,27 @@ export class MediaWorkService extends APIBase {
         }
     }
 
-    public async getEntriesBySeriesKey(series_key: SeriesKey, useCache: boolean = true) {
+    public async getEntriesBySeriesKey(series_key: SeriesKey, options: ListOptions = { cached: false }): Promise<[MediaWork[], number]> {
         const [t, ...keys] = series_key.dump().slice(0, series_key.end + 1);
         const queryType = t && this.typeMap[t as MediaWorkType]
         if (t) {
             const queryPath = [queryType, ...keys, 'all',]
-            if (useCache)
+            if (options.cached)
                 queryPath.push('cached')
-            const media_work = this.API.get<{ list: MediaWorkData[] }>(`media_work/${queryPath.join('/')}`, { auth: true })
-            return (await media_work).list.map((item) => ({
+            const mediaWorks = await this.API.get<{ list: MediaWorkData[], total: number }>(`media_work/${queryPath.join('/')}`, {
+                auth: true,
+                params: _.pickBy(options, v => v !== undefined) as any
+            })
+            return [mediaWorks.list.map((item) => ({
                 ...item,
                 series: SeriesKey.load(item.series)
-            }))
+            })), mediaWorks.total]
         }
+        return [[], 0]
     }
 
     public async getPack(series_key: SeriesKey) {
-        return await this.getEntriesBySeriesKey(series_key)
+        return await this.getEntriesBySeriesKey(series_key, { cached: false, size: -1 })
     }
 
     public async updateMediaWork(mediaWork: MediaWork) {
@@ -226,29 +232,67 @@ export function useMediaWork(seriesKey: SeriesKey): [MediaWork | undefined, {
 }
 
 
-export function useMediaWorks(seriesKey?: SeriesKey): [MediaWork[], boolean, () => void, () => void] {
+export function useMediaWorks(seriesKey?: SeriesKey):
+    [MediaWork[], boolean, (options?: ListOptions) => void, (options?: ListOptions) => void] {
     const [mediaWorks, setMediaWorks] = useState<MediaWork[]>([]);
     const [loading, setLoading] = useState(false);
-    const refresh = useCallback((useCache: boolean = true) => {
+
+    const refresh = useCallback((options?: ListOptions) => {
         if (seriesKey && (seriesKey.t == MediaWorkType.TV ? (seriesKey.end < SeriesKeyType.EPISODE) : (seriesKey.end < SeriesKeyType.TMDBID))
         ) {
             setLoading(true)
-            new MediaWorkService().getEntriesBySeriesKey(seriesKey, useCache)
-                .then(mediaWorks => {
-                    if(mediaWorks !== undefined) setMediaWorks(() => mediaWorks)
+            new MediaWorkService().getEntriesBySeriesKey(seriesKey, options)
+                .then(([mediaWorks, total]) => {
+                    if (mediaWorks !== undefined) setMediaWorks(() => mediaWorks)
                 })
-                .catch(e=>{ 
+                .catch(e => {
                     setMediaWorks([])
                 })
                 .finally(() => setLoading(false))
         }
     }, [seriesKey])
     useEffect(() => {
-        refresh(true);
+        refresh({ cached: true });
     }, [refresh])
 
     const flush = useCallback(() => {
-        refresh(false)
+        refresh({ cached: false })
     }, [refresh])
     return [mediaWorks, loading, refresh, flush]
 }
+
+export function useMediaWorksPaginated(seriesKey?: SeriesKey, initialOptions?: PageQuery) {
+    const [mediaWorks, setMediaWorks] = useState<MediaWork[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [total, setTotal] = useState<number>(0);
+    const [pagination, setPagination] = useState<PageQuery>(initialOptions || { page: 1, size: 10 });
+
+
+    const refresh = useCallback((options?: ListOptions) => {
+        if (seriesKey && (seriesKey.t == MediaWorkType.TV ? (seriesKey.end < SeriesKeyType.EPISODE) : (seriesKey.end < SeriesKeyType.TMDBID))
+        ) {
+            setLoading(true)
+            new MediaWorkService().getEntriesBySeriesKey(seriesKey, options)
+                .then(([mediaWorks, total]) => {
+                    if (total > 0) {
+                        setMediaWorks(() => mediaWorks)
+                        setTotal(total)
+                    }
+                })
+                .catch(e => {
+                    setMediaWorks([])
+                    setTotal(0)
+                })
+                .finally(() => setLoading(false))
+        }
+    }, [seriesKey])
+    useEffect(() => {
+        refresh({ ...pagination, cached: true });
+    }, [refresh, pagination])
+
+    const flush = useCallback(() => {
+        refresh({ ...pagination, cached: false })
+    }, [refresh, pagination])
+    return { mediaWorks, loading, total, refresh, flush, pagination, setPagination }
+}
+
