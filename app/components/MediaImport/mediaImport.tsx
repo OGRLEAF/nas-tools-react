@@ -103,7 +103,6 @@ function MediaImport() {
 
             const identify = selectedFiles.map((v) => {
                 const episode = episodes?.shift();
-                console.log(v, episode)
                 return new SeriesKey(series)
                     // .type(mediaWork?.type || values.type)
                     // .tmdbId(tmdbId)
@@ -122,7 +121,6 @@ function MediaImport() {
 
     const series = Form.useWatch("series", form) as SeriesKey;
     useEffect(() => {
-        console.log('outter', search.series)
         form.setFieldValue('series', new SeriesKey(search.series))
 
     }, [form, search.series])
@@ -231,6 +229,40 @@ const EpisodeInput = memo((options: { value?: number[], onChange?: (value: (numb
     </>
 })
 
+
+const columns: ColumnsType<MediaWork> = [
+    {
+        title: '集数',
+        dataIndex: 'series',
+        key: 'series',
+        render: (series: SeriesKey) => series.e,
+        shouldCellUpdate: (record, prevRecord) => record.series.compare(prevRecord.series) < SeriesKeyType.SEASON, 
+        width: 80,
+        sorter: (a, b) => ((a.series.e && b.series.e) ? a.series.e - b.series.e : 0),
+        defaultSortOrder: "ascend",
+    },
+    {
+        title: '标题',
+        dataIndex: 'metadata',
+        key: 'metadata',
+        shouldCellUpdate: (record, prevRecord) => record.series.compare(prevRecord.series) < SeriesKeyType.SEASON, 
+        render: (metadata: MediaWorkMetadata) => metadata?.title
+    },
+    {
+        title: '操作',
+        shouldCellUpdate: (record, prevRecord) => record.series.compare(prevRecord.series) < SeriesKeyType.SEASON,
+        render: (record: MediaWork) => {
+            return <div onDragStart={
+                (e) => {
+                    e.dataTransfer.setData('text/json', JSON.stringify(record.series.dump()));
+                }
+            } draggable><HolderOutlined /></div>
+        },
+        
+        width: 60
+    }
+]
+
 const EpisodeInputFromTMDB = (options: { onChange: (value: number[]) => void }) => {
     const [episodeOptions, setEpisodeOptions] = useState<SelectProps['options']>([]);
     // const selectContext = useContext(SearchContext);
@@ -268,40 +300,13 @@ const EpisodeInputFromTMDB = (options: { onChange: (value: number[]) => void }) 
         setValue(values)
         options.onChange(values);
     }
-    
-    const columns: ColumnsType<MediaWork> = [
-        {
-            title: '集数',
-            dataIndex: 'series',
-            key: 'series',
-            render: (series: SeriesKey) => series.e,
-            width: 80,
-        },
-        {
-            title: '标题',
-            dataIndex: 'metadata',
-            key: 'metadata',
-            render: (metadata: MediaWorkMetadata) => metadata?.title
-        },
-        {
-            title: '操作',
-            render: (record:MediaWork) => {
-                return <div onDragStart={
-                    (e) => {
-                         e.dataTransfer.setData('text/json', JSON.stringify(record.series.dump()));
-                    }
-                } draggable><HolderOutlined /></div>
-            },
-            width: 60
-        }
-    ]
 
     return <Table
         size="small"
         columns={columns}
         loading={loading}
         dataSource={episodes}
-        scroll={{y: 280}}
+        scroll={{ y: 280 }}
         pagination={false}
         rowKey={(row) => row.series.e as React.Key}
         rowSelection={{
@@ -387,13 +392,5 @@ export const MediaSeasonInput = ({ series, value, onChange, style }: { series: S
         options={seasonOptions}
         onSelect={(value: number) => {
             if (onChange) onChange(value)
-        }}
-    // onSelect={(value: number) => {
-    //     // console.log(value)
-    //     if (value !== undefined) setSelectedSeason(value);
-    //     if (series.has("tmdbId")) {
-    //         setSeries(new SeriesKey(series).season(value))
-    //     }
-    // }}
-    />
+        }} />
 }

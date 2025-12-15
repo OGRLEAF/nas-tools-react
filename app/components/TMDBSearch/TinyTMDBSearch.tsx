@@ -139,7 +139,7 @@ export interface MediaDetailCardProps {
     postImageStyle?: CSSProperties
 }
 
-const TitleArea = memo(({mediaDetail, action, styles} : {mediaDetail: MediaWorkBase, action?: React.ReactNode, styles?: CSSProperties}) => {
+const TitleArea = memo(({ mediaDetail, action, styles }: { mediaDetail: MediaWorkBase, action?: React.ReactNode, styles?: CSSProperties }) => {
     const metadata = useMemo(() => mediaDetail.metadata, [mediaDetail])
     const { token } = theme.useToken()
 
@@ -155,13 +155,14 @@ const TitleArea = memo(({mediaDetail, action, styles} : {mediaDetail: MediaWorkB
             <StateTag stateMap={stateTagMap} value={mediaDetail.series.t ?? MediaWorkType.UNKNOWN} />
         </Space>
         <div style={{ alignSelf: "end", position: "sticky", bottom: 0, right: 4 }}>{action}</div>
-    </Flex>})
+    </Flex>
+})
 
 const Links = memo(({ links }: { links: MediaWorkMetadata["links"] }) => {
-    return <Space separator={<Divider vertical />} size="small">
+    return <Space separator={<Divider vertical size="small" />} size={0} wrap={true}>
         {
             Object.entries(links).map(([key, value]) =>
-                <Button type="link" style={{ padding: 0 }} href={value} target="_blank">
+                <Button type="link" size="small" style={{ padding: 0 }} href={value} target="_blank">
                     {value}
                 </Button>
             )
@@ -181,9 +182,8 @@ export function MediaDetailCard({
 
     const metadata = useMemo(() => mediaDetail?.metadata, [mediaDetail])
     const coverImage = useMemo(() => (metadata?.images?.poster || metadata?.images?.cover), [metadata])
-    const coverImageNode = useMemo(() => (coverImage && <CoverImage maxHeight={style.height} alt={metadata?.title ?? ""} src={coverImage} />), [metadata, coverImage, style.height])
 
-    const textHeight = layout == "vertical" ? undefined : style.height;
+    const textHeight = useMemo(() => layout == "vertical" ? undefined : style.height, [layout, style.height]);
     return <Flex
         align="start"
         vertical={(layout ?? "horizontal") == "vertical"}
@@ -194,11 +194,11 @@ export function MediaDetailCard({
             maxWidth: style.maxWidth,
             width: "100%",
         }}>
-        {coverImageNode}
+        {coverImage && <CoverImage maxHeight={style.height} alt={metadata?.title ?? ""} src={coverImage} />}
         <div style={{ height: textHeight, width: "100%", overflow: "auto" }}>
-            { mediaDetail && <TitleArea mediaDetail={mediaDetail} action={action} styles={style.title} /> }
+            {mediaDetail && <TitleArea mediaDetail={mediaDetail} action={action} styles={style.title} />}
             <div style={{ padding: "0px 4px" }}>
-                { metadata && <Links links={metadata.links} /> }
+                {metadata && <Links links={metadata.links} />}
                 <span style={{ color: token.colorTextDescription, display: "block", wordWrap: "break-word", whiteSpace: "pre-wrap" }}>
                     {metadata?.description.replaceAll("\n\n", "\n").replaceAll("\n\n", "\n")}
                 </span>
@@ -409,23 +409,21 @@ export function MediaSearchSeason() {
     const isTvSeries = useMemo(() => {
         return (series.t == MediaWorkType.TV || series.t == MediaWorkType.ANI)
     }, [series])
-    if (isTvSeries) {
-        return <Space>
-            季：<MediaSeasonInput style={{ width: 250 }
-            }
-                series={series}
-                value={series.s}
-                onChange={(value) => {
-                    if (series.has("tmdbId")) {
-                        setSeries(new SeriesKey(series).season(value))
-                    }
-                }} />
-        </Space >
-    }
+
+    return isTvSeries ? <Space>
+        季：<MediaSeasonInput style={{ width: 250 }
+        }
+            series={series}
+            value={series.s}
+            onChange={(value) => {
+                if (series.has("tmdbId")) {
+                    setSeries(new SeriesKey(series).season(value))
+                }
+            }} />
+    </Space> : null
 }
 
 export const MediaSeasonInput = ({ series, value, onChange, style }: { series: SeriesKey, value?: SeasonKeyType, onChange?: (value: number) => void, style?: CSSProperties }) => {
-    const [seasonOptions, setSeasonOptions] = useState<SelectProps['options']>([])
 
     const validatedSeriesKey = useMemo(() => {
         if (series.i) {
@@ -433,25 +431,25 @@ export const MediaSeasonInput = ({ series, value, onChange, style }: { series: S
         }
     }, [series]);
 
-    const [seasons, loading, refresh, flush] = useMediaWorks(validatedSeriesKey);
 
-    useEffect(() => {
-        console.log("MediaSeasonInput", seasons)
-        if (seasons) {
-            if (seasons?.length) {
-                const options = seasons.map((item) => ({
-                    value: item.series.s,
-                    label: `季 ${item.series.s} - ${item.metadata?.title}`,
-                }))
-                setSeasonOptions(options);
-            } else {
-                setSeasonOptions([])
+    const [seasons, loading, flush] = useMediaWorks(validatedSeriesKey);
+
+    const seasonOptions = useMemo(() => seasons ? seasons.map((item) => ({
+        value: item.series.s,
+        label: `季 ${item.series.s} - ${item.metadata?.title}`,
+    })) : [], [seasons])
+
+
+    const selectedSeason = useMemo(() => {
+        if (value) {
+            if (value >= 0) {
+                return value;
             }
         }
-    }, [seasons])
+    }, [value,]);
 
     return <Space>
-        <Select value={value && (value > 0 ? value : undefined)} disabled={loading || (series.i == undefined)} loading={loading} style={style}
+        <Select value={selectedSeason} disabled={loading || (series.i == undefined)} loading={loading} style={style}
             placeholder="选择季数"
             options={seasonOptions}
             onSelect={(value: number) => {

@@ -70,6 +70,7 @@ const reducer = (state: MediaImportState, action: MediaImportDispathPayload): Me
                     console.debug(globalKeyMap)
                     console.debug('MediaImportAction.SetSeries processing fileKey:', fileKey, 'id:', id, 'series:', series[index]);
                     if ((id != undefined) && state.penddingFiles[id]) {
+                        
                         const seriesOfFile = series[index];
                         // state.penddingFiles[id].indentifyHistory = new Series;
                         const newIdentifyHistory = new IdentifyHistory(state.penddingFiles[id].indentifyHistory);

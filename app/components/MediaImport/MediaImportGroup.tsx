@@ -39,7 +39,7 @@ const tvImportColumns: ColumnsType<MediaImportFile> = [{
         // const [changed, finalValue] = isOverriden(value, record.overridenIdentify?.season);
         return <TableIdentifyColumn file={record} displayKey={SeriesKeyType.SEASON} />
     },
-    // width: 250,
+    width: 250,
     shouldCellUpdate: (record, prevRecord) => !_.isEqual( record.currentIdentity, prevRecord.currentIdentity)  //checkIdentityChange(record, prevRecord, "season")
     
 },
@@ -49,6 +49,7 @@ const tvImportColumns: ColumnsType<MediaImportFile> = [{
         console.debug("Render Episode Column:", value, record);
         return <TableIdentifyColumn file={record} displayKey={SeriesKeyType.EPISODE} />
     },
+    width: 250,
     dataIndex: ["IdentifyHistory"],
     shouldCellUpdate: (record, prevRecord) =>  {
         console.debug("Should Update Episode Column:", record.currentIdentity, prevRecord.currentIdentity, !_.isEqual( record.currentIdentity, prevRecord.currentIdentity));

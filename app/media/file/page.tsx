@@ -17,6 +17,7 @@ import path from "path";
 import { FileLink, useFileRouter } from "@/app/components/FileLink";
 import dayjs from "dayjs";
 import { TagCheckboxGroup } from "@/app/components/TagCheckbox";
+import { SeriesKey } from "@/app/utils/api/media/SeriesKey";
 
 type SortKey = "name" | "mtime"
 type SortDirection = "dec" | "inc"
@@ -333,6 +334,7 @@ function MediaFileExplorer() {
         name: item.name,
         path: pathManagerContext.deepestPath,
         rel: [],
+        currentIdentity: new SeriesKey(),
         indentifyHistory: new IdentifyHistory(),
         selected: false
     })), [pathManagerContext.deepestPath, selectedFiles])
