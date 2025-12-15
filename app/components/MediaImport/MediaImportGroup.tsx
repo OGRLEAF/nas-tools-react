@@ -1,5 +1,5 @@
 import { TMDB } from "@/app/utils/api/media/tmdb";
-import { MediaWork, MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
+import { MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
 import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { CloseOutlined } from "@ant-design/icons"
 import { MediaDetailCard } from "../TMDBSearch/TinyTMDBSearch";
@@ -13,7 +13,7 @@ import { ImportMode } from "@/app/utils/api/api";
 import { EmptyPathSelect, LibraryPathSelect, PathTreeSelect, UnionPathsSelectGroup } from "../LibraryPathSelector";
 // import { useImportListContext } from "./mediaImportList";
 import { ImportTask } from "@/app/utils/api/import";
-import { useMediaWork } from "@/app/utils/api/media/mediaWork";
+import { useMediaWork, MediaWork } from "@/app/utils/api/media/mediaWork";
 import { useTaskflow } from "../taskflow/TaskflowContext";
 
 export interface MediaImportGroupProps {
@@ -40,15 +40,22 @@ const tvImportColumns: ColumnsType<MediaImportFile> = [{
         return <TableIdentifyColumn file={record} displayKey={SeriesKeyType.SEASON} />
     },
     // width: 250,
-    shouldCellUpdate: (record, prevRecord) => !_.isEqual(record, prevRecord)  //checkIdentityChange(record, prevRecord, "season")
+    shouldCellUpdate: (record, prevRecord) => !_.isEqual( record.currentIdentity, prevRecord.currentIdentity)  //checkIdentityChange(record, prevRecord, "season")
+    
 },
 {
     title: "集",
     render: (value, record) => {
+        console.debug("Render Episode Column:", value, record);
         return <TableIdentifyColumn file={record} displayKey={SeriesKeyType.EPISODE} />
     },
-    // width: 250,
-    shouldCellUpdate: (record, prevRecord) => !_.isEqual(record, prevRecord) // checkIdentityChange(record, prevRecord, "episode")
+    dataIndex: ["IdentifyHistory"],
+    shouldCellUpdate: (record, prevRecord) =>  {
+        console.debug("Should Update Episode Column:", record.currentIdentity, prevRecord.currentIdentity, !_.isEqual( record.currentIdentity, prevRecord.currentIdentity));
+        console.debug("Record compare", !_.isEqual(record, prevRecord));
+
+        return !_.isEqual( record.currentIdentity, prevRecord.currentIdentity)
+     } // checkIdentityChange(record, prevRecord, "episode")
 },
 {
     title: "操作",
@@ -262,6 +269,28 @@ function ImportListItemAction({ fileKey }: { fileKey: MediaImportFileKey }) {
     return <Button key="delete_button" size="small" style={{ padding: 0 }} danger icon={<CloseOutlined />} onClick={onClick} type="text"></Button>
 }
 
+const MediaWorkPopCard = React.memo(({ mediaWork }: { mediaWork: MediaWork }) => {
+    const { setKeyword, setSeries } = useContext(SearchContext);
+
+    const onTitleTagClick = (value: string) => {
+        setKeyword(value);
+    }
+
+    const onSelect = () => {
+        if (mediaWork) {
+            setSeries(new SeriesKey(mediaWork.series))
+        }
+    }
+    return <MediaDetailCard mediaDetail={mediaWork} size="card"
+        action={mediaWork.series.end == SeriesKeyType.TMDBID ?
+            <Space>
+                <Button type="primary" size="small" onClick={() => { if (mediaWork?.metadata?.title) onTitleTagClick(mediaWork?.metadata?.title) }}
+                >搜索</Button>
+                <Button size="small" onClick={onSelect}
+                >选择</Button>
+            </Space> : null} />
+})
+
 function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: SeriesKeyType }) {
     const { file, displayKey: key } = options;
     const [lastest, old] = file.indentifyHistory.lastDiffs();
@@ -270,6 +299,7 @@ function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: Serie
 
     const mediaWorkKey = useMemo(() => {
         const seriesKey = file.indentifyHistory.last();
+        console.debug("TableIdentifyColumn MediaWorkKey Calc:", seriesKey.dump(), key);
 
         if (seriesKey !== undefined) {
             const sliced = seriesKey.slice(key)
@@ -279,37 +309,8 @@ function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: Serie
         return undefined;
     }, [file.indentifyHistory, key]);
 
-
     const [work] = useMediaWork(mediaWorkKey ?? new SeriesKey());
 
-    useEffect(() => {
-        console.log("TableIdentifyColumn MediaWorkKey Changed:", mediaWorkKey?.dump(), key, work);
-    }, [mediaWorkKey, key, work]);
-
-
-    const { setKeyword, setSeries } = useContext(SearchContext);
-    const onTitleTagClick = (value: string) => {
-        setKeyword(value);
-    }
-
-    const onSelect = () => {
-        if (work) {
-            setSeries(new SeriesKey(work.series))
-        }
-    }
-    const popCard = <Space orientation="vertical">
-        {work ? <MediaDetailCard mediaDetail={work} size="card"
-            action={work.series.end == SeriesKeyType.TMDBID ?
-                <Space>
-                    <Button type="primary" size="small" onClick={() => { if (work?.metadata?.title) onTitleTagClick(work?.metadata?.title) }}
-                    >搜索</Button>
-                    <Button size="small" onClick={onSelect}
-                    >选择</Button>
-                </Space>
-                : null
-            }
-        /> : null}
-    </Space>
     return <Tag color={changed ? 'pink' : 'cyan'} style={{ display: "flex", alignItems: "center" }}>
         <Tooltip title={JSON.stringify([mediaWorkKey, key, lastest?.t, old?.t, old ? lastest?.compare(old) : "", changed])}>
             {work ? <span style={{
@@ -318,13 +319,12 @@ function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: Serie
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
                 display: "inline-block"
-            }}>{work?.series.get(key) ?? finalValue ?? "N/A"}</span> : null
-            }
+            }}>{work?.series.get(key) ?? finalValue ?? "N/A"}</span> : null}
         </Tooltip>
         {work ?
             <div style={{ width: "1px", height: "1rem", display: "inline-block", margin: "0px 8px 0 8px", backgroundColor: changed ? 'pink' : 'rgba(5, 5, 5, 0.06)' }} />
-            : <></>}
-        <Popover content={popCard} placement="topRight">
+            : null}
+        <Popover content={work && <MediaWorkPopCard mediaWork={work} />} placement="topRight">
             {
                 <span style={{
                     maxWidth: 200,
@@ -341,31 +341,31 @@ function TableIdentifyColumn(options: { file: MediaImportFile, displayKey: Serie
 }
 
 
-function GroupImportTable(props: MediaImportGroupProps & { columns: ColumnsType<MediaImportFile>, footer: (data: readonly MediaImportFile[]) => React.ReactNode; }) {
+const CardTitle = React.memo(({ seriesKey }: { seriesKey: SeriesKey }) => {
+    const [work] = useMediaWork(seriesKey);
     const { setSeries, setKeyword } = useContext(SearchContext);
-    const [work] = useMediaWork(props.seriesKey);
-    const cardTitle = useMemo(() => {
-        if (work) {
-            const selectButton = <Button type="primary" size="small" onClick={() => { if (work.metadata?.title) setKeyword(work.metadata?.title) }}>搜索</Button>
-            const searchButton = <Button size="small" onClick={() => { if (work) setSeries(new SeriesKey(work.series)) }}>选择</Button>
 
-            return <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
-                <MediaDetailCard
-                    postImageStyle={{ width: 100 }}
-                    mediaDetail={work} size="small"
-                    onTitleClick={(mediaWork) => { setSeries(mediaWork.series) }}
-                    action={<Space>{selectButton}{searchButton}</Space>}
-                />
-            </div>
-        }
-    }, [work, setSeries, setKeyword])
+    return <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
+        {work && <MediaDetailCard
+            postImageStyle={{ width: 100 }}
+            mediaDetail={work} size="small"
+            onTitleClick={(mediaWork) => { setSeries(mediaWork.series) }}
+            action={<Space>
+                <Button type="primary" size="small" onClick={() => { if (work.metadata?.title) setKeyword(work.metadata?.title) }}>搜索</Button>
+                <Button size="small" onClick={() => { if (work) setSeries(new SeriesKey(work.series)) }}>选择</Button>
+            </Space>}
+        />}
+    </div>
+})
+
+function GroupImportTable({ files, ...props }: MediaImportGroupProps & { columns: ColumnsType<MediaImportFile>, footer: (data: readonly MediaImportFile[]) => React.ReactNode; }) {
     const mediaImportDispatch = useMediaImportDispatch();
     return <Table
-        title={() => cardTitle}
+        title={() => <CardTitle seriesKey={props.seriesKey} />}
         bordered
         rowSelection={{
             type: "checkbox",
-            selectedRowKeys: props.files.filter(v => v.selected).map((v) => v.name),
+            selectedRowKeys: files.filter(v => v.selected).map((v) => v.name),
             onChange: (selectedRowKeys: React.Key[], selectedRows: MediaImportFile[]) => {
                 mediaImportDispatch({ type: MediaImportAction.SetSelected, fileKeys: selectedRowKeys as MediaImportFileKey[] })
             },
@@ -380,6 +380,7 @@ function GroupImportTable(props: MediaImportGroupProps & { columns: ColumnsType<
                     e.preventDefault()
                     const data = e.dataTransfer.getData('text/json');
                     const seriesKey = SeriesKey.load(JSON.parse(data))
+                    console.debug("Drop SeriesKey:", seriesKey);
                     mediaImportDispatch({
                         type: MediaImportAction.SetSeries,
                         fileKeys: [record.name],
@@ -391,7 +392,7 @@ function GroupImportTable(props: MediaImportGroupProps & { columns: ColumnsType<
         pagination={false}
         size="small"
         rowKey="name"
-        dataSource={props.files}
+        dataSource={files}
         columns={props.columns}
         footer={props.footer}
     />

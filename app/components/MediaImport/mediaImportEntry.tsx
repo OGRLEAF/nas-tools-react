@@ -63,13 +63,23 @@ const reducer = (state: MediaImportState, action: MediaImportDispathPayload): Me
         }
         case MediaImportAction.SetSeries: {
             const { fileKeys, series } = action;
+            console.debug('MediaImportAction.SetSeries action:', action, series);
             if (fileKeys != undefined && series != undefined) {
                 fileKeys.forEach((fileKey, index) => {
                     const id = globalKeyMap.get(fileKey);
+                    console.debug(globalKeyMap)
+                    console.debug('MediaImportAction.SetSeries processing fileKey:', fileKey, 'id:', id, 'series:', series[index]);
                     if ((id != undefined) && state.penddingFiles[id]) {
                         const seriesOfFile = series[index];
-                        state.penddingFiles[id].indentifyHistory = new IdentifyHistory(state.penddingFiles[id].indentifyHistory)
-                        state.penddingFiles[id].indentifyHistory.push(seriesOfFile)
+                        // state.penddingFiles[id].indentifyHistory = new Series;
+                        const newIdentifyHistory = new IdentifyHistory(state.penddingFiles[id].indentifyHistory);
+                        newIdentifyHistory.push(seriesOfFile)
+                        console.debug('MediaImportAction.SetSeries', newIdentifyHistory, seriesOfFile)
+                        state.penddingFiles[id] = { ...state.penddingFiles[id],
+                            currentIdentity: seriesOfFile,
+                            indentifyHistory: newIdentifyHistory
+                         };
+                        
                     }
                 })
                 return { ...state }

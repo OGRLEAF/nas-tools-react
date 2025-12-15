@@ -1,9 +1,9 @@
-import React, { CSSProperties, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import React, { CSSProperties, memo, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { NastoolServerConfig } from "../../utils/api/api";
 import { RedoOutlined } from "@ant-design/icons"
-import { AutoComplete, Input, Space, theme, Typography, Empty, Select, Flex, Spin, SelectProps, Button } from "antd";
+import { AutoComplete, Input, Space, theme, Typography, Empty, Select, Flex, Spin, SelectProps, Button, Divider } from "antd";
 import { TMDB } from "../../utils/api/media/tmdb";
-import { MediaWork as MediaWorkBase, useMediaWork, useMediaWorks } from "../../utils/api/media/mediaWork";
+import { MediaWork as MediaWorkBase, MediaWorkMetadata, useMediaWork, useMediaWorks } from "../../utils/api/media/mediaWork";
 import { MediaWork, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "../../utils/api/types";
 import { SearchContext, SearchContextType, useSearch } from "./SearchContext";
 import { ServerConfig } from "@/app/utils/api/serverConfig";
@@ -130,7 +130,7 @@ export function CoverImage(options: { alt: string, src: string, maxHeight?: numb
 }
 
 export interface MediaDetailCardProps {
-    mediaDetail?: MediaWorkBase,
+    mediaDetail: MediaWorkBase,
     size?: CardSize,
     action?: React.ReactNode,
     layout?: "vertical" | "horizonal",
@@ -139,6 +139,35 @@ export interface MediaDetailCardProps {
     postImageStyle?: CSSProperties
 }
 
+const TitleArea = memo(({mediaDetail, action, styles} : {mediaDetail: MediaWorkBase, action?: React.ReactNode, styles?: CSSProperties}) => {
+    const metadata = useMemo(() => mediaDetail.metadata, [mediaDetail])
+    const { token } = theme.useToken()
+
+    return <Flex style={{
+        position: "sticky", top: 0, color: token.colorTextBase,
+        fontSize: "1.6rem", margin: 0, padding: `0px ${token.padding}px 0px 5px`,
+        zIndex: 1,
+        ...styles
+    }} justify="space-between" align="end">
+        <Space>
+            <span style={{ fontSize: "1.25rem", fontWeight: "bold" }}>{metadata?.title}</span>
+            <span style={{ fontSize: "1rem" }}> {metadata?.date?.release && metadata.date.airing}</span>
+            <StateTag stateMap={stateTagMap} value={mediaDetail.series.t ?? MediaWorkType.UNKNOWN} />
+        </Space>
+        <div style={{ alignSelf: "end", position: "sticky", bottom: 0, right: 4 }}>{action}</div>
+    </Flex>})
+
+const Links = memo(({ links }: { links: MediaWorkMetadata["links"] }) => {
+    return <Space separator={<Divider vertical />} size="small">
+        {
+            Object.entries(links).map(([key, value]) =>
+                <Button type="link" style={{ padding: 0 }} href={value} target="_blank">
+                    {value}
+                </Button>
+            )
+        }
+    </Space>
+})
 
 export function MediaDetailCard({
     mediaDetail,
@@ -154,22 +183,6 @@ export function MediaDetailCard({
     const coverImage = useMemo(() => (metadata?.images?.poster || metadata?.images?.cover), [metadata])
     const coverImageNode = useMemo(() => (coverImage && <CoverImage maxHeight={style.height} alt={metadata?.title ?? ""} src={coverImage} />), [metadata, coverImage, style.height])
 
-    const titleArea = useMemo(() => mediaDetail &&
-        <Flex style={{
-            position: "sticky", top: 0, color: token.colorTextBase,
-            fontSize: "1.6rem", margin: 0, padding: `0px ${token.padding}px 0px 5px`,
-            zIndex: 1,
-            ...style.title
-        }} justify="space-between" align="end">
-            <Space>
-                <span style={{ fontSize: "1.25rem", fontWeight: "bold" }}>{metadata?.title}</span>
-                <span style={{ fontSize: "1rem" }}> {metadata?.date?.release && metadata.date.airing}</span>
-                <StateTag stateMap={stateTagMap} value={mediaDetail.series.t ?? MediaWorkType.UNKNOWN} />
-            </Space>
-            <div style={{ alignSelf: "end", position: "sticky", bottom: 0, right: 4 }}>{action}</div>
-        </Flex>,
-        [action, mediaDetail, metadata?.date?.release, style.title, token.colorTextBase, token.padding])
-
     const textHeight = layout == "vertical" ? undefined : style.height;
     return <Flex
         align="start"
@@ -183,11 +196,9 @@ export function MediaDetailCard({
         }}>
         {coverImageNode}
         <div style={{ height: textHeight, width: "100%", overflow: "auto" }}>
-            {titleArea}
+            { mediaDetail && <TitleArea mediaDetail={mediaDetail} action={action} styles={style.title} /> }
             <div style={{ padding: "0px 4px" }}>
-                <Button type="link" style={{ padding: 0 }} href={metadata?.links?.tmdb} target="_blank">
-                    {metadata?.links?.tmdb}
-                </Button>
+                { metadata && <Links links={metadata.links} /> }
                 <span style={{ color: token.colorTextDescription, display: "block", wordWrap: "break-word", whiteSpace: "pre-wrap" }}>
                     {metadata?.description.replaceAll("\n\n", "\n").replaceAll("\n\n", "\n")}
                 </span>
@@ -390,7 +401,7 @@ export function MediaSearchGroup({ value, onChange, children, filter }: MediaSea
 
 export function MediaSearchWork() {
     const { selected } = useContext(SearchContext);
-    return <MediaDetailCard mediaDetail={selected} size={ selected?.series.t == MediaWorkType.MOVIE ? "normal": "small"} />
+    return selected && <MediaDetailCard mediaDetail={selected} size={selected?.series.t == MediaWorkType.MOVIE ? "normal" : "small"} />
 }
 
 export function MediaSearchSeason() {

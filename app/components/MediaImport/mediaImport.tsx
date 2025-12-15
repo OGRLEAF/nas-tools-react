@@ -1,5 +1,5 @@
 import { Button, Col, Divider, Drawer, Form, Input, InputNumber, Row, Select, SelectProps, Space, Table, Tabs, TabsProps } from "antd"
-import React, { CSSProperties, useEffect, useMemo, useState } from "react"
+import React, { CSSProperties, memo, useEffect, useMemo, useState } from "react"
 import { HolderOutlined } from "@ant-design/icons"
 import { MediaImportFileKey, useMediaImport, useMediaImportDispatch } from "./mediaImportContext"
 import { NastoolMediaType } from "../../utils/api/api";
@@ -175,7 +175,7 @@ function MediaImport() {
 
 }
 
-const EpisodeInput = (options: { value?: number[], onChange?: (value: (number)[]) => void, fileNames: MediaImportFileKey[] },) => {
+const EpisodeInput = memo((options: { value?: number[], onChange?: (value: (number)[]) => void, fileNames: MediaImportFileKey[] },) => {
 
     enum TabKey {
         TMDB = "tmdb",
@@ -229,7 +229,7 @@ const EpisodeInput = (options: { value?: number[], onChange?: (value: (number)[]
         items={TabOptions}
     />
     </>
-}
+})
 
 const EpisodeInputFromTMDB = (options: { onChange: (value: number[]) => void }) => {
     const [episodeOptions, setEpisodeOptions] = useState<SelectProps['options']>([]);

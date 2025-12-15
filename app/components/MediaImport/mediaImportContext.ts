@@ -34,6 +34,7 @@ export interface MediaImportFile {
     rel: string[],
     // overridenIdentify?: MediaIdentifyContext
     selected: boolean,
+    currentIdentity: SeriesKey,
     indentifyHistory: IdentifyHistory,
 }
 
