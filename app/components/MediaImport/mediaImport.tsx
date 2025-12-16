@@ -235,7 +235,7 @@ const columns: ColumnsType<MediaWork> = [
         dataIndex: 'series',
         key: 'series',
         render: (series: SeriesKey) => series.e,
-        shouldCellUpdate: (record, prevRecord) => record.series.compare(prevRecord.series) < SeriesKeyType.SEASON, 
+        shouldCellUpdate: (record, prevRecord) => record.series.compare(prevRecord.series) < SeriesKeyType.SEASON,
         width: 80,
         sorter: (a, b) => ((a.series.e && b.series.e) ? a.series.e - b.series.e : 0),
         defaultSortOrder: "ascend",
@@ -244,7 +244,7 @@ const columns: ColumnsType<MediaWork> = [
         title: '标题',
         dataIndex: 'metadata',
         key: 'metadata',
-        shouldCellUpdate: (record, prevRecord) => record.series.compare(prevRecord.series) < SeriesKeyType.SEASON, 
+        shouldCellUpdate: (record, prevRecord) => record.series.compare(prevRecord.series) < SeriesKeyType.SEASON,
         render: (metadata: MediaWorkMetadata) => metadata?.title
     },
     {
@@ -257,12 +257,12 @@ const columns: ColumnsType<MediaWork> = [
                 }
             } draggable><HolderOutlined /></div>
         },
-        
+
         width: 60
     }
 ]
 
-const EpisodeInputFromTMDB = (options: { onChange: (value: number[]) => void }) => {
+const EpisodeInputFromTMDB = React.memo((options: { onChange: (value: number[]) => void }) => {
     const [episodeOptions, setEpisodeOptions] = useState<SelectProps['options']>([]);
     // const selectContext = useContext(SearchContext);
     // const { series } = selectContext;
@@ -317,7 +317,7 @@ const EpisodeInputFromTMDB = (options: { onChange: (value: number[]) => void }) 
             },
         }}
     />
-}
+})
 
 const EpisodeInputFromString = (options: { onChange: (value: number[]) => void, }) => {
     const [format, setFormat] = useState<string>("{ep}")

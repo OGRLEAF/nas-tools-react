@@ -1,9 +1,9 @@
 import _, { size } from "lodash";
 import { NASTOOL, PageQuery } from "../api";
 import { APIBase } from "../api_base";
-import { MediaWorkType, SeriesKeyType } from "../types"
+import { Media, MediaWorkType, SeriesKeyType } from "../types"
 import { SeriesKey, SeriesKeyTuple } from "./SeriesKey"
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import arraySupport from "dayjs/plugin/arraySupport"
 import { TMDBMedia } from "./tmdb";
@@ -99,6 +99,8 @@ export class MediaWorkService extends APIBase {
                 series: SeriesKey.load(mediaWorkData.series)
             }
             return mediaWork
+        } else {
+            throw new Error("Invalid SeriesKey")
         }
     }
 
@@ -191,6 +193,7 @@ export class TMDBMediaWork {
     }
 }
 
+
 export function useMediaWorkAction(serieskey: SeriesKey) {
     const instance = useMemo(() => {
         if (serieskey.end >= SeriesKeyType.TMDBID)
@@ -206,6 +209,9 @@ export function useMediaWorkAction(serieskey: SeriesKey) {
     const drop = useCallback(async () => {
         await instance?.drop()
     }, [instance]);
+
+
+
     return { update, get, drop }
 }
 
@@ -221,7 +227,7 @@ export function useMediaWork(seriesKey: SeriesKey): [MediaWork | undefined, {
     const refresh = useCallback(async () => {
         return get()?.then((mw) => {
             setMediaWork(mw)
-        }).catch(e=>{
+        }).catch(e => {
             setMediaWork(undefined)
         })
     }, [get]);
@@ -233,6 +239,28 @@ export function useMediaWork(seriesKey: SeriesKey): [MediaWork | undefined, {
     return [mediaWork, { update, refresh, drop }]
 }
 
+const promiseCache = new Map<string, Promise<MediaWork>>();
+
+function getCachedMediaWork(seriesKey: SeriesKey): Promise<MediaWork> {
+    const cacheKey = seriesKey.uniqueKey();
+    if (promiseCache.has(cacheKey)) {
+        console.debug("Cache hit for MediaWork:", cacheKey);
+        return promiseCache.get(cacheKey)!
+    } else {
+        const p = new MediaWorkService().getBySeriesKey(seriesKey);
+        promiseCache.set(cacheKey, p);
+        console.debug("Cache set for MediaWork:", cacheKey, p);
+
+        return p;
+    }
+}
+
+export function useSuspenseMediaWork(seriesKey: SeriesKey): MediaWork {
+    const dataPromise = getCachedMediaWork(seriesKey)
+
+    const mediaWork = use(dataPromise)
+    return mediaWork
+}
 
 export function useMediaWorks(seriesKey?: SeriesKey):
     [MediaWork[], boolean, (options?: ListOptions) => void, (options?: ListOptions) => void] {
@@ -296,7 +324,7 @@ export function useMediaWorksPaginated(seriesKey?: SeriesKey, initialOptions?: P
         _refresh({ ...pagination, cached: false })
     }, [_refresh, pagination])
 
-    const refresh = useCallback(({cached}: {cached: boolean} = {cached: true}) => {
+    const refresh = useCallback(({ cached }: { cached: boolean } = { cached: true }) => {
         _refresh({ ...pagination, cached })
     }, [_refresh, pagination])
 

@@ -1,8 +1,8 @@
 import { TMDB } from "@/app/utils/api/media/tmdb";
 import { MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
-import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { Suspense, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { CloseOutlined } from "@ant-design/icons"
-import { MediaDetailCard } from "../TMDBSearch/TinyTMDBSearch";
+import { MediaDetailCard, MediaDetailCardProps } from "../TMDBSearch/TinyTMDBSearch";
 import { Button, Divider, Flex, Form, Popover, Radio, Select, Space, Tag, theme, Tooltip } from "antd";
 import { MediaImportAction, MediaImportFile, MediaImportFileKey, useMediaImportDispatch } from "./mediaImportContext";
 import Table, { ColumnsType } from "antd/es/table";
@@ -13,9 +13,9 @@ import { ImportMode } from "@/app/utils/api/api";
 import { EmptyPathSelect, LibraryPathSelect, PathTreeSelect, UnionPathsSelectGroup } from "../LibraryPathSelector";
 // import { useImportListContext } from "./mediaImportList";
 import { ImportTask } from "@/app/utils/api/import";
-import { useMediaWork, MediaWork, useMediaWorks } from "@/app/utils/api/media/mediaWork";
+import { useMediaWork, MediaWork, useMediaWorks, useSuspenseMediaWork } from "@/app/utils/api/media/mediaWork";
 import { useTaskflow } from "../taskflow/TaskflowContext";
-import { magenta, cyan } from "@ant-design/colors"
+import { magenta, cyan, Palette } from "@ant-design/colors"
 
 export interface MediaImportGroupProps {
     seriesKey: SeriesKey,
@@ -298,7 +298,8 @@ const MediaWorkPopCard = React.memo(({ mediaWork, action }: { mediaWork: MediaWo
 })
 
 
-const MediaSeasonInput = React.memo(({ assumeKey, mediaWork, onChange }: { assumeKey: SeriesKey, mediaWork?: MediaWork, onChange: (value: SeriesKey) => void }) => {
+const MediaSeasonInput = React.memo(({ assumeKey, mediaWork, onChange, color
+}: { assumeKey: SeriesKey, mediaWork?: MediaWork, onChange: (value: SeriesKey) => void, color: Palette }) => {
     const [visited, setVisited] = useState(false);
     const slicedKey = useMemo(() => { if (visited) return assumeKey.stepUpper() }, [visited, assumeKey]);
     const [mediaWorks, loading, refresh, flush] = useMediaWorks(slicedKey);
@@ -327,7 +328,7 @@ const MediaSeasonInput = React.memo(({ assumeKey, mediaWork, onChange }: { assum
             </>
         )}
 
-        styles={{ root: { maxWidth: 200, fontSize: 12, backgroundColor: cyan[0], color: cyan[7] } }}
+        styles={{ root: { maxWidth: 200, fontSize: 12, backgroundColor: color[0], color: color[7] } }}
         value={assumeKey.key}
         onOpenChange={(visible) => { if (visible) setVisited(visible) }}
         options={seasonOptions} onChange={(v) => { if (slicedKey && (v != null)) onChange(slicedKey.append(slicedKey.end + 1, v)) }}>
@@ -352,6 +353,7 @@ function TableIdentifyColumn({ file, displayKey: key }: { file: MediaImportFile,
     }, [file.currentIdentity, key]);
 
     const [work] = useMediaWork(mediaWorkKey ?? new SeriesKey());
+    const color = useMemo(() => changed ? magenta : cyan, [changed]);
     return <Space><Popover arrow={false}
         content={
             <Space orientation="horizontal">
@@ -361,6 +363,7 @@ function TableIdentifyColumn({ file, displayKey: key }: { file: MediaImportFile,
         <div style={{ width: "100%", position: "relative" }}>
             {
                 mediaWorkKey && <MediaSeasonInput assumeKey={mediaWorkKey} mediaWork={work}
+                    color={color}
                     onChange={(selected) => {
                         mediaImportDispatch({
                             type: MediaImportAction.SetSeries,
@@ -374,20 +377,28 @@ function TableIdentifyColumn({ file, displayKey: key }: { file: MediaImportFile,
 }
 
 
-const CardTitle = React.memo(({ seriesKey }: { seriesKey: SeriesKey }) => {
-    const [work] = useMediaWork(seriesKey);
+const CardTitleFilled = React.memo(({ seriesKey }: { seriesKey: SeriesKey } & Omit<MediaDetailCardProps, 'mediaDetail'>) => {
+    const work = useSuspenseMediaWork(seriesKey);
     const { setSeries, setKeyword } = useContext(SearchContext);
 
+    return <MediaDetailCard
+        postImageStyle={{ width: 100 }}
+        mediaDetail={work} size="small"
+        onTitleClick={(mediaWork) => { setSeries(mediaWork.series) }}
+        action={<Space>
+            <Button type="primary" size="small" onClick={() => { if (work.metadata?.title) setKeyword(work.metadata?.title) }}>搜索</Button>
+            <Button size="small" onClick={() => { if (work) setSeries(new SeriesKey(work.series)) }}>选择</Button>
+        </Space>}
+    />
+})
+
+const CardTitle = React.memo(({ seriesKey }: { seriesKey: SeriesKey }) => {
+    // const [work] = useMediaWork(seriesKey);
+
     return <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
-        {work && <MediaDetailCard
-            postImageStyle={{ width: 100 }}
-            mediaDetail={work} size="small"
-            onTitleClick={(mediaWork) => { setSeries(mediaWork.series) }}
-            action={<Space>
-                <Button type="primary" size="small" onClick={() => { if (work.metadata?.title) setKeyword(work.metadata?.title) }}>搜索</Button>
-                <Button size="small" onClick={() => { if (work) setSeries(new SeriesKey(work.series)) }}>选择</Button>
-            </Space>}
-        />}
+        <Suspense fallback={<IconEllipsisLoading />}>
+            <CardTitleFilled seriesKey={seriesKey} />
+        </Suspense>
     </div>
 })
 
