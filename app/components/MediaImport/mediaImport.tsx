@@ -263,9 +263,6 @@ const columns: ColumnsType<MediaWork> = [
 ]
 
 const EpisodeInputFromTMDB = React.memo((options: { onChange: (value: number[]) => void }) => {
-    const [episodeOptions, setEpisodeOptions] = useState<SelectProps['options']>([]);
-    // const selectContext = useContext(SearchContext);
-    // const { series } = selectContext;
     const [value, setValue] = useState<number[]>([])
 
     const form = Form.useFormInstance();
@@ -281,19 +278,6 @@ const EpisodeInputFromTMDB = React.memo((options: { onChange: (value: number[]) 
     }, [series])
 
     const [episodes, loading] = useMediaWorks(seriesKeyValidated)
-
-
-    useEffect(() => {
-        console.log("Episodes Updated: ", episodes);
-        if (episodes) {
-            setEpisodeOptions(episodes.sort((a, b) => (a.series.e && b.series.e) ? a.series.e - b.series.e : 0).map((ep) => ({
-                value: ep.series.e,
-                label: <span>{ep.series.e}<Divider orientation="vertical" />{ep.metadata?.title}</span>
-            })))
-
-            setValue([])
-        }
-    }, [episodes])
 
     const onChange = (values: number[]) => {
         setValue(values)
