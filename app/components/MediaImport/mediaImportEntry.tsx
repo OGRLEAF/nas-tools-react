@@ -70,17 +70,19 @@ const reducer = (state: MediaImportState, action: MediaImportDispathPayload): Me
                     console.debug(globalKeyMap)
                     console.debug('MediaImportAction.SetSeries processing fileKey:', fileKey, 'id:', id, 'series:', series[index]);
                     if ((id != undefined) && state.penddingFiles[id]) {
-                        
+                        const thisFile = state.penddingFiles[id];
                         const seriesOfFile = series[index];
+                        const merged = thisFile.currentIdentity ? thisFile.currentIdentity.merge(seriesOfFile) : seriesOfFile;
                         // state.penddingFiles[id].indentifyHistory = new Series;
                         const newIdentifyHistory = new IdentifyHistory(state.penddingFiles[id].indentifyHistory);
                         newIdentifyHistory.push(seriesOfFile)
-                        console.debug('MediaImportAction.SetSeries', newIdentifyHistory, seriesOfFile)
-                        state.penddingFiles[id] = { ...state.penddingFiles[id],
-                            currentIdentity: seriesOfFile,
+                        console.debug('MediaImportAction.SetSeries', thisFile.currentIdentity, seriesOfFile, merged)
+                        state.penddingFiles[id] = {
+                            ...thisFile,
+                            currentIdentity: merged,
                             indentifyHistory: newIdentifyHistory
-                         };
-                        
+                        };
+
                     }
                 })
                 return { ...state }

@@ -221,6 +221,8 @@ export function useMediaWork(seriesKey: SeriesKey): [MediaWork | undefined, {
     const refresh = useCallback(async () => {
         return get()?.then((mw) => {
             setMediaWork(mw)
+        }).catch(e=>{
+            setMediaWork(undefined)
         })
     }, [get]);
 

@@ -3,7 +3,7 @@ import { MediaWorkType, SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
 import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { CloseOutlined } from "@ant-design/icons"
 import { MediaDetailCard } from "../TMDBSearch/TinyTMDBSearch";
-import { Button, Flex, Form, Popover, Radio, Space, Tag, theme, Tooltip } from "antd";
+import { Button, Divider, Flex, Form, Popover, Radio, Select, Space, Tag, theme, Tooltip } from "antd";
 import { MediaImportAction, MediaImportFile, MediaImportFileKey, useMediaImportDispatch } from "./mediaImportContext";
 import Table, { ColumnsType } from "antd/es/table";
 import { SearchContext } from "../TMDBSearch/SearchContext";
@@ -15,6 +15,7 @@ import { EmptyPathSelect, LibraryPathSelect, PathTreeSelect, UnionPathsSelectGro
 import { ImportTask } from "@/app/utils/api/import";
 import { useMediaWork, MediaWork, useMediaWorks } from "@/app/utils/api/media/mediaWork";
 import { useTaskflow } from "../taskflow/TaskflowContext";
+import { magenta, cyan } from "@ant-design/colors"
 
 export interface MediaImportGroupProps {
     seriesKey: SeriesKey,
@@ -269,7 +270,7 @@ function ImportListItemAction({ fileKey }: { fileKey: MediaImportFileKey }) {
     return <Button key="delete_button" size="small" style={{ padding: 0 }} danger icon={<CloseOutlined />} onClick={onClick} type="text"></Button>
 }
 
-const MediaWorkPopCard = React.memo(({ mediaWork }: { mediaWork: MediaWork }) => {
+const MediaWorkPopCard = React.memo(({ mediaWork, action }: { mediaWork: MediaWork, action?: React.ReactNode }) => {
     const { setKeyword, setSeries } = useContext(SearchContext);
 
     const onTitleTagClick = (value: string) => {
@@ -283,7 +284,8 @@ const MediaWorkPopCard = React.memo(({ mediaWork }: { mediaWork: MediaWork }) =>
     }
     return <MediaDetailCard mediaDetail={mediaWork} size="card"
         action={
-            <Space>
+            <Space align="start">
+                {action}
                 {mediaWork.series.end == SeriesKeyType.TMDBID ?
                     <Button type="primary" size="small" onClick={() => { if (mediaWork?.metadata?.title) onTitleTagClick(mediaWork?.metadata?.title) }}
                     >搜索</Button> : null
@@ -296,24 +298,40 @@ const MediaWorkPopCard = React.memo(({ mediaWork }: { mediaWork: MediaWork }) =>
 })
 
 
-const MediaSeasonInput = React.memo(({ seriesKey, onChange }: { seriesKey: SeriesKey, onChange: (value: SeriesKey) => void }) => {
-    const slicedKey = useMemo(() => seriesKey.stepUpper(), [seriesKey]);
-    const [mediaWorks] = useMediaWorks(slicedKey);
+const MediaSeasonInput = React.memo(({ assumeKey, mediaWork, onChange }: { assumeKey: SeriesKey, mediaWork?: MediaWork, onChange: (value: SeriesKey) => void }) => {
+    const [visited, setVisited] = useState(false);
+    const slicedKey = useMemo(() => { if (visited) return assumeKey.stepUpper() }, [visited, assumeKey]);
+    const [mediaWorks, loading, refresh, flush] = useMediaWorks(slicedKey);
+    const preloadOptions = useMemo(() => [{
+        value: assumeKey.key,
+        label: <>{assumeKey.key}<Divider orientation="vertical" />{mediaWork ? mediaWork.metadata?.title : <IconEllipsisLoading />}</>
+    }], [mediaWork, assumeKey]);
     useEffect(() => {
-        console.debug("MediaSeasonInput MediaWorks Changed:", seriesKey, mediaWorks);
+        console.debug("MediaSeasonInput MediaWorks Changed:", assumeKey, mediaWorks);
     }, [])
 
-    const seasonOptions = useMemo(() => mediaWorks.map((mw) => (mw.series.key!)), [mediaWorks])
+    const seasonOptions = useMemo(() => {
+        if (visited)
+            return mediaWorks.sort((a, b) => Number(a.series.key) - Number(b.series.key))
+                .map((mw) => ({ value: mw.series.key!, label: <>{mw.series.key!}<Divider orientation="vertical" />{mw.metadata?.title}</> }))
+        else
+            return preloadOptions
+    }, [visited, mediaWorks, preloadOptions])
 
-    return <Tag.CheckableTagGroup styles={{
-        root: {
-            width: "75px", height: "175px", overflow: "scroll", padding: "0 8px",
-            display: "flex", flexDirection: "column-reverse", alignItems: "center", flexWrap: "nowrap"
-        }, item: { width: "50px" }
-    }}
-        value={seriesKey.key}
+    return <Select size="small" variant="filled" popupMatchSelectWidth={false} loading={loading}
+        popupRender={(menu) => (
+            <>
+                {menu}
+                <Divider style={{ margin: '8px 0' }} />
+                <Button type="default" style={{ display: 'block', textAlign: 'center', width: '100%' }} onClick={() => flush()}>刷新</Button>
+            </>
+        )}
+
+        styles={{ root: { maxWidth: 200, fontSize: 12, backgroundColor: cyan[0], color: cyan[7] } }}
+        value={assumeKey.key}
+        onOpenChange={(visible) => { if (visible) setVisited(visible) }}
         options={seasonOptions} onChange={(v) => { if (slicedKey && (v != null)) onChange(slicedKey.append(slicedKey.end + 1, v)) }}>
-    </Tag.CheckableTagGroup>
+    </Select>
 })
 
 function TableIdentifyColumn({ file, displayKey: key }: { file: MediaImportFile, displayKey: SeriesKeyType }) {
@@ -323,7 +341,7 @@ function TableIdentifyColumn({ file, displayKey: key }: { file: MediaImportFile,
     const finalValue = useMemo(() => lastest?.get(key), [lastest, key]);
 
     const [slicedKey, mediaWorkKey] = useMemo(() => {
-        const seriesKey = file.indentifyHistory.last();
+        const seriesKey = file.currentIdentity; // file.indentifyHistory.last();
         console.debug("TableIdentifyColumn MediaWorkKey Calc:", seriesKey, key);
         if (seriesKey !== undefined) {
             const sliced = seriesKey.slice(key)
@@ -331,50 +349,28 @@ function TableIdentifyColumn({ file, displayKey: key }: { file: MediaImportFile,
             return [sliced, sliced.end == key ? sliced : undefined];
         }
         return [undefined, undefined];
-    }, [file.indentifyHistory, key]);
+    }, [file.currentIdentity, key]);
 
     const [work] = useMediaWork(mediaWorkKey ?? new SeriesKey());
-
-    const [textColor, backgroundColor] = useMemo(() => changed ? ['pink', 'pink'] : ['cyan', 'rgba(5, 5, 5, 0.06)'], [changed]);
-
-    return <Button size="small" style={{ marginLeft: 8, padding: 0, margin: 0 }} type="text" onClick={(e) => console.log(e)}>
-        <Tag color={textColor} style={{ display: "flex", alignItems: "center" }}>
-            <Tooltip title={JSON.stringify([mediaWorkKey, key, lastest?.t, old?.t, old ? lastest?.compare(old) : "", changed])}>
-                {work ? <span style={{
-                    maxWidth: 200,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                    display: "inline-block"
-                }}>{work?.series.get(key) ?? finalValue ?? "N/A"}</span> : null}
-            </Tooltip>
-            {work ?
-                <div style={{ width: "1px", height: "1rem", display: "inline-block", margin: "0px 8px 0 8px", backgroundColor }} />
-                : null}
-            <Popover content={
-                <Space orientation="horizontal">
-                    {work && <MediaWorkPopCard mediaWork={work} />}
-                    {slicedKey && <MediaSeasonInput seriesKey={slicedKey}
-                        onChange={(selected) => {
-                            mediaImportDispatch({
-                                type: MediaImportAction.SetSeries,
-                                fileKeys: [file.name],
-                                series: [selected]
-                            })
-                        }} />}
-                </Space>
-            } placement="topRight">
-                <span style={{
-                    maxWidth: 200,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                    display: "inline-block"
-                }}>{work ? work.metadata?.title : <IconEllipsisLoading />}</span>
-            </Popover>
-
-        </Tag >
-    </Button>
+    return <Space><Popover arrow={false}
+        content={
+            <Space orientation="horizontal">
+                {work && <MediaWorkPopCard mediaWork={work} />}
+            </Space>
+        } placement="topRight">
+        <div style={{ width: "100%", position: "relative" }}>
+            {
+                mediaWorkKey && <MediaSeasonInput assumeKey={mediaWorkKey} mediaWork={work}
+                    onChange={(selected) => {
+                        mediaImportDispatch({
+                            type: MediaImportAction.SetSeries,
+                            fileKeys: [file.name],
+                            series: [selected]
+                        })
+                    }} />
+            }</div>
+    </Popover>
+    </Space>
 }
 
 

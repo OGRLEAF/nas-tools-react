@@ -148,13 +148,14 @@ const TitleArea = memo(({ mediaDetail, action, styles }: { mediaDetail: MediaWor
         fontSize: "1.6rem", margin: 0, padding: `0px ${token.padding}px 0px 5px`,
         zIndex: 1,
         ...styles
-    }} justify="space-between" align="end">
-        <Space>
+    }}  align="center" gap="small"  wrap>
+        {/* <Space wrap> */}
             <span style={{ fontSize: "1.25rem", fontWeight: "bold" }}>{metadata?.title}</span>
             <span style={{ fontSize: "1rem" }}> {metadata?.date?.release && metadata.date.airing}</span>
             <StateTag stateMap={stateTagMap} value={mediaDetail.series.t ?? MediaWorkType.UNKNOWN} />
-        </Space>
-        <div style={{ alignSelf: "end", position: "sticky", bottom: 0, right: 4 }}>{action}</div>
+            <div style={{ marginLeft: "auto" }}>{action}</div>
+        {/* </Space> */}
+        
     </Flex>
 })
 

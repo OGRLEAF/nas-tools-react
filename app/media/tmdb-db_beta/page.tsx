@@ -83,7 +83,7 @@ export default function TMDBBeta({ params }: { params: { series_key?: string[] }
   // Extracted render function for the "操作" column
   const operationColumnRender = useCallback(
     (value: SeriesKey, record: MediaWork, index: number) => {
-      return <MetadataEditorDrawer seriesKey={value} onRefreshList={refresh} />;
+      return <MetadataEditorDrawer seriesKey={value} onRefreshList={() => refresh({ cached: true })} />;
     },
     [refresh]
   );

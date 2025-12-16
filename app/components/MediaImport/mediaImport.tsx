@@ -1,5 +1,5 @@
 import { Button, Col, Divider, Drawer, Form, Input, InputNumber, Row, Select, SelectProps, Space, Table, Tabs, TabsProps } from "antd"
-import React, { CSSProperties, memo, useEffect, useMemo, useState } from "react"
+import React, { CSSProperties, memo, useCallback, useEffect, useMemo, useState } from "react"
 import { HolderOutlined } from "@ant-design/icons"
 import { MediaImportFileKey, useMediaImport, useMediaImportDispatch } from "./mediaImportContext"
 import { NastoolMediaType } from "../../utils/api/api";
@@ -91,8 +91,8 @@ function MediaImport() {
     const [form] = Form.useForm();
     const [search] = useSearch();
 
-    const selectedFiles = useMemo(() => mediaImportContext.penddingFiles.filter(v => v.selected), [mediaImportContext])
-    const onFinish = async (values: any) => {
+    const selectedFiles = useMemo(() => mediaImportContext.penddingFiles.filter(v => v.selected), [mediaImportContext.penddingFiles])
+    const onFinish = useCallback(async (values: any) => {
         const series: SeriesKey = values.series;
         const episodes = values.episodes ? [...values.episodes] : [];
         const tmdbId = series.i;
@@ -108,14 +108,14 @@ function MediaImport() {
                     .season(Number.isNaN(season) ? v.indentifyHistory.last().s : season)
                     .episode(Number.isNaN(episode) ? undefined : episode)
             })
-            console.log(identify)
+            console.debug(identify)
             mediaImportDispatch({
                 type: MediaImportAction.SetSeries,
                 fileKeys: selectedFiles.map(({ name }) => name),
                 series: identify
             })
         }
-    }
+    }, [mediaImportDispatch, selectedFiles])
 
 
     const series = Form.useWatch("series", form) as SeriesKey;

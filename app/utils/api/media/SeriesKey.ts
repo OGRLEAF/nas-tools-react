@@ -181,7 +181,13 @@ export class SeriesKey {
     // return `${this.typeKey}-${this.tmdbIdKey}-${this.seasonKey}-${this.episodeKey}`
   }
   public merge(s: SeriesKey) {
-    return new SeriesKey(this).type(s.t ?? this.t).tmdbId(s.i ?? this.i).season(s.s ?? this.s).episode(s.e ?? this.e)
+    const newKey = s.dump();
+    const oldKey = this.dump();
+    newKey.forEach((k, index) => {
+      if (k != undefined && k != -1) {
+        oldKey[index] = k;
+      }
+    })
+    return SeriesKey.load(oldKey);
   }
-
 }

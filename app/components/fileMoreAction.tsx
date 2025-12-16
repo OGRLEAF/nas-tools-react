@@ -95,6 +95,7 @@ export default function FileMoreAction({ file, relFiles }:
                     name: file.name,
                     path: pathManagerState.deepestPath,
                     indentifyHistory: new IdentifyHistory().push(seriesKey),
+                    currentIdentity: new SeriesKey(seriesKey),
                     rel: relFiles?.map(file => file.name) || [],
                     selected: true
                 }]} />
