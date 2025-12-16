@@ -268,7 +268,7 @@ export function useMediaWorksPaginated(seriesKey?: SeriesKey, initialOptions?: P
     const [pagination, setPagination] = useState<PageQuery>(initialOptions || { page: 1, size: 10 });
 
 
-    const refresh = useCallback((options?: ListOptions) => {
+    const _refresh = useCallback((options?: ListOptions) => {
         if (seriesKey && (seriesKey.t == MediaWorkType.TV ? (seriesKey.end < SeriesKeyType.EPISODE) : (seriesKey.end < SeriesKeyType.TMDBID))
         ) {
             setLoading(true)
@@ -287,12 +287,17 @@ export function useMediaWorksPaginated(seriesKey?: SeriesKey, initialOptions?: P
         }
     }, [seriesKey])
     useEffect(() => {
-        refresh({ ...pagination, cached: true });
-    }, [refresh, pagination])
+        _refresh({ ...pagination, cached: true });
+    }, [_refresh, pagination])
 
     const flush = useCallback(() => {
-        refresh({ ...pagination, cached: false })
-    }, [refresh, pagination])
+        _refresh({ ...pagination, cached: false })
+    }, [_refresh, pagination])
+
+    const refresh = useCallback(({cached}: {cached: boolean} = {cached: true}) => {
+        _refresh({ ...pagination, cached })
+    }, [_refresh, pagination])
+
     return { mediaWorks, loading, total, refresh, flush, pagination, setPagination }
 }
 
