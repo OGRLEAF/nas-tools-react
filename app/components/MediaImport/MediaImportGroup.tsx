@@ -135,7 +135,7 @@ function TvImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Med
     const [submitting, setSubmitting] = useState(false);
     const submitLoading = useMemo(() => submitting || (taskflow && taskflow?.status !== "finished") || false, [taskflow, taskflowId]);
 
-    const submitImport = (value: ImportFormValues) => {
+    const submitImport = useCallback((value: ImportFormValues) => {
         const completedFiles: [number, MediaImportFile][] = []
         files.forEach((file) => {
             const episode = file.indentifyHistory.last().e;
@@ -163,7 +163,7 @@ function TvImportSubmit({ seriesKey, files }: { seriesKey: SeriesKey, files: Med
             })
                 .finally(() => { setSubmitting(false); })
         }
-    }
+    }, [files, mergedSeriesKey]);
 
     return <Flex style={{ width: "100%" }} justify="flex-end" align="center" gap="middle">
         <Space size={16}>
@@ -273,21 +273,17 @@ function ImportListItemAction({ fileKey }: { fileKey: MediaImportFileKey }) {
 const MediaWorkPopCard = React.memo(({ mediaWork, action }: { mediaWork: MediaWork, action?: React.ReactNode }) => {
     const { setKeyword, setSeries } = useContext(SearchContext);
 
-    const onTitleTagClick = (value: string) => {
-        setKeyword(value);
-    }
-
-    const onSelect = () => {
+    const onSelect = useCallback(() => {
         if (mediaWork) {
             setSeries(new SeriesKey(mediaWork.series))
         }
-    }
+    }, [mediaWork, setSeries]);
     return <MediaDetailCard mediaDetail={mediaWork} size="card"
         action={
             <Space align="start">
                 {action}
                 {mediaWork.series.end == SeriesKeyType.TMDBID ?
-                    <Button type="primary" size="small" onClick={() => { if (mediaWork?.metadata?.title) onTitleTagClick(mediaWork?.metadata?.title) }}
+                    <Button type="primary" size="small" onClick={() => { if (mediaWork?.metadata?.title) setKeyword(mediaWork?.metadata?.title) }}
                     >搜索</Button> : null
                 }
                 {mediaWork.series.end <= SeriesKeyType.SEASON ?
@@ -307,9 +303,6 @@ const MediaSeasonInput = React.memo(({ assumeKey, mediaWork, onChange, color
         value: assumeKey.key,
         label: <>{assumeKey.key}<Divider orientation="vertical" />{mediaWork ? mediaWork.metadata?.title : <IconEllipsisLoading />}</>
     }], [mediaWork, assumeKey]);
-    useEffect(() => {
-        console.debug("MediaSeasonInput MediaWorks Changed:", assumeKey, mediaWorks);
-    }, [])
 
     const seasonOptions = useMemo(() => {
         if (visited)
@@ -323,8 +316,8 @@ const MediaSeasonInput = React.memo(({ assumeKey, mediaWork, onChange, color
         popupRender={(menu) => (
             <>
                 {menu}
-                <Divider style={{ margin: '8px 0' }} />
-                <Button type="default" style={{ display: 'block', textAlign: 'center', width: '100%' }} onClick={() => flush()}>刷新</Button>
+                <Divider style={{ margin: '4px 0' }} />
+                <Button type="default" size="small" style={{ display: 'block', textAlign: 'center', width: '100%' }} onClick={() => flush()}>刷新</Button>
             </>
         )}
 
@@ -339,20 +332,19 @@ function TableIdentifyColumn({ file, displayKey: key }: { file: MediaImportFile,
     const mediaImportDispatch = useMediaImportDispatch();
     const [lastest, old] = useMemo(() => file.indentifyHistory.lastDiffs(), [file.indentifyHistory]);
     const changed = useMemo(() => (lastest != undefined && old != undefined) ? lastest.compare(old) < key : false, [lastest, old, key]);
-    const finalValue = useMemo(() => lastest?.get(key), [lastest, key]);
 
-    const [slicedKey, mediaWorkKey] = useMemo(() => {
+    const slicedKey = useMemo(() => {
         const seriesKey = file.currentIdentity; // file.indentifyHistory.last();
         console.debug("TableIdentifyColumn MediaWorkKey Calc:", seriesKey, key);
         if (seriesKey !== undefined) {
             const sliced = seriesKey.slice(key)
             console.debug("TableIdentifyColumn MediaWorkKey Calc sliced:", sliced, key);
-            return [sliced, sliced.end == key ? sliced : undefined];
+            return sliced.end == key ? sliced : null;
         }
-        return [undefined, undefined];
+        return null;
     }, [file.currentIdentity, key]);
 
-    const [work] = useMediaWork(mediaWorkKey ?? new SeriesKey());
+    const [work] = useMediaWork(slicedKey ?? new SeriesKey());
     const color = useMemo(() => changed ? magenta : cyan, [changed]);
     return <Space><Popover arrow={false}
         content={
@@ -362,7 +354,7 @@ function TableIdentifyColumn({ file, displayKey: key }: { file: MediaImportFile,
         } placement="topRight">
         <div style={{ width: "100%", position: "relative" }}>
             {
-                mediaWorkKey && <MediaSeasonInput assumeKey={mediaWorkKey} mediaWork={work}
+                slicedKey && <MediaSeasonInput assumeKey={slicedKey} mediaWork={work}
                     color={color}
                     onChange={(selected) => {
                         mediaImportDispatch({
