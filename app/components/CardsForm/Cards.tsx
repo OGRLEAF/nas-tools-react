@@ -60,8 +60,7 @@ export interface CardsProps<Res extends ResourceType> {
 export function Cards<Res extends ResourceType>({ cardProps, spaceProps, selection }: CardsProps<Res>) {
     const ctx = useCardsFormContext<Res>();
     const { resource } = ctx;
-    const { useList } = resource;
-    const { list } = useList();
+    const { list } = resource;
 
     const cards = useMemo(() => <Space {...spaceProps}>
         {
@@ -118,13 +117,13 @@ export function ListItemCard<Res extends ResourceType>({ record, cardProps, }: {
     const { confirm } = Modal;
     const actions = [];
 
-    if (ctx.resource.del) {
+    if (ctx.resource.actions.capabilities.canUpdate && !props.readonly) {
         const onDelete: MouseEventHandler<HTMLElement> = (evt) => {
             evt.stopPropagation();
             confirm({
                 title: `确认删除${ctx.options.title}?`,
                 content: <>{props.title}</>,
-                onOk: () => { ctx.resource.del?.(record); }
+                onOk: () => { ctx.resource.actions.del?.(record); }
             });
         };
         actions.push(<Button key="delete_button" danger icon={<CloseOutlined />} onClick={onDelete} type="text"></Button>);
@@ -147,7 +146,7 @@ export function ListItemCard<Res extends ResourceType>({ record, cardProps, }: {
             cover={props.cover}
             onClick={(evt) => {
                 evt.stopPropagation();
-                if (ctx.resource.update) {
+                if (ctx.resource.actions.capabilities.canUpdate && !props.readonly) {
                     ctx.openEditor(record, { title: <>{ctx.options.title} / {props.title}</> });
                 }
             } }

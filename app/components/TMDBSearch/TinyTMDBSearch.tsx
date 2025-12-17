@@ -1,7 +1,7 @@
 import React, { CSSProperties, memo, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { NastoolServerConfig } from "../../utils/api/api";
 import { RedoOutlined } from "@ant-design/icons"
-import { AutoComplete, Input, Space, theme, Typography, Empty, Select, Flex, Spin, SelectProps, Button, Divider } from "antd";
+import { AutoComplete, Input, Space, theme, Image as AntdImage, Typography, Empty, Select, Flex, Spin, SelectProps, Button, Divider } from "antd";
 import { TMDB } from "../../utils/api/media/tmdb";
 import { MediaWork as MediaWorkBase, MediaWorkMetadata, useMediaWork, useMediaWorks } from "../../utils/api/media/mediaWork";
 import { MediaWork, MediaWorkSeason, MediaWorkType, SeriesKey, SeriesKeyType } from "../../utils/api/types";
@@ -147,6 +147,7 @@ const TitleArea = memo(({ mediaDetail, action, styles }: { mediaDetail: MediaWor
         position: "sticky", top: 0, color: token.colorTextBase,
         fontSize: "1.6rem", margin: 0, padding: `0px ${token.padding}px 0px 5px`,
         zIndex: 1,
+        backgroundColor: "#ffffff82",
         ...styles
     }} align="center" gap="small" wrap>
         {/* <Space wrap> */}

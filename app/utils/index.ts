@@ -48,7 +48,7 @@ export function asyncEffect(func: CallableFunction) {
 }
 
 export function useSubmitMessage(key: string) {
-    // const{ mes} = App.useApp();
+    // const{ message } = App.useApp();
     const [messageApi, contextHolder] = message.useMessage({});
 
     const success = (msg?: string) => {

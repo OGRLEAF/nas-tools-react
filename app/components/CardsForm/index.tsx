@@ -1,8 +1,8 @@
 "use client"
 import { APIArrayResourceBase, AddItemType, ItemType, ListOptionType, ResourceType, UpdateItemType, useAPIContext, useResource } from "@/app/utils/api/api_base";
-import React, { useEffect, useState, createContext, useContext, MouseEventHandler, useMemo, CSSProperties, forwardRef, useImperativeHandle, ForwardedRef } from "react";
+import React, { useEffect, useState, createContext, useContext, MouseEventHandler, useMemo, CSSProperties, forwardRef, useImperativeHandle, ForwardedRef, useCallback } from "react";
 import { Section } from "../Section";
-import { Alert, Button, ButtonProps, Collapse, CollapseProps, ConfigProvider, Drawer, Modal, Popover, PopoverProps, Space, theme } from "antd";
+import { Alert, App, Button, ButtonProps, Collapse, CollapseProps, ConfigProvider, Drawer, Modal, Popover, PopoverProps, Space, theme } from "antd";
 import { PlusOutlined, CloseOutlined, CheckOutlined, RetweetOutlined, ExclamationOutlined, EditOutlined } from "@ant-design/icons"
 import { once } from "lodash";
 import { NASTOOL } from "@/app/utils/api/api";
@@ -59,10 +59,7 @@ export function useCardsFormContext<Res extends ResourceType>() {
 }
 
 export function CardsForm<Res extends ResourceType>(props: CardsFormProps<Res>) {
-    const resource = useResource<Res>(props.resource, { initialOptions: props.initialOptions, useMessage: true })
-    const { useList, add, update, messageContext } = resource;
-    const listInstance = useList();
-    const { refresh } = listInstance;
+    const { list, setList, actions } = useResource<Res>(props.resource, { initialOptions: props.initialOptions, useMessage: true })
     const FormComponent = props.formComponent;
     const [openEditing, setOpenEditing] = useState(false)
     const [editingRecord, setEditingRecord] = useState<ItemType<Res>>();
@@ -79,31 +76,31 @@ export function CardsForm<Res extends ResourceType>(props: CardsFormProps<Res>) 
         if (FormComponent) {
             if (openEditing) return <FormComponent record={editingRecord} onChange={(value) => {
                 if (editingRecord == undefined) {
-                    add?.(value).then(() => { setOpenEditing(false); setEditingRecord(undefined) })
+                    actions.add(value).then(() => { setOpenEditing(false); setEditingRecord(undefined) })
                 } else {
-                    update?.(value).then(() => { setOpenEditing(false); setEditingRecord(undefined) })
+                    actions.update(value).then(() => { setOpenEditing(false); setEditingRecord(undefined) })
                 }
 
             }} />
             else return undefined
         }
-    }, [editingRecord, openEditing, FormComponent, add, update])
+    }, [editingRecord, openEditing, FormComponent, actions.add, actions.update])
     const CardsFormContext = createCardFormContext<Res>()
     return <Section title={props.title}
-        onRefresh={() => refresh()}
+        onRefresh={() => actions.refresh()}
         extra={
-            <Space>{add ? <Button icon={<PlusOutlined />}
+            <Space>{actions.capabilities.canAdd ? <Button icon={<PlusOutlined />}
                 onClick={() => { openEditor() }} type="primary">添加</Button> : <></>
             }
-                {props.extra?.(resource as ResourceInstance<Res>)}
+                {props.extra?.({ list, actions } as ResourceInstance<Res>)}
             </Space>
         }
     >
-        {messageContext}
         <CardsFormContext.Provider value={{
             resource: {
-                ...resource,
-                useList: () => listInstance,
+                list,
+                setList,
+                actions,
             }, options: props, openEditor
         }
         } >
@@ -126,12 +123,15 @@ export const TestButton = forwardRef(function TestButton<Res extends ResourceTyp
     popoverProps?: PopoverProps,
 }, ref: ForwardedRef<TestButtonAction>) {
     const ctx = useCardsFormContext<Res>();
-    const val = props.resource?.val ?? ctx.resource.val;
+    const val = useMemo(() => props.resource?.actions.val ?? ctx.resource.actions.val, [props.resource, ctx.resource]);
+
     const [result, setResult] = useState<boolean | undefined>(undefined);
     const [msg, setMsg] = useState<string>();
     const [loading, setLoading] = useState(false);
     const type = props.msgType ?? "alert"
     const { token } = theme.useToken()
+
+
 
     const doTest = async () => {
         if (val) {
@@ -149,10 +149,10 @@ export const TestButton = forwardRef(function TestButton<Res extends ResourceTyp
         }
     }
 
-    const doClear = () => {
+    const doClear = useCallback(() => {
         setMsg(undefined);
         setResult(undefined)
-    }
+    }, [])
     useImperativeHandle(ref, () => {
         return {
             doTest,
@@ -160,30 +160,27 @@ export const TestButton = forwardRef(function TestButton<Res extends ResourceTyp
         }
     })
 
-    if (val) {
-        const content = <Alert banner style={{ paddingTop: 4, paddingBottom: 4 }} message={msg} type={result ? "success" : "error"} closable
-            showIcon
-            onClose={() => { doClear() }} />
+    const content = <Alert banner style={{ paddingTop: 4, paddingBottom: 4 }} title={msg} type={result ? "success" : "error"}
+        closable={{ onClose: () => { doClear() } }}
+        showIcon
+    />
 
-        return <Space>
-            <Popover {...props.popoverProps}
+    return <Space>
+        <Popover {...props.popoverProps}
 
-                color={result ? token.colorSuccessBg : token.colorErrorBg}
-                styles={{container: { padding: 2, }}}
-                content={content} open={(result != undefined) && props.msgType == "popover"}>
-                <Button {...props.btnProps} loading={loading}
-                    icon={result == undefined ? <RetweetOutlined /> :
-                        result ? <CheckOutlined /> : <ExclamationOutlined />}
-                    onClick={(evt) => { evt.stopPropagation(); doTest(); }} >测试</Button>
-            </Popover>
+            color={result ? token.colorSuccessBg : token.colorErrorBg}
+            styles={{ container: { padding: 2, } }}
+            content={content} open={(result != undefined) && props.msgType == "popover"}>
+            <Button {...props.btnProps} loading={loading}
+                icon={result == undefined ? <RetweetOutlined /> :
+                    result ? <CheckOutlined /> : <ExclamationOutlined />}
+                onClick={(evt) => { evt.stopPropagation(); doTest(); }} >测试</Button>
+        </Popover>
 
-            {
-                ((result != undefined) && type == "alert") ? content : <></>
-            }
-        </Space>
-    } else {
-        return undefined
-    }
+        {
+            ((result != undefined) && type == "alert") ? content : <></>
+        }
+    </Space>
 })
 
 export function CollapsableList<Res extends ResourceType>(options:
@@ -191,43 +188,43 @@ export function CollapsableList<Res extends ResourceType>(options:
     { cardProps: (record: ItemType<Res>) => CardProps<Res> }) {
     const { cardProps, } = options;
     const ctx = useCardsFormContext<Res>();
-    const { useList } = ctx.resource;
-    const { list } = useList();
-    const { confirm } = Modal;
+    const { list, actions } = ctx.resource;
+    const { modal } = App.useApp();
+    const { confirm } = modal;
     const items: CollapseProps['items'] = useMemo(() => list?.map((record: ItemType<Res>, index) => {
         const props = cardProps(record);
-        const actions = []
+        const actionButtons: React.ReactNode[] = []
         if (!props.readonly) {
-            actions.push(<Button key="edit_button" size="small" style={{ padding: 0 }} icon={<EditOutlined />}
+            actionButtons.push(<Button key="edit_button" size="small" style={{ padding: 0 }} icon={<EditOutlined />}
                 onClick={(evt) => {
                     evt.stopPropagation();
 
                     ctx.openEditor(record)
                 }} type="text" />)
-            if (ctx.resource.del) {
+            if (actions.capabilities.canDelete) {
                 const onDelete: MouseEventHandler<HTMLElement> = (evt) => {
                     evt.stopPropagation();
                     confirm({
                         title: `确认删除${ctx.options.title}?`,
                         content: <>{props.title}</>,
-                        onOk: () => { ctx.resource.del?.(record) }
+                        onOk: () => { actions.del(record).then(() => { actions.refresh() }) }
                     })
                 }
-                actions.push(<Button key="delete_button"
+                actionButtons.push(<Button key="delete_button"
                     size="small" style={{ padding: 0 }}
                     danger icon={<CloseOutlined />} onClick={onDelete} type="text"></Button>)
             }
         }
 
         if (props.extra) {
-            actions.push(props.extra(ctx.resource))
+            actionButtons.push(props.extra(ctx.resource))
         }
 
         return {
             label: props.title,
             children: props.description,
             key: String(index),
-            extra: <Space>{actions}</Space>,
+            extra: <Space>{actionButtons}</Space>,
             style: options.panelStyle
         }
     }), [list, cardProps, confirm, ctx, options.panelStyle])

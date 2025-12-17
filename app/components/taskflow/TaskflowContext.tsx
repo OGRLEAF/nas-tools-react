@@ -4,13 +4,13 @@ import { SetStateAction, createContext, useContext, useEffect, useState } from "
 
 interface TaskflowContext {
     list: TaskflowInfo[],
-    refresh: () => Promise<void>,
+    refresh: () => void,
     setList: (value: SetStateAction<TaskflowInfo[]>) => void
 }
 
 export const TaskflowContext = createContext<TaskflowContext>({
     list: [],
-    refresh: async () => { },
+    refresh: () => { },
     setList: function (value: SetStateAction<TaskflowInfo[]>): void { },
 });
 
@@ -31,14 +31,12 @@ export function useTaskflow(taskflowId?: string) {
 
 
 export function TaskflowContextProvider({ children }: { children?: React.ReactNode }) {
-    const { useList } = useResource<TaskflowResource>(Taskflow);
-    const listHook = useList();
-    const { list, setList, refresh } = listHook
-    useEventDataPatch(listHook, "task_event");
+    const { list, setList, actions } = useResource<TaskflowResource>(Taskflow);
+    useEventDataPatch(setList, "task_event");
     return <TaskflowContext.Provider value={{
         list,
         setList,
-        refresh
+        refresh: actions.refresh
     }}>
         {children}
     </TaskflowContext.Provider>

@@ -20,8 +20,7 @@ interface FormItemProp<T> {
 }
 
 export const DownloadSettingSelect = (options: { default?: { label: string, value: any } } & FormItemProp<string>) => {
-    const { useList } = useResource<DownloadConfigResource>(DownloadConfigs)
-    const { list } = useList();
+    const { list } = useResource<DownloadConfigResource>(DownloadConfigs)
     const selectOptions = useMemo(() => [
         (options.unsetOption ?? {
             label: "站点设置",
@@ -34,8 +33,7 @@ export const DownloadSettingSelect = (options: { default?: { label: string, valu
 
 export const DownloadClientSelect = (options: & FormItemProp<string>) => {
 
-    const { useList } = useResource<DownloadClientResource>(DownloadClient);
-    const { list } = useList();
+    const { list } = useResource<DownloadClientResource>(DownloadClient);
     const downloadClientOptions = list?.map((client) => ({
         label: client.name,
         value: client.id

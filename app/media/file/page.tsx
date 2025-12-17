@@ -182,48 +182,50 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
     onSelectedChange: (selected: NastoolFileListItem[]) => void
 }) => {
     const { token: { colorTextTertiary, colorBgBase }, } = theme.useToken();
-    const fileExts = new Set<string>(fileList.map(item => item.name.split(".").pop()).filter((item) => item != undefined) as string[]);
 
-    const columns: ColumnsType<NastoolFileListItem> = [
-        {
-            title: <Space><span>文件</span><span style={{ color: colorTextTertiary }}>共 {fileList.length} 个文件</span></Space>,
-            dataIndex: "name",
-            key: "name",
-            render: (text, item) => <span style={{ cursor: "pointer" }}>{text}</span>, // <Button style={{ padding: 0, width: "100%", textAlign: "start", textOverflow: "ellipsis" }} type="text" size="small">{text}</Button>,
-            defaultSortOrder: "descend",
-            sorter: (a: NastoolFileListItem, b: NastoolFileListItem) => ((a.name > b.name) ? -1 : 1),
-        },
-        {
-            title: "修改时间",
-            dataIndex: "mtime",
-            render: (mtime, item) => {
-                const date = new Date(mtime * 1000);
-                return <span>{dayjs(date).format("YYYY/MM/DD HH:mm")} </span>
+    const columns: ColumnsType<NastoolFileListItem> = useMemo(() => {
+        const fileExts = new Set<string>(fileList.map(item => item.name.split(".").pop()).filter((item) => item != undefined) as string[]);
+        return [
+            {
+                title: <Space><span>文件</span><span style={{ color: colorTextTertiary }}>共 {fileList.length} 个文件</span></Space>,
+                dataIndex: "name",
+                key: "name",
+                render: (text, item) => <span style={{ cursor: "pointer" }}>{text}</span>, // <Button style={{ padding: 0, width: "100%", textAlign: "start", textOverflow: "ellipsis" }} type="text" size="small">{text}</Button>,
+                defaultSortOrder: "descend",
+                sorter: (a: NastoolFileListItem, b: NastoolFileListItem) => ((a.name > b.name) ? -1 : 1),
             },
-            sorter: (a: NastoolFileListItem, b: NastoolFileListItem) => (a.mtime - b.mtime),
-            width: 150
-        },
-        {
-            title: <span>体积</span>,
-            render: (text, item) => {
-                const [num, unit] = bytes_to_human(item.size);
-                return <>{num.toFixed(2)}{unit}</>
+            {
+                title: "修改时间",
+                dataIndex: "mtime",
+                render: (mtime, item) => {
+                    const date = new Date(mtime * 1000);
+                    return <span>{dayjs(date).format("YYYY/MM/DD HH:mm")} </span>
+                },
+                sorter: (a: NastoolFileListItem, b: NastoolFileListItem) => (a.mtime - b.mtime),
+                width: 150
             },
-            defaultSortOrder: "descend",
-            sorter: (a: NastoolFileListItem, b: NastoolFileListItem) => (a.size - b.size),
-            // filters: Array.from(fileExts.keys()).map((item) => ({ text: item, value: item })),
-            // onFilter: (value, record) => (record.name.split(".").pop() === value),
-            width: 100,
-        },
-        {
-            title: <span>类型</span>,
-            render: (text, item) => item.name.split(".").pop(),
-            defaultSortOrder: "descend",
-            filters: Array.from(fileExts.keys()).map((item) => ({ text: item, value: item })),
-            onFilter: (value, record) => (record.name.split(".").pop() === value),
-            width: 75,
-        }
-    ]
+            {
+                title: <span>体积</span>,
+                render: (text, item) => {
+                    const [num, unit] = bytes_to_human(item.size);
+                    return <>{num.toFixed(2)}{unit}</>
+                },
+                defaultSortOrder: "descend",
+                sorter: (a: NastoolFileListItem, b: NastoolFileListItem) => (a.size - b.size),
+                // filters: Array.from(fileExts.keys()).map((item) => ({ text: item, value: item })),
+                // onFilter: (value, record) => (record.name.split(".").pop() === value),
+                width: 100,
+            },
+            {
+                title: <span>类型</span>,
+                render: (text, item) => item.name.split(".").pop(),
+                defaultSortOrder: "descend",
+                filters: Array.from(fileExts.keys()).map((item) => ({ text: item, value: item })),
+                onFilter: (value, record) => (record.name.split(".").pop() === value),
+                width: 75,
+            }
+        ]
+    }, [fileList, colorTextTertiary]);
     const sectionContext = useContext(SectionContext);
     const [selected, setSelected] = useState((defaultSelected || []).map(v => v.name))
     const [selectedFiles, setSelectedFiles] = useState<NastoolFileListItem[]>(defaultSelected)
@@ -266,7 +268,7 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
         rowKey="name"
         pagination={false}
         bordered size="small"
-        scroll={{ y: sectionContext.contentHeight - 195}}
+        scroll={{ y: sectionContext.contentHeight - 195 }}
         expandable={{
             expandedRowRender: (record: NastoolFileListItem) =>
                 <FileMoreAction file={record} relFiles={fileList} />,
@@ -359,10 +361,10 @@ function MediaFileExplorer() {
                 </Space>
             </Flex>
             <Splitter>
-                <Splitter.Panel defaultSize="30%" min="20%" max="50%" style={{paddingRight: '8px'}}>
+                <Splitter.Panel defaultSize="30%" min="20%" max="50%" style={{ paddingRight: '8px' }}>
                     <DirectoryList dirList={dirList} loading={loadingState} />
                 </Splitter.Panel>
-                <Splitter.Panel style={{paddingLeft: '8px'}}>
+                <Splitter.Panel style={{ paddingLeft: '8px' }}>
                     {view == "plain" ?
                         <FileList fileList={fileList}
                             loading={loadingState}

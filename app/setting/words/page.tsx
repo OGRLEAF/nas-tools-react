@@ -4,10 +4,10 @@ import { MediaSearchGroup, MediaSearchWork } from "@/app/components/TMDBSearch/T
 import { useSubmitMessage } from "@/app/utils";
 import { SeriesKey, SeriesKeyType } from "@/app/utils/api/types";
 import { WordConfig, WordConfigGroup, Words, WordsResource } from "@/app/utils/api/words";
-import { Button, Checkbox, Divider, Drawer, Form, Input, Space, Table, TableProps, Tabs, Tag, theme } from "antd";
+import { App, Button, Checkbox, Divider, Drawer, Form, Input, Space, Table, TableProps, Tabs, Tag, theme } from "antd";
 import { CloseOutlined } from "@ant-design/icons"
 import { TabsProps } from "antd/lib";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { act, useCallback, useEffect, useMemo, useState } from "react";
 
 export default function WordsGroupPage() {
     const { token } = theme.useToken();
@@ -57,12 +57,18 @@ function WordsGroupForm(options: { record?: WordConfigGroup, onChange?: (record:
 
 function WordsGroupTable() {
     const ctx = useCardsFormContext<WordsResource>();
-    const { useList, del, confirm } = ctx.resource;
-    const { list } = useList();
-    // return <Space direction="vertical" style={{ width: "100%" }} size="large">
-    //     {list?.map(group => <WordsTable key={group.id} group={group} />)}
-    // </Space>
-    const confirmDelete = confirm(del)
+    const { modal } = App.useApp();
+    const confirm = modal.confirm;
+    const { list, actions } = ctx.resource;
+    const confirmDelete = useCallback((record: WordConfigGroup) => {
+        confirm({
+            title: "确认删除识别词组？",
+            onOk: () => {
+                actions.del(record)
+            }
+
+        })
+    }, [confirm, actions]);
     return <Table<WordConfigGroup>
         dataSource={list}
         rowKey="id"
@@ -80,9 +86,7 @@ function WordsGroupTable() {
                 title: "操作",
                 render: (record: WordConfigGroup) => <Space>
                     {record.id > 0 ? <Button type="link" size="small" icon={<CloseOutlined />} danger
-                        onClick={() => {
-                            confirmDelete?.(record, "删除识别词组？", record.name)
-                        }} /> : <></>}
+                        onClick={() => confirmDelete(record)} /> : <></>}
                 </Space>,
                 align: "center",
                 width: 100
@@ -361,7 +365,7 @@ function WordConfigForm({ record, group }: { record?: WordConfig, group: WordCon
     const [type, setType] = useState(record?.type ?? 1);
     const { contextHolder, success, error, loading } = useSubmitMessage('识别词');
     const ctx = useCardsFormContext();
-    const { refresh } = ctx.resource.useList();
+    const { actions } = ctx.resource;
     return <>{contextHolder}
         <Button size="small" type="link" onClick={() => setOpen(true)}>{record ? "编辑" : "添加"}</Button >
         <Drawer open={open} size="large" onClose={() => setOpen(false)}>
@@ -373,7 +377,7 @@ function WordConfigForm({ record, group }: { record?: WordConfig, group: WordCon
                     new Words().updateWord(group, config)
                         .then(() => {
                             success();
-                            refresh();
+                            actions.refresh();
                         })
                         .catch(e => {
                             error(e);

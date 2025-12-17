@@ -1,5 +1,5 @@
 "use client"
-import { useCallback, useEffect, useMemo, useState, createContext, useContext } from "react";
+import { useCallback, useEffect, useMemo, useState, createContext, useContext, use } from "react";
 import { API, NASTOOL, NastoolConfig } from "./api";
 import { useSubmitMessage } from "..";
 import { get } from "lodash";
@@ -22,7 +22,9 @@ export const APIContext = createContext<APIContext>({
     setAPI: () => { }
 })
 
-export const useAPIContext = () => useContext<APIContext>(APIContext);
+export function useAPIContext() {
+    return useContext<APIContext>(APIContext)
+}
 
 export class APIBase {
     private static GLOBAL_API: NASTOOL;
@@ -148,147 +150,111 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
     public async actionHook?(action: string, paylaod: ItemType<T>): Promise<void>;
 }
 
+type ResourceClass<T extends ResourceType> = new (API: NASTOOL) => APIArrayResourceBase<T>;
+type InferResourceType<T> = T extends APIArrayResourceBase<infer T> ? T : never;
+
+function useListActions<Res extends ResourceType>(resource: APIArrayResourceBase<Res>, option?: APIArrayResourceOption<ListOptionType<Res>>) {
+    const { API } = useAPIContext();
+    const [options, setOptions] = useState<ListOptionType<Res> | undefined>(option?.initialOptions)
+    const fetch = useCallback(async () => {
+        if (API.loginState) {
+            try {
+                const list = await resource.listHook(options)
+                return list
+            } catch (e: any) {
+                throw e;
+            }
+        } else {
+            console.log("Not login")
+            throw new Error("Not login yet")
+        }
+
+    }, [options])
+
+    const update = useCallback(async (value: UpdateItemType<Res>, options?: UpdateOptionType<Res>) => {
+        if(resource.updateHook) {
+            return await resource.updateHook(value, options);
+        } 
+    }  , [resource])
+
+    const add = useCallback(async (value: AddItemType<Res>) => {
+        if(resource.addHook) {
+            return await resource.addHook(value);
+        } 
+    } , [resource])
+    
+    const del = useCallback(async (value: ItemType<Res>, options?: DeleteOptionType<Res>) => {
+        if(resource.deleteHook) {
+            return await resource.deleteHook(value, options);
+        } 
+    } , [resource])
+
+    const val = useCallback(async (value: ItemType<Res>) => {
+        if(resource.validateHook) {
+            return await resource.validateHook(value);
+        }  else {
+            throw new Error("Validate hook not implemented")
+        }
+    } , [resource])
+
+    const delMany = useCallback(async (values: ItemType<Res>[], options?: DeleteOptionType<Res>) => {
+        if(resource.deleteManyHook) {
+            return await resource.deleteManyHook(values, options);
+        } 
+    } , [resource])
+
+    const updateMany = useCallback(async (values: UpdateItemType<Res>[], options?: UpdateOptionType<Res>) => {
+        if(resource.updateManyHook) {
+            return await resource.updateManyHook(values, options);
+        } 
+    } , [resource])
+
+    const capabilities = useMemo(() => ({
+        canAdd: typeof resource.addHook === "function",
+        canDelete: typeof resource.deleteHook === "function",
+        canUpdate: typeof resource.updateHook === "function",
+        canValidate: typeof resource.validateHook === "function",
+        canDeleteMany: typeof resource.deleteManyHook === "function",
+        canUpdateMany: typeof resource.updateManyHook === "function",
+
+    }), [resource])
+    
+    return {
+        fetch, setOptions, update, add, del, val, delMany, updateMany, capabilities
+    }
+}
+
 
 export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) => APIArrayResourceBase<Res>, option?: APIArrayResourceOption<ListOptionType<Res>>) {
     const { API } = useAPIContext();
     const self = useMemo(() => new cls(API), [API, cls])
-    type GetRes<T> = T extends APIArrayResourceBase<infer T> ? T : Res;
-    type T = GetRes<typeof cls>
-    function useList(API: NASTOOL) {
-        const [loading, setLoading] = useState<boolean>(false);
-        const [options, setOptions] = useState<ListOptionType<T> | undefined>(option?.initialOptions)
-        const [list, setList] = useState<ItemType<T>[]>([])
-        const [total, setTotal] = useState<number>(0);
-        const refresh = useCallback(async () => {
-            if (self.API.loginState) {
-                setLoading(true)
-                if (useMessage) message.fetch.loading()
-                try {
-                    const list = await self.listHook(options)
-                    setList(list)
-                    setTotal((await self.totalHook?.()) ?? list.length)
-                    if (useMessage) message.fetch.success()
-                } catch (e: any) {
-                    if (useMessage) message.fetch.error(e)
-                } finally {
-                    setLoading(false)
-                }
-            } else {
-                console.log("Not login")
-            }
 
-        }, [options])
+    const actions = useListActions<Res>(self, option);
 
+    const [list, setList] = useState<ItemType<Res>[]>([]);
 
-        useEffect(() => {
-            refresh()
-        }, [refresh])
+    const refresh = useCallback(() => {
+        actions.fetch().then(newList => {setList(newList)});
+    }, [actions.fetch]);
 
-        return {
-            refresh,
-            list, setList,
-            options,
-            setOptions,
-            total,
-            loading,
-            api: self,
-        }
-    }
-
-    let useListCache: ReturnType<typeof useList>;
-
-    const message = useSubmitMessage(String(cls));
-    const deleteMessage = message.bundle("删除");
-    const validateMessage = message.bundle("测试");
-    const useMessage = option?.useMessage ?? false;
-    const [modal, modalContextHolder] = Modal.useModal();
-
-
-
-    const attachMessage = <Action extends (...args: any) => Promise<(any | undefined)>, T, Options = never>(callback: Action,
-        messageHandler: ReturnType<typeof message.bundle>, refresh?: boolean) => {
-        return async (value: T, options?: Options): Promise<Awaited<ReturnType<Action>>> => {
-            if (useMessage) messageHandler.loading()
-            return await callback(value, options)
-                .then((res) => {
-                    if (useMessage) messageHandler.success();
-                    if (refresh) useListCache?.refresh?.();
-                    return res;
-                })
-                .catch((e) => {
-                    if (useMessage) messageHandler.error(e)
-                    throw e
-                })
-        }
-    }
-
-    const update = self.updateHook == undefined ? undefined :
-        attachMessage<typeof self.updateHook, UpdateItemType<T>, UpdateOptionType<T>>(
-            async (value: UpdateItemType<T>, options) => await self.updateHook?.(value, options) ?? false, message, true);
-
-    const add = self.addHook == undefined ? undefined :
-        attachMessage<typeof self.addHook, ItemType<T>>(async (value: AddItemType<T>) => await self.addHook?.(value) ?? false, message, true);
-
-    const del = self.deleteHook == undefined ? undefined :
-        attachMessage<typeof self.deleteHook, DeleteOptionType<T>>(async (value: DeleteOptionType<T>) => await self.deleteHook?.(value) ?? false, deleteMessage, true);
-
-    const val = self.validateHook == undefined ? undefined :
-        attachMessage<typeof self.validateHook, ItemType<T>>(async (value: ItemType<T>) =>
-            await self.validateHook?.(value) ?? [false, "Validation method not implemented"],
-            validateMessage);
-
-    const delMany = self.deleteManyHook ?
-        attachMessage<typeof self.deleteManyHook, ItemType<T>[], DeleteOptionType<T>>(
-            async (value: ItemType<T>[], options) => {
-                return await self.deleteManyHook?.(value, options) ?? false
-            },
-            deleteMessage,
-            true
-        ) : undefined;
-
-    const updateMany = self.updateManyHook ?
-        attachMessage<typeof self.updateManyHook, ItemType<T>[], UpdateOptionType<T>>(
-            async (value: ItemType<T>[], options) => {
-                return await self.updateManyHook?.(value, options)
-            },
-            message,
-            true
-        ) : undefined;
-
-    const action = (async (action: string, payload: ItemType<T>) => self.actionHook?.(action, payload));
+    useEffect(()=>{
+        refresh();
+    }, [refresh])
 
     return {
-        useList: () => {
-            useListCache = useList(API);
-            return useListCache;
-        },
-        add, del, val, update,
-        confirm: (action?: (value: T) => any) => {
-            if (action)
-                return async (value: ItemType<T>, title?: string, content?: string) => {
-                    await modal.confirm({
-                        content,
-                        title,
-                    })
-                    await action(value)
-                }
-        },
-        delMany,
-        updateMany,
-        action,
-        
-        messageContext: [message.contextHolder, modalContextHolder],
-        message,
-
-        api: self
+        list,
+        setList,
+        actions: {
+            ...actions,
+            refresh
+        }
 
     }
 }
 
-export type ResList<Res extends ResourceType> = ReturnType<ReturnType<typeof useResource<Res>>['useList']>;
+export type ResList<Res extends ResourceType> = ReturnType<typeof useResource<Res>>['setList'];
 
-export function useEventDataPatch<Res extends ResourceType>(resourceList: ResList<Res>, eventName: string) {
-    const { setList } = resourceList;
+export function useEventDataPatch<Res extends ResourceType>(setList: ResList<Res>, eventName: string) {
     const [pointer, setPointer] = useState<number>(0);
     const { msgs } = useServerEvent(eventName);
     useEffect(() => {
