@@ -285,28 +285,30 @@ function AnalyzedFileList() {
     return <></>
 }
 
+const sectionStyle = { height: "100%" }
 function MediaFileExplorer() {
     const [loadingState, setLoadingState] = useState(true)
     const [dirList, setDirList] = useState<NastoolFileListItem[]>([])
     const [fileList, setFileList] = useState<NastoolFileListItem[]>([])
-    const pathManagerContext = usePathManager();
-    const pathManagerDispath = usePathManagerDispatch();
-    const router = useRouter()
+    const pathState = usePathManager();
+    const pathStateDispatch = usePathManagerDispatch();
+
     const { API } = useAPIContext();
     const [selectedFiles, setSelectedFiles] = useState<NastoolFileListItem[]>([]);
     const [view, setView] = useState<string>('plain')
 
     const { fallback } = useFileRouter();
-    const [pathLoaded, setPathLoaded] = useState(false);
+    const [pathLoaded, setPathLoaded] = useState(true);
     const onRefresh = useCallback(async () => {
         setLoadingState(true);
-        if (pathLoaded) {
+        if (pathState.syncedWithSearchParam) {
             try {
-                const deepesetPath = pathManagerContext.getDeepestRelativePath();
-                const fileList = await API.getFileList(pathManagerContext.getBasePath,
-                    deepesetPath.replaceAll("＃", "#"));
+                console.debug("Refreshing path:", pathState.currentPath.full);
+                const fileList = await API.getFileList(pathState.basePath,
+                    pathState.currentPath.full.replaceAll("＃", "#"));
+
                 if (fileList.fallback_to != undefined) {
-                    fallback(fileList.fallback_to, deepesetPath)
+                    fallback(fileList.fallback_to, pathState.currentPath.full)
                 } else {
                     setDirList(fileList.directories)
                     setFileList(fileList.files)
@@ -317,33 +319,33 @@ function MediaFileExplorer() {
             }
         }
 
-    }, [API, fallback, pathManagerContext])
+    }, [API, fallback, pathState.currentPath, pathState.basePath, pathState.syncedWithSearchParam]);
 
     useEffect(() => {
         onRefresh();
     }, [onRefresh]);
 
     const searchParams = useSearchParams();
-    const pathParams = searchParams.get('path') ?? "/"
     useEffect(() => {
-        if (path.normalize(pathParams) != path.normalize(pathManagerContext.deepestPath)) {
-            pathManagerDispath({ type: "set_path", path: pathParams })
+        const pathParams = searchParams.get('path') ?? "/"
+        if (path.normalize(pathParams) != path.normalize(pathState.currentPath.full)) {
+            console.log("Path changed:", pathParams, pathState.currentPath.full)
+            // pathStateDispatch({ type: "set_path", path: pathParams })
             setPathLoaded(true)
         }
-    }, [onRefresh, pathManagerContext, pathManagerDispath, pathParams, router])
-
+    }, [pathState.currentPath, pathStateDispatch, searchParams])
     const importFiles = useMemo(() => selectedFiles.map((item) => ({
         name: item.name,
-        path: pathManagerContext.deepestPath,
+        path: `${pathState.basePath}${pathState.currentPath.full}`,
         rel: [],
         currentIdentity: new SeriesKey(),
         indentifyHistory: new IdentifyHistory(),
         selected: false
-    })), [pathManagerContext.deepestPath, selectedFiles])
+    })), [pathState.basePath, pathState.currentPath.full, selectedFiles])
 
     return <MediaImportProvider>
         <MediaImport />
-        <Section title="文件管理" onRefresh={onRefresh} style={{ height: "100%" }}>
+        <Section title="文件管理" onRefresh={onRefresh} style={sectionStyle}>
             <Flex justify="space-between">
                 <PathManagerBar />
                 <Space>
@@ -390,45 +392,31 @@ function MediaFileExplorer() {
 }
 
 export default function MediaFile() {
-    return <PathSearchManagerProvider>
+    return <PathSearchManagerProvider startPath="/">
         <MediaFileExplorer />
     </PathSearchManagerProvider>
 }
 
 
 function PathManagerBar() {
-    const pathManagerState = usePathManager();
-    const [historyDeepPath, setHistoryDeepPath] = useState(pathManagerState.getPathArray());
+    const {deepestPath, basePath, currentPath} = usePathManager();
     const [selectedPart, setSelectedPart] = useState<string>('/');
 
     useEffect(() => {
-        const latestPath = pathManagerState.getPathArray();
-        // console.log("PathManagerBar", latestPath);
-        setSelectedPart(pathManagerState.deepestPath);
-        const shouldUpdate = latestPath.length <= historyDeepPath.length ? latestPath.map((part, index) => {
-            if (part.name == historyDeepPath[index].name) {
-                return false
-            }
-            return true
-        }).reduce((acc, cur) => (acc || cur)) : true
-        if (shouldUpdate) {
-            // console.log(shouldUpdate, latestPath, historyDeepPath)
-            setHistoryDeepPath((historyDeepPath) => {
-                if (shouldUpdate) {
-                    return latestPath
-                }
-                return historyDeepPath
-            })
-        }
+        setSelectedPart(basePath + currentPath.full);
+    }, [currentPath, basePath])
 
-    }, [historyDeepPath, pathManagerState])
-
-    const segmentedPathTag = useMemo(() => historyDeepPath.map(({ full, name }) => {
+    const segmentedPathTag = useMemo(() => [{
+        label: <span key={basePath}>{basePath}</span>,
+        value: basePath
+    }, ...deepestPath.parted.map((name, index) => {
+        const full = basePath + deepestPath.parted.slice(0, index + 1).join("/");
+        console.debug("Segmented Path Tag:", { name, full });
         return {
             label: <span key={full}>{name}</span>,
             value: full
         }
-    }), [historyDeepPath])
+    })], [deepestPath, basePath]);
 
     const { push } = useFileRouter();
     return <>
@@ -436,7 +424,7 @@ function PathManagerBar() {
             options={segmentedPathTag}
             // defaultValue={pathManagerState.deepestPath}
             value={selectedPart}
-            onChange={(evt) => { push(evt); }}
+            onChange={push}
         />
     </>
 }        

@@ -27,6 +27,7 @@ import { APIContext } from '@/app/utils/api/api_base';
 import { NASTOOL } from '@/app/utils/api/api';
 import { TaskflowContextProvider } from '../taskflow/TaskflowContext';
 import Taskbar from '../taskflow/Taskbar';
+import "./styles.scss";
 
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -120,7 +121,7 @@ const Logo = React.memo(({ minimized }: { minimized: boolean }) => {
   </>
 })
 
-const HeaderWithLogo = React.memo(({ minimized }: { minimized: boolean }) => {
+const HeaderLogo = React.memo(({ minimized }: { minimized: boolean }) => {
   const { token } = theme.useToken();
 
   const headsStyle: React.CSSProperties = useMemo(() => ({
@@ -156,6 +157,35 @@ const LayoutMenu = React.memo(({ menu, selected, open }: { menu: MenuItem[], sel
     openKeys={openKeys}
     onOpenChange={setOpenKeys}
   />
+})
+
+
+const HeaderContent = React.memo(({ setCollapsed }: { setCollapsed: React.Dispatch<React.SetStateAction<boolean>> }) => {
+  const { token } = theme.useToken();
+
+  const headerStyle: React.CSSProperties = useMemo(() => ({
+    padding: '0px 0px',
+    paddingLeft: token.padding,
+    boxSizing: "border-box",
+    backgroundColor: token.colorBgContainer,
+    boxShadow: token.boxShadowTertiary,
+    top: 0,
+    position: 'sticky',
+    zIndex: 1
+  }), [token]);
+
+
+  return <Header
+    style={headerStyle} >
+    <Next13ProgressBar height="3px" color={token.colorPrimaryBorder} options={{ showSpinner: true }} showOnShallow />
+    <Flex align="center" style={{ height: token.Layout?.headerHeight, }} justify="space-between">
+      <Button icon={<MenuOutlined />} onClick={() => { setCollapsed((collapsed) => !collapsed) }} type="text" />
+      <Divider orientation="vertical" />
+      <Taskbar />
+      <Divider orientation="vertical" />
+      <HeaderSearch />
+    </Flex>
+  </Header>
 })
 
 export function DefaultLayout({ children }: { children: React.ReactNode }) {
@@ -207,7 +237,7 @@ export function DefaultLayout({ children }: { children: React.ReactNode }) {
     bottom: 0,
   }), [token.Layout?.headerHeight]);
 
-
+  
   return (
     <Layout hasSider style={{ zoom: pageScale }}>
       <APIContext.Provider value={{ API, setAPI }}>
@@ -215,35 +245,16 @@ export function DefaultLayout({ children }: { children: React.ReactNode }) {
           theme="light"
           style={siderStyle}
           collapsed={collapsed} onCollapse={setCollapsed}>
-          <HeaderWithLogo minimized={!collapsed} />
+          <HeaderLogo minimized={!collapsed} />
           <LayoutMenu menu={menu} selected={selectedPath.selectedKey} open={selectedPath.openKey} />
         </Sider>
         <Layout>
           <APILoadedSpace>
             <TaskflowContextProvider>
-              <Header
-                style={{
-                  padding: '0px 0px',
-                  paddingLeft: token.padding,
-                  boxSizing: "border-box",
-                  backgroundColor: token.colorBgContainer,
-                  boxShadow: token.boxShadowTertiary,
-                  top: 0,
-                  position: 'sticky',
-                  zIndex: 1
-                }} >
-                <Next13ProgressBar height="3px" color={token.colorPrimaryBorder} options={{ showSpinner: true }} showOnShallow />
-                <Flex align="center" style={{ height: token.Layout?.headerHeight, }} justify="space-between">
-                  <Button icon={<MenuOutlined />} onClick={() => { setCollapsed((collapsed) => !collapsed) }} type="text" />
-                  <Divider orientation="vertical" />
-                  <Taskbar />
-                  <Divider orientation="vertical" />
-                  <HeaderSearch />
-                </Flex>
-              </Header>
+              <HeaderContent setCollapsed={setCollapsed} />
               <Layout>
-                <Content style={{ margin: '0px 0px', overflow: 'initial' }} >
-                  <div style={{ padding: "0px 16px 0px 16px", minHeight: "50vh", height: "100%", }}>
+                <Content className="layout-content-wrapper">
+                  <div className="layout-content" >
                     {API.loginState ? children : <></>}
                   </div>
                 </Content>

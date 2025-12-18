@@ -111,6 +111,7 @@ export default function ImportHistory() {
                         name: file.SOURCE_FILENAME,
                         rel: [],
                         selected: true,
+                        currentIdentity: new SeriesKey(),
                         indentifyHistory: new IdentifyHistory()
                     }))} flush />
                     {/* <Button danger disabled={selected.length == 0} onClick={() => { res.delMany?.(selected) }}>批量删除({selected.length})</Button> */}
