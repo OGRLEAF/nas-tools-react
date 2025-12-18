@@ -129,8 +129,9 @@ export default function DownloadedPage() {
     useEffect(() => {
         getTorrents();
     }, [getTorrents])
-    const { useList } = useResource<DownloadClientResource>(DownloadClient);
-    const { list: clients, refresh: refreshClients } = useList();
+    const { list:clients, actions} = useResource<DownloadClientResource>(DownloadClient);
+    const {refresh:refreshClients} = actions;
+    // const { list: clients, refresh: refreshClients } = useList();
     const downloaderPathMap = useMemo(() => {
         const pathMap: Record<string, string> = {};
         clients?.forEach((value) => {
