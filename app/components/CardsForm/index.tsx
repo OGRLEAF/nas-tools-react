@@ -59,7 +59,7 @@ export function useCardsFormContext<Res extends ResourceType>() {
 }
 
 export function CardsForm<Res extends ResourceType>(props: CardsFormProps<Res>) {
-    const { list, setList, actions } = useResource<Res>(props.resource, { initialOptions: props.initialOptions, useMessage: true })
+    const { list, setList, total, loading, actions } = useResource<Res>(props.resource, { initialOptions: props.initialOptions, useMessage: true })
     const FormComponent = props.formComponent;
     const [openEditing, setOpenEditing] = useState(false)
     const [editingRecord, setEditingRecord] = useState<ItemType<Res>>();
@@ -99,7 +99,9 @@ export function CardsForm<Res extends ResourceType>(props: CardsFormProps<Res>) 
         <CardsFormContext.Provider value={{
             resource: {
                 list,
+                total,
                 setList,
+                loading,
                 actions,
             }, options: props, openEditor
         }

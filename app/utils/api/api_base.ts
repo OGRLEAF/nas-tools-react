@@ -173,42 +173,50 @@ function useListActions<Res extends ResourceType>(resource: APIArrayResourceBase
     }, [options])
 
     const update = useCallback(async (value: UpdateItemType<Res>, options?: UpdateOptionType<Res>) => {
-        if(resource.updateHook) {
+        if (resource.updateHook) {
             return await resource.updateHook(value, options);
-        } 
-    }  , [resource])
+        }
+    }, [resource])
 
     const add = useCallback(async (value: AddItemType<Res>) => {
-        if(resource.addHook) {
+        if (resource.addHook) {
             return await resource.addHook(value);
-        } 
-    } , [resource])
-    
+        }
+    }, [resource])
+
     const del = useCallback(async (value: ItemType<Res>, options?: DeleteOptionType<Res>) => {
-        if(resource.deleteHook) {
+        if (resource.deleteHook) {
             return await resource.deleteHook(value, options);
-        } 
-    } , [resource])
+        }
+    }, [resource])
 
     const val = useCallback(async (value: ItemType<Res>) => {
-        if(resource.validateHook) {
+        if (resource.validateHook) {
             return await resource.validateHook(value);
-        }  else {
+        } else {
             throw new Error("Validate hook not implemented")
         }
-    } , [resource])
+    }, [resource])
 
     const delMany = useCallback(async (values: ItemType<Res>[], options?: DeleteOptionType<Res>) => {
-        if(resource.deleteManyHook) {
+        if (resource.deleteManyHook) {
             return await resource.deleteManyHook(values, options);
-        } 
-    } , [resource])
+        }
+    }, [resource])
+
+    const countTotal = useCallback(async () => {
+        if (resource.totalHook) {
+            return await resource.totalHook();
+        } else {
+            return -1;
+        }
+    }, [resource])
 
     const updateMany = useCallback(async (values: UpdateItemType<Res>[], options?: UpdateOptionType<Res>) => {
-        if(resource.updateManyHook) {
+        if (resource.updateManyHook) {
             return await resource.updateManyHook(values, options);
-        } 
-    } , [resource])
+        }
+    }, [resource])
 
     const capabilities = useMemo(() => ({
         canAdd: typeof resource.addHook === "function",
@@ -217,11 +225,11 @@ function useListActions<Res extends ResourceType>(resource: APIArrayResourceBase
         canValidate: typeof resource.validateHook === "function",
         canDeleteMany: typeof resource.deleteManyHook === "function",
         canUpdateMany: typeof resource.updateManyHook === "function",
-
+        canCountTotal: typeof resource.totalHook === "function",
     }), [resource])
-    
+
     return {
-        fetch, setOptions, update, add, del, val, delMany, updateMany, capabilities
+        fetch, setOptions, update, add, del, val, delMany, updateMany, countTotal, capabilities, options
     }
 }
 
@@ -232,11 +240,23 @@ export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) =>
 
     const actions = useListActions<Res>(self, option);
 
+    const [loading, setLoading] = useState<boolean>(false);
     const [list, setList] = useState<ItemType<Res>[]>([]);
+    const [total, setTotal] = useState<number>(0);
+    const { fetch, capabilities, countTotal } = actions;
 
-    const refresh = useCallback(() => {
-        actions.fetch().then(newList => {setList(newList)});
-    }, [actions.fetch]);
+    const refresh = useCallback(async () => {
+        setLoading(true);
+        const newList = await fetch();
+        setList(newList);
+        if (capabilities.canCountTotal) {
+            const total = await countTotal();
+            setTotal(total);
+        } else {
+            setTotal(newList.length);
+        }
+        setLoading(false);
+    }, [fetch, countTotal, capabilities]);
 
     useEffect(() => {
         if (!option?.lazy) {
@@ -244,9 +264,12 @@ export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) =>
         }
     }, [refresh, option?.lazy])
 
+
     return {
         list,
+        total,
         setList,
+        loading,
         actions: {
             ...actions,
             refresh

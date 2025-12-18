@@ -22,8 +22,9 @@ export default function ManualImportPage() {
 
 function ManualImportTable() {
     const ctx = useCardsFormContext<OrganizeUnkownResouce>();
-    const { useList, messageContext } = ctx.resource;
-    const { list, total, options, loading } = useList();
+    const { list, loading, actions } = ctx.resource;
+    const { options} =  actions;
+    // const {  total, options, loading } = useList();
     const { token } = theme.useToken();
     const columns: ColumnsType<UnknownRecord> = [
         {
@@ -64,7 +65,7 @@ function ManualImportTable() {
         }
     }
 
-    return <>{messageContext}
+    return <>
         <Table
             rowSelection={{
                 type: "checkbox",
@@ -77,7 +78,6 @@ function ManualImportTable() {
             columns={columns}
             pagination={{
                 defaultPageSize: 20,
-                total,
             }}
             onChange={onTableChange}
         />

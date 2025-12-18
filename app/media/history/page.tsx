@@ -106,7 +106,6 @@ export default function ImportHistory() {
             initialOptions={{ page: 1, pageSize: 20, }}
             extra={(res) => {
                 return <Flex justify="end" gap={12} style={{ width: "100%" }}>
-                    {/* <Button disabled={selected.length == 0} type="primary">重新导入</Button> */}
                     <MediaImportEntry appendFiles={selected.map((file) => ({
                         path: file.SOURCE_PATH,
                         name: file.SOURCE_FILENAME,
@@ -131,7 +130,7 @@ export default function ImportHistory() {
                         }],
                         onClick: (value) => {
                             console.log(value)
-                            res.delMany?.(selected, { key: value.key })
+                            res.actions.delMany(selected, { key: value.key })
                         }
                     }} disabled={selected.length == 0}  danger>
                         批量删除({selected.length})
@@ -146,8 +145,8 @@ export default function ImportHistory() {
 
 function ImportHistoryTable({ onSelected }: { onSelected: (records: OrganizeRecord[]) => void }) {
     const ctx = useCardsFormContext<OrgnizeHistoryResource>();
-    const { useList, messageContext,  } = ctx.resource;
-    const { list, total, options, loading, setOptions } = useList();
+    const { list, total, actions, loading } = ctx.resource;
+    const { options, setOptions, } = actions;
     const { token } = theme.useToken();
     const columns: ColumnsType<OrganizeRecord> = [
         {
@@ -190,7 +189,7 @@ function ImportHistoryTable({ onSelected }: { onSelected: (records: OrganizeReco
         }
     ]
 
-    return <>{messageContext}
+    return <>
         <Table
             rowSelection={{
                 type: "checkbox",
