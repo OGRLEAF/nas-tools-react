@@ -28,7 +28,7 @@
     "axios": "^1.4.0",
     "bufferutil": "^4.0.8",
     "dayjs": "^1.11.10",
-    "eslint": "^9.0.0",
+    "eslint": "^9.39.2",
     "eslint-config-next": "^16.0.3",
     "fortawesome": "^0.0.1-security",
     "lodash": "^4.17.21",
