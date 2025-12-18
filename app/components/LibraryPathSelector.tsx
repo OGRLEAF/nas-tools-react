@@ -237,8 +237,8 @@ export const LibraryPathSelect = (options: UnionPathSelectProps) => {
 export const DownloadPathSelect = (options: { remote?: boolean } & UnionPathSelectProps) => {
     const { registerComponent, updateComponent, onChange } = useContext(UnionPathSelectDispathContext);
     const { value: ctxValue } = useContext(UnionPathSelectContext)
-    const { useList } = useResource<DownloadClientResource>(DownloadClient)
-    const { list: clients, } = useList();
+    const { list: clients, actions } = useResource<DownloadClientResource>(DownloadClient, { lazy: false });
+
 
     const [path, setPath] = useState<string | undefined>(options.value || ctxValue);
 
@@ -282,7 +282,7 @@ export const DownloadPathSelect = (options: { remote?: boolean } & UnionPathSele
     }, [node, registered, updateComponent])
 
     useEffect(() => {
-        if (allPaths.length && !registered) {
+        if (!registered) {
             registerComponent("download",
                 allPaths.map(({ save_path, container_path }) => remote ? save_path : container_path),
                 options.label
