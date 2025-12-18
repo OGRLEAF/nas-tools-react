@@ -43,6 +43,7 @@ export interface APIResourceOption {
 
 export interface APIArrayResourceOption<Options = never> extends APIResourceOption {
     initialOptions?: Options,
+    lazy?: boolean
 }
 
 export interface APIDataResourceOption<Options = never> extends APIResourceOption {
@@ -237,9 +238,11 @@ export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) =>
         actions.fetch().then(newList => {setList(newList)});
     }, [actions.fetch]);
 
-    useEffect(()=>{
-        refresh();
-    }, [refresh])
+    useEffect(() => {
+        if (!option?.lazy) {
+            refresh();
+        }
+    }, [refresh, option?.lazy])
 
     return {
         list,
