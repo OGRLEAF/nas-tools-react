@@ -147,12 +147,14 @@ const HeaderWithLogo = React.memo(({ minimized }: { minimized: boolean }) => {
 
 const menuStyle = { height: "100%", overflow: "auto" };
 const LayoutMenu = React.memo(({ menu, selected, open }: { menu: MenuItem[], selected: string[], open: string[] }) => {
+  const [openKeys, setOpenKeys] = useState<string[]>(open);
 
   return <Menu mode="inline"
     style={menuStyle}
     items={menu}
     selectedKeys={selected} defaultOpenKeys={open}
-    openKeys={open}
+    openKeys={openKeys}
+    onOpenChange={setOpenKeys}
   />
 })
 
