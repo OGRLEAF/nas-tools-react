@@ -1,5 +1,5 @@
 'use client'
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import {
   FileDoneOutlined,
@@ -109,7 +109,55 @@ const getMenuItems = async (API: NASTOOL) => {
   ];
   return items;
 }
-const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
+
+const Logo = React.memo(({ minimized }: { minimized: boolean }) => {
+  const { token, } = theme.useToken();
+  return <>
+    <BlockOutlined style={{ fontSize: '1.5rem', display: minimized ? 'none' : 'inline-block' }} />
+    <span style={{ fontSize: token.fontSizeLG, fontWeight: "bold", textWrap: "nowrap", display: !minimized ? 'none' : 'inline-block' }}>
+      <BlockOutlined /> NASTOOL Lite
+    </span>
+  </>
+})
+
+const HeaderWithLogo = React.memo(({ minimized }: { minimized: boolean }) => {
+  const { token } = theme.useToken();
+
+  const headsStyle: React.CSSProperties = useMemo(() => ({
+    padding: '0px 0px',
+    boxSizing: "border-box",
+    backgroundColor: token.colorBgContainer,
+    boxShadow: token.boxShadowTertiary,
+    top: 0,
+    position: 'sticky',
+    zIndex: 2
+  }), [token]);
+
+  return <Header style={headsStyle}>
+
+    <Flex
+      style={{ height: `100%`, width: "100%", padding: "0 25px", }}
+      justify="space-around" align="center"
+    >
+      <Logo minimized={minimized} />
+    </Flex>
+  </Header>
+
+})
+
+const menuStyle = { height: "100%", overflow: "auto" };
+const LayoutMenu = React.memo(({ menu, selected, open }: { menu: MenuItem[], selected: string[], open: string[] }) => {
+
+  return <Menu mode="inline"
+    style={menuStyle}
+    items={menu}
+    selectedKeys={selected} defaultOpenKeys={open}
+    openKeys={open}
+  />
+})
+
+export function DefaultLayout({ children }: { children: React.ReactNode }) {
+  const [selectedPath, setSelectedPath] = useState<{ selectedKey: string[], openKey: string[] }>({ selectedKey: [], openKey: [] });
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const pathName = usePathname();
   const updateMenuKey = useCallback(() => {
@@ -129,70 +177,44 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
     if (API.loginState)
       getMenuItems(API).then((menu) => {
         setMenu(menu);
-        updateMenuKey();
       })
-  }, [API, updateMenuKey])
+  }, [API, setMenu])
 
 
   const [collapsed, setCollapsed] = useState(false);
   const { token, } = theme.useToken();
 
-  const [selectedPath, setSelectedPath] = useState<{ selectedKey: string[], openKey: string[] }>();
 
   useEffect(() => {
+    console.log(menu)
     updateMenuKey();
-  }, [updateMenuKey])
+  }, [updateMenuKey, menu])
 
   const [pageScale, setPageScale] = useState(1);
   useEffect(() => {
     const scale = window.devicePixelRatio;
   }, [])
 
+  const siderStyle: React.CSSProperties = useMemo(() => ({
+    overflow: "auto",
+    paddingBottom: token.Layout?.headerHeight,
+    height: '100vh',
+    position: "sticky",
+    left: 0,
+    top: 0,
+    bottom: 0,
+  }), [token.Layout?.headerHeight]);
+
+
   return (
     <Layout hasSider style={{ zoom: pageScale }}>
       <APIContext.Provider value={{ API, setAPI }}>
-
-
-
         <Sider
           theme="light"
-          style={{
-            overflow: "auto",
-            paddingBottom: token.Layout?.headerHeight,
-            height: '100vh',
-            position: "sticky",
-            left: 0,
-            top: 0,
-            bottom: 0,
-          }}
-          collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
-          <Header style={{
-            padding: '0px 0px',
-            boxSizing: "border-box",
-            backgroundColor: token.colorBgContainer,
-            boxShadow: token.boxShadowTertiary,
-            top: 0,
-            position: 'sticky',
-            zIndex: 2
-          }}>
-
-            <Flex
-              style={{ height: `100%`, width: "100%", padding: "0 25px", }}
-              justify="space-around" align="center"
-            >
-              {collapsed ? <> <BlockOutlined style={{ fontSize: '1.5rem' }} />
-              </> : <span style={{ fontSize: token.fontSizeLG, fontWeight: "bold", textWrap: "nowrap" }}>
-                <BlockOutlined /> NASTOOL Lite</span>}
-            </Flex>
-
-          </Header>
-          {selectedPath &&
-            <Menu mode="inline"
-              style={{ height: "100%", overflow: "auto" }}
-              items={menu}
-              selectedKeys={selectedPath?.selectedKey} defaultOpenKeys={selectedPath?.openKey}
-            />
-          }
+          style={siderStyle}
+          collapsed={collapsed} onCollapse={setCollapsed}>
+          <HeaderWithLogo minimized={!collapsed} />
+          <LayoutMenu menu={menu} selected={selectedPath.selectedKey} open={selectedPath.openKey} />
         </Sider>
         <Layout>
           <APILoadedSpace>
