@@ -214,7 +214,10 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
                 sorter: (a: NastoolFileListItem, b: NastoolFileListItem) => (a.size - b.size),
                 // filters: Array.from(fileExts.keys()).map((item) => ({ text: item, value: item })),
                 // onFilter: (value, record) => (record.name.split(".").pop() === value),
+
                 width: 100,
+                shouldCellUpdate: (record, prevRecord) => record.size !== prevRecord.size
+
             },
             {
                 title: <span>类型</span>,
@@ -399,7 +402,7 @@ export default function MediaFile() {
 
 
 function PathManagerBar() {
-    const {deepestPath, basePath, currentPath} = usePathManager();
+    const { deepestPath, basePath, currentPath } = usePathManager();
     const [selectedPart, setSelectedPart] = useState<string>('/');
 
     useEffect(() => {
