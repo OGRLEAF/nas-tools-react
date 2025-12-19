@@ -14,9 +14,10 @@ import { SeriesKey } from "@/app/utils/api/media/SeriesKey";
 import { MediaSearchGroup, MediaSearchSeason, MediaSearchWork } from "@/app/components/TMDBSearch/TinyTMDBSearch";
 
 
+
 export default function SubscribeTV() {
     return <CardsForm<TVSubsResource> title="电视剧订阅" resource={TVSubscribe}
-        extra={()=><Button>刷新</Button>}
+        extra={() => <Button>刷新</Button>}
         formComponent={SubscribeTVForm}
     >
         <CardsList />
@@ -26,8 +27,7 @@ export default function SubscribeTV() {
 function CardsList() {
     const ctx = useCardsFormContext<TVSubsResource>();
     const { resource } = ctx;
-    const { useList } = resource;
-    const { list } = useList();
+    const { list } = resource;
 
     return <List
         itemLayout="vertical"
@@ -50,6 +50,7 @@ const episodeStateColor: Record<SubsStatus, string> = {
 
 function SubsItemCard({ record }: { record: TVSubsProfile }) {
     const ctx = useCardsFormContext<TVSubsResource>();
+    const { actions } = ctx.resource;
     const seriesKey = useMemo(() => SeriesKey.load(record.series_key), [record]);
     const topSeriesKey = useMemo(() => seriesKey.slice(SeriesKeyType.TMDBID), [seriesKey])
     const [season] = useMediaWork(seriesKey)
@@ -66,10 +67,10 @@ function SubsItemCard({ record }: { record: TVSubsProfile }) {
             ctx.openEditor(record, { title: <>{ctx.options.title} / {metadata?.title} / {season?.metadata?.title}</> });
         }} >编辑</Button>
     const refreshButton = <Button type="text" icon={<RetweetOutlined />}
-        onClick={() => ctx.resource.action && ctx.resource.action('refresh', record)}
+        onClick={() => actions.action('refresh', record)}
         size="small">刷新</Button>
     const deleteButton = <Button type="text" icon={<DeleteOutlined />} danger
-        onClick={() => { ctx.resource.del && ctx.resource.del(record) }}
+        onClick={() => { actions.del(record) }}
         size="small">删除</Button>
 
     const episodesList = <Space wrap>
@@ -112,6 +113,7 @@ import { SelectProps } from "antd/lib";
 import { number_string_to_list } from "@/app/utils";
 import { DownloadSettingSelect, FilterRuleSelect, PixSelect, ResTypeSelect, SiteSelect } from "@/app/components/NTSelects";
 import { useForm } from "antd/es/form/Form";
+import { useListActions, useResource } from "@/app/utils/api/api_base";
 
 const FormSection = ({ title, tooltip }: { title: string, tooltip?: string }) => {
     return <Divider titlePlacement="left" orientation="horizontal" style={{ marginTop: 0 }}>

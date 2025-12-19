@@ -5,6 +5,9 @@ import { useSubmitMessage } from "..";
 import { get } from "lodash";
 import { Modal } from "antd";
 import { useServerEvent } from "./message/ServerEvent";
+import { Action } from "@dnd-kit/core/dist/store";
+import { TVSubscribe } from "./subscription/subscribe_beta";
+import { Infer } from "next/dist/compiled/superstruct";
 
 export interface APIContext {
     API: NASTOOL,
@@ -151,11 +154,72 @@ export class APIArrayResourceBase<T extends ResourceType> extends APIBase {
     public async actionHook?(action: string, paylaod: ItemType<T>): Promise<void>;
 }
 
-type ResourceClass<T extends ResourceType> = new (API: NASTOOL) => APIArrayResourceBase<T>;
-type InferResourceType<T> = T extends APIArrayResourceBase<infer T> ? T : never;
+export type InferResourceType<T> = T extends APIArrayResourceBase<infer T> ? T : never;
+type AvaliableActions = "addHook" | "deleteHook" | "deleteManyHook" | "updateHook" | "updateManyHook" | "validateHook" | "totalHook";
 
-function useListActions<Res extends ResourceType>(resource: APIArrayResourceBase<Res>, option?: APIArrayResourceOption<ListOptionType<Res>>) {
+export type DeclaredAction<APIClass extends APIArrayResourceBase<ResourceType>, K extends AvaliableActions> = APIClass[K] extends (...args: any[]) => any ? true : false
+
+export type ValidatedAction<APIClass extends APIArrayResourceBase<ResourceType>, K extends AvaliableActions,
+    F extends (...args: any[]) => any> = APIClass[K] extends (...args: any[]) => any ? F : never
+
+
+
+export interface ResourceHookType<APIClass extends APIArrayResourceBase<ResourceType>> {
+    fetch: () => Promise<ItemType<InferResourceType<APIClass>>[]>,
+    update: (value: UpdateItemType<InferResourceType<APIClass>>, options?: UpdateOptionType<InferResourceType<APIClass>>) => Promise<boolean>,
+    add: (value: AddItemType<InferResourceType<APIClass>>) => Promise<boolean>,
+    del: (value: ItemType<InferResourceType<APIClass>>, options?: DeleteOptionType<InferResourceType<APIClass>>) => Promise<boolean>,
+    val: (value: ItemType<InferResourceType<APIClass>>) => Promise<boolean>,
+    delMany: (values: ItemType<InferResourceType<APIClass>>[], options?: DeleteOptionType<InferResourceType<APIClass>>) => Promise<boolean>,
+    updateMany: (values: UpdateItemType<InferResourceType<APIClass>>[], options?: UpdateOptionType<InferResourceType<APIClass>>) => Promise<void>,
+    countTotal: () => Promise<number>,
+}
+
+interface MethodMap {
+    add: "addHook",
+    del: "deleteHook",
+    delMany: "deleteManyHook",
+    update: "updateHook",
+    updateMany: "updateManyHook",
+    val: "validateHook",
+    countTotal: "totalHook"
+}
+
+// type AutoPick<Target, T> = Omit<Target, {
+//     [K in keyof MethodMap]: T extends { [M in K]: Function } ? never : MethodMap[K]
+// }[keyof MethodMap]>;
+export type UnavaliableActions<APIClass extends APIArrayResourceBase<ResourceType>> = {
+    [K in keyof MethodMap]: APIClass[MethodMap[K]] extends Function ? never : MethodMap[K]
+}[keyof MethodMap];
+
+export type AutoPick<Target extends ResourceHookType<T>, T extends APIArrayResourceBase<ResourceType>> = { [K in keyof Target as (
+    K extends 'add' ? (T extends { addHook: Function } ? K : never) :
+    K extends 'del' ? (T extends { deleteHook: Function } ? K : never) :
+    K extends 'delMany' ? (T extends { deleteManyHook: Function } ? K : never) :
+    K extends 'update' ? (T extends { updateHook: Function } ? K : never) :
+    K extends 'updateMany' ? (T extends { updateManyHook: Function } ? K : never) :
+    K extends 'val' ? (T extends { validateHook: Function } ? K : never) :
+    K extends 'countTotal' ? (T extends { totalHook: Function } ? K : never) :
+    K // 其他属性保留
+)]: Target[K]
+} & {
+    [M in keyof MethodMap as `has${Capitalize<M & string>}`]: T extends { [P in M]: Function } ? true : false;
+}
+
+export type AutoPickSafe<Target, T> = {
+    [K in keyof Target as (
+        K extends "onSave" | "onDelete" ? K : K // 键名全部保留
+    )]: K extends "onSave" 
+        ? (T extends { save: Function } ? Target[K] : undefined) // 不存在则为 undefined
+        : Target[K]
+} & {
+    [M in "save" | "delete" as `has${Capitalize<M>}`]: T extends { [P in M]: Function } ? true : false;
+};
+
+
+export function useListActions<APIClass extends APIArrayResourceBase<ResourceType>>(resource: APIClass, option?: APIArrayResourceOption<ListOptionType<InferResourceType<APIClass>>>) {
     const { API } = useAPIContext();
+    type Res = InferResourceType<APIClass>;
     const [options, setOptions] = useState<ListOptionType<Res> | undefined>(option?.initialOptions)
     const fetch = useCallback(async () => {
         if (API.loginState) {
@@ -218,28 +282,32 @@ function useListActions<Res extends ResourceType>(resource: APIArrayResourceBase
         }
     }, [resource])
 
+
+    const action = useCallback(async (action: string, payload: ItemType<Res>) => resource.actionHook?.(action, payload),
+        [resource]);
+
+
+
     const capabilities = useMemo(() => ({
-        canAdd: typeof resource.addHook === "function",
-        canDelete: typeof resource.deleteHook === "function",
-        canUpdate: typeof resource.updateHook === "function",
-        canValidate: typeof resource.validateHook === "function",
-        canDeleteMany: typeof resource.deleteManyHook === "function",
-        canUpdateMany: typeof resource.updateManyHook === "function",
-        canCountTotal: typeof resource.totalHook === "function",
+        canAdd: (typeof resource.addHook === "function"),
+        canDelete: (typeof resource.deleteHook === "function"),
+        canUpdate: (typeof resource.updateHook === "function"),
+        canValidate: (typeof resource.validateHook === "function"),
+        canDeleteMany: (typeof resource.deleteManyHook === "function"),
+        canUpdateMany: (typeof resource.updateManyHook === "function"),
+        canCountTotal: (typeof resource.totalHook === "function"),
     }), [resource])
 
     return {
-        fetch, setOptions, update, add, del, val, delMany, updateMany, countTotal, capabilities, options
+        fetch, setOptions, update, add, del, val, delMany, updateMany, countTotal, action, capabilities, options
     }
 }
 
-
-export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) => APIArrayResourceBase<Res>, option?: APIArrayResourceOption<ListOptionType<Res>>) {
+export function useResource<Res extends ResourceType, APIClass extends APIArrayResourceBase<Res> = APIArrayResourceBase<Res>>(cls: new (API: NASTOOL) => APIClass, option?: APIArrayResourceOption<ListOptionType<InferResourceType<APIClass>>>) {
     const { API } = useAPIContext();
     const self = useMemo(() => new cls(API), [API, cls])
 
-    const actions = useListActions<Res>(self, option);
-
+    const actions = useListActions<APIClass>(self, option);
     const [loading, setLoading] = useState<boolean>(false);
     const [list, setList] = useState<ItemType<Res>[]>([]);
     const [total, setTotal] = useState<number>(0);
@@ -247,13 +315,17 @@ export function useResource<Res extends ResourceType>(cls: new (API: NASTOOL) =>
 
     const refresh = useCallback(async () => {
         setLoading(true);
-        const newList = await fetch();
-        setList(newList);
-        if (capabilities.canCountTotal) {
-            const total = await countTotal();
-            setTotal(total);
-        } else {
-            setTotal(newList.length);
+        try{
+            const newList = await fetch();
+            setList(newList);
+            if (capabilities.canCountTotal) {
+                const total = await countTotal();
+                setTotal(total);
+            } else {
+                setTotal(newList.length);
+            }
+        } catch (error) {
+            console.error("Failed to refresh data:", error);
         }
         setLoading(false);
     }, [fetch, countTotal, capabilities]);

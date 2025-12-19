@@ -1,4 +1,5 @@
-import { APIArrayResourceBase, APIBase, ResourceType } from "../api_base"
+import { NASTOOL } from "../api"
+import { APIArrayResourceBase, APIBase,  AutoPick,  DeclaredAction, InferResourceType, ResourceHookType, ResourceType, UnavaliableActions, useListActions } from "../api_base"
 import { SeriesKeyTuple } from "../media/SeriesKey"
 
 export interface SubsFilter {
@@ -108,3 +109,14 @@ export class TVSubscribe extends APIArrayResourceBase<TVSubsResource> {
         await this.action(action, payload);
     }
 }
+
+// type exportedActions = AutoPick<ResourceHookType<TVSubscribe>,TVSubscribe>
+// type a = AutoPick<ResourceHookType<APIArrayResourceBase<TVSubsResource>>, APIArrayResourceBase<TVSubsResource>>
+// const API = {} as NASTOOL
+ 
+// const exportedActions = useListActions<TVSubscribe>(new TVSubscribe(), {
+//     initialOptions: {}
+// })
+
+// exportedActions.fetch();
+// exportedActions.

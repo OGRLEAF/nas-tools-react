@@ -16,6 +16,7 @@ import { ColumnsType } from "antd/lib/table";
 import Link from "next/link";
 import { useResource } from "@/app/utils/api/api_base";
 import { PathSelector } from "@/app/components/PathSelector";
+import { useSubmitMessage } from "@/app/utils";
 
 
 export default function SubscribeMoviePage() {
@@ -32,21 +33,21 @@ export default function SubscribeMoviePage() {
                     <BatchActions key="batch_action" selection={selection} />,
                     <Button key="enable_btn" icon={<IconPlay />}
                         onClick={async () => {
-                            selected && await resource.updateMany?.(selected?.map(v => ({ ...v, state: true })));
+                            selected && await resource.actions.updateMany?.(selected?.map(v => ({ ...v, state: true })));
                         }}>开启</Button>,
                     <Button key="disable_btn" icon={<IconPause />}
                         onClick={async () => {
-                            selected && await resource.updateMany?.(selected?.map(v => ({ ...v, state: false })));
+                            selected && await resource.actions.updateMany?.(selected?.map(v => ({ ...v, state: false })));
                         }}>停止</Button>
                 ]
             }}
         >
             <Cards<RssResource>
                 selection={selection}
-                spaceProps={{ direction: "vertical" }}
+                spaceProps={{ orientation: "vertical" }}
                 cardProps={(record) => ({
                     title: <Space size="small" align="center">
-                        <Tag color="pink" bordered={false}>{record.uses_text}</Tag>
+                        <Tag color="pink" variant="filled">{record.uses_text}</Tag>
                         <span>{record.name}</span>
                     </Space>,
                     description: <CustomRssCard config={record} />
@@ -284,8 +285,7 @@ const CustomRssCard = ({ config, }: { config: RssTaskConfig }) => {
 
 
 function RssParserSelect({ value, onChange }: { value?: string, onChange?: (value: string) => void }) {
-    const { useList } = useResource<RssParserResource>(RssParsers);
-    const { list, } = useList();
+    const { list } = useResource<RssParserResource>(RssParsers);
     const parserOptions = list?.map((parser) => ({
         label: parser.name,
         value: String(parser.id)
@@ -312,8 +312,10 @@ function RssPreviewList({ id }: { id: RssTaskConfig['id'] }) {
 }
 
 const RssPreviewTable = forwardRef(function RssPreviewTable({ id }: { id: RssTaskConfig['id'] }, ref: ForwardedRef<{ refresh: () => void }>) {
-    const { useList, messageContext, message, updateMany } = useResource<RssPreviewResource>(RssPreview, { initialOptions: { id } })
-    const { list, loading, refresh } = useList();
+    const { list, actions, loading } = useResource<RssPreviewResource>(RssPreview, { initialOptions: { id } })
+    const { updateMany, refresh } = actions;
+    const message = useSubmitMessage("Download");
+    // const { list, loading, refresh } = useList();
     const [selected, setSelected] = useState<RssPreviewItem[]>([])
 
     useImperativeHandle(ref, () => ({ refresh }))
@@ -339,18 +341,21 @@ const RssPreviewTable = forwardRef(function RssPreviewTable({ id }: { id: RssTas
         },
         {
             title: "体积",
-            dataIndex: "size"
+            dataIndex: "size",
+            width: 100
         },
         {
             title: "发布时间",
-            dataIndex: "date"
+            dataIndex: "date",
+            width: 200
         },
         {
             title: "状态",
             dataIndex: "finish_flag",
             render: (value: boolean) => {
                 return value ? <Tag color="green">已处理</Tag> : <Tag color="blue">未处理</Tag>
-            }
+            },
+            width: 100
         },
         {
             title: "下载",
@@ -359,6 +364,7 @@ const RssPreviewTable = forwardRef(function RssPreviewTable({ id }: { id: RssTas
                     onClick={async () => { download([record]) }}
                 />
             },
+            width: 100,
             align: "center"
         }
     ]
@@ -390,7 +396,7 @@ const RssPreviewTable = forwardRef(function RssPreviewTable({ id }: { id: RssTas
         },
     ]
 
-    return <>{messageContext}<Table
+    return <>{message.contextHolder}<Table
         rowSelection={{
             type: "checkbox",
             onChange: (keys, rows) => {
@@ -402,7 +408,6 @@ const RssPreviewTable = forwardRef(function RssPreviewTable({ id }: { id: RssTas
         size="small"
         dataSource={list}
         columns={columns}
-        pagination={false}
         footer={() => {
             return <Dropdown disabled={selected.length == 0} menu={{ items: batchActions }}>
                 <a onClick={(e) => e.preventDefault()}>

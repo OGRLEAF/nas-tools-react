@@ -1,6 +1,6 @@
 import { App, message } from "antd";
 import { floor } from "lodash";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 export function bytes_to_human(value: number, fixed: number = 2): [number, string] {
     const units = ["B", "KB", "MB", "GB", "TB", "PB"]
@@ -51,29 +51,29 @@ export function useSubmitMessage(key: string) {
     // const{ message } = App.useApp();
     const [messageApi, contextHolder] = message.useMessage({});
 
-    const success = (msg?: string) => {
+    const success = useCallback((msg?: string) => {
         messageApi.open({
             type: 'success',
             key,
             content: '更新成功 ' + (msg ?? ""),
         });
-    }
-    const error = (msg?: string) => {
+    }, [key, messageApi]);
+    const error = useCallback((msg?: string) => {
         messageApi.open({
             type: 'error',
             key,
             content: '更新失败 ' + (msg ?? ""),
         });
-    }
-    const loading = (msg?: string) => {
+    }, [key, messageApi]);
+    const loading = useCallback((msg?: string) => {
         messageApi.open({
             type: "loading",
             key,
             content: "提交中 " + (msg ?? "")
         })
-    }
+    }, [key, messageApi]);
 
-    const bundle = (action: string, duration?: number) => ({
+    const bundle = useCallback((action: string, duration?: number) => ({
         loading: (msg?: string) => {
             messageApi.open({
                 duration,
@@ -97,7 +97,8 @@ export function useSubmitMessage(key: string) {
             });
         }
     }
-    )
+    ), [key, messageApi]);
+    
     const update = bundle('更新')
     const fetch = bundle('加载')
     const handle = async (p: Promise<any | void>, name?: string) => {

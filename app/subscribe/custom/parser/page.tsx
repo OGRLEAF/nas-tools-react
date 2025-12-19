@@ -54,8 +54,8 @@ function RssParserForm({ record, onChange }: { record?: RssParserConfig, onChang
 
 function RssParserTable() {
     const ctx = useCardsFormContext<RssParserResource>();
-    const { useList, messageContext } = ctx.resource;
-    const { list, total, loading } = useList();
+
+    const { list, total, loading } = ctx.resource;
     const { confirm } = Modal;
     const columns: ColumnsType<RssParserConfig> = [
         {
@@ -80,7 +80,7 @@ function RssParserTable() {
                     confirm({
                         title: `确认删除解析器?`,
                         content: <>{record.name}</>,
-                        onOk: () => { ctx.resource.del?.(record) }
+                        onOk: () => { ctx.resource.actions.del?.(record) }
                     })
                 }}>删除</Button>
             </Flex>,
@@ -88,7 +88,7 @@ function RssParserTable() {
         }
     ]
 
-    return <>{messageContext}
+    return <>
         <Table
             size="middle"
             loading={loading}
