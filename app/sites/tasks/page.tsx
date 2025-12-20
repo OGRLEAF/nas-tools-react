@@ -31,12 +31,12 @@ export default function SitesTasksPage() {
                     <Button key="enable_btn" icon={<IconPlay />}
                         onClick={async () => {
                             selected &&
-                                await resource.updateMany?.(selected?.map(v => ({ ...v, state: TaskState.RUNNING })));
+                                await resource.actions.updateMany(selected?.map(v => ({ ...v, state: TaskState.RUNNING })));
                         }}>开启</Button>,
                     <Button key="disable_btn" icon={<IconPause />}
                         onClick={async () => {
                             selected &&
-                                await resource.updateMany?.(selected?.map(v => ({ ...v, state: TaskState.STOPPED })));
+                                await resource.actions.updateMany(selected?.map(v => ({ ...v, state: TaskState.STOPPED })));
                         }}>停止</Button>
                 ]
             }}
@@ -291,8 +291,7 @@ function TaskTorrentsList({ id }: { id: BrushTaskProfile['id'] }) {
 }
 
 function TaskTorrentsTable({ id }: { id: BrushTaskProfile['id'] }) {
-    const { useList } = useResource<BrushTaskTorrentType>(BrushTaskTorrents, { initialOptions: { id } });
-    const { list, loading } = useList();
+    const { list, loading } = useResource<BrushTaskTorrentType>(BrushTaskTorrents, { initialOptions: { id } });
     useEffect(() => { console.log(list) }, [list])
     return <Table
         rowKey="enclosure"
