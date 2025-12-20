@@ -1,7 +1,7 @@
 "use client"
 import { Section } from "@/app/components/Section";
 import { Button, Divider, Input, Popconfirm, Progress, Space, Table, Tag, Tooltip, message, Alert, theme } from "antd";
-import { PlusOutlined } from "@ant-design/icons"
+import { ConsoleSqlOutlined, PlusOutlined } from "@ant-design/icons"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Download, DownloadClient, DownloadClientResource, TorrentInfo, TorrentState, TorrentVagueState } from "@/app/utils/api/download";
@@ -13,6 +13,7 @@ import { StateMap, StateTag } from "@/app/components/StateTag";
 import { useResource } from "@/app/utils/api/api_base";
 import { DownloadFormAction, TorrentDownloadForm } from "@/app/components/TorrentDownloadForm";
 import { FileLink } from "@/app/components/FileLink";
+import { TablePaginationConfig } from "antd/lib";
 
 const torrentStateMap: StateMap<TorrentState> = {
     [TorrentState.DOWNLOADING]: {
@@ -95,16 +96,28 @@ const _EMPTY_LIST = {};
 export default function DownloadedPage() {
     const [torrents, setTorrents] = useState<Record<string, TorrentInfo>>(_EMPTY_LIST);
     const [totalTorrents, setTotalTorrents] = useState(20);
-    const [categories, setCategories] = useState<string[]>([]);
+    const [categories, setCategories] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(false)
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
     const updateTorrents = useCallback((newTorrents: TorrentInfo[]) => {
         setTorrents((torrents) => {
+            if (newTorrents.length === 0) {
+                return torrents;
+            }
             newTorrents.forEach((t) => {
-                torrents[t.hash] = t;
+                const oldRecord = torrents[t.hash];
+                if (oldRecord != undefined) {
+                    const shoudleUpdate = (t.progress > oldRecord.progress) || (t.state != oldRecord.state);
+                    if (shoudleUpdate) {
+                        torrents[t.hash] = t;
+                    }
+                } else {
+                    torrents[t.hash] = t;
+                }
+                // Object.assign(torrents[t.hash], t);
             })
-            return { ...torrents }
+            return { ...torrents };
         })
     }, [])
     const getTorrents = useCallback(async (pagination = false) => {
@@ -120,7 +133,14 @@ export default function DownloadedPage() {
             const categories = new Set<string>();
             torrents.forEach(t => categories.add(t.category || ""))
             categories.delete("")
-            setCategories(Array.from(categories))
+            setCategories((prevcategories) => {
+                console.debug("categories Update", categories, prevcategories, prevcategories.difference(categories))
+                if (prevcategories.difference(categories).size < categories.size) {
+                    return categories;
+                }
+                return prevcategories;
+
+            })
         }
 
         setLoading(false)
@@ -129,8 +149,8 @@ export default function DownloadedPage() {
     useEffect(() => {
         getTorrents();
     }, [getTorrents])
-    const { list:clients, actions} = useResource<DownloadClientResource>(DownloadClient);
-    const {refresh:refreshClients} = actions;
+    const { list: clients, actions } = useResource<DownloadClientResource>(DownloadClient);
+    const { refresh: refreshClients } = actions;
     // const { list: clients, refresh: refreshClients } = useList();
     const downloaderPathMap = useMemo(() => {
         const pathMap: Record<string, string> = {};
@@ -168,6 +188,23 @@ export default function DownloadedPage() {
 
 
     const [messageApi, contextHolder] = message.useMessage();
+    const categoryColumn = useMemo(() => {
+        console.debug("categories Update", categories)
+        return {
+            title: "分类",
+            dataIndex: "category",
+            render(value: string) {
+                if (value.length)
+                    return <Tag color="cyan" variant="filled">{value}</Tag>
+                else
+                    return <></>
+            },
+            width: 100,
+            filters: Array.from(categories).map((v) => ({ text: v, value: v })),
+            onFilter: (value: string, record: TorrentInfo) => (record.category === value),
+            shouldCellUpdate: () => false,
+        }
+    }, [categories])
     const columns: ColumnsType<TorrentInfo> = useMemo(() => [
         {
             key: "external",
@@ -179,7 +216,8 @@ export default function DownloadedPage() {
 
                 return <FileButton localPath={fileLink} remotePath={record.content_path} />
             },
-            width: 40
+            width: 40,
+            shouldCellUpdate: () => false
         },
         {
             title: <Space size="large">
@@ -188,6 +226,7 @@ export default function DownloadedPage() {
             </Space>,
             dataIndex: "name",
             key: "name",
+            shouldCellUpdate: (record, prevRecord) => record.name !== prevRecord.name,
             render: (value: string, record) => {
                 const [downSpeed, downSpeedUnit] = bytes_to_human(record.speed.download)
                 const [upSpeed, upSpeedUnit] = bytes_to_human(record.speed.upload)
@@ -204,29 +243,21 @@ export default function DownloadedPage() {
                 </Space>
             },
         },
-        {
-            title: "分类",
-            dataIndex: "category",
-            render(value: string, record) {
-                if (value.length)
-                    return <Tag color="cyan" variant="filled">{value}</Tag>
-                else
-                    return <></>
-            },
-            width: 100,
-            filters: categories.map((v) => ({ text: v, value: v })),
-            onFilter: (value, record) => (record.category === value),
-        },
+        categoryColumn,
         {
             title: "进度",
             dataIndex: "progress",
             key: "progress",
             render: (value) => {
-                return <div style={{ paddingRight: 10 }}><Progress percent={Math.round(value * 1000) / 10} /></div>
+                return <div className="progress-bar"><Progress percent={Math.round(value * 1000) / 10} /></div>
             },
             width: 250,
             // defaultSortOrder: "ascend",
-            sorter: (a, b) => a.progress - b.progress
+            sorter: (a, b) => a.progress - b.progress,
+            shouldCellUpdate: (record, prevRecord) => {
+                console.log("progress update", record.progress, prevRecord.progress, Math.abs(record.progress - prevRecord.progress) > 0.01);
+                return Math.abs(record.progress - prevRecord.progress) > 0.01;
+            },
         },
         {
             title: "体积",
@@ -239,7 +270,8 @@ export default function DownloadedPage() {
             align: "right",
             // defaultSortOrder: "ascend",
             width: 100,
-            sorter: (a, b) => a.total_size - b.total_size
+            sorter: (a, b) => a.total_size - b.total_size,
+            shouldCellUpdate: () => false
         },
         {
             title: "添加时间",
@@ -252,7 +284,8 @@ export default function DownloadedPage() {
             align: "right",
             width: 200,
             defaultSortOrder: "descend",
-            sorter: (a, b) => a.added_date - b.added_date
+            sorter: (a, b) => a.added_date - b.added_date,
+            shouldCellUpdate: () => false
         },
         {
             title: "状态",
@@ -264,6 +297,7 @@ export default function DownloadedPage() {
             filterMode: "tree",
             onFilter: (value, record) => (record.state === value),
             width: 100,
+            shouldCellUpdate: (record, prevRecord) => record.state !== prevRecord.state,
         },
         {
             title: "操作",
@@ -279,34 +313,39 @@ export default function DownloadedPage() {
                 </Space>
             },
             width: 100,
+            shouldCellUpdate: (record, prevRecord) => record.state !== prevRecord.state,
         }
-    ], [categories, downloaderPathMap])
+    ] as ColumnsType<TorrentInfo>, [categoryColumn, downloaderPathMap])
+
+    const paginationConfig = useMemo(() => ({
+        placement: ["bottomEnd"],
+        showSizeChanger: true,
+        // total: totalTorrents
+        pageSize: pageSize,
+        onChange: (page: number, pageSize: number) => {
+            setPage(page);
+            setPageSize(pageSize)
+        },
+    }) as TablePaginationConfig, [pageSize, totalTorrents]);
+
+    const onRefresh = useCallback(() => {
+        refreshClients();
+        getTorrents(false)
+    }, [getTorrents, refreshClients])
+
+    const extra = useMemo(() => <Space><AddDownloadTask /></Space>, [])
 
     return <Section title="下载任务"
-        onRefresh={() => { refreshClients(); getTorrents(false) }}
-        extra={
-            <Space>
-                <AddDownloadTask />
-            </Space>
-        }>
+        onRefresh={onRefresh}
+        extra={extra}
+    >
         {contextHolder}
         <Table dataSource={filterdList}
             size="small"
             rowKey="hash"
             columns={columns}
             loading={loading}
-            pagination={
-                {
-                    placement: ["bottomEnd"],
-                    showSizeChanger: true,
-                    // total: totalTorrents
-                    pageSize: pageSize,
-                    onChange: (page, pageSize) => {
-                        setPage(page);
-                        setPageSize(pageSize)
-                    },
-                }
-            }
+            pagination={paginationConfig}
         >
 
         </Table>
