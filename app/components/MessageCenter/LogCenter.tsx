@@ -34,9 +34,11 @@ const LogLevelStateTag: StateMap<Log['level']> = {
 
 const MessageCard = ({ msg }: { msg: Log, }) => {
     return <div style={{ wordBreak: "break-word" }}>
-        <Tag color="cyan">{msg.time}</Tag>
-        <StateTag key={msg.source} stateMap={LogLevelStateTag} value={msg.level} >{msg.source}</StateTag>
-        <p style={{ margin: 0, padding: "8px 0 0 0" }}>{_.unescape(msg.text)}</p>
+        <Space>
+            <Tag color="cyan">{msg.time}</Tag>
+            <StateTag key={msg.source} stateMap={LogLevelStateTag} value={msg.level} >{msg.source}</StateTag>
+        </Space>
+        <p style={{ margin: 0, padding: "4px 0 0 0" }}>{_.unescape(msg.text)}</p>
     </div>
 }
 

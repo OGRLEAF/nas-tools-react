@@ -10,6 +10,31 @@ import { ServerConfig } from "@/app/utils/api/serverConfig";
 import { useAPIContext } from "@/app/utils/api/api_base";
 import { useServerMessage, useSocketio } from "@/app/utils/api/message/ServerEvent";
 
+import "./override.css";
+
+const MessageCard = ({ msg, isLasted }: { msg: Message, isLasted: boolean, }) => {
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (messagesEndRef.current && isLasted) {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [isLasted])
+    return <Card
+        ref={messagesEndRef}
+        variant="borderless" styles={{ body: { paddingBottom: 0, } }}
+    >
+        <Card.Meta
+            style={{ width: "100%", overflowX: "auto" }}
+            avatar={<Avatar icon={<UserOutlined />} />}
+            title={<>{msg.title || "系统"}</>}
+            description={
+                <Markdown value={msg.content.replaceAll("<br>", "\n")} />
+            }
+        />
+
+    </Card>
+}
 export default function MessagePanel() {
     const socketio = useSocketio('/message')
     const { msg, msgs, emit } = useServerMessage<Message>(socketio, 'message')
@@ -24,55 +49,26 @@ export default function MessagePanel() {
             form.resetFields(["text"])
         }
     }, [emit, form, socketio])
-    const MessageCard = ({ msg, isLasted }: { msg: Message, isLasted: boolean, }) => {
-        const messagesEndRef = useRef<HTMLDivElement>(null);
+    return <div className="message-panel-container">
+        <div className="message-chat-history" >
+            {msgs.map((msg, index) => (<div key={`${index}-${msg.timestamp}`}>
+                {index > 0 ? <Divider style={{ margin: 0 }} /> : <></>}
+                <MessageCard msg={msg} isLasted={index == msgs.length - 1} />
 
-        useEffect(() => {
-            if (messagesEndRef.current && isLasted) {
-                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            </div>))
             }
-        }, [isLasted])
-        return <Card
-            ref={messagesEndRef}
-            bordered={false} styles={{ body: { paddingBottom: 0, padding: "24px 16px 8px 16px", borderRadius: "none" } }}
-        >
-            <Card.Meta
-                style={{ width: "100%", overflowX: "auto" }}
-                avatar={<Avatar icon={<UserOutlined />} />}
-                title={<>{msg.title || "系统"}</>}
-                description={
-                    <Markdown value={msg.content.replaceAll("<br>", "\n")} />
-                }
-            />
-
-        </Card>
-    }
-    return <Flex vertical gap={24} style={{ height: "100%" }}>
-        <ConfigProvider theme={{
-            token: {
-                borderRadiusLG: 0,
-                boxShadowTertiary: "none"
-            }
-        }}>
-            <Space style={{ height: "100%", overflowY: "auto" }} orientation="vertical" size={0} >
-                {
-                    msgs.map((msg, index) => (<div key={`${index}-${msg.timestamp}`}>
-                        {index > 0 ? <Divider style={{ margin: 0 }} /> : <></>}
-                        <MessageCard msg={msg} isLasted={index == msgs.length - 1} />
-
-                    </div>))
-                }
-            </Space>
-        </ConfigProvider>
-        <Form form={form} layout="inline" initialValues={{ text: "" }} onFinish={onSendText}>
-            <Space.Compact style={{ width: "100%" }} >
-                <Form.Item noStyle name="text">
-                    <Input></Input>
-                </Form.Item>
-                <Form.Item noStyle>
-                    <Button htmlType="submit" type="primary">发送</Button>
-                </Form.Item>
-            </Space.Compact>
-        </Form>
-    </Flex>
+        </div>
+        <div style={{ flexShrink: 0 }}>
+            <Form form={form} layout="inline" initialValues={{ text: "" }} onFinish={onSendText}>
+                <Space.Compact style={{ width: "100%" }} >
+                    <Form.Item noStyle name="text">
+                        <Input></Input>
+                    </Form.Item>
+                    <Form.Item noStyle>
+                        <Button htmlType="submit" type="primary">发送</Button>
+                    </Form.Item>
+                </Space.Compact>
+            </Form>
+        </div>
+    </div>
 }
