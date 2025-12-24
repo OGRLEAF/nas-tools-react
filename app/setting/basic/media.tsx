@@ -38,15 +38,7 @@ const donwloadOrderOption = [
         value: "seeder"
     },
 ]
-const openAiProviderSelection = [
-    {
-        label: "Azure",
-        value: "azure"
-    }, {
-        label: "OpenAI",
-        value: "openai"
-    }
-]
+
 const defaultTransferMode = [
     {
         label: "复制",
@@ -155,12 +147,6 @@ export default function SettingMedia() {
                     <Input />
                 </Form.Item>
             </Col>
-            <Col span={2}>
-                <Form.Item label="OpenAI服务" name={["openai", "provider"]}>
-                    <Select options={openAiProviderSelection} />
-                </Form.Item>
-            </Col>
-            <OpenAISetting provider={provider} />
         </Row>
         <Row gutter={[24, 0]}>
             <Col span={6}>

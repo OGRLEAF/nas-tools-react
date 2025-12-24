@@ -12,6 +12,7 @@ import { Space } from 'antd'
 import { useAPIContext, useDataResource } from '@/app/utils/api/api_base'
 import VersionTag from '@/app/components/VersionTag'
 import { ServerConfig } from '@/app/utils/api/serverConfig'
+import { IntelligentAgentSetting } from './intelligentAgent'
 
 export default function SettingBasic() {
     const { useData } = useDataResource(ServerConfig)
@@ -37,6 +38,7 @@ export default function SettingBasic() {
                 <SettingCard name="服务" settingForm={SettingService} config={serverConfig} />
                 <SettingCard name="安全" settingForm={SettingSecurity} config={serverConfig} />
                 <SettingCard name="实验室" settingForm={SettingLaboratory} config={serverConfig} />
+                <SettingCard name="Agent" settingForm={IntelligentAgentSetting} config={serverConfig} />
                 <VersionTag />
             </Space>
         </Section>
