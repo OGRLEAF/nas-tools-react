@@ -12,6 +12,7 @@ import VirtualList, { ListRef } from "rc-virtual-list"
 import _ from "lodash";
 import { useAPIContext } from "@/app/utils/api/api_base";
 import { useServerMessage, useSocketio } from "@/app/utils/api/message/ServerEvent";
+import { Virtuoso } from "react-virtuoso";
 
 const LogLevelStateTag: StateMap<Log['level']> = {
     INFO: {
@@ -71,21 +72,16 @@ export default function LogPanel() {
                 boxShadowTertiary: "none"
             }
         }}>
-            <List>
-                <VirtualList
-                    ref={list}
-                    data={msgs}
-                    height={listHeight}
-                    itemHeight={20}
-                    itemKey="timestamp"
-                >
-                    {(msg, index) => {
-                        return <List.Item key={msg.time} style={{ padding: "12px 4px 12px 4px" }}>
-                            <MessageCard msg={msg} />
-                        </List.Item>
-                    }}
-                </VirtualList>
-            </List>
+            <Virtuoso height={listHeight} data={msgs} computeItemKey={(index, msg) => {
+                return msg.timestamp
+            }}
+                itemContent={(index, msg) => (<div 
+                style={{
+                    padding: "var(--ant-padding-sm) 0",
+                    borderBottom: "1px solid var(--ant-color-border-secondary)"}}>
+                    <MessageCard msg={msg} />
+                </div>)} />
+
         </ConfigProvider>
     </div>
 }

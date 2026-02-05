@@ -18,6 +18,7 @@ import { FileLink, useFileRouter } from "@/app/components/FileLink";
 import dayjs from "dayjs";
 import { TagCheckboxGroup } from "@/app/components/TagCheckbox";
 import { SeriesKey } from "@/app/utils/api/media/SeriesKey";
+import { Virtuoso } from "react-virtuoso";
 
 type SortKey = "name" | "mtime"
 type SortDirection = "dec" | "inc"
@@ -113,7 +114,30 @@ const DirectoryList = ({ dirList, loading }:
     const sectionContext = useContext(SectionContext);
     return (
         <Flex vertical gap={8}>
-            <List
+            <Virtuoso style={{
+                height: sectionContext.contentHeight - 200,
+                backgroundColor: colorBgBase,
+                border: "1px solid var(--ant-color-border)",
+                borderRadius: "var(--ant-border-radius)"
+
+            }}
+                totalCount={sortedDirList.length} itemContent={
+                    (index) => {
+                        const item = sortedDirList[index];
+                        const cleanName = item.name.replaceAll("#", "＃")
+                        return <div
+                            key={cleanName}
+                            style={{
+                                padding: 'var(--ant-padding-xs)',
+                                borderBottom: '1px solid var(--ant-color-border-secondary)',
+                            }}>
+                            <FileLink targetPath={path.join(pathParams, cleanName)}>
+                                <span style={{ wordWrap: "break-word" }}>{item.name}</span>
+                            </FileLink>
+                        </div>
+                    }
+                } />
+            {/* <List
                 style={{ height: sectionContext.contentHeight - 200, overflowY: "auto", backgroundColor: colorBgBase }}
                 // footer={footer}
                 size="small"
@@ -132,7 +156,7 @@ const DirectoryList = ({ dirList, loading }:
                         </List.Item>
                     )
                 }}
-            />
+            /> */}
             {footer}
         </Flex>)
 }
