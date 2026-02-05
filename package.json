@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ant-design/colors": "^7.0.0",
+    "@ant-design/colors": "^8.0.0",
     "@codemirror/lang-json": "^6.0.1",
     "@dnd-kit/core": "^6.0.8",
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
