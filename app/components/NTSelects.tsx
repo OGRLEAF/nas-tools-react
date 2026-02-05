@@ -1,7 +1,7 @@
 
-import React, { CSSProperties, useCallback, useEffect, useMemo, useState } from "react"
+import React, { CSSProperties, use, useCallback, useEffect, useMemo, useState } from "react"
 import { API, NastoolFilterruleBasic, NastoolIndexer, NastoolServerConfig, NastoolSiteInfo, NastoolSiteProfile } from "../utils/api/api"
-import { Select, Space } from "antd"
+import { AutoComplete, Button, Divider, Input, Select, Space } from "antd"
 import { Sites } from "../utils/api/sites"
 import { syncModeMap } from "../utils/api/sync"
 import { MediaWorkType } from "../utils/api/types"
@@ -10,6 +10,7 @@ import { DownloadClient, DownloadClientConfig, DownloadClientResource, DownloadC
 import { Organize } from "../utils/api/import"
 import { normalize } from "path"
 import { useAPIContext, useDataResource, useResource } from "../utils/api/api_base"
+import { LLMClient, LLMClientConfig } from "../utils/api/llmClient"
 
 interface FormItemProp<T> {
     value?: T,
@@ -66,7 +67,7 @@ export const FilterRuleSelect = (options: FormItemProp<number>) => {
 
 
 export const ResTypeSelect = (options: FormItemProp<string | null | undefined>) => {
-    const {onChange, value, defaultOption} = useUnsetOption(options)
+    const { onChange, value, defaultOption } = useUnsetOption(options)
 
     const resTypeOptions = [
         defaultOption,
@@ -77,7 +78,7 @@ export const ResTypeSelect = (options: FormItemProp<string | null | undefined>) 
 }
 
 export const PixSelect = (options: FormItemProp<string | undefined>) => {
-    const {onChange, value, defaultOption} = useUnsetOption(options)
+    const { onChange, value, defaultOption } = useUnsetOption(options)
     const pixOptions = [
         defaultOption,
         ...["8k", "4k", "1080p", "720p"]
@@ -185,35 +186,55 @@ export const MediaWorkCategoryUnionSelect = (options: FormItemProp<[MediaWorkTyp
     </Space.Compact>
 }
 
-function useUnsetOption<T>(options: FormItemProp<T|undefined>, ) {
-    const convDefault = useCallback((value?:T)=>{
-        if(value==null) {
+function useUnsetOption<T>(options: FormItemProp<T | undefined>,) {
+    const convDefault = useCallback((value?: T) => {
+        if (value == null) {
             return options.nullDefault || ""
         }
         return value
     }, [options.nullDefault])
-    const revConvDefault = useCallback((value:T)=>{
-        if(value == (options.nullDefault || "")) {
-            return options.nullDefault 
+    const revConvDefault = useCallback((value: T) => {
+        if (value == (options.nullDefault || "")) {
+            return options.nullDefault
         }
         return value;
-    },[options.nullDefault])
+    }, [options.nullDefault])
 
-    const onChange = useCallback((value:T)=>{
-        if(options.onChange) {
+    const onChange = useCallback((value: T) => {
+        if (options.onChange) {
             options.onChange(revConvDefault(value))
         }
     }, [options, revConvDefault]);
 
-    const convertedValue = useMemo(()=>convDefault(options.value), [convDefault, options.value])
+    const convertedValue = useMemo(() => convDefault(options.value), [convDefault, options.value])
 
     const defaultOption = {
         value: convDefault(options.unsetOption?.value),
-        label:  options.unsetOption?.label || "全部",
+        label: options.unsetOption?.label || "全部",
     }
     return {
         value: convertedValue,
         onChange: onChange,
         defaultOption: defaultOption
     }
+}
+
+export function LLMModelSelect(options: FormItemProp<string> & { llmClientConfig: LLMClientConfig }) {
+    const [models, setModels] = useState<string[]>([]);
+    
+    const llmClient = useMemo(() => new LLMClient(options.llmClientConfig), [options.llmClientConfig]);
+
+    const refreshModels = useCallback(() => {
+        llmClient.models().then(res => {
+            setModels(res)
+        })
+    }, [llmClient])
+
+    return <AutoComplete
+        {...options}
+        options={models.map((model) => ({ value: model }))}
+        onFocus={() => {
+            refreshModels()
+        }}
+    />
 }

@@ -1,3 +1,4 @@
+import { LLMModelSelect } from "@/app/components/NTSelects";
 import { NastoolServerConfig } from "@/app/utils/api/api";
 import { Col, Form, Input, Row, Select } from "antd"
 
@@ -13,6 +14,8 @@ const openAiProviderSelection = [
 
 export function IntelligentAgentSetting(options: { config?: NastoolServerConfig }) {
     const form = Form.useFormInstance();
+    const config = Form.useWatch("openai", form);
+
     const provider = Form.useWatch(["openai", "provider"], form);
     return <Row gutter={[24, 0]}>
         <Col span={2}>
@@ -32,14 +35,15 @@ export function IntelligentAgentSetting(options: { config?: NastoolServerConfig 
                 <Input />
             </Form.Item>
         </Col>
-        <Col span={2}>
-            <Form.Item label="Model" name={["openai", "model"]}>
-                <Input />
-            </Form.Item>
-        </Col>
+
         <Col span={8}>
             <Form.Item label="OpenAI API Key" name={["openai", "api_key"]}>
                 <Input />
+            </Form.Item>
+        </Col>
+        <Col span={6}>
+            <Form.Item label="Model" name={["openai", "model"]}>
+                <LLMModelSelect  llmClientConfig={config}/>
             </Form.Item>
         </Col>
     </Row>
