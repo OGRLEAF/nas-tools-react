@@ -219,10 +219,10 @@ function useUnsetOption<T>(options: FormItemProp<T | undefined>,) {
     }
 }
 
-export function LLMModelSelect(options: FormItemProp<string> & { llmClientConfig: LLMClientConfig }) {
+export function LLMModelSelect(options: FormItemProp<string> & { config: LLMClientConfig }) {
     const [models, setModels] = useState<string[]>([]);
     
-    const llmClient = useMemo(() => new LLMClient(options.llmClientConfig), [options.llmClientConfig]);
+    const llmClient = useMemo(() => new LLMClient(options.config), [options.config]);
 
     const refreshModels = useCallback(() => {
         llmClient.models().then(res => {

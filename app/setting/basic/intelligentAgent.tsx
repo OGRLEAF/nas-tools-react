@@ -19,7 +19,7 @@ export function IntelligentAgentSetting(options: { config?: NastoolServerConfig 
     const provider = Form.useWatch(["openai", "provider"], form);
     return <Row gutter={[24, 0]}>
         <Col span={2}>
-            <Form.Item label="OpenAI服务" name={["openai", "provider"]}>
+            <Form.Item label="LLM服务" name={["openai", "provider"]}>
                 <Select options={openAiProviderSelection} />
             </Form.Item>
         </Col>
@@ -43,7 +43,7 @@ export function IntelligentAgentSetting(options: { config?: NastoolServerConfig 
         </Col>
         <Col span={6}>
             <Form.Item label="Model" name={["openai", "model"]}>
-                <LLMModelSelect  llmClientConfig={config}/>
+                <LLMModelSelect config={config}/>
             </Form.Item>
         </Col>
     </Row>
