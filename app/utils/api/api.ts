@@ -1,4 +1,4 @@
-import axios, { Method } from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, Method } from "axios";
 import ClientStorage from "../storage"
 import { objectToFormData } from "./api_utils"
 import { DeepPartial } from "..";
@@ -1072,6 +1072,17 @@ export class NASTOOL {
         })
     }
 
+    public async getStream<T>(api: NastoolApi, options: { auth?: boolean, params?: Record<string, string | number> } = {}): Promise<T> {
+
+        return await this.request<T>(api, "get", {
+            params: {
+                ...options.params,
+                // apikey: options.auth ? this.serverConfig?.security.api_key : undefined
+            },
+            auth: options.auth
+        })
+    }
+
     public async del<T>(api: NastoolApi, options: { auth?: boolean, params?: Record<string, string> } = {}): Promise<T> {
         return await this.request<T>(api, "delete", {
             params: {
@@ -1092,10 +1103,25 @@ export class NASTOOL {
             auth: options.auth
         })
     }
+    public async requestStream<T>(api: NastoolApi, method: Method, options: { params?: any, data?: FormData | any, auth?: boolean }) {
+        const response = this.createSession<T>(api, method, options, { responseType: 'stream' });
+        const stream = (await response).data;
+        const reader = stream.pipeThrough(new TextDecoderStream()).getReader();
+
+        // const onData = async () => {
+        //     while (true) {
+        //         const { value, done } = await reader.read();
+        //         if (done) break;
+        //         console.log(value); // Process the event chunks
+        //     }
+        // }
+        return reader;
+    }
 
     private async request<T>(api: NastoolApi, method: Method, options: { params?: any, data?: FormData | any, auth?: boolean }): Promise<T> {
         try {
-            return await this._request(api, method, options,)
+            const session = await this.createSession<T>(api, method, options);
+            return await this._request(session);
         } catch (e) {
             if (e instanceof NTError) {
                 switch (e.type) {
@@ -1112,33 +1138,41 @@ export class NASTOOL {
         }
     }
 
-    private async _request<T>(api: NastoolApi, method: Method, options: { params?: any, data?: FormData | any, auth?: boolean }): Promise<T> {
+    private async createSession<T>(api: NastoolApi,
+        method: Method,
+        options: { params?: any, data?: FormData | any, auth?: boolean },
+        requestConfig?: AxiosRequestConfig)
+        : Promise<AxiosResponse> {
         const headers = {
             // ...(options.data?options.data.),
             ...(options.auth ? { Authorization: this.token } : {})
         }
-        const request = async (retry: boolean = true): Promise<T> => {
-            const req = await axios.request({
-                baseURL: this.apiBaseUrl,
-                method: method,
-                url: api,
-                data: options.data,
-                params: options.params,
-                headers: headers
-            })
-            const data: NastoolResponse<T> = req.data;
-            if (data.code == 0 && data.success == true) {
-                return data.data as T;
-            }
-            else {
-                if (data.code == 403) {
-                    throw new NTAuthFailError(data.message)
-                }
-                else
-                    throw new Error(`Nastool request error code=${data.code} sucess=${data.success} message=${data.message}`);
-            }
+        const session = await axios({
+            baseURL: this.apiBaseUrl,
+            method: method,
+            url: api,
+            data: options.data,
+            params: options.params,
+            headers: headers,
+            adapter: 'fetch',
+            ...requestConfig
+        })
+        return session;
+    }
+
+    private async _request<T>(response: AxiosResponse): Promise<T> {
+        const data: NastoolResponse<T> = response.data;
+        if (data.code == 0 && data.success == true) {
+            return data.data as T;
         }
-        return request();
+        else {
+            if (data.code == 403) {
+                throw new NTAuthFailError(data.message)
+            }
+            else
+                throw new Error(`Nastool request error code=${data.code} sucess=${data.success} message=${data.message}`);
+        }
+
     }
 }
 
