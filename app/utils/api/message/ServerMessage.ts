@@ -1,23 +1,33 @@
 import { io, Socket } from "socket.io-client"
 import { ServerEvent } from "./ServerEvent"
 import { API } from "../api"
-import { Message as MessagBase } from "./ServerEvent"
+
 enum MessageType {
-    SEND = 0,
-    RECV = 1
+    TEXT = "text",
+    LAYER = "layer",
 }
 
-export interface Message  {
+interface MessageMeta {
     level: string,
     title: string,
-    content: string,
-    time: number,
-    index: number,
     timestamp: number,
-    type: MessageType
 }
 
-export interface MessageGroup<MsgType> extends MessagBase{
+export type ChatMessage = MessageMeta &
+({ content: string[][], typ: MessageType.LAYER } |
+{ content: string, typ: MessageType.TEXT });
+
+export interface Message {
+    level: string,
+    title: string,
+    content: string | string[][],
+    timestamp: number,
+    time: number,
+    index: number,
+    typ: MessageType
+}
+
+export interface MessageGroup<MsgType> {
     lst_time: string,
     messages: MsgType[]
 }
