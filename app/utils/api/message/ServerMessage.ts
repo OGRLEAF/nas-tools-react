@@ -64,7 +64,7 @@ export class ServerMessage {
                     this.msgs.push({
                         ...msg,
                         timestamp: msgTime,
-                        type: MessageType.RECV
+                        typ: MessageType.TEXT
                     })
 
                 })
