@@ -35,7 +35,7 @@ export default function DownloaderSetting() {
     return <>
         <CardsForm<DownloadClientResource>
             resource={DownloadClient}
-            title={"下载器"}
+            title="下载器"
             formComponent={DownloadClientConfigForm}
         >
             <Cards<DownloadClientResource>
@@ -46,7 +46,7 @@ export default function DownloaderSetting() {
                         cover: config.cover,
                         description: <>{record.enabled ? <Tag color={token.colorSuccess} variant="filled">启用</Tag> : <Tag color={token.colorInfo}>停用</Tag>}</>,
                         extra: (resource) => <Button icon={<RetweetOutlined />} type="text"
-                            onClick={(evt) => { evt.stopPropagation(); resource.val?.(record); }}
+                            onClick={(evt) => { evt.stopPropagation(); resource.actions.val?.(record); }}
                         />
                     })
                 }} />
