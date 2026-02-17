@@ -209,9 +209,9 @@ export type AutoPick<Target extends ResourceHookType<T>, T extends APIArrayResou
 export type AutoPickSafe<Target, T> = {
     [K in keyof Target as (
         K extends "onSave" | "onDelete" ? K : K // 键名全部保留
-    )]: K extends "onSave" 
-        ? (T extends { save: Function } ? Target[K] : undefined) // 不存在则为 undefined
-        : Target[K]
+    )]: K extends "onSave"
+    ? (T extends { save: Function } ? Target[K] : undefined) // 不存在则为 undefined
+    : Target[K]
 } & {
     [M in "save" | "delete" as `has${Capitalize<M>}`]: T extends { [P in M]: Function } ? true : false;
 };
@@ -315,7 +315,7 @@ export function useResource<Res extends ResourceType, APIClass extends APIArrayR
 
     const refresh = useCallback(async () => {
         setLoading(true);
-        try{
+        try {
             const newList = await fetch();
             setList(newList);
             if (capabilities.canCountTotal) {
@@ -352,17 +352,29 @@ export function useResource<Res extends ResourceType, APIClass extends APIArrayR
 
 export type ResList<Res extends ResourceType> = ReturnType<typeof useResource<Res>>['setList'];
 
-export function useEventDataPatch<Res extends ResourceType>(setList: ResList<Res>, eventName: string) {
+export function useEventDataPatch<Res extends ResourceType>(setList: ResList<Res>, eventName: string,
+    options: { sync: boolean } = { sync: false }) {
     const [pointer, setPointer] = useState<number>(0);
-    const { msgs } = useServerEvent(eventName);
+    const { msgs, emit } = useServerEvent(eventName);
     useEffect(() => {
+        if (options.sync) {
+            console.debug("Syncing event data patch for", eventName);
+            emit(eventName, 'sync_events');
+        }
+    }, [options.sync, emit])
+    useEffect(() => {
+        // console.log(msgs)
         setList((list) => {
             let updatedList = list;
             msgs.slice(pointer)
                 .forEach((msg) => {
                     updatedList = patchData(msg.keys, updatedList, msg.data);
+                    // patchDataNotSafe(msg.keys, updatedList, msg.data);
                     setPointer((p: number) => p + 1)
                 })
+            // if (msg) {
+            //     updatedList = patchData(msg.keys, updatedList, msg.data);
+            // }
             return updatedList
         })
 
@@ -423,6 +435,7 @@ function patchDataNotSafe(keys: (number | string)[], list: any, final: any) {
 }
 
 function patchData(keys: (number | string)[], data: any, final: any): any {
+    // console.debug("Patching data with keys:", keys, "data:", data);
     const nextKey = keys.shift();
     if (nextKey == undefined) return final;
     if (isPatchable(data, nextKey)) {
@@ -430,16 +443,19 @@ function patchData(keys: (number | string)[], data: any, final: any): any {
         if (Array.isArray(data) && (typeof nextKey === "number")) {
             if (nextKey == data.length) {
                 if (keys.length > 0) console.warn("Key over sized", keys)
-                return [...data, final]
+                // return [...data, final]
+                return [...data, patchData(keys, nextData, final)]
             } else if (nextKey < data.length) {
                 data[nextKey] = patchData(keys, nextData, final);
-                return [...data]
+                return data
             }
         } else if (typeof data === "object" && data != null) {
+
             return {
                 ...data,
                 [nextKey]: patchData(keys, nextData, final)
             }
+
         }
     }
     return data;
