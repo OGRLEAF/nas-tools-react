@@ -16,8 +16,8 @@ export default function IndexersSetting() {
 }
 
 function BuiltinIndexerSetting() {
-    const { useList } = useResource<IndexerResource>(Indexers)
-    const { list: sites } = useList();
+    const { list: sites } = useResource<IndexerResource>(Indexers)
+    // const { list: sites } = useList();
     const { useData, update, messageContext } = useDataResource(IndexerOptions, { useMessage: true });
     const { data: indexerOptions, setData: setIndexerOptions, } = useData();
 
@@ -30,8 +30,8 @@ function BuiltinIndexerSetting() {
             {sites ? <IndexerSitesSelector options={sites} value={enabledSites ?? []}
                 onChange={((value) => {
                     console.log(value)
-                    enabledSites?.forEach((v)=>builtinIndexerOptions.sites_config[v].enabled = false)
-                    value.forEach((v)=>builtinIndexerOptions.sites_config[v].enabled = true)
+                    enabledSites?.forEach((v) => builtinIndexerOptions.sites_config[v].enabled = false)
+                    value.forEach((v) => builtinIndexerOptions.sites_config[v].enabled = true)
                     setIndexerOptions({
                         ...builtinIndexerOptions,
                     })
