@@ -16,7 +16,9 @@ import { MediaSearchGroup, MediaSearchSeason, MediaSearchWork } from "@/app/comp
 
 
 export default function SubscribeTV() {
-    return <CardsForm<TVSubsResource> title="电视剧订阅" resource={TVSubscribe}
+    return <CardsForm<TVSubsResource>
+        title={<Space>电视剧订阅<Tag color="blue">Beta</Tag></Space>}
+        resource={TVSubscribe}
         extra={() => <Button>刷新</Button>}
         formComponent={SubscribeTVForm}
     >
