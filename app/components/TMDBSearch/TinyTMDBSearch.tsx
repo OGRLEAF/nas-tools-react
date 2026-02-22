@@ -392,7 +392,7 @@ export function MediaSearchGroup({ value, onChange, children, filter }: MediaSea
         <SearchContext.Provider value={searchContext}>
             {
                 children ?
-                    <Spin spinning={loading} style={{ height: "150px", }}>
+                    <Spin spinning={loading}>
                         {children}
                     </Spin>
                     : <></>
