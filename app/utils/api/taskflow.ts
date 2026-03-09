@@ -38,8 +38,8 @@ export interface TaskflowResource {
 
 export class Taskflow extends APIArrayResourceBase<TaskflowResource> {
     async list() {
-        const result = await this.API.get<{tasks: TaskflowInfo[]}>(`taskflow/list`, { auth: true })
-        return result.tasks
+        const result = await this.API.get<{list: TaskflowInfo[], total: number}>(`taskflow/list`, { auth: true })
+        return result.list
     }
 
     async listHook(options?: unknown): Promise<TaskflowInfo[]> {

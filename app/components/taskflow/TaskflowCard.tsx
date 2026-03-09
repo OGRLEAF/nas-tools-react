@@ -78,7 +78,9 @@ export function TaskflowCard({ id }: { id: string }) {
     const [taskflow] = useTaskflow(id);
     const { token } = theme.useToken()
 
-
+    if (!taskflow) {
+        return <Card title={<Space><SyncOutlined spin style={{ color: token.colorInfo }} />加载中</Space>} />
+    }
     return <Card title={<TaskflowCardTitle taskflow={taskflow} />}
         extra={
             <Button type="text"
@@ -92,18 +94,17 @@ export function TaskflowCard({ id }: { id: string }) {
 
 }
 
-export function TaskflowCardTitle({ taskflow }: { taskflow: TaskflowInfo | null }) {
+export function TaskflowCardTitle({ taskflow }: { taskflow: TaskflowInfo}) {
     const taskflowStatus = useTaskflowStatus();
-    if (taskflow) {
-        const currentTaskflowStatus = taskflowStatus[taskflow.status];
-        const dateStr = dayjs(taskflow.start_time * 1000).format("YYYY.MM.DD HH:mm:ss")
-        return <Space><span>{currentTaskflowStatus.icon}</span>
-            <span>{dateStr}</span>
-            <span>{currentTaskflowStatus.message}</span>
-        </Space>;
-    } else {
-        return <>等待任务</>
-    }
+
+    const currentTaskflowStatus = useMemo(()=> taskflowStatus[taskflow.status], [taskflow, taskflowStatus]);
+    const dateStr = useMemo(()=> dayjs(taskflow.start_time * 1000).format("YYYY.MM.DD HH:mm:ss"), [taskflow]);
+
+    return <Space><span>{currentTaskflowStatus.icon}</span>
+        <span>{dateStr}</span>
+        <span>{currentTaskflowStatus.message}</span>
+    </Space>;
+
 }
 
 export function TaskflowCardContent({ taskflow }: { taskflow: TaskflowInfo }) {

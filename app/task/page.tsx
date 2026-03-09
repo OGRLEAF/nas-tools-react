@@ -94,7 +94,9 @@ export default function TaskflowPage() {
             {currentId && <TaskflowCard id={currentId} />}
             <Flex vertical gap={16}>
                 {
-                    sortedTasks ? sortedTasks.map((taskflow) => <Card key={taskflow.id} title={taskflow.id}>
+                    list ? list.map((taskflow) => <Card key={taskflow.id} 
+                    title={<span>{taskflow.id} {taskflow.status}</span>}
+                    >
                         <TaskCard taskflow={taskflow} />
                     </Card>)
                         : <Empty description="暂无任务" />

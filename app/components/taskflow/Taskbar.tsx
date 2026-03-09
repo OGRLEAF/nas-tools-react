@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Flex, Popover, Progress, Tag, theme } from 'antd'
 import { TaskflowCard, TaskflowCardContent, TaskflowCardTitle, useTaskflowStatus } from './TaskflowCard'
 import { TaskflowInfo } from '../../utils/api/taskflow'
@@ -24,7 +24,7 @@ function TaskbarItem({ taskflow }: { taskflow: TaskflowInfo }) {
 
     const status = useMemo(() => taskflowStatus[taskflow.status], [taskflow]);
 
-    const statusIcon = useMemo(()=>{ 
+    const statusIcon = useMemo(()=>{
         if(taskflow.progress >=0 && taskflow.status === "running"){
             return <Progress type="dashboard" percent={taskflow.progress * 100} size={20} />
         } else {

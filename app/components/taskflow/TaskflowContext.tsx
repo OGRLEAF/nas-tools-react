@@ -25,7 +25,7 @@ export function useTaskflow(taskflowId?: string) {
     const { list: taskflows } = useTaskflowList();
     useEffect(() => {
         setTaskflow(taskflows?.find((item) => item.id === taskflowId) ?? null)
-    }, [taskflows, taskflowId])
+    }, [taskflows, taskflowId, setTaskflow])
     return [taskflow]
 }
 
