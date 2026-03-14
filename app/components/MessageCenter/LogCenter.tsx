@@ -1,16 +1,10 @@
-import { API } from "@/app/utils/api/api";
 // import { Message, NastoolMessage } from "@/app/utils/api/message";
-import { Avatar, Button, Card, ConfigProvider, Divider, Flex, FloatButton, Form, Input, List, Space, Switch, Tag } from "antd";
-import { UserOutlined } from "@ant-design/icons"
-import React, { useEffect, useRef, useState } from "react";
-import Markdown from "marked-react";
-import { useForm } from "antd/es/form/Form";
-import { ServerLog, Log } from "@/app/utils/api/message/ServerLog";
-import { ServerConfig } from "@/app/utils/api/serverConfig";
+import { ConfigProvider, Space, Tag } from "antd";
+import { useEffect, useRef, useState } from "react";
+import { Log } from "@/app/utils/api/message/ServerLog";
 import { StateMap, StateTag } from "../StateTag";
-import VirtualList, { ListRef } from "rc-virtual-list"
+import { ListRef } from "rc-virtual-list"
 import _ from "lodash";
-import { useAPIContext } from "@/app/utils/api/api_base";
 import { useServerMessage, useSocketio } from "@/app/utils/api/message/ServerEvent";
 import { Virtuoso } from "react-virtuoso";
 

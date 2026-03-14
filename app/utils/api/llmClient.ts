@@ -9,6 +9,12 @@ export interface LLMClientConfig {
     model?: string
 }
 
+export interface LLMTool {
+    name: string,
+    description: string,
+    display_name: string
+}
+
 export class LLMClient extends APIBase {
     config: LLMClientConfig;
     constructor(config: LLMClientConfig) {
@@ -24,4 +30,11 @@ export class LLMClient extends APIBase {
     public async modelsTest(): Promise<string[]> {
         return ["a", "b", "c"];
     }
+
+    public static async tools(): Promise<LLMTool[]> {
+        const result = await APIBase.GLOBAL_API.getWithCache<{list: LLMTool[]}>("llm_chat/tools", { auth: true });
+        return result.list
+    }
 }
+
+

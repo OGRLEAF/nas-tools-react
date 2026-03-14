@@ -69,7 +69,7 @@ export function useSocketio(namespace = "/test") {
 }
 
 
-export function useServerMessage<DataType extends Message>(sockio: Socket | undefined, eventName: string) {
+export function useServerMessage<DataType>(sockio: Socket | undefined, eventName: string) {
     const [msgs, setMsgs] = useState<DataType[]>([]);
     const msg = useMemo(() => msgs[0], [msgs])
     useEffect(() => {
@@ -148,7 +148,7 @@ export function useServerEvent2<DataType extends ServerEventMsg>(eventName: stri
             console.debug('register socketio', `event.${eventName}`)
 
             sockio.on(`event.${eventName}`, eventCallback);
-
+            
             return () => {
                 setMsgs([]);
                 sockio.removeListener(eventName, eventCallback)
@@ -171,23 +171,23 @@ export function useServerEvent2<DataType extends ServerEventMsg>(eventName: stri
     }
 }
 
-export function useServerEvent<DataType extends ServerEventMsg>(eventName: string) {
-    const sockio = useSocketio('/server_event');
+export function useServerEvent<DataType extends ServerEventMsg>(component: string, keyPath: (number|string)[] = []) {
+    const sockio = useSocketio(`/server_event/${component}`);
     const [msgs, setMsgs] = useState<DataType[]>([]);
     // const [msg, setMsg] = useState<DataType | undefined>(undefined);
     const msg = msgs.length > 0 ? msgs[msgs.length - 1] : undefined;
     const bufferRef = useRef<DataType[]>([]);
-
+    const eventName = keyPath.join('.');
     useEffect(() => {
         if (!sockio) return;
 
-        // 统一提取完整的事件名，防止手误
         const fullEventName = `event.${eventName}`;
         const handleData = (data: DataType) => {
             bufferRef.current.push(data);
         };
         console.debug('register socketio', fullEventName);
         sockio.on(fullEventName, handleData);
+        sockio.emit("join", keyPath);
 
         const flushInterval = setInterval(() => {
             if (bufferRef.current.length > 0) {

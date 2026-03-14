@@ -1,88 +1,83 @@
-import { io, Socket } from "socket.io-client"
-import { ServerEvent } from "./ServerEvent"
-import { API } from "../api"
+import { useEffect } from "react";
+import { APIArrayResourceBase, ResourceType } from "../api_base";
+import React from "react";
 
-enum MessageType {
+export enum MessageType {
     TEXT = "text",
     LAYER = "layer",
+    LLMThinking = "llm_thinking",
 }
 
 interface MessageMeta {
-    level: string,
+    // level: string,
     title: string,
     timestamp: number,
+    content: any,
+    extra?: Record<string, any>,
 }
 
-export type ChatMessage = MessageMeta &
-({ content: string[][], typ: MessageType.LAYER } |
-{ content: string, typ: MessageType.TEXT });
-
-export interface Message {
-    level: string,
-    title: string,
-    content: string | string[][],
-    timestamp: number,
-    time: number,
-    index: number,
-    typ: MessageType
+export interface MessageSection {
+    name: string,
+    chunks: string[]
 }
+
+export interface LayerChatMessage extends MessageMeta {
+    type: MessageType.LAYER,
+    content: {
+        sections: MessageSection[]
+    },
+
+}
+
+export interface TextChatMessage extends MessageMeta {
+    type: MessageType.TEXT,
+    content: string
+}
+
+export type ChatMessage = LayerChatMessage | TextChatMessage
+
+
+export type Message = MessageMeta & { content: string };
 
 export interface MessageGroup<MsgType> {
     lst_time: string,
     messages: MsgType[]
 }
 
-export class ServerMessage {
-    private serverEvent: ServerEvent
-    private msgs: Message[] = []
-    public onMessage: (msgs: Message[]) => void = () => { };
-    constructor(serverEvent: ServerEvent) {
-        this.serverEvent = serverEvent;
-        this.connect();
+
+interface MessageSession {
+    session_id: number,
+    create_time: Date,
+    update_time: Date,
+    title: string
+}
+
+export interface MessageSessionResource extends ResourceType{
+    ItemType: ChatMessage
+}
+
+
+export class MessageSessionResource extends APIArrayResourceBase<MessageSessionResource> {
+    public async list() {
+        const sessions = await this.API.get<{ list: MessageSession[], total: number }>("messages/sessions", { auth: true });
+        return sessions.list
     }
+}
 
-    public connect() {
-        // client-side
-        this.serverEvent.listen<MessageGroup<Message>>("message", (data) => {
-            this.handle_message(data)
-        })
-    }
+export function useSessionList() {
+    const [sessionResource, setSessionResource] = React.useState<MessageSessionResource | null>(null);
+    const [sessions, setSessions] = React.useState<Record<number, MessageSession>>({});
+    useEffect(() => {
+    
+        setSessionResource(new MessageSessionResource());
+    }, [setSessionResource])
 
-    private handle_message(messageRaw: MessageGroup<Message>) {
-        const lastMsg = this.msgs[this.msgs.length - 1];
-        const lastTime = lastMsg ? lastMsg.index : -1;
-        if (messageRaw.messages.length) {
-            const newItems = messageRaw.messages
-                .filter((msg) => {
-                    const msgTime = msg.index
-                    return (msgTime > lastTime)
-                })
-
-            if (newItems.length) {
-                newItems.forEach((msg) => {
-                    const msgTime = msg.index
-                    this.msgs.push({
-                        ...msg,
-                        timestamp: msgTime,
-                        typ: MessageType.TEXT
-                    })
-
-                })
-                if (this.onMessage) this.onMessage([...this.msgs])
-            }
-            //
-
+    useEffect(()=> {
+        if (sessionResource) {
+            sessionResource.list().then((sessions) => {
+                setSessions(Object.fromEntries(sessions.map((s) => [s.session_id, s])));
+            });
         }
-    }
-
-    public async refresh() {
-        this.serverEvent.emit("refresh")
-    }
-
-    public sendText(text: string) {
-        this.serverEvent.emit("message", {
-            text: text
-        })
-
-    }
+    }, [sessionResource])
+    return sessions;
 }

@@ -22,6 +22,7 @@ export interface MessageGroup<MsgType> {
     message: MsgType[]
 }
 
+// Deprecated, use ServerEvent instead
 export class NastoolMessage {
     ws: WebSocket;
     private msgs: Message[] = []

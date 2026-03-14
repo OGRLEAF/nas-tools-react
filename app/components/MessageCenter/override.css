@@ -3,7 +3,6 @@
 }
 
 .message-panel-container {
-    
     height: calc(100% - 10px);
     width: calc(100% - 10px);
     display: flex;
@@ -18,4 +17,17 @@
     overflow-y: auto;
     display:flex;
     flex-direction: column;
+    padding-bottom: 15px;
+}
+
+.message-chat-inner {
+    padding-left: 40px;
+}
+
+.message-markdown-content {
+    width: 100%;
+    background-color: var(--ant-color-bg-container);
+    padding: 0 var(--ant-padding-sm);
+    border-radius: var(--ant-border-radius-lg);
+    border: var(--ant-line-width) solid var(--ant-color-border);
 }
