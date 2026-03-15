@@ -10,6 +10,7 @@ import "@/app/globals.scss"
 export default function Taskbar() {
     const { list } = useTaskflowList();
     return <Flex className='small-scroll' style={{ overflowY: "auto", width: "100%", padding: 5 }} gap={6} >
+        {/* {JSON.stringify(list)} */}
         {list.toReversed().map((taskflow) => {
             return <TaskbarItem key={taskflow.id} taskflow={taskflow} />
         })}
@@ -24,8 +25,8 @@ function TaskbarItem({ taskflow }: { taskflow: TaskflowInfo }) {
 
     const status = useMemo(() => taskflowStatus[taskflow.status], [taskflow]);
 
-    const statusIcon = useMemo(()=>{
-        if(taskflow.progress >=0 && taskflow.status === "running"){
+    const statusIcon = useMemo(() => {
+        if (taskflow.progress >= 0 && taskflow.status === "running") {
             return <Progress type="dashboard" percent={taskflow.progress * 100} size={20} />
         } else {
             return status.icon
@@ -48,8 +49,8 @@ function TaskbarItem({ taskflow }: { taskflow: TaskflowInfo }) {
             </div>
         }
         placement="bottomLeft"
-        styles={{ container: { padding: 0 },  root: { width: "50%", backgroundColor: "unset", } }}
-        >
+        styles={{ container: { padding: 0 }, root: { width: "50%", backgroundColor: "unset", } }}
+    >
         <Tag style={{ marginRight: 0 }}
             onClick={() => { setOpen(true) }}
             color={status.type}

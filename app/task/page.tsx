@@ -79,6 +79,7 @@ export default function TaskflowPage() {
     // const [currentId, setCurrentId] = useState<string | null>(null)
     const sortedTasks = useMemo(() => {
         if (list) {
+            console.debug("Sorting taskflows", list)
             return [...list].sort((a, b) => b.start_time - a.start_time)
         }
         return []
@@ -94,12 +95,11 @@ export default function TaskflowPage() {
             {currentId && <TaskflowCard id={currentId} />}
             <Flex vertical gap={16}>
                 {
-                    list ? list.map((taskflow) => <Card key={taskflow.id} 
+                    sortedTasks.map((taskflow) => <Card key={taskflow.id} 
                     title={<span>{taskflow.id} {taskflow.status}</span>}
                     >
                         <TaskCard taskflow={taskflow} />
                     </Card>)
-                        : <Empty description="暂无任务" />
                 }
 
             </Flex>

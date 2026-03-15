@@ -30,7 +30,7 @@ export function useAPIContext() {
 }
 
 export class APIBase {
-    private static GLOBAL_API: NASTOOL;
+    protected static GLOBAL_API: NASTOOL;
     public readonly API: NASTOOL
     constructor(API?: NASTOOL) {
         this.API = API ?? APIBase.GLOBAL_API;
@@ -230,7 +230,6 @@ export function useListActions<APIClass extends APIArrayResourceBase<ResourceTyp
                 throw e;
             }
         } else {
-            console.log("Not login")
             throw new Error("Not login yet")
         }
 
@@ -352,14 +351,14 @@ export function useResource<Res extends ResourceType, APIClass extends APIArrayR
 
 export type ResList<Res extends ResourceType> = ReturnType<typeof useResource<Res>>['setList'];
 
-export function useEventDataPatch<Res extends ResourceType>(setList: ResList<Res>, eventName: string,
+export function useEventDataPatch<Res extends ResourceType>(component: string, setList: ResList<Res>, keyPath: (number|string)[],
     options: { sync: boolean } = { sync: false }) {
     const [pointer, setPointer] = useState<number>(0);
-    const { msgs, emit } = useServerEvent(eventName);
+    const { msgs, emit } = useServerEvent(component, keyPath);
     useEffect(() => {
         if (options.sync) {
-            console.debug("Syncing event data patch for", eventName);
-            emit(eventName, 'sync_events');
+            console.debug("Syncing event data patch for", keyPath);
+            emit(keyPath, 'sync_events');
         }
     }, [options.sync, emit])
     useEffect(() => {
@@ -381,32 +380,40 @@ export function useEventDataPatch<Res extends ResourceType>(setList: ResList<Res
     }, [msgs, pointer, setList])
 }
 
-function isPatchable(target: any, key: string | number) {
+const listIndexRegex = /^\[(\d+)\]$/;
+function isPatchable(target: any, key: string | number): [false, null] | [true, string | number] {
     if (Array.isArray(target)) {
         if (typeof key === 'string') {
-            console.warn("Data patch failed: trying to patch a list with string-like key", key);
-            return false
-        } else if (typeof key === "number") {
-            if (key > target.length) {
-                console.warn("Data patch failed: trying to patch a list with out of range key", key, target.length);
-                return false
+            const match = key.match(listIndexRegex);
+            if (match) {
+                key = parseInt(match[1], 10);
             } else {
-                return true
+                console.warn("Data patch failed: trying to patch a list with string-like key", key);
+                return [false, null]
+            }
+
+            if (typeof key === "number") {
+                if (key > target.length) {
+                    console.warn("Data patch failed: trying to patch a list with out of range key", key, target.length);
+                    return [false, null]
+                }
+                return [true, key]
             }
         } else {
             console.warn("Data patch failed: trying to patch a list with unsupported key", key);
-            return false
+            return [false, null]
         }
     } else if (typeof target === "object" && target != null) {
         if (typeof key == "number") console.warn("Data patch failed: trying to patch a object with number-like key", key);
         if (!(key in target)) {
             console.warn("Key should exist, but not found in target object, its a bug.", key, JSON.stringify(target));
         }
-        return true
+        return [true, key]
     } else {
         console.warn("Data patch failed: target is not a list or object", key, JSON.stringify(target))
-        return false
+        return [false, null]
     }
+    return [true, key]
 }
 
 function patchDataNotSafe(keys: (number | string)[], list: any, final: any) {
@@ -435,25 +442,28 @@ function patchDataNotSafe(keys: (number | string)[], list: any, final: any) {
 }
 
 function patchData(keys: (number | string)[], data: any, final: any): any {
-    // console.debug("Patching data with keys:", keys, "data:", data);
+    console.debug("Patching data with keys:", keys, "data:", data, "final:", final);
     const nextKey = keys.shift();
     if (nextKey == undefined) return final;
-    if (isPatchable(data, nextKey)) {
-        const nextData = data[nextKey as any]
-        if (Array.isArray(data) && (typeof nextKey === "number")) {
-            if (nextKey == data.length) {
+
+    const [checkResult, key] = isPatchable(data, nextKey);
+
+    if (checkResult) {
+        const nextData = data[key as any]
+        if (Array.isArray(data) && (typeof key === "number")) {
+            if (key == data.length) {
                 if (keys.length > 0) console.warn("Key over sized", keys)
                 // return [...data, final]
                 return [...data, patchData(keys, nextData, final)]
-            } else if (nextKey < data.length) {
-                data[nextKey] = patchData(keys, nextData, final);
-                return data
+            } else if (key < data.length) {
+                data[key] = patchData(keys, nextData, final);
+                return [...data]
             }
         } else if (typeof data === "object" && data != null) {
 
             return {
                 ...data,
-                [nextKey]: patchData(keys, nextData, final)
+                [key]: patchData(keys, nextData, final)
             }
 
         }

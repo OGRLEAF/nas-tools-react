@@ -689,6 +689,9 @@ export class NASTOOL {
     private token: string | null = null;
     private serverConfig: NastoolServerConfig | null = null;
     private storage: ClientStorage<NastoolLoginResData>;
+
+    private requestsCache = new Map<string, Promise<any>>()
+
     public hook: {
         onLoginRequired?: () => (Promise<NastoolLoginConfig>)
     } = {};
@@ -994,7 +997,7 @@ export class NASTOOL {
     public async launchTaskflow(taskflow_profile: string, input: object) {
         return await this.post<{
             taskflow_id: string
-        }>("taskflow/create", {
+        }>(`taskflow/create/${taskflow_profile}`, {
             auth: true, data: {
                 profile_name: taskflow_profile,
                 input: input
@@ -1070,6 +1073,21 @@ export class NASTOOL {
             },
             auth: options.auth
         })
+    }
+
+    public async getWithCache<T>(api: NastoolApi, options: { auth?: boolean, params?: Record<string, string | number> } = {}): Promise<T> {
+        if(this.requestsCache.has(api)){
+            return this.requestsCache.get(api) as Promise<T>;
+        }
+        const requestPromise = this.request<T>(api, "get", {
+            params: {
+                ...options.params,
+                // apikey: options.auth ? this.serverConfig?.security.api_key : undefined
+            },
+            auth: options.auth
+        })
+        this.requestsCache.set(api, requestPromise);
+        return requestPromise;
     }
 
     public async getStream<T>(api: NastoolApi, options: { auth?: boolean, params?: Record<string, string | number> } = {}): Promise<T> {

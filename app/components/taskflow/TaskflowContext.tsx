@@ -32,7 +32,7 @@ export function useTaskflow(taskflowId?: string) {
 
 export function TaskflowContextProvider({ children }: { children?: React.ReactNode }) {
     const { list, setList, actions } = useResource<TaskflowResource>(Taskflow);
-    useEventDataPatch(setList, "task_event");
+    useEventDataPatch('task', setList, ["$", "pool_state"]);
     return <TaskflowContext.Provider value={{
         list,
         setList,
