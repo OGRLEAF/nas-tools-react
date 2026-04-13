@@ -1,7 +1,22 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, Method } from "axios";
 import ClientStorage from "../storage"
 import { objectToFormData } from "./api_utils"
 import { DeepPartial } from "..";
+
+// 替换 axios 的 Method 类型
+type HttpMethod = "get" | "post" | "delete" | "put" | "patch" | "head" | "options";
+
+// 替换 AxiosRequestConfig
+interface RequestConfig {
+  responseType?: 'json' | 'stream';
+}
+
+// 替换 AxiosResponse
+interface FetchResponse<T = any> {
+  data: T;
+  status: number;
+  statusText: string;
+  headers: Headers;
+}
 type NastoolApi =
     "user/login" |
     "config/info" |
@@ -1121,22 +1136,15 @@ export class NASTOOL {
             auth: options.auth
         })
     }
-    public async requestStream<T>(api: NastoolApi, method: Method, options: { params?: any, data?: FormData | any, auth?: boolean }) {
-        const response = this.createSession<T>(api, method, options, { responseType: 'stream' });
-        const stream = (await response).data;
+    public async requestStream<T>(api: NastoolApi, method: HttpMethod, options: { params?: any, data?: FormData | any, auth?: boolean }) {
+        const response = await this.createSessionRaw<T>(api, method, options);
+        const stream = response.body;
+        if (!stream) throw new Error("No response body");
         const reader = stream.pipeThrough(new TextDecoderStream()).getReader();
-
-        // const onData = async () => {
-        //     while (true) {
-        //         const { value, done } = await reader.read();
-        //         if (done) break;
-        //         console.log(value); // Process the event chunks
-        //     }
-        // }
         return reader;
     }
 
-    private async request<T>(api: NastoolApi, method: Method, options: { params?: any, data?: FormData | any, auth?: boolean }): Promise<T> {
+    private async request<T>(api: NastoolApi, method: HttpMethod, options: { params?: any, data?: FormData | any, auth?: boolean }): Promise<T> {
         try {
             const session = await this.createSession<T>(api, method, options);
             return await this._request(session);
@@ -1157,28 +1165,80 @@ export class NASTOOL {
     }
 
     private async createSession<T>(api: NastoolApi,
-        method: Method,
+        method: HttpMethod,
         options: { params?: any, data?: FormData | any, auth?: boolean },
-        requestConfig?: AxiosRequestConfig)
-        : Promise<AxiosResponse> {
-        const headers = {
-            // ...(options.data?options.data.),
-            ...(options.auth ? { Authorization: this.token } : {})
+        requestConfig?: RequestConfig)
+        : Promise<FetchResponse<T>> {
+        const headers: Record<string, string> = {
+            ...(options.auth ? { Authorization: this.token || '' } : {}),
+        };
+
+        // 处理 JSON 数据时设置 Content-Type
+        if (options.data && !(options.data instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
         }
-        const session = await axios({
-            baseURL: this.apiBaseUrl,
-            method: method,
-            url: api,
-            data: options.data,
-            params: options.params,
-            headers: headers,
-            adapter: 'fetch',
-            ...requestConfig
-        })
-        return session;
+
+        // 构建 URL 查询参数
+        const url = new URL(`${this.apiBaseUrl}${api}`);
+        if (options.params) {
+            Object.entries(options.params).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    url.searchParams.append(key, String(value));
+                }
+            });
+        }
+
+        const response = await fetch(url.toString(), {
+            method: method.toUpperCase(),
+            headers,
+            body: options.data
+                ? (options.data instanceof FormData ? options.data : JSON.stringify(options.data))
+                : undefined,
+        });
+
+        const data = await response.json() as T;
+        return {
+            data,
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers,
+        };
     }
 
-    private async _request<T>(response: AxiosResponse): Promise<T> {
+    private async createSessionRaw<T>(
+        api: NastoolApi,
+        method: HttpMethod,
+        options: { params?: any, data?: FormData | any, auth?: boolean }
+    ): Promise<Response> {
+        const headers: Record<string, string> = {
+            ...(options.auth ? { Authorization: this.token || '' } : {}),
+        };
+
+        if (options.data && !(options.data instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+        }
+
+        const url = new URL(`${this.apiBaseUrl}${api}`);
+        if (options.params) {
+            Object.entries(options.params).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    url.searchParams.append(key, String(value));
+                }
+            });
+        }
+
+        const response = await fetch(url.toString(), {
+            method: method.toUpperCase(),
+            headers,
+            body: options.data
+                ? (options.data instanceof FormData ? options.data : JSON.stringify(options.data))
+                : undefined,
+        });
+
+        return response;
+    }
+
+    private async _request<T>(response: FetchResponse): Promise<T> {
         const data: NastoolResponse<T> = response.data;
         if (data.code == 0 && data.success == true) {
             return data.data as T;
