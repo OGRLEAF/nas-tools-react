@@ -3,6 +3,8 @@ import { useTaskflow, useTaskflowList } from './TaskflowContext';
 import { Button, Card, Collapse, Divider, List, Progress, Space, Tag, theme } from 'antd';
 import { TaskState, TaskflowInfo } from '@/app/utils/api/taskflow';
 import { SyncOutlined, LoadingOutlined, CheckOutlined, RedoOutlined, ExclamationOutlined, CloseOutlined, ClockCircleOutlined } from "@ant-design/icons"
+import Listy from '@rc-component/listy';
+
 import dayjs, { Dayjs } from 'dayjs';
 import _ from 'lodash';
 
@@ -165,19 +167,33 @@ const LogLevelStateTag: Record<string, any> = {
 
 export function TaskLog({ logs }: { logs: TaskState['logs'] }) {
     const { token } = theme.useToken();
-    return <List
-        split={false}
-        size="small"
-        dataSource={logs}
-        renderItem={(item) => {
+    // return <List
+    //     split={false}
+    //     size="small"
+    //     dataSource={logs}
+    //     renderItem={(item) => {
+    //         const [levelText, color] = LogLevelStateTag[item.level];
+    //         const dateStr = dayjs(item.create_time * 1000).format("YYYY.MM.DD HH:mm:ss")
+    //         const label = <Tag variant="filled" color={color} style={{ marginRight: "8px" }}>{dateStr}<Divider orientation="vertical" />
+    //             <div style={{ display: "inline-block", minWidth: "4em", }}>{levelText}</div>
+    //         </Tag>
+    //         return <List.Item style={{ fontSize: token.fontSizeSM, padding: "4px 0" }}>
+    //             {label}{item.msg}
+    //         </List.Item>
+    //     }}
+    // />
+    return <Listy 
+        items={logs}
+        rowKey={(item) => item.create_time}
+        itemRender={(item) => {
             const [levelText, color] = LogLevelStateTag[item.level];
             const dateStr = dayjs(item.create_time * 1000).format("YYYY.MM.DD HH:mm:ss")
-            const label = <Tag variant="filled" color={color} style={{ marginRight: "8px" }}>{dateStr}<Divider orientation="vertical" />
-                <div style={{ display: "inline-block", minWidth: "4em", }}>{levelText}</div>
+            const label = <Tag variant="filled" color={color} style={{ marginRight: "6px" }}>{dateStr}<Divider orientation="vertical" />
+                <div style={{ display: "inline-block", minWidth: "3em", }}>{levelText}</div>
             </Tag>
-            return <List.Item style={{ fontSize: token.fontSizeSM, padding: "4px 0" }}>
+            return <div style={{ fontSize: token.fontSizeSM, padding: "4px 0" }}>
                 {label}{item.msg}
-            </List.Item>
+            </div>
         }}
     />
 }
