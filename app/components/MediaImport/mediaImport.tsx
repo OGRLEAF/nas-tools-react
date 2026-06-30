@@ -91,11 +91,14 @@ function MediaImport() {
     const [form] = Form.useForm();
     const [search] = useSearch();
 
-    const selectedFiles = useMemo(() => mediaImportContext.penddingFiles.filter(v => v.selected), [mediaImportContext.penddingFiles])
-    const onFinish = useCallback(async (values: any) => {
+    const selectedFiles = useMemo(() => mediaImportContext.penddingFiles.filter(v => v.selected), [mediaImportContext])
+    const onFinish = useCallback((values: any) => {
         const series: SeriesKey = values.series;
         const episodes = values.episodes ? [...values.episodes] : [];
         const tmdbId = series.i;
+        const selectedFiles_ = mediaImportContext.penddingFiles.filter(v => v.selected);
+
+        console.debug("onFinish", series, episodes, tmdbId, selectedFiles_.length, selectedFiles.length)
         if (tmdbId != undefined) {
 
             const season = Number(series.s);
@@ -108,14 +111,14 @@ function MediaImport() {
                     .season(Number.isNaN(season) ? v.indentifyHistory.last().s : season)
                     .episode(Number.isNaN(episode) ? undefined : episode)
             })
-            console.debug(identify)
+            console.debug("Identify", identify)
             mediaImportDispatch({
                 type: MediaImportAction.SetSeries,
                 fileKeys: selectedFiles.map(({ name }) => name),
                 series: identify
             })
         }
-    }, [mediaImportDispatch, selectedFiles])
+    }, [mediaImportDispatch, mediaImportContext])
 
 
     const series = Form.useWatch("series", form) as SeriesKey;
@@ -136,7 +139,11 @@ function MediaImport() {
                     tmdbid: undefined,
                     episode_offset: 0
                 }}
-                onFinish={onFinish}>
+                onFinish={(values) =>{
+                    console.log("Form onFinish", values)
+                    onFinish(values)
+                }
+                }>
                 <Space orientation="vertical" style={{ width: "100%" }}>
                     <SearchContext.Provider value={search}>
                         <Form.Item name="series" noStyle>
