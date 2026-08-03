@@ -49,5 +49,11 @@
     "typescript": "^6.0.0",
     "utf-8-validate": "^6.0.5",
     "ws": "^8.14.2"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "$postcss",
+      "sharp": "^0.35.3"
+    }
   }
 }
