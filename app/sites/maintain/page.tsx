@@ -23,8 +23,8 @@ export default function SiteMaintain() {
 
 function SitesTable() {
     const ctx = useCardsFormContext<SitesResouce>();
-    const { useList, messageContext } = ctx.resource;
-    const { list, total, loading } = useList();
+    const { list, total, loading } = ctx.resource;
+    // const { list, total, loading } = useList();
 
     const [selected, setSelected] = useState<ListItem['id'][]>([])
     const [actionSelected, setActionSelected] = useState<Set<ListItem['id']>>();
@@ -75,7 +75,7 @@ function SitesTable() {
         }
     ]
 
-    return <>{messageContext}
+    return <>
         <Table<ListItem>
             rowSelection={{
                 type: "checkbox",
@@ -108,6 +108,7 @@ function SiteAction({ record, selected, onRefReady }:
     { record: ListItem, selected: boolean, onRefReady?: (ref: React.RefObject<TestButtonAction>) => void }) {
     const { confirm } = Modal;
     const ctx = useCardsFormContext<SitesResouce>();
+    const {actions} = ctx.resource;
     const ref = useRef<TestButtonAction>(null)
     useEffect(() => {
         if (ref != null) {
@@ -126,7 +127,7 @@ function SiteAction({ record, selected, onRefReady }:
             confirm({
                 title: `确认删除站点?`,
                 content: <>{record.name}</>,
-                onOk: () => { ctx.resource.del?.(record) }
+                onOk: () => { actions.del(record) }
             })
         }}>删除</Button>
         <TestButton ref={ref} popoverProps={{ placement: "left" }}
