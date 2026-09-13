@@ -823,8 +823,9 @@ export class NASTOOL {
         return brief;
     }
 
-    public async getFileList(startPath: string, basePath: string): Promise<NastoolFileList> {
-        const fileList = await this.post<NastoolFileList>("page/listdir", { auth: true, data: { start_path: startPath, list_path: basePath } })
+    public async getFileList(basePath: string, listPath: string): Promise<NastoolFileList> {
+        // const fileList = await this.post<NastoolFileList>("page/listdir", { auth: true, data: { start_path: startPath, list_path: basePath } })
+        const fileList = await this.get<NastoolFileList>("files/list", { auth: true, params: { path: listPath, "base_path": basePath } })
         return fileList
     }
 
