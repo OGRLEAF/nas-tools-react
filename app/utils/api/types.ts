@@ -36,12 +36,6 @@ type Arrayify<T> = {
 export type MediaIdentifyMerged = Arrayify<MediaIdentifyContext>;
 
 
-export interface MediaFile {
-  path: string,
-  type: "Video",
-
-}
-
 
 // TODO: For migrating to beta
 import { MediaWorkMetadata } from "./media/mediaWork"
@@ -74,7 +68,7 @@ export enum SeriesKeyType {
 
 
 // TODO: For migrating to beta
-import { SeriesKey  as SeriesKeyBase } from "./media/SeriesKey"
+import { SeriesKey as SeriesKeyBase } from "./media/SeriesKey"
 
 export class SeriesKey extends SeriesKeyBase {
 }
@@ -82,6 +76,8 @@ export class SeriesKey extends SeriesKeyBase {
 
 // TODO: For migrating to beta
 import { MediaWork as MediaWorkBase } from "./media/mediaWork"
+import extend from "lodash/extend";
+import { extname } from "node:path";
 
 export interface MediaWork extends MediaWorkBase {
   series: SeriesKey,
@@ -103,13 +99,15 @@ export interface MediaWorkEpisode extends MediaWork {
   key: number,
 }
 
-export interface Media {
 
+export interface MediaFileProps {
+  metadata: Record<string, any>
+  fileName: string,
+  path?: string,
+  extention: string
 }
 
-export interface MediaFile {
-  key: string,
-  path: string,
+export interface MediaVideoFileProps extends MediaFileProps {
   metadata: {
     vcodec?: any,
     acodec?: any,
@@ -117,10 +115,28 @@ export interface MediaFile {
     bitDepth: string,
     releaseGroup?: string,
   }
-  rels: MediaExternalFile[]
+  rels: ExternalMediaFileProps[]
 }
 
-export interface MediaExternalFile extends MediaFile {
+export interface ExternalMediaFileProps extends MediaFileProps {
+  fileType: "caption" | "audio"
+};
+
+export interface MediaAudioFileProps extends ExternalMediaFileProps
+{
+  metadata: {
+    acodec?: any
+    sampleRate: number
+  }
+}
+
+export interface MediaCaptionFileProps extends ExternalMediaFileProps {
+  captionType: "ass" | "srt" | "opg",
+  language: string,
+  encoding: string
+}
+
+export interface UnkownMediaFileProps extends MediaFileProps {
 
 }
 
