@@ -11,6 +11,9 @@ import { asyncEffect } from "../utils";
 import { TMDB } from "../utils/api/media/tmdb";
 import { IdentifyHistory } from "./MediaImport/mediaImportContext";
 
+
+
+
 const RelFileTable = ({ relFiles }: { relFiles: NastoolFileListItem[] }) => {
     const relFilesTableData = relFiles.map((file) => ({
         name: file.name,
@@ -40,6 +43,30 @@ const RelFileTable = ({ relFiles }: { relFiles: NastoolFileListItem[] }) => {
     >
 
     </Table>
+}
+
+
+
+
+function MediafileAction()
+{
+
+}
+
+function MediaVideoFileAction()
+{
+
+}
+
+
+function MediaAudioFileAction()
+{
+
+}
+
+function MediaCaptionFileAction()
+{
+    
 }
 
 export default function FileMoreAction({ file, relFiles }:
@@ -93,7 +120,7 @@ export default function FileMoreAction({ file, relFiles }:
             <MediaImportEntry appendFiles={
                 [{
                     name: file.name,
-                    path: pathManagerState.deepestPath,
+                    path: pathManagerState.deepestPath.full,
                     indentifyHistory: new IdentifyHistory().push(seriesKey),
                     currentIdentity: new SeriesKey(seriesKey),
                     rel: relFiles?.map(file => file.name) || [],
