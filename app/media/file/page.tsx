@@ -5,7 +5,7 @@ import { List, Space, Segmented, theme, Table, Cascader, Input, Form, Select, Fl
 import { BarsOutlined, BuildOutlined, FontColorsOutlined, SmallDashOutlined } from "@ant-design/icons"
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ColumnsType, TableRef } from "antd/es/table";
-import FileMoreAction from "@/app/components/fileMoreAction";
+import FileMoreAction from "@/app/components/FileMoreAction";
 import MediaImportEntry, { MediaImportProvider } from "@/app/components/MediaImport/mediaImportEntry";
 import MediaImport from "@/app/components/MediaImport/mediaImport";
 import { PathSearchManagerProvider, usePathManager, usePathManagerDispatch } from "@/app/components/pathManager"
@@ -19,6 +19,7 @@ import dayjs from "dayjs";
 import { TagCheckboxGroup } from "@/app/components/TagCheckbox";
 import { SeriesKey } from "@/app/utils/api/media/SeriesKey";
 import { Virtuoso } from "react-virtuoso";
+import { LocalMediaFileClassifier } from "@/app/utils/api/media/mediaFile";
 
 type SortKey = "name" | "mtime"
 type SortDirection = "dec" | "inc"
@@ -245,7 +246,13 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
             },
             {
                 title: <span>类型</span>,
-                render: (text, item) => item.name.split(".").pop(),
+                dataIndex: "name",
+                render: (text, item) => {
+                    
+                    const mediaFile = new LocalMediaFileClassifier().byExtension(text);
+                    
+                    return mediaFile.fileKind
+                },
                 defaultSortOrder: "descend",
                 filters: Array.from(fileExts.keys()).map((item) => ({ text: item, value: item })),
                 onFilter: (value, record) => (record.name.split(".").pop() === value),
@@ -253,6 +260,7 @@ const FileList = ({ fileList, loading, selected: defaultSelected, onSelectedChan
             }
         ]
     }, [fileList, colorTextTertiary]);
+
     const sectionContext = useContext(SectionContext);
     const [selected, setSelected] = useState((defaultSelected || []).map(v => v.name))
     const [selectedFiles, setSelectedFiles] = useState<NastoolFileListItem[]>(defaultSelected)
